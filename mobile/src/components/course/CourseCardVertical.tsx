@@ -1,0 +1,129 @@
+import { Image } from 'expo-image';
+import { memo } from 'react';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+
+import { AppText } from '@/components/ui/AppText';
+import { Badge } from '@/components/ui/Badge';
+import { RatingInline } from '@/components/ui/RatingInline';
+import { colors, radius, spacing } from '@/theme';
+import type { CourseSummary } from '@/types/api';
+import { getCourseBadge } from '@/utils/discount';
+import { formatPriceOrFree } from '@/utils/formatPrice';
+
+import { BookmarkButton } from './BookmarkButton';
+
+export type CourseCardVerticalProps = {
+  course: CourseSummary;
+  /** Keep this callback stable (`useCallback`) so `React.memo` can skip re-renders in lists. */
+  onPress: (course: CourseSummary) => void;
+  /** Overrides `course.isBookmarked` (e.g. optimistic state from the bookmark hook). */
+  isBookmarked?: boolean;
+  /** When omitted the bookmark icon is shown as a read-only indicator. */
+  onToggleBookmark?: (course: CourseSummary) => void;
+  /** Card width in dp. Default 196 (the Home horizontal lists). */
+  width?: number;
+  style?: StyleProp<ViewStyle>;
+};
+
+export const COURSE_CARD_VERTICAL_WIDTH = 196;
+const PADDING = spacing.md;
+const BORDER = 1;
+const IMAGE_RATIO = 2 / 3; // height / width of the thumbnail (3:2)
+
+/**
+ * Card of the horizontally scrolling lists (Home: Popular / Recommended, Teacher courses):
+ * thumbnail with badge, title + bookmark, teacher, price and rating line.
+ */
+function CourseCardVerticalBase({
+  course,
+  onPress,
+  isBookmarked,
+  onToggleBookmark,
+  width = COURSE_CARD_VERTICAL_WIDTH,
+  style,
+}: CourseCardVerticalProps) {
+  const saved = isBookmarked ?? course.isBookmarked;
+  const badge = getCourseBadge(course);
+  const imageHeight = Math.round((width - 2 * (PADDING + BORDER)) * IMAGE_RATIO);
+
+  return (
+    <View style={[styles.card, { width }, style]}>
+      <Pressable
+        onPress={() => onPress(course)}
+        accessibilityRole="button"
+        accessibilityLabel={`${course.title}, by ${course.teacher.fullName}, ${formatPriceOrFree(course.priceCents)}, rated ${course.ratingAvg.toFixed(1)}`}
+        style={({ pressed }) => [styles.pressable, pressed ? styles.pressed : null]}
+      >
+        <View style={[styles.imageWrap, { height: imageHeight }]}>
+          <Image
+            source={{ uri: course.thumbnailUrl }}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={150}
+            recyclingKey={course.id}
+            accessibilityIgnoresInvertColors
+          />
+          {badge ? (
+            <Badge
+              label={badge.label}
+              tone={badge.kind === 'BEST_SELLER' ? 'primary' : 'secondary'}
+              style={styles.badge}
+            />
+          ) : null}
+        </View>
+        <View style={styles.info}>
+          <AppText variant="cardTitle" numberOfLines={1} style={styles.title}>
+            {course.title}
+          </AppText>
+          <AppText variant="caption" numberOfLines={1}>
+            {course.teacher.fullName}
+          </AppText>
+          <AppText variant="cardTitle" color="primary" family="headingBold" style={styles.price}>
+            {formatPriceOrFree(course.priceCents)}
+          </AppText>
+          <RatingInline
+            rating={course.ratingAvg}
+            count={course.ratingCount}
+            lessonCount={course.lessonCount}
+            style={styles.rating}
+          />
+        </View>
+      </Pressable>
+      <View
+        style={[styles.bookmark, { top: PADDING + imageHeight + spacing.md - 2 }]}
+        pointerEvents="box-none"
+      >
+        <BookmarkButton
+          isBookmarked={saved}
+          onPress={onToggleBookmark ? () => onToggleBookmark(course) : undefined}
+        />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: colors.background,
+    borderWidth: BORDER,
+    borderColor: colors.border,
+    borderRadius: radius.card,
+  },
+  pressable: { padding: PADDING, borderRadius: radius.card },
+  pressed: { opacity: 0.85 },
+  imageWrap: {
+    width: '100%',
+    overflow: 'hidden',
+    borderRadius: radius.button,
+    backgroundColor: colors.surface,
+  },
+  badge: { position: 'absolute', top: spacing.xs, left: spacing.xs },
+  info: { marginTop: spacing.md, gap: spacing.xxs },
+  title: { paddingRight: spacing.xxl },
+  price: { marginTop: spacing.xs },
+  rating: { marginTop: spacing.xs },
+  bookmark: { position: 'absolute', right: PADDING },
+});
+
+export const CourseCardVertical = memo(CourseCardVerticalBase);
