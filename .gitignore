@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Env (chỉ commit .env.example)
+.env
+.env.*
+!.env.example
+!.env.test.example
+
+# Build / cache
+dist/
+build/
+coverage/
+.expo/
+web-build/
+*.tsbuildinfo
+*.apk
+*.aab
+*.ipa
+
+# Server runtime
+server/uploads/*
+!server/uploads/.gitkeep
+server/.pgdata/
+*.log
+
+# Claude
+.claude/settings.local.json
+
+# File gốc của giảng viên (32 MB)
+SubProjects.tar
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
