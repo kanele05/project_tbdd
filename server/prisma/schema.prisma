@@ -1,0 +1,392 @@
+// Prisma schema — theo PLAN.md §8.2 (Prisma 7: generator `prisma-client`, URL kết nối nằm ở prisma.config.ts).
+// Mọi thay đổi schema phải qua `npm run db:migrate -- --name <ten>` và cập nhật PLAN.md §8.2.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum NotificationType {
+  ORDER_PAID
+  NEW_ANSWER
+  COURSE_COMPLETED
+  SYSTEM
+}
+
+enum BannerTarget {
+  COURSE
+  CATEGORY
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  headline     String?
+  avatarUrl    String?
+  coverUrl     String?
+  role         Role     @default(STUDENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  teacherProfile TeacherProfile?
+  enrollments    Enrollment[]
+  lessonProgress LessonProgress[]
+  bookmarks      Bookmark[]
+  courseLikes    CourseLike[]
+  cartItems      CartItem[]
+  orders         Order[]
+  reviews        Review[]
+  questions      Question[]
+  answers        Answer[]
+  questionLikes  QuestionLike[]
+  submissions    ProjectSubmission[]
+  notifications  Notification[]
+  follows        Follow[]
+}
+
+model TeacherProfile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  jobTitle     String
+  bio          String
+  organization String?
+  location     String?
+  timezone     String?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courses   Course[]
+  followers Follow[]
+}
+
+model Follow {
+  userId    String
+  teacherId String
+  createdAt DateTime @default(now())
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teacher TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teacherId])
+}
+
+model Category {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  slug    String   @unique
+  icon    String
+  color   String
+  order   Int      @default(0)
+  courses Course[]
+}
+
+model Tag {
+  id      String      @id @default(cuid())
+  name    String      @unique
+  isHot   Boolean     @default(false)
+  courses CourseTag[]
+}
+
+model CourseTag {
+  courseId String
+  tagId    String
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, tagId])
+}
+
+model Course {
+  id                 String   @id @default(cuid())
+  title              String
+  subtitle           String?
+  description        String
+  thumbnailUrl       String
+  bannerUrl          String?
+  priceCents         Int
+  originalPriceCents Int?
+  benefits           String[]
+  projectDescription String?
+  isBestSeller       Boolean  @default(false)
+  isFeatured         Boolean  @default(false)
+  isPublished        Boolean  @default(true)
+  ratingAvg          Float    @default(0)
+  ratingCount        Int      @default(0)
+  enrollmentCount    Int      @default(0)
+  likeCount          Int      @default(0)
+  shareCount         Int      @default(0)
+  lessonCount        Int      @default(0)
+  totalDurationSec   Int      @default(0)
+  categoryId         String
+  teacherId          String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  category    Category            @relation(fields: [categoryId], references: [id])
+  teacher     TeacherProfile      @relation(fields: [teacherId], references: [id])
+  tags        CourseTag[]
+  sections    Section[]
+  enrollments Enrollment[]
+  bookmarks   Bookmark[]
+  likes       CourseLike[]
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  reviews     Review[]
+  questions   Question[]
+  resources   Resource[]
+  submissions ProjectSubmission[]
+
+  @@index([categoryId])
+  @@index([teacherId])
+  @@index([enrollmentCount])
+  @@index([ratingAvg])
+  @@index([createdAt])
+}
+
+model Section {
+  id       String @id @default(cuid())
+  courseId String
+  title    String
+  order    Int
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@unique([courseId, order])
+}
+
+model Lesson {
+  id          String  @id @default(cuid())
+  sectionId   String
+  title       String
+  order       Int
+  durationSec Int
+  videoUrl    String
+  isPreview   Boolean @default(false)
+
+  section  Section          @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  progress LessonProgress[]
+
+  @@unique([sectionId, order])
+}
+
+model Enrollment {
+  id              String    @id @default(cuid())
+  userId          String
+  courseId        String
+  progressPercent Int       @default(0)
+  lastLessonId    String?
+  lastAccessedAt  DateTime  @default(now())
+  enrolledAt      DateTime  @default(now())
+  completedAt     DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId, lastAccessedAt])
+}
+
+model LessonProgress {
+  userId      String
+  lessonId    String
+  positionSec Int      @default(0)
+  isCompleted Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@id([userId, lessonId])
+}
+
+model Bookmark {
+  userId    String
+  courseId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([userId, courseId])
+}
+
+model CourseLike {
+  userId    String
+  courseId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([userId, courseId])
+}
+
+model CartItem {
+  userId   String
+  courseId String
+  addedAt  DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([userId, courseId])
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  userId        String
+  totalCents    Int
+  status        OrderStatus @default(PENDING)
+  paymentMethod String
+  createdAt     DateTime    @default(now())
+  paidAt        DateTime?
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  @@index([userId, createdAt])
+}
+
+model OrderItem {
+  id         String @id @default(cuid())
+  orderId    String
+  courseId   String
+  priceCents Int
+
+  order  Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@unique([orderId, courseId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  rating    Int
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([courseId, rating])
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  courseId    String
+  userId      String
+  content     String
+  likeCount   Int      @default(0)
+  answerCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  course  Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers Answer[]
+  likes   QuestionLike[]
+
+  @@index([courseId, createdAt])
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  questionId String
+  userId     String
+  content    String
+  createdAt  DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([questionId, createdAt])
+}
+
+model QuestionLike {
+  userId     String
+  questionId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, questionId])
+}
+
+model Resource {
+  id        String @id @default(cuid())
+  courseId  String
+  name      String
+  fileUrl   String
+  sizeBytes Int
+  mimeType  String
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model ProjectSubmission {
+  id          String   @id @default(cuid())
+  courseId    String
+  userId      String
+  title       String
+  description String?
+  imageUrl    String?
+  fileUrl     String
+  createdAt   DateTime @default(now())
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, createdAt])
+}
+
+model Banner {
+  id         String       @id @default(cuid())
+  title      String
+  subtitle   String?
+  ctaText    String
+  imageUrl   String
+  bgColor    String
+  targetType BannerTarget
+  targetId   String
+  order      Int          @default(0)
+  isActive   Boolean      @default(true)
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+}

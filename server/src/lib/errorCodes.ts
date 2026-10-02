@@ -1,0 +1,32 @@
+/**
+ * Bảng mã lỗi nghiệp vụ -> HTTP status mặc định (PLAN.md §9.4).
+ * Dùng `ApiError.of('NOT_ENROLLED', 'Enroll in this course to continue')` để không phải nhớ status.
+ */
+export const ERROR_STATUS = {
+  VALIDATION_ERROR: 400,
+  UNAUTHORIZED: 401,
+  INVALID_CREDENTIALS: 401,
+  PAYMENT_FAILED: 402,
+  FORBIDDEN: 403,
+  NOT_ENROLLED: 403,
+  NOT_FOUND: 404,
+  COURSE_NOT_FOUND: 404,
+  LESSON_NOT_FOUND: 404,
+  TEACHER_NOT_FOUND: 404,
+  QUESTION_NOT_FOUND: 404,
+  EMAIL_TAKEN: 409,
+  ALREADY_ENROLLED: 409,
+  ALREADY_IN_CART: 409,
+  CONFLICT: 409,
+  FILE_TOO_LARGE: 413,
+  PAYLOAD_TOO_LARGE: 413,
+  UNSUPPORTED_FILE_TYPE: 415,
+  FREE_COURSE: 422,
+  PAID_COURSE: 422,
+  CART_EMPTY: 422,
+  CANNOT_FOLLOW_SELF: 422,
+  RATE_LIMITED: 429,
+  INTERNAL_ERROR: 500,
+} as const;
+
+export type ErrorCode = keyof typeof ERROR_STATUS;

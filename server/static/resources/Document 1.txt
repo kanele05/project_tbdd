@@ -1,0 +1,9 @@
+E-Learning App - Course Resource (Document 1)
+==============================================
+
+This is a sample resource file attached to a course project.
+Use it to practise downloading course materials in the mobile app.
+
+1. Read the project brief.
+2. Complete the tasks step by step.
+3. Submit your work from the Projects tab.
