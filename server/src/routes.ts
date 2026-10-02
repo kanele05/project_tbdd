@@ -33,6 +33,22 @@ const MODULES: readonly ModuleMount[] = [
   ['/categories', 'category'],
   ['/tags', 'tag'],
   // ➜ THÊM MODULE MỚI Ở DÒNG NGAY DƯỚI (giữ nguyên comment này để dễ tìm):
+  // Module A:
+  ['/home', 'home'],
+  ['/courses', 'course'],
+  ['/teachers', 'teacher'],
+  ['/cart', 'cart'],
+  ['/me', 'user'],
+  ['/notifications', 'notification'],
+  ['/', 'order'], // /orders/*, /courses/:id/enroll
+  ['/', 'project'], // /courses/:id/project, /courses/:id/submissions
+  // Module C (gắn ở gốc, khai báo đầy đủ đường dẫn trong router):
+  ['/', 'bookmark'],
+  ['/', 'lesson'],
+  ['/', 'enrollment'],
+  ['/', 'review'],
+  ['/', 'question'],
+  ['/', 'like'],
 ];
 
 function loadRouter(moduleName: string): Router {

@@ -9,9 +9,11 @@ import type {
   CategoryDto,
   CourseBadge,
   CourseSummaryDto,
+  ReviewDto,
   TagDto,
   TeacherSummaryDto,
   UserDto,
+  UserRefDto,
 } from '@/types/dto';
 
 // ---------------------------------------------------------------- Badge (BR-10)
@@ -188,4 +190,44 @@ export const tagDtoSelect = { id: true, name: true, isHot: true } satisfies Pris
 
 export function toTagDto(tag: { id: string; name: string; isHot: boolean }): TagDto {
   return { id: tag.id, name: tag.name, isHot: tag.isHot };
+}
+
+// ---------------------------------------------------------------- User ref / Review
+
+/** Tác giả rút gọn ({id, fullName, avatarUrl}) dùng trong review, câu hỏi, trả lời. */
+export const userRefSelect = {
+  id: true,
+  fullName: true,
+  avatarUrl: true,
+} satisfies Prisma.UserSelect;
+
+export type UserRefRow = Prisma.UserGetPayload<{ select: typeof userRefSelect }>;
+
+export function toUserRef(user: UserRefRow): UserRefDto {
+  return { id: user.id, fullName: user.fullName, avatarUrl: toAbsoluteUrlOrNull(user.avatarUrl) };
+}
+
+export const reviewDtoSelect = {
+  id: true,
+  rating: true,
+  content: true,
+  createdAt: true,
+  user: { select: userRefSelect },
+} satisfies Prisma.ReviewSelect;
+
+export type ReviewDtoRow = Prisma.ReviewGetPayload<{ select: typeof reviewDtoSelect }> & {
+  /** Có khi query mở rộng `course: { select: { id: true, title: true } }` (review của giảng viên). */
+  course?: { id: string; title: string };
+};
+
+export function toReviewDto(review: ReviewDtoRow): ReviewDto {
+  const dto: ReviewDto = {
+    id: review.id,
+    rating: review.rating,
+    content: review.content,
+    createdAt: review.createdAt.toISOString(),
+    user: toUserRef(review.user),
+  };
+  if (review.course) dto.course = { id: review.course.id, title: review.course.title };
+  return dto;
 }

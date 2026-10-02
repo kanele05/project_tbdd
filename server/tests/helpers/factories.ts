@@ -220,3 +220,150 @@ export function createEnrollment(
 export function createBookmark(userId: string, courseId: string) {
   return prisma.bookmark.create({ data: { userId, courseId } });
 }
+
+export function createReview(
+  userId: string,
+  courseId: string,
+  overrides: { rating?: number; content?: string; createdAt?: Date } = {},
+) {
+  return prisma.review.create({
+    data: {
+      userId,
+      courseId,
+      rating: overrides.rating ?? 5,
+      content: overrides.content ?? 'A review used in tests, long enough.',
+      ...(overrides.createdAt ? { createdAt: overrides.createdAt } : {}),
+    },
+  });
+}
+
+export function createQuestion(
+  userId: string,
+  courseId: string,
+  overrides: { content?: string; createdAt?: Date } = {},
+) {
+  return prisma.question.create({
+    data: {
+      userId,
+      courseId,
+      content: overrides.content ?? 'How do I get started with this course?',
+      ...(overrides.createdAt ? { createdAt: overrides.createdAt } : {}),
+    },
+  });
+}
+
+export function createAnswer(
+  userId: string,
+  questionId: string,
+  overrides: { content?: string; createdAt?: Date } = {},
+) {
+  return prisma.answer.create({
+    data: {
+      userId,
+      questionId,
+      content: overrides.content ?? 'Start with the first lesson.',
+      ...(overrides.createdAt ? { createdAt: overrides.createdAt } : {}),
+    },
+  });
+}
+
+export function createLessonProgress(
+  userId: string,
+  lessonId: string,
+  overrides: { positionSec?: number; isCompleted?: boolean } = {},
+) {
+  return prisma.lessonProgress.create({
+    data: {
+      userId,
+      lessonId,
+      positionSec: overrides.positionSec ?? 0,
+      isCompleted: overrides.isCompleted ?? false,
+    },
+  });
+}
+
+// ---------------------------------------------------------------- Cart / Follow / Home / Notification / Project (agent A)
+
+export function createCartItem(userId: string, courseId: string, addedAt?: Date) {
+  return prisma.cartItem.create({ data: { userId, courseId, ...(addedAt ? { addedAt } : {}) } });
+}
+
+export function createFollow(userId: string, teacherId: string) {
+  return prisma.follow.create({ data: { userId, teacherId } });
+}
+
+export function createBanner(
+  overrides: {
+    title?: string;
+    order?: number;
+    isActive?: boolean;
+    targetType?: 'COURSE' | 'CATEGORY';
+    targetId?: string;
+  } = {},
+) {
+  return prisma.banner.create({
+    data: {
+      title: overrides.title ?? uniq('banner'),
+      subtitle: '20% OFF',
+      ctaText: 'JOIN NOW',
+      imageUrl: '/static/banners/test.png',
+      bgColor: '#8353E2',
+      targetType: overrides.targetType ?? 'CATEGORY',
+      targetId: overrides.targetId ?? 'cat_x',
+      order: overrides.order ?? 0,
+      isActive: overrides.isActive ?? true,
+    },
+  });
+}
+
+export function createNotification(
+  userId: string,
+  overrides: {
+    type?: 'ORDER_PAID' | 'NEW_ANSWER' | 'COURSE_COMPLETED' | 'SYSTEM';
+    title?: string;
+    isRead?: boolean;
+    createdAt?: Date;
+    data?: { courseId?: string; questionId?: string };
+  } = {},
+) {
+  return prisma.notification.create({
+    data: {
+      userId,
+      type: overrides.type ?? 'SYSTEM',
+      title: overrides.title ?? 'Notification',
+      body: 'Notification body',
+      isRead: overrides.isRead ?? false,
+      ...(overrides.createdAt ? { createdAt: overrides.createdAt } : {}),
+      ...(overrides.data ? { data: overrides.data } : {}),
+    },
+  });
+}
+
+export function createResource(courseId: string, overrides: { name?: string } = {}) {
+  return prisma.resource.create({
+    data: {
+      courseId,
+      name: overrides.name ?? 'Document 1.txt',
+      fileUrl: '/static/resources/Document%201.txt',
+      sizeBytes: 329,
+      mimeType: 'text/plain',
+    },
+  });
+}
+
+export function createSubmission(
+  userId: string,
+  courseId: string,
+  overrides: { title?: string; createdAt?: Date } = {},
+) {
+  return prisma.projectSubmission.create({
+    data: {
+      userId,
+      courseId,
+      title: overrides.title ?? 'My project',
+      fileUrl: '/uploads/test-file.txt',
+      imageUrl: '/uploads/test-image.png',
+      ...(overrides.createdAt ? { createdAt: overrides.createdAt } : {}),
+    },
+  });
+}
