@@ -287,6 +287,10 @@ export type ApiErrorCode =
   | 'FILE_TOO_LARGE'
   | 'UNSUPPORTED_FILE_TYPE'
   | 'RATE_LIMITED'
+  | 'PAYMENT_FAILED'
+  | 'NOT_FOUND'
+  | 'CONFLICT'
+  | 'PAYLOAD_TOO_LARGE'
   | 'INTERNAL_ERROR';
 
 /** Error envelope: `{ error: { code, message, details? } }`. */
@@ -328,3 +332,11 @@ export type LessonProgressResponse = {
 export type LikeResponse = { likeCount: number; isLiked: boolean };
 export type ShareResponse = { shareCount: number };
 export type FollowResponse = { followerCount: number; isFollowed: boolean };
+
+/** `GET /notifications/unread-count` (badge of the Home bell). */
+export type UnreadCountResponse = { count: number };
+/** Response of `POST /me/avatar`. */
+export type UploadAvatarResponse = { avatarUrl: string };
+
+/** Body of `POST /orders/checkout`. `simulateFailure` is only sent by dev builds (BR-07). */
+export type CheckoutRequest = { paymentMethod: PaymentMethod; simulateFailure?: boolean };

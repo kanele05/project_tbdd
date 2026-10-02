@@ -35,6 +35,8 @@ export const queryKeys = {
   coursesAll: () => ['courses'] as const,
   /** `GET /courses` (infinite) - NOT persisted. */
   coursesList: (params: CourseListParams = {}) => ['courses', 'list', params] as const,
+  /** `GET /courses?limit=1` -> `meta.total` for the Filter "Apply (n results)" button - NOT persisted. */
+  coursesCount: (params: CourseListParams = {}) => ['courses', 'count', params] as const,
   /** `GET /courses/:id` - persisted. Also the prefix of all keys of that course. */
   course: (id: string) => ['course', id] as const,
   /** `GET /courses/:id/curriculum` - persisted. */
@@ -81,6 +83,8 @@ export const queryKeys = {
   /* ---- notifications ---- */
   /** `GET /notifications`. */
   notifications: () => ['notifications'] as const,
+  /** `GET /notifications/unread-count` (badge of the Home bell). Child of `notifications()`. */
+  notificationsUnreadCount: () => ['notifications', 'unread-count'] as const,
 } as const;
 
 /**

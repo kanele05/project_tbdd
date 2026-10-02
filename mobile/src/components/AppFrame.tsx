@@ -1,8 +1,9 @@
-import { useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaInsetsContext, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { OfflineBanner } from '@/components/ui/OfflineBanner';
+import { startPendingProgressSync } from '@/features/learning/progressSync';
 import { useIsOnline } from '@/hooks/useIsOnline';
 import { colors } from '@/theme';
 
@@ -14,6 +15,10 @@ import { colors } from '@/theme';
 export function AppFrame({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
   const isOnline = useIsOnline();
+  // Flush lesson progress saved while offline as soon as the app is back online (FR-24/NFR-10).
+  useEffect(() => {
+    startPendingProgressSync();
+  }, []);
   const contextInsets = useMemo(
     () => ({ ...insets, top: isOnline ? insets.top : 0 }),
     [insets, isOnline],
