@@ -119,3 +119,11 @@ describe('removeFromCart', () => {
     });
   });
 });
+
+describe('addToCart (unexpected errors)', () => {
+  it('rethrows database errors that are not a unique violation', async () => {
+    const boom = new Error('connection lost');
+    db.cartItem.create.mockRejectedValue(boom);
+    await expect(addToCart('u1', 'c1')).rejects.toBe(boom);
+  });
+});

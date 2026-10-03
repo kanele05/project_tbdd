@@ -83,3 +83,20 @@ describe('updateAvatar', () => {
     expect(result.avatarUrl).toMatch(/^https?:\/\/.+\/uploads\/abc\.png$/);
   });
 });
+
+describe('user service (account and database errors)', () => {
+  const missingAccount = () =>
+    new Prisma.PrismaClientKnownRequestError('gone', { code: 'P2025', clientVersion: 'x' });
+
+  it('updateAvatar answers 401 when the account no longer exists (P2025)', async () => {
+    db.user.update.mockRejectedValue(missingAccount());
+    await expect(updateAvatar('u1', 'abc.png')).rejects.toMatchObject({ status: 401 });
+  });
+
+  it('rethrows other database errors unchanged', async () => {
+    const boom = new Error('connection lost');
+    db.user.update.mockRejectedValue(boom);
+    await expect(updateMe('u1', { fullName: 'Someone' })).rejects.toBe(boom);
+    await expect(updateAvatar('u1', 'abc.png')).rejects.toBe(boom);
+  });
+});

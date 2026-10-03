@@ -3,8 +3,10 @@ import {
   buildCourseOrderBy,
   buildCourseWhere,
   escapeLikePattern,
+  findCourseSummariesByIds,
   getCourseDetail,
   getRecommendedCourseIds,
+  getSimilarCourses,
   listCourses,
   splitSearchTerms,
 } from './course.service';
@@ -12,8 +14,12 @@ import {
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     course: { findMany: jest.fn(), findFirst: jest.fn(), count: jest.fn() },
-    enrollment: { findMany: jest.fn() },
-    bookmark: { findMany: jest.fn() },
+    enrollment: { findMany: jest.fn(), findUnique: jest.fn() },
+    bookmark: { findMany: jest.fn(), findUnique: jest.fn() },
+    courseLike: { findUnique: jest.fn() },
+    follow: { findUnique: jest.fn() },
+    cartItem: { findUnique: jest.fn() },
+    lesson: { findFirst: jest.fn() },
   },
 }));
 
@@ -154,6 +160,211 @@ describe('getCourseDetail', () => {
     });
     expect(db.course.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 'nope', isPublished: true } }),
+    );
+  });
+});
+
+type CourseRow = {
+  id: string;
+  title: string;
+  thumbnailUrl: string;
+  priceCents: number;
+  originalPriceCents: number | null;
+  isBestSeller: boolean;
+  ratingAvg: number;
+  ratingCount: number;
+  lessonCount: number;
+  totalDurationSec: number;
+  teacher: { id: string; user: { fullName: string } };
+};
+
+function courseRow(id: string, overrides: Partial<CourseRow> = {}): CourseRow {
+  return {
+    id,
+    title: `Course ${id}`,
+    thumbnailUrl: 'https://img.example.com/x.jpg',
+    priceCents: 5900,
+    originalPriceCents: null,
+    isBestSeller: false,
+    ratingAvg: 4.5,
+    ratingCount: 10,
+    lessonCount: 5,
+    totalDurationSec: 3600,
+    teacher: { id: 't1', user: { fullName: 'Teacher One' } },
+    ...overrides,
+  };
+}
+
+describe('listCourses (more)', () => {
+  it('marks courses the user bookmarked in the result page', async () => {
+    db.course.count.mockResolvedValue(2);
+    db.course.findMany.mockResolvedValue([courseRow('a'), courseRow('b')]);
+    db.bookmark.findMany.mockResolvedValue([{ courseId: 'b' }]);
+
+    const { courses } = await listCourses(baseQuery, 'user-1');
+
+    expect(courses.map((c) => [c.id, c.isBookmarked])).toEqual([
+      ['a', false],
+      ['b', true],
+    ]);
+  });
+
+  it('uses the BR-12 recommended order when section=recommended and no sort is given', async () => {
+    db.enrollment.findMany.mockResolvedValue([]);
+    db.bookmark.findMany.mockResolvedValue([]);
+    // 1) ứng viên gợi ý (id, categoryId)  2) bản ghi đầy đủ của trang
+    db.course.findMany
+      .mockResolvedValueOnce([
+        { id: 'r1', categoryId: 'c' },
+        { id: 'r2', categoryId: 'c' },
+        { id: 'r3', categoryId: 'c' },
+      ])
+      .mockResolvedValueOnce([courseRow('r3')]);
+
+    const result = await listCourses(
+      { page: 2, limit: 2, section: 'recommended' } as ListCoursesQuery,
+      'user-1',
+    );
+
+    expect(result.courses.map((c) => c.id)).toEqual(['r3']);
+    expect(result.meta).toEqual({ page: 2, limit: 2, total: 3, totalPages: 2 });
+    expect(db.course.count).not.toHaveBeenCalled();
+  });
+
+  it('lets an explicit sort win over the recommended order', async () => {
+    db.course.count.mockResolvedValue(0);
+    db.course.findMany.mockResolvedValue([]);
+
+    await listCourses({ ...baseQuery, section: 'recommended', sort: 'rating' });
+
+    expect(db.course.count).toHaveBeenCalledTimes(1);
+    expect(db.course.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ orderBy: buildCourseOrderBy('rating') }),
+    );
+  });
+});
+
+describe('findCourseSummariesByIds', () => {
+  it('returns [] without querying when no ids are given', async () => {
+    await expect(findCourseSummariesByIds([])).resolves.toEqual([]);
+    expect(db.course.findMany).not.toHaveBeenCalled();
+  });
+
+  it('keeps the order of the ids and drops unknown or unpublished courses', async () => {
+    db.course.findMany.mockResolvedValue([courseRow('a'), courseRow('c')]);
+
+    const result = await findCourseSummariesByIds(['c', 'missing', 'a']);
+
+    expect(result.map((c) => c.id)).toEqual(['c', 'a']);
+    expect(db.course.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: { in: ['c', 'missing', 'a'] }, isPublished: true } }),
+    );
+  });
+});
+
+describe('getCourseDetail (success paths)', () => {
+  const detailRow = {
+    ...courseRow('c1', { originalPriceCents: 7375 }),
+    subtitle: 'Learn UX',
+    description: 'Long text',
+    bannerUrl: '/static/banner.jpg',
+    benefits: ['Certificate'],
+    likeCount: 3,
+    shareCount: 1,
+    category: { id: 'cat', name: 'Design' },
+    teacher: {
+      id: 't1',
+      jobTitle: 'Designer',
+      user: { fullName: 'Teacher One', avatarUrl: null },
+    },
+  };
+
+  it('returns guest state and skips all per-user queries for a guest', async () => {
+    db.course.findFirst.mockResolvedValue(detailRow);
+    db.lesson.findFirst.mockResolvedValue({ id: 'lesson-1' });
+
+    const detail = await getCourseDetail('c1');
+
+    expect(detail).toMatchObject({
+      id: 'c1',
+      subtitle: 'Learn UX',
+      benefits: ['Certificate'],
+      badge: 'DISCOUNT',
+      discountPercent: 20,
+      isLiked: false,
+      isInCart: false,
+      isBookmarked: false,
+      enrollment: null,
+      previewLessonId: 'lesson-1',
+      category: { id: 'cat', name: 'Design' },
+      teacher: { id: 't1', fullName: 'Teacher One', jobTitle: 'Designer', isFollowed: false },
+    });
+    expect(detail.bannerUrl).toMatch(/\/static\/banner\.jpg$/);
+    expect(db.enrollment.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('reflects enrollment, like, follow, cart and bookmark state of the user', async () => {
+    db.course.findFirst.mockResolvedValue(detailRow);
+    db.lesson.findFirst.mockResolvedValue(null);
+    db.enrollment.findUnique.mockResolvedValue({ progressPercent: 40, lastLessonId: 'l2' });
+    db.courseLike.findUnique.mockResolvedValue({ userId: 'u' });
+    db.follow.findUnique.mockResolvedValue({ userId: 'u' });
+    db.cartItem.findUnique.mockResolvedValue({ userId: 'u' });
+    db.bookmark.findUnique.mockResolvedValue({ userId: 'u' });
+
+    const detail = await getCourseDetail('c1', 'u');
+
+    expect(detail).toMatchObject({
+      enrollment: { progressPercent: 40, lastLessonId: 'l2' },
+      isLiked: true,
+      isInCart: true,
+      isBookmarked: true,
+      previewLessonId: null,
+      teacher: { isFollowed: true },
+    });
+  });
+
+  it('reports false for every flag when the user has no relation to the course', async () => {
+    db.course.findFirst.mockResolvedValue(detailRow);
+    db.lesson.findFirst.mockResolvedValue(null);
+    db.enrollment.findUnique.mockResolvedValue(null);
+    db.courseLike.findUnique.mockResolvedValue(null);
+    db.follow.findUnique.mockResolvedValue(null);
+    db.cartItem.findUnique.mockResolvedValue(null);
+    db.bookmark.findUnique.mockResolvedValue(null);
+
+    const detail = await getCourseDetail('c1', 'u');
+
+    expect(detail).toMatchObject({ enrollment: null, isLiked: false, isInCart: false });
+    expect(detail.isBookmarked).toBe(false);
+  });
+});
+
+describe('getSimilarCourses', () => {
+  it('throws 404 COURSE_NOT_FOUND for a missing course', async () => {
+    db.course.findFirst.mockResolvedValue(null);
+    await expect(getSimilarCourses('nope')).rejects.toMatchObject({
+      status: 404,
+      code: 'COURSE_NOT_FOUND',
+    });
+  });
+
+  it('returns at most 3 published courses of the same category except itself', async () => {
+    db.course.findFirst.mockResolvedValue({ categoryId: 'cat' });
+    db.course.findMany.mockResolvedValue([courseRow('s1'), courseRow('s2')]);
+    db.bookmark.findMany.mockResolvedValue([{ courseId: 's2' }]);
+
+    const result = await getSimilarCourses('c1', 'u');
+
+    expect(result.map((c) => [c.id, c.isBookmarked])).toEqual([
+      ['s1', false],
+      ['s2', true],
+    ]);
+    expect(db.course.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { isPublished: true, categoryId: 'cat', id: { not: 'c1' } },
+        take: 3,
+      }),
     );
   });
 });

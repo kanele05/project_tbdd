@@ -1,9 +1,10 @@
-import { buildPaidNotification, checkout, enrollInFreeCourse } from './order.service';
+import { buildPaidNotification, checkout, enrollInFreeCourse, listOrders } from './order.service';
 
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     $transaction: jest.fn(),
     course: { findFirst: jest.fn() },
+    order: { count: jest.fn(), findMany: jest.fn() },
   },
   Prisma: jest.requireActual('@/generated/prisma/client').Prisma,
 }));
@@ -12,7 +13,7 @@ jest.mock('@/modules/home/home.service', () => ({ invalidateHomeCache: jest.fn()
 
 type Fn = jest.Mock;
 const { prisma } = jest.requireMock('@/lib/prisma') as {
-  prisma: { $transaction: Fn; course: { findFirst: Fn } };
+  prisma: { $transaction: Fn; course: { findFirst: Fn }; order: { count: Fn; findMany: Fn } };
 };
 const { notify } = jest.requireMock('@/lib/notify') as { notify: Fn };
 const { invalidateHomeCache } = jest.requireMock('@/modules/home/home.service') as {
@@ -176,5 +177,65 @@ describe('enrollInFreeCourse', () => {
       code: 'ALREADY_ENROLLED',
     });
     expect(invalidateHomeCache).not.toHaveBeenCalled();
+  });
+});
+
+describe('enrollInFreeCourse (success and unexpected errors)', () => {
+  it('enrolls in one transaction, bumps enrollmentCount and invalidates the home cache', async () => {
+    const tx = {
+      enrollment: { create: jest.fn() },
+      course: { update: jest.fn() },
+    };
+    prisma.course.findFirst.mockResolvedValue({ id: 'c1', priceCents: 0 });
+    prisma.$transaction.mockImplementation((fn: (t: unknown) => unknown) => fn(tx));
+
+    await expect(enrollInFreeCourse('u1', 'c1')).resolves.toEqual({
+      courseId: 'c1',
+      progressPercent: 0,
+      lastLessonId: null,
+    });
+    expect(tx.enrollment.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { userId: 'u1', courseId: 'c1' } }),
+    );
+    expect(tx.course.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { enrollmentCount: { increment: 1 } } }),
+    );
+    expect(invalidateHomeCache).toHaveBeenCalledTimes(1);
+  });
+
+  it('rethrows unexpected database errors unchanged', async () => {
+    const boom = new Error('connection lost');
+    prisma.course.findFirst.mockResolvedValue({ id: 'c1', priceCents: 0 });
+    prisma.$transaction.mockRejectedValue(boom);
+    await expect(enrollInFreeCourse('u1', 'c1')).rejects.toBe(boom);
+  });
+});
+
+describe('listOrders', () => {
+  it('returns newest-first orders with pagination meta', async () => {
+    prisma.order.count.mockResolvedValue(25);
+    prisma.order.findMany.mockResolvedValue([orderRow('PAID'), orderRow('FAILED')]);
+
+    const { orders, meta } = await listOrders('u1', { page: 2, limit: 10 });
+
+    expect(orders.map((o) => o.status)).toEqual(['PAID', 'FAILED']);
+    expect(orders[0]?.items).toHaveLength(2);
+    expect(meta).toEqual({ page: 2, limit: 10, total: 25, totalPages: 3 });
+    expect(prisma.order.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: 'u1' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+        skip: 10,
+        take: 10,
+      }),
+    );
+  });
+
+  it('returns an empty page when the user never ordered', async () => {
+    prisma.order.count.mockResolvedValue(0);
+    prisma.order.findMany.mockResolvedValue([]);
+    const { orders, meta } = await listOrders('u1', {});
+    expect(orders).toEqual([]);
+    expect(meta.total).toBe(0);
   });
 });

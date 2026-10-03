@@ -1,3 +1,4 @@
+import { isProduction } from '@/config/env';
 import { ApiError } from '@/lib/ApiError';
 import { notify } from '@/lib/notify';
 import { buildPaginationMeta, getPagination, type PaginationMeta } from '@/lib/pagination';
@@ -98,7 +99,8 @@ async function runCheckout(
     return { kind: 'empty' };
   }
 
-  const isFailure = input.simulateFailure === true;
+  // Cờ giả lập thất bại chỉ dành cho demo/kiểm thử: bỏ qua trên production (Render).
+  const isFailure = input.simulateFailure === true && !isProduction;
   const order = await tx.order.create({
     data: {
       userId,

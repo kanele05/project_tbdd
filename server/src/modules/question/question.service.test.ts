@@ -214,3 +214,135 @@ describe('questionService.listQuestions', () => {
     expect(meta).toEqual({ page: 1, limit: 20, total: 2, totalPages: 1 });
   });
 });
+
+describe('questionService.createQuestion / getQuestion', () => {
+  const row = {
+    id: 'q-1',
+    content: 'How do I pick a grid?',
+    createdAt: new Date('2026-10-01T00:00:00Z'),
+    likeCount: 0,
+    answerCount: 0,
+    user: { id: 'u', fullName: 'Asker', avatarUrl: null },
+    likes: [],
+  };
+
+  it('createQuestion stores the question for an enrolled user and maps it', async () => {
+    db.course.findUnique.mockResolvedValue({ id: 'course-1', enrollments: [enrolled] });
+    db.question.create.mockResolvedValue(row);
+
+    const result = await questionService.createQuestion('u', 'course-1', row.content);
+
+    expect(result).toMatchObject({
+      id: 'q-1',
+      isLiked: false,
+      createdAt: '2026-10-01T00:00:00.000Z',
+    });
+    expect(db.question.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { courseId: 'course-1', userId: 'u', content: row.content },
+      }),
+    );
+  });
+
+  it('createQuestion throws 403 NOT_ENROLLED and writes nothing for outsiders', async () => {
+    db.course.findUnique.mockResolvedValue({ id: 'course-1', enrollments: [] });
+    await expect(questionService.createQuestion('u', 'course-1', 'Hi')).rejects.toMatchObject({
+      status: 403,
+      code: 'NOT_ENROLLED',
+    });
+    expect(db.question.create).not.toHaveBeenCalled();
+  });
+
+  it('getQuestion returns the question with isLiked for an enrolled user', async () => {
+    db.question.findUnique.mockResolvedValue({
+      ...row,
+      courseId: 'course-1',
+      likes: [{ userId: 'u' }],
+    });
+    db.enrollment.findUnique.mockResolvedValue(enrolled);
+
+    await expect(questionService.getQuestion('u', 'q-1')).resolves.toMatchObject({
+      id: 'q-1',
+      isLiked: true,
+    });
+  });
+
+  it('getQuestion throws 404 when missing and 403 when not enrolled', async () => {
+    db.question.findUnique.mockResolvedValueOnce(null);
+    await expect(questionService.getQuestion('u', 'nope')).rejects.toMatchObject({
+      status: 404,
+      code: 'QUESTION_NOT_FOUND',
+    });
+
+    db.question.findUnique.mockResolvedValueOnce({ ...row, courseId: 'course-1' });
+    db.enrollment.findUnique.mockResolvedValue(null);
+    await expect(questionService.getQuestion('u', 'q-1')).rejects.toMatchObject({
+      status: 403,
+      code: 'NOT_ENROLLED',
+    });
+  });
+});
+
+describe('questionService.listAnswers', () => {
+  it('lists answers oldest first with pagination meta for an enrolled user', async () => {
+    db.question.findUnique.mockResolvedValue({ courseId: 'course-1' });
+    db.enrollment.findUnique.mockResolvedValue(enrolled);
+    db.answer.findMany.mockResolvedValue([
+      {
+        id: 'a-1',
+        content: 'Use 12 columns.',
+        createdAt: new Date('2026-10-02T00:00:00Z'),
+        user: { id: 'h', fullName: 'Helper', avatarUrl: null },
+      },
+    ]);
+    db.answer.count.mockResolvedValue(21);
+
+    const { items, meta } = await questionService.listAnswers('u', 'q-1', { page: 2, limit: 20 });
+
+    expect(items.map((a) => a.id)).toEqual(['a-1']);
+    expect(meta).toEqual({ page: 2, limit: 20, total: 21, totalPages: 2 });
+    expect(db.answer.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skip: 20,
+        take: 20,
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      }),
+    );
+  });
+
+  it('throws 404 for an unknown question and 403 for a non-enrolled user', async () => {
+    db.question.findUnique.mockResolvedValueOnce(null);
+    await expect(questionService.listAnswers('u', 'nope', {})).rejects.toMatchObject({
+      status: 404,
+    });
+
+    db.question.findUnique.mockResolvedValueOnce({ courseId: 'course-1' });
+    db.enrollment.findUnique.mockResolvedValue(null);
+    await expect(questionService.listAnswers('u', 'q-1', {})).rejects.toMatchObject({
+      status: 403,
+      code: 'NOT_ENROLLED',
+    });
+    expect(db.answer.findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe('questionService like / unlike error paths', () => {
+  it('throws 404 QUESTION_NOT_FOUND for an unknown question', async () => {
+    db.question.findUnique.mockResolvedValue(null);
+    await expect(questionService.likeQuestion('u', 'nope')).rejects.toMatchObject({ status: 404 });
+    await expect(questionService.unlikeQuestion('u', 'nope')).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+
+  it('throws 403 NOT_ENROLLED and does not touch likes for outsiders', async () => {
+    db.question.findUnique.mockResolvedValue({ courseId: 'course-1' });
+    db.enrollment.findUnique.mockResolvedValue(null);
+    await expect(questionService.likeQuestion('u', 'q-1')).rejects.toMatchObject({ status: 403 });
+    await expect(questionService.unlikeQuestion('u', 'q-1')).rejects.toMatchObject({
+      status: 403,
+    });
+    expect(db.questionLike.createMany).not.toHaveBeenCalled();
+    expect(db.questionLike.deleteMany).not.toHaveBeenCalled();
+  });
+});

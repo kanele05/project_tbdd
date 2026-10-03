@@ -123,3 +123,14 @@ describe('authService.getMe', () => {
     });
   });
 });
+
+describe('authService.register (unexpected errors)', () => {
+  it('rethrows database errors that are not a unique violation', async () => {
+    const boom = new Error('connection lost');
+    mockUser.findUnique.mockResolvedValue(null);
+    mockUser.create.mockRejectedValue(boom);
+    await expect(
+      authService.register({ fullName: 'A B', email: 'new@example.com', password: 'Learn2026' }),
+    ).rejects.toBe(boom);
+  });
+});

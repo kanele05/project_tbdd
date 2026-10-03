@@ -277,3 +277,42 @@ describe('lessonService.saveProgress', () => {
     expect(result.courseProgressPercent).toBe(33);
   });
 });
+
+describe('lessonService.getCurriculum (signed-in user)', () => {
+  const course = {
+    sections: [
+      {
+        id: 's1',
+        title: 'Intro',
+        order: 1,
+        lessons: [
+          { id: 'l1', title: 'A', durationSec: 10, isPreview: false },
+          { id: 'l2', title: 'B', durationSec: 20, isPreview: false },
+        ],
+      },
+    ],
+  };
+
+  it('unlocks lessons and marks completed / in-progress ones for an enrolled user', async () => {
+    db.course.findFirst.mockResolvedValue(course);
+    db.enrollment.findUnique.mockResolvedValue({ lastLessonId: 'l2' });
+    db.lessonProgress.findMany.mockResolvedValue([{ lessonId: 'l1' }]);
+
+    const result = await lessonService.getCurriculum('course-1', 'user-1');
+
+    expect(result[0]?.lessons.map((l) => [l.id, l.status])).toEqual([
+      ['l1', 'COMPLETED'],
+      ['l2', 'IN_PROGRESS'],
+    ]);
+  });
+
+  it('keeps non-preview lessons locked for a user without enrollment', async () => {
+    db.course.findFirst.mockResolvedValue(course);
+    db.enrollment.findUnique.mockResolvedValue(null);
+    db.lessonProgress.findMany.mockResolvedValue([]);
+
+    const result = await lessonService.getCurriculum('course-1', 'user-1');
+
+    expect(result[0]?.lessons.every((l) => l.status === 'LOCKED')).toBe(true);
+  });
+});
