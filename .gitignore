@@ -36,3 +36,12 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# Tài liệu nội bộ của nhóm & tài liệu đề bài — không đưa lên GitHub
+.claude/
+design/
+CLAUDE.md
+PLAN.md
+MotaDetai_SDLC.txt
+yeucau.txt
+SubProjects.tar
