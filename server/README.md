@@ -1,7 +1,7 @@
 # E-Learning Server
 
 REST API cho E-Learning App: **Node.js + Express 5 + TypeScript (strict) + Prisma 7 + PostgreSQL**.
-Quy ước và kế hoạch: [../CLAUDE.md](../CLAUDE.md) · [../PLAN.md](../PLAN.md) · đặc tả API: [PLAN.md §9](../PLAN.md), DB: [PLAN.md §8](../PLAN.md), quy ước backend: [CLAUDE.md §8](../CLAUDE.md).
+Đặc tả API/DB và quy ước code nằm trong tài liệu nội bộ của nhóm (`PLAN.md`, `CLAUDE.md` — không đưa lên repo).
 
 ## 1. Yêu cầu
 

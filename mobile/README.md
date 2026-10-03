@@ -1,7 +1,7 @@
 # E-Learning — Mobile (Expo)
 
 App di động của đồ án **E-Learning (Đề tài số 5)**: React Native + Expo + TypeScript (`strict`) + Expo Router.
-Kế hoạch & đặc tả: [`../PLAN.md`](../PLAN.md) · Quy ước: [`../CLAUDE.md`](../CLAUDE.md) · Design gốc: [`../design/`](../design/).
+Kế hoạch, đặc tả và design gốc nằm trong tài liệu nội bộ của nhóm (`PLAN.md`, `CLAUDE.md`, `design/` — không đưa lên repo).
 
 ## Phiên bản (đã chốt — mọi thành viên dùng đúng bộ này)
 
