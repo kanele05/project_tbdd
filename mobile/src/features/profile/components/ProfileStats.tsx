@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, Skeleton } from '@/components/ui';
-import { colors, spacing } from '@/theme';
+import { colors, layout } from '@/theme';
 import type { MeStatsDto } from '@/types/api';
 
 type ProfileStatsProps = {
@@ -31,7 +31,7 @@ function StatColumn({ label, value, isLoading, onPress }: StatColumnProps) {
           {text}
         </AppText>
       )}
-      <AppText variant="caption" align="center">
+      <AppText variant="micro" family="body" align="center" style={styles.label}>
         {label}
       </AppText>
     </>
@@ -90,11 +90,12 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center' },
   column: {
     flex: 1,
-    minHeight: 56,
+    minHeight: layout.minTouchTarget,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
   },
+  // Design: the 10 px label sits right below the number; 11 px keeps it legible.
+  label: { lineHeight: 16, color: colors.textMuted },
   pressed: { opacity: 0.6 },
-  divider: { width: 1, height: 40, backgroundColor: colors.border },
+  divider: { width: 1, height: 44, backgroundColor: colors.borderSubtle },
 });

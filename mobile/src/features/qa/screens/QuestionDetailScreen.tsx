@@ -1,7 +1,7 @@
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useCallback, useMemo, useRef } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -156,10 +156,7 @@ export function QuestionDetailScreen({ questionId }: QuestionDetailScreenProps) 
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.screen} behavior="padding">
       <ScreenHeader title={QA_STRINGS.questionTitle} />
       <View style={styles.body}>{body}</View>
       {isBlocked || question.isPending ? null : (
@@ -174,7 +171,7 @@ const styles = StyleSheet.create({
   body: { flex: 1 },
   content: { paddingBottom: spacing.lg },
   header: { gap: spacing.lg, paddingBottom: spacing.lg, paddingHorizontal: layout.screenPaddingX },
-  item: { paddingHorizontal: layout.screenPaddingX, paddingBottom: spacing.md },
+  item: { paddingHorizontal: layout.screenPaddingX, paddingBottom: spacing.lg },
   skeleton: { padding: layout.screenPaddingX },
   footer: { paddingVertical: spacing.lg },
 });

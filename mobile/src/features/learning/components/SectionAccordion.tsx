@@ -52,9 +52,10 @@ function SectionAccordionBase({
 }
 
 const styles = StyleSheet.create({
-  section: { paddingHorizontal: spacing.sm },
+  // 8 dp between chapters (also between an open chapter's last row and the next title).
+  section: { paddingHorizontal: spacing.sm, marginBottom: spacing.sm },
   // The active row's border spans the full width, while the title keeps its 8 dp indent.
-  rows: { marginHorizontal: -spacing.sm },
+  rows: { gap: spacing.md, paddingTop: spacing.sm, marginHorizontal: -spacing.sm },
 });
 
 export const SectionAccordion = memo(SectionAccordionBase);

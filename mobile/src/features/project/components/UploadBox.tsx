@@ -1,4 +1,4 @@
-import Feather from '@expo/vector-icons/Feather';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet } from 'react-native';
 
 import { AppText } from '@/components/ui';
@@ -15,10 +15,8 @@ export function UploadBox({ onPress }: UploadBoxProps) {
       accessibilityLabel="Upload your project here"
       style={({ pressed }) => [styles.box, pressed ? styles.pressed : null]}
     >
-      <Feather name="upload-cloud" size={28} color={colors.primary} />
-      <AppText variant="bodyLarge" color="textSecondary">
-        Upload your project here
-      </AppText>
+      <Ionicons name="cloud-upload-outline" size={36} color={colors.primary} />
+      <AppText variant="body">Upload your project here</AppText>
     </Pressable>
   );
 }
@@ -30,7 +28,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.md,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderStyle: 'dashed',
     borderColor: colors.primary,
     borderRadius: radius.card,

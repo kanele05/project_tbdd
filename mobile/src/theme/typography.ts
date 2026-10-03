@@ -1,3 +1,4 @@
+import { Epilogue_400Regular } from '@expo-google-fonts/epilogue/400Regular';
 import { Epilogue_600SemiBold } from '@expo-google-fonts/epilogue/600SemiBold';
 import { Epilogue_700Bold } from '@expo-google-fonts/epilogue/700Bold';
 import { Inter_400Regular } from '@expo-google-fonts/inter/400Regular';
@@ -10,6 +11,8 @@ import type { TextStyle } from 'react-native';
  * Custom fonts on Android do not honor `fontWeight`, so each weight is its own family name.
  */
 export const fontFamily = {
+  /** Epilogue 400: names on Student project cards and resource rows (Projects design). */
+  headingRegular: 'Epilogue_400Regular',
   heading: 'Epilogue_600SemiBold',
   headingBold: 'Epilogue_700Bold',
   body: 'Inter_400Regular',
@@ -21,6 +24,7 @@ export type FontFamilyToken = keyof typeof fontFamily;
 
 /** Map passed to `useFonts` in the root layout. */
 export const fontAssets = {
+  Epilogue_400Regular,
   Epilogue_600SemiBold,
   Epilogue_700Bold,
   Inter_400Regular,

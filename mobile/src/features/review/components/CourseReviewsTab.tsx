@@ -121,7 +121,8 @@ export function CourseReviewsTab({ courseId, canWriteReview }: CourseReviewsTabP
 }
 
 const styles = StyleSheet.create({
-  container: { gap: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.lg },
+  // The design starts the headline ~28 dp under the tabs (the course screen adds 24 dp).
+  container: { gap: spacing.lg, paddingTop: spacing.xs, paddingBottom: spacing.lg },
   padded: { paddingHorizontal: layout.screenPaddingX },
   list: { gap: spacing.lg },
 });

@@ -18,7 +18,8 @@ const THUMBNAIL_SIZE = 96;
 
 /**
  * SC-14 row: thumbnail, title, total duration ("2 hrs 25 mins"), "30% Complete" and a progress
- * bar (primary on `primaryTrack`).
+ * bar (primary on `primaryTrack`). Measured from the design: 14 px Inter title, 12 px muted
+ * lines, a 4 dp bar, a 122 dp card with a barely visible (`surface`) border.
  */
 function CourseProgressCardBase({ item, onPress }: CourseProgressCardProps) {
   const percent = Math.round(item.progressPercent);
@@ -43,16 +44,16 @@ function CourseProgressCardBase({ item, onPress }: CourseProgressCardProps) {
         />
       </View>
       <View style={styles.info}>
-        <AppText variant="title" numberOfLines={2}>
+        <AppText variant="label" numberOfLines={2}>
           {item.course.title}
         </AppText>
-        <AppText variant="body" color="textMuted">
+        <AppText variant="caption" style={styles.duration}>
           {duration}
         </AppText>
-        <AppText variant="body" color="textMuted">
+        <AppText variant="caption" style={styles.complete}>
           {`${percent}% Complete`}
         </AppText>
-        <ProgressBar percent={percent} height={6} />
+        <ProgressBar percent={percent} height={4} style={styles.bar} />
       </View>
     </Pressable>
   );
@@ -61,11 +62,11 @@ function CourseProgressCardBase({ item, onPress }: CourseProgressCardProps) {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
     padding: spacing.md,
-    borderRadius: radius.card,
+    borderRadius: radius.badge,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.surface,
     backgroundColor: colors.background,
   },
   pressed: { opacity: 0.85 },
@@ -76,7 +77,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.button,
     backgroundColor: colors.surface,
   },
-  info: { flex: 1, justifyContent: 'center', gap: spacing.xs },
+  info: { flex: 1 },
+  duration: { marginTop: spacing.xs },
+  complete: { marginTop: spacing.xl },
+  bar: { marginTop: spacing.sm },
 });
 
 export const CourseProgressCard = memo(CourseProgressCardBase);

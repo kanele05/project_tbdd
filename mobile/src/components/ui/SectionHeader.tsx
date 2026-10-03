@@ -11,29 +11,33 @@ export type SectionHeaderProps = {
   /** When provided, a "View more" link is shown on the right. */
   onViewMore?: () => void;
   viewMoreLabel?: string;
+  /** "View more" size: `sm` = 12 px (default, most sections), `md` = 14 px (Home "Categories"). */
+  viewMoreSize?: 'sm' | 'md';
   style?: StyleProp<ViewStyle>;
 };
 
-/** Section title on the left, optional primary "View more" link on the right (Home / Search). */
+/** Section title (Epilogue 16) on the left, optional primary "View more" link on the right. */
 function SectionHeaderBase({
   title,
   onViewMore,
   viewMoreLabel = STRINGS.common.viewMore,
+  viewMoreSize = 'sm',
   style,
 }: SectionHeaderProps) {
   return (
     <View style={[styles.row, style]}>
-      <AppText variant="h3" accessibilityRole="header" numberOfLines={1} style={styles.title}>
+      <AppText variant="title" accessibilityRole="header" numberOfLines={1} style={styles.title}>
         {title}
       </AppText>
       {onViewMore ? (
         <Pressable
           onPress={onViewMore}
-          hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+          hitSlop={{ top: 8, bottom: 8 }}
           accessibilityRole="link"
           accessibilityLabel={`${viewMoreLabel}, ${title}`}
+          style={styles.link}
         >
-          <AppText variant="body" color="primary" family="bodyMedium">
+          <AppText variant={viewMoreSize === 'md' ? 'body' : 'caption'} color="primaryText">
             {viewMoreLabel}
           </AppText>
         </Pressable>
@@ -51,6 +55,9 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   title: { flexShrink: 1 },
+  // Design: the link ends 9 dp before the content edge (x = 346 of 375) - 8 dp of padding that is
+  // also part of the touch target.
+  link: { minHeight: 32, justifyContent: 'center', paddingHorizontal: spacing.sm },
 });
 
 export const SectionHeader = memo(SectionHeaderBase);

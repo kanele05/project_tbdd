@@ -1,6 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -37,6 +38,7 @@ function renderReview({ item }: { item: ReviewDto }) {
  * chips and an infinite list of reviews with pull-to-refresh.
  */
 export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
+  const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<ReviewFilter>('all');
   const reviews = useCourseReviews(courseId, filter);
   const summary = useReviewSummary(courseId);
@@ -113,7 +115,7 @@ export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
         onEndReachedThreshold={0.5}
         refreshing={reviews.isRefetching && !isFetchingNextPage}
         onRefresh={handleRefresh}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}
         showsVerticalScrollIndicator={false}
       />
     </View>

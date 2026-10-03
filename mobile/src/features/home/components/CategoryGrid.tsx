@@ -28,7 +28,7 @@ function CategoryTileBase({ category, width, onPress }: CategoryTileProps) {
       <View style={[styles.iconBox, { backgroundColor: getCategoryColor(category) }]}>
         <Feather name={toFeatherIcon(category.icon)} size={20} color={colors.white} />
       </View>
-      <AppText variant="body" color="textSecondary" numberOfLines={1} style={styles.name}>
+      <AppText variant="body" numberOfLines={1} style={styles.name}>
         {category.name}
       </AppText>
     </Pressable>
@@ -72,22 +72,22 @@ const styles = StyleSheet.create({
     gap: GAP,
     paddingHorizontal: layout.screenPaddingX,
   },
+  // Design: 60 dp tile = 44 dp icon box with 8 dp around it, the 1 dp border is part of the 8.
   tile: {
     minHeight: 60,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.sm - 1,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderSubtle,
     borderRadius: radius.card,
     backgroundColor: colors.background,
   },
   pressed: { backgroundColor: colors.backgroundAlt },
   iconBox: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.button,

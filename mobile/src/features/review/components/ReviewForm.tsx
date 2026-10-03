@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
 
@@ -9,6 +10,7 @@ import { FormTextField } from '@/components/ui/FormTextField';
 import { StarRating } from '@/components/ui/StarRating';
 import { useToast } from '@/components/ui/Toast';
 import { applyAuthError } from '@/features/auth/authErrors';
+import { FormError } from '@/features/auth/components/FormError';
 import { isNotEnrolledError } from '@/features/learning/accessGuard';
 import { getErrorMessage } from '@/lib/appError';
 import { spacing } from '@/theme';
@@ -30,6 +32,8 @@ const FIELDS = ['rating', 'content'] as const;
 export function ReviewForm({ courseId, initialReview }: ReviewFormProps) {
   const toast = useToast();
   const saveReview = useSaveReview(courseId);
+  // Errors are shown inline: a toast can be hidden behind a native modal (iOS).
+  const [formError, setFormError] = useState<string | null>(null);
 
   const {
     control,
@@ -43,18 +47,19 @@ export function ReviewForm({ courseId, initialReview }: ReviewFormProps) {
   const contentLength = useWatch({ control, name: 'content' }).length;
 
   const onSubmit = handleSubmit(async (values) => {
+    setFormError(null);
     try {
       await saveReview.mutateAsync({ rating: values.rating, content: values.content.trim() });
-      toast.success(REVIEW_STRINGS.saved);
+      // Close the modal first, then toast on the screen underneath.
       router.back();
+      toast.success(REVIEW_STRINGS.saved);
     } catch (error) {
       if (isNotEnrolledError(error)) {
-        toast.error(getErrorMessage(error));
         router.back();
+        toast.error(getErrorMessage(error));
         return;
       }
-      const message = applyAuthError(error, setError, FIELDS);
-      if (message) toast.error(message);
+      setFormError(applyAuthError(error, setError, FIELDS));
     }
   });
 
@@ -70,7 +75,7 @@ export function ReviewForm({ courseId, initialReview }: ReviewFormProps) {
           )}
         />
         {errors.rating ? (
-          <AppText variant="caption" color="danger" accessibilityLiveRegion="polite">
+          <AppText variant="caption" color="dangerText" accessibilityLiveRegion="polite">
             {errors.rating.message}
           </AppText>
         ) : null}
@@ -91,6 +96,8 @@ export function ReviewForm({ courseId, initialReview }: ReviewFormProps) {
           {`${contentLength}/${REVIEW_MAX_LENGTH}`}
         </AppText>
       </View>
+
+      <FormError message={formError} />
 
       <Button
         title={REVIEW_STRINGS.submit}

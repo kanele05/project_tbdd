@@ -10,7 +10,7 @@ type FilterSectionProps = { title: string; children: ReactNode };
 export function FilterSection({ title, children }: FilterSectionProps) {
   return (
     <View style={styles.section}>
-      <AppText variant="h3" accessibilityRole="header">
+      <AppText variant="title" accessibilityRole="header">
         {title}
       </AppText>
       {children}
@@ -24,5 +24,6 @@ export function ChipRow({ children }: { children: ReactNode }) {
 
 const styles = StyleSheet.create({
   section: { gap: spacing.md },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  // Same chip spacing as the Search "Hot topics" (design): 4 dp in a row, 8 dp between rows.
+  chips: { flexDirection: 'row', flexWrap: 'wrap', columnGap: spacing.xs, rowGap: spacing.sm },
 });

@@ -32,33 +32,37 @@ export function SimilarCourses({ courseId }: SimilarCoursesProps) {
       <AppText variant="title" accessibilityRole="header">
         Similar courses
       </AppText>
-      {isPending ? (
-        <>
-          <CourseCardHorizontalSkeleton />
-          <CourseCardHorizontalSkeleton />
-        </>
-      ) : null}
-      {isError ? (
-        <View style={styles.error}>
-          <AppText variant="body" color="textSecondary">
-            {"Couldn't load similar courses."}
-          </AppText>
-          <Button title="Retry" variant="ghost" size="sm" onPress={() => void refetch()} />
-        </View>
-      ) : null}
-      {data?.map((course) => (
-        <CourseCardHorizontal
-          key={course.id}
-          course={course}
-          onPress={handlePress}
-          onToggleBookmark={handleToggleBookmark}
-        />
-      ))}
+      <View style={styles.list}>
+        {isPending ? (
+          <>
+            <CourseCardHorizontalSkeleton />
+            <CourseCardHorizontalSkeleton />
+          </>
+        ) : null}
+        {isError ? (
+          <View style={styles.error}>
+            <AppText variant="body" color="textSecondary">
+              {"Couldn't load similar courses."}
+            </AppText>
+            <Button title="Retry" variant="ghost" size="sm" onPress={() => void refetch()} />
+          </View>
+        ) : null}
+        {data?.map((course) => (
+          <CourseCardHorizontal
+            key={course.id}
+            course={course}
+            onPress={handlePress}
+            onToggleBookmark={handleToggleBookmark}
+          />
+        ))}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  section: { gap: spacing.md },
+  // Design: 8 dp under the heading, 16 dp between the cards.
+  section: { gap: spacing.sm },
+  list: { gap: spacing.lg },
   error: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 });

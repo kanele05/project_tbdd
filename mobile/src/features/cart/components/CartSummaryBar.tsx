@@ -17,7 +17,7 @@ export type CartSummaryBarProps = {
 export function CartSummaryBar({ itemCount, totalCents, onCheckout, isBusy }: CartSummaryBarProps) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
+    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
       <View
         accessible
         accessibilityLabel={`Total ${formatPrice(totalCents)} for ${itemCount} ${
@@ -25,7 +25,7 @@ export function CartSummaryBar({ itemCount, totalCents, onCheckout, isBusy }: Ca
         }`}
       >
         <AppText variant="caption">{`Total (${itemCount} ${itemCount === 1 ? 'course' : 'courses'})`}</AppText>
-        <AppText variant="h2" family="headingBold">
+        <AppText variant="h3" family="headingBold">
           {formatPrice(totalCents)}
         </AppText>
       </View>
@@ -47,10 +47,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.lg,
-    paddingTop: spacing.md,
+    paddingTop: spacing.lg,
     paddingHorizontal: spacing.xl,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    // Same hairline divider as the SC-09 bottom bar.
+    borderTopColor: colors.surface,
     backgroundColor: colors.background,
   },
   button: { minWidth: 140 },

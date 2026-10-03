@@ -24,6 +24,7 @@ type MenuItemProps = {
 
 function MenuItem({ icon, label, onPress, isDanger = false }: MenuItemProps) {
   const tint = isDanger ? colors.danger : colors.textPrimary;
+  const textTint = isDanger ? colors.dangerText : colors.textPrimary;
   return (
     <Pressable
       onPress={onPress}
@@ -32,7 +33,7 @@ function MenuItem({ icon, label, onPress, isDanger = false }: MenuItemProps) {
       style={({ pressed }) => [styles.item, pressed ? styles.pressed : null]}
     >
       <Feather name={icon} size={20} color={tint} />
-      <AppText variant="body" style={{ color: tint }}>
+      <AppText variant="body" style={{ color: textTint }}>
         {label}
       </AppText>
     </Pressable>

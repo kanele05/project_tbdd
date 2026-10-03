@@ -16,7 +16,8 @@ export type CartItemCardProps = {
   onRemove: (course: CourseSummary) => void;
 };
 
-const THUMBNAIL_SIZE = 80;
+/** Same thumbnail as `CourseCardHorizontal` (design: 96 dp). */
+const THUMBNAIL_SIZE = 96;
 
 /** One cart row: thumbnail, title, teacher, price (+ struck original) and a remove button. */
 function CartItemCardBase({ course, isRemoving, onPress, onRemove }: CartItemCardProps) {

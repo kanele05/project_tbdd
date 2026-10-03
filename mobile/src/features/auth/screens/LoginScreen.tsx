@@ -58,11 +58,11 @@ export function LoginScreen() {
           </AppText>
           <Pressable
             onPress={() => router.push('/register')}
-            hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             accessibilityRole="link"
             accessibilityLabel={STRINGS.auth.signUp}
           >
-            <AppText variant="label" color="primary">
+            <AppText variant="label" color="primaryText">
               {STRINGS.auth.signUp}
             </AppText>
           </Pressable>

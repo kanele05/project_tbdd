@@ -8,7 +8,7 @@ export function QuestionCardSkeleton() {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Skeleton width={40} height={40} borderRadius={radius.pill} />
+        <Skeleton width={36} height={36} borderRadius={radius.pill} />
         <View style={styles.author}>
           <Skeleton width="40%" height={14} />
           <Skeleton width="25%" height={12} />
@@ -23,11 +23,11 @@ export function QuestionCardSkeleton() {
 const styles = StyleSheet.create({
   card: {
     gap: spacing.md,
-    padding: spacing.lg,
-    borderRadius: radius.card,
+    padding: spacing.md,
+    borderRadius: radius.badge,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.surface,
   },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   author: { flex: 1, gap: spacing.sm },
 });

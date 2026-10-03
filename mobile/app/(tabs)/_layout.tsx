@@ -23,7 +23,8 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
+        // Label text uses the AA-safe `primaryText`; the icon keeps the brand `primary`.
+        tabBarActiveTintColor: colors.primaryText,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarHideOnKeyboard: true,
         tabBarLabelPosition: 'below-icon',
@@ -48,7 +49,9 @@ export default function TabsLayout() {
             tabBarLabel: ({ focused, color }) => (
               <TabBarLabel label={tab.title} focused={focused} color={color} />
             ),
-            tabBarIcon: ({ color }) => <Feather name={tab.icon} size={24} color={color} />,
+            tabBarIcon: ({ focused, color }) => (
+              <Feather name={tab.icon} size={24} color={focused ? colors.primary : color} />
+            ),
           }}
         />
       ))}

@@ -1,13 +1,14 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState, ScreenHeader } from '@/components/ui';
 import { STRINGS } from '@/constants/strings';
 import { CourseResults } from '@/features/search/components/CourseResults';
 import { useCategories, type CoursesInfiniteParams } from '@/features/search/hooks';
 import { openSearchTab } from '@/features/search/navigation';
-import { colors } from '@/theme';
+import { colors, spacing } from '@/theme';
 import type { CourseSection } from '@/types/api';
 
 type CourseListRouteParams = {
@@ -39,6 +40,7 @@ function isCourseSection(value: string | undefined): value is CourseSection {
  * a teacher (`teacherId`). Same layout and infinite list as the Search results.
  */
 export function CourseListScreen() {
+  const insets = useSafeAreaInsets();
   const routeParams = useLocalSearchParams<CourseListRouteParams>();
   const categoryId = firstParam(routeParams.categoryId);
   const teacherId = firstParam(routeParams.teacherId);
@@ -63,6 +65,7 @@ export function CourseListScreen() {
       <ScreenHeader title={title} />
       <CourseResults
         params={params}
+        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
         emptyState={
           <EmptyState
             icon="book-open"

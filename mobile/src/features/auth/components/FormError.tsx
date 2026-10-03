@@ -15,7 +15,7 @@ export function FormError({ message }: { message: string | null }) {
       testID="form-error"
     >
       <Feather name="alert-circle" size={18} color={colors.danger} />
-      <AppText variant="body" color="danger" style={styles.text}>
+      <AppText variant="body" color="dangerText" style={styles.text}>
         {message}
       </AppText>
     </View>

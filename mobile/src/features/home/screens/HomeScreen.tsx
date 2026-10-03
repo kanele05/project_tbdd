@@ -42,12 +42,23 @@ const HOME_STRINGS = {
   emptyMessage: 'New courses are added regularly. Pull down to refresh or check back soon.',
 } as const;
 
-type SectionProps = { title: string; onViewMore: () => void; children: ReactNode };
+type SectionProps = {
+  title: string;
+  onViewMore: () => void;
+  /** Design: the "Categories" link is 14 px, the other sections use 12 px. */
+  viewMoreSize?: 'sm' | 'md';
+  children: ReactNode;
+};
 
-function Section({ title, onViewMore, children }: SectionProps) {
+function Section({ title, onViewMore, viewMoreSize, children }: SectionProps) {
   return (
     <View style={styles.section}>
-      <SectionHeader title={title} onViewMore={onViewMore} style={styles.sectionHeader} />
+      <SectionHeader
+        title={title}
+        onViewMore={onViewMore}
+        viewMoreSize={viewMoreSize}
+        style={styles.sectionHeader}
+      />
       {children}
     </View>
   );
@@ -88,7 +99,7 @@ function HomeContent({ home, onToggleBookmark }: HomeContentProps) {
         <BannerCarousel banners={home.banners} onPressBanner={handlePressBanner} />
       ) : null}
       {home.categories.length > 0 ? (
-        <Section title={HOME_STRINGS.categories} onViewMore={openSearchTab}>
+        <Section title={HOME_STRINGS.categories} onViewMore={openSearchTab} viewMoreSize="md">
           <CategoryGrid categories={home.categories} onPressCategory={handlePressCategory} />
         </Section>
       ) : null}
@@ -207,7 +218,9 @@ export function HomeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { flexGrow: 1, paddingTop: spacing.lg, paddingBottom: spacing.xxxl, gap: spacing.xxxl },
-  section: { gap: spacing.lg },
+  // Design: ~12 dp between the section title and its content, ~36 dp between sections (the header
+  // row adds 4 dp above and below the 24 dp title line).
+  section: { gap: spacing.sm },
   sectionHeader: { paddingHorizontal: layout.screenPaddingX },
-  inspires: { gap: spacing.xl, paddingHorizontal: layout.screenPaddingX },
+  inspires: { gap: spacing.lg, paddingHorizontal: layout.screenPaddingX },
 });

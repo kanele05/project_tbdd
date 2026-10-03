@@ -79,7 +79,8 @@ export function ScreenHeader({
 }
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: spacing.xs },
+  // Design: back icon centered at x = 22, right icon at x = 342 (48 dp targets: 0 dp left, 8 dp right).
+  container: { paddingLeft: 0, paddingRight: spacing.sm },
   solid: { backgroundColor: colors.background },
   row: { height: layout.headerHeight, flexDirection: 'row', alignItems: 'center' },
   side: { minWidth: 48, flexDirection: 'row', alignItems: 'center' },

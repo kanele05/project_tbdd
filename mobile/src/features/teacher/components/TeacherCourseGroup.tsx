@@ -16,6 +16,8 @@ export type TeacherCourseGroupProps = {
   onViewAll: (categoryId: string) => void;
 };
 
+/** Design: cards are 205 dp wide with a 16 dp gap (wider than the Home carousel's 196). */
+const COURSE_CARD_WIDTH = 205;
 const keyExtractor = (course: CourseSummary): string => course.id;
 const Separator = () => <View style={styles.separator} />;
 
@@ -36,6 +38,7 @@ function TeacherCourseGroupBase({
     ({ item }: { item: CourseSummary }) => (
       <CourseCardVertical
         course={item}
+        width={COURSE_CARD_WIDTH}
         onPress={onPressCourse}
         onToggleBookmark={onToggleBookmark}
       />
@@ -54,11 +57,11 @@ function TeacherCourseGroupBase({
         </View>
         <Pressable
           onPress={handleViewAll}
-          hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+          hitSlop={{ top: 16, bottom: 16, left: 12, right: 8 }}
           accessibilityRole="link"
           accessibilityLabel={`${STRINGS.common.viewAll}, ${group.category.name}`}
         >
-          <AppText variant="body" color="primary" family="bodyMedium">
+          <AppText variant="caption" color="primaryText">
             {STRINGS.common.viewAll}
           </AppText>
         </Pressable>
@@ -77,7 +80,7 @@ function TeacherCourseGroupBase({
 }
 
 const styles = StyleSheet.create({
-  container: { gap: spacing.md, paddingVertical: spacing.md },
+  container: { gap: spacing.md, paddingTop: spacing.xxxl },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -86,10 +89,10 @@ const styles = StyleSheet.create({
     minHeight: 32,
     paddingHorizontal: layout.screenPaddingX,
   },
-  titleRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  titleRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   title: { flexShrink: 1 },
   listContent: { paddingHorizontal: layout.screenPaddingX },
-  separator: { width: spacing.md },
+  separator: { width: spacing.lg },
 });
 
 export const TeacherCourseGroup = memo(TeacherCourseGroupBase);

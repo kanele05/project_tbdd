@@ -7,7 +7,8 @@ import type { UserDto } from '@/types/api';
 
 const COVER_HEIGHT = 128;
 const AVATAR_SIZE = 96;
-const AVATAR_BORDER = 4;
+/** Design: the avatar's top edge sits 44 dp above the cover's bottom edge, with no white ring. */
+const AVATAR_OVERLAP = 44;
 
 type ProfileInfoProps = {
   user: Pick<UserDto, 'fullName' | 'headline' | 'avatarUrl' | 'coverUrl'> | null;
@@ -42,7 +43,7 @@ export function ProfileInfo({ user }: ProfileInfoProps) {
           {user?.fullName ?? ''}
         </AppText>
         {user?.headline ? (
-          <AppText variant="body" color="textMuted" align="center" numberOfLines={2}>
+          <AppText variant="caption" align="center" numberOfLines={2}>
             {user.headline}
           </AppText>
         ) : null}
@@ -59,17 +60,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   coverImage: { width: '100%', height: '100%' },
-  avatarWrap: {
-    alignSelf: 'center',
-    marginTop: -(AVATAR_SIZE / 2),
-    padding: AVATAR_BORDER,
-    borderRadius: (AVATAR_SIZE + 2 * AVATAR_BORDER) / 2,
-    backgroundColor: colors.background,
-  },
+  avatarWrap: { alignSelf: 'center', marginTop: -AVATAR_OVERLAP },
   texts: {
     alignItems: 'center',
     gap: spacing.xs,
-    marginTop: spacing.md,
+    // Design: 14 dp between the avatar and the name line.
+    marginTop: spacing.md + 2,
     paddingHorizontal: layout.screenPaddingX,
   },
 });

@@ -41,14 +41,13 @@ function StarRatingBase({ value, onChange, size = 16, style }: StarRatingProps) 
     );
   }
 
-  const slop = Math.max(0, Math.ceil((layout.minTouchTarget - size) / 2));
   return (
     <View style={[styles.row, styles.interactive, style]} accessibilityRole="radiogroup">
       {STARS.map((star) => (
         <Pressable
           key={star}
           onPress={() => onChange?.(star)}
-          hitSlop={{ top: slop, bottom: slop }}
+          style={styles.starButton}
           accessibilityRole="radio"
           accessibilityLabel={`${star} ${star === 1 ? 'star' : 'stars'}`}
           accessibilityState={{ selected: star === rounded }}
@@ -62,7 +61,14 @@ function StarRatingBase({ value, onChange, size = 16, style }: StarRatingProps) 
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  interactive: { gap: 8 },
+  interactive: { gap: 0 },
+  // Each star is a full 48 x 48 dp target; the icon is centered inside it.
+  starButton: {
+    minWidth: layout.minTouchTarget,
+    minHeight: layout.minTouchTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
 export const StarRating = memo(StarRatingBase);

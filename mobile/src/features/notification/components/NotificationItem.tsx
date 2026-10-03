@@ -60,7 +60,7 @@ function NotificationItemBase({ notification, onPress }: NotificationItemProps) 
 export function NotificationSkeleton() {
   return (
     <View style={styles.row} testID="notification-skeleton">
-      <Skeleton width={40} height={40} borderRadius={radius.pill} />
+      <Skeleton width={40} height={40} borderRadius={radius.button} />
       <View style={styles.content}>
         <Skeleton width="60%" height={16} />
         <Skeleton width="90%" height={14} />
@@ -89,13 +89,15 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.pill,
+    // Same rounded-square icon tile as the Home category grid.
+    borderRadius: radius.button,
   },
   content: { flex: 1, gap: spacing.xs },
+  // Centered on the first text line (title line-height 20).
   dot: {
     width: 8,
     height: 8,
-    marginTop: spacing.sm,
+    marginTop: 6,
     borderRadius: radius.pill,
     backgroundColor: colors.primary,
   },

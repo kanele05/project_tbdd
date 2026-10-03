@@ -1,5 +1,5 @@
 import { useCallback, useState, type ReactElement } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { CourseCardHorizontalSkeleton } from '@/components/course';
 import { AppText, ErrorState, Skeleton } from '@/components/ui';
@@ -16,6 +16,8 @@ type CourseResultsProps = {
   params: CoursesInfiniteParams;
   /** Rendered (inside the list, so pull-to-refresh still works) when nothing matches. */
   emptyState: ReactElement;
+  /** Extra list padding, e.g. the bottom inset on screens without a tab bar. */
+  contentContainerStyle?: StyleProp<ViewStyle>;
 };
 
 const SKELETON_COUNT = 5;
@@ -29,7 +31,7 @@ export function formatResultCount(total: number): string {
  * all 4 data states (skeleton, error + Retry, empty, list). Used by Search (SC-06) and
  * Course list (SC-08).
  */
-export function CourseResults({ params, emptyState }: CourseResultsProps) {
+export function CourseResults({ params, emptyState, contentContainerStyle }: CourseResultsProps) {
   const query = useCoursesInfinite(params);
   const { toggleBookmark } = useToggleBookmark();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -57,6 +59,7 @@ export function CourseResults({ params, emptyState }: CourseResultsProps) {
     return (
       <View
         style={styles.skeletons}
+        accessible
         accessibilityLabel="Loading"
         accessibilityState={{ busy: true }}
       >
@@ -74,6 +77,7 @@ export function CourseResults({ params, emptyState }: CourseResultsProps) {
   return (
     <CourseResultList
       courses={courses}
+      contentContainerStyle={contentContainerStyle}
       onPressCourse={handlePressCourse}
       onToggleBookmark={handleToggleBookmark}
       onEndReached={handleEndReached}
@@ -108,6 +112,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: layout.screenPaddingX,
     paddingTop: spacing.sm,
   },
-  title: { marginBottom: spacing.lg },
+  title: { marginBottom: spacing.md },
   footerError: { marginTop: spacing.lg },
 });

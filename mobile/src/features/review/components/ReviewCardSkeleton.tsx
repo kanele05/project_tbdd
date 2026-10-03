@@ -14,19 +14,22 @@ export function ReviewCardSkeleton() {
           <Skeleton width="25%" height={12} />
         </View>
       </View>
-      <Skeleton width="100%" height={14} />
-      <Skeleton width="70%" height={14} />
+      <View style={styles.lines}>
+        <Skeleton width="100%" height={12} />
+        <Skeleton width="70%" height={12} />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    gap: spacing.md,
+    gap: spacing.lg,
     padding: spacing.md,
-    borderRadius: radius.card,
+    borderRadius: radius.badge,
     backgroundColor: colors.backgroundAlt,
   },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   author: { flex: 1, gap: spacing.sm },
+  lines: { gap: spacing.sm },
 });

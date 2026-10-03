@@ -11,7 +11,7 @@ function SectionTitleSkeleton() {
   return (
     <View style={styles.titleRow}>
       <Skeleton width={140} height={24} />
-      <Skeleton width={64} height={16} />
+      <Skeleton width={56} height={16} />
     </View>
   );
 }
@@ -20,7 +20,12 @@ function SectionTitleSkeleton() {
 export function HomeSkeleton() {
   const tileWidth = useCategoryTileWidth();
   return (
-    <View style={styles.content} accessibilityLabel="Loading" accessibilityState={{ busy: true }}>
+    <View
+      style={styles.content}
+      accessible
+      accessibilityLabel="Loading"
+      accessibilityState={{ busy: true }}
+    >
       <View style={styles.padded}>
         <Skeleton height={BANNER_HEIGHT} borderRadius={radius.badge} />
       </View>
@@ -56,9 +61,14 @@ export function HomeSkeleton() {
 const styles = StyleSheet.create({
   content: { gap: spacing.xxxl },
   padded: { paddingHorizontal: layout.screenPaddingX },
-  section: { gap: spacing.lg, paddingHorizontal: layout.screenPaddingX },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  section: { gap: spacing.sm, paddingHorizontal: layout.screenPaddingX },
+  titleRow: {
+    minHeight: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   cardsRow: { flexDirection: 'row', gap: spacing.md, overflow: 'hidden' },
-  list: { gap: spacing.xl },
+  list: { gap: spacing.lg },
 });

@@ -39,7 +39,7 @@ export function SegmentedTabs<K extends string>({
             <AppText
               variant="tab"
               uppercase
-              color={isActive ? 'primary' : 'textSecondary'}
+              color={isActive ? 'primaryText' : 'textSecondary'}
               family={isActive ? 'bodySemiBold' : 'bodyMedium'}
               numberOfLines={1}
             >
@@ -52,10 +52,14 @@ export function SegmentedTabs<K extends string>({
   );
 }
 
+/** Design: 2 dp gray track under all tabs, 4 dp primary underline under the active one. */
+const TRACK_WIDTH = 2;
+const UNDERLINE_WIDTH = 4;
+
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    borderBottomWidth: 2,
+    borderBottomWidth: TRACK_WIDTH,
     borderBottomColor: colors.border,
   },
   tab: {
@@ -64,8 +68,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     // Overlap the row's bottom border so the active underline replaces it.
-    marginBottom: -2,
-    borderBottomWidth: 2,
+    marginBottom: -TRACK_WIDTH,
+    borderBottomWidth: UNDERLINE_WIDTH,
     borderBottomColor: colors.transparent,
   },
   tabActive: { borderBottomColor: colors.primary },

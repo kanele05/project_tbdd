@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { colors, layout, radius, spacing } from '@/theme';
+import type { FontFamilyToken } from '@/theme';
 
 import { AppText } from './AppText';
 import type { FeatherIconName } from './icons';
@@ -27,6 +28,12 @@ export type ButtonProps = {
   disabled?: boolean;
   leftIcon?: FeatherIconName;
   rightIcon?: FeatherIconName;
+  /** Custom node instead of `leftIcon` (an icon that Feather does not have, e.g. filter-list). */
+  leftAdornment?: ReactNode;
+  /** Label font; default `bodySemiBold`. */
+  labelFamily?: FontFamilyToken;
+  /** Render the label in upper case (Home banner CTA). */
+  uppercase?: boolean;
   /** Stretch to the parent's width. */
   fullWidth?: boolean;
   accessibilityLabel?: string;
@@ -41,7 +48,7 @@ const VARIANTS: Record<ButtonVariant, VariantStyle> = {
     background: colors.primary,
     pressed: colors.primaryDark,
     border: colors.primary,
-    text: colors.white,
+    text: colors.textOnPrimary,
   },
   secondary: {
     background: colors.primaryLight,
@@ -53,13 +60,13 @@ const VARIANTS: Record<ButtonVariant, VariantStyle> = {
     background: colors.transparent,
     pressed: colors.primaryLight,
     border: colors.primary,
-    text: colors.primary,
+    text: colors.primaryText,
   },
   ghost: {
     background: colors.transparent,
     pressed: colors.primaryLight,
     border: colors.transparent,
-    text: colors.primary,
+    text: colors.primaryText,
   },
 };
 
@@ -72,6 +79,9 @@ function ButtonBase({
   disabled = false,
   leftIcon,
   rightIcon,
+  leftAdornment,
+  labelFamily,
+  uppercase = false,
   fullWidth = false,
   accessibilityLabel,
   style,
@@ -95,7 +105,7 @@ function ButtonBase({
       style={({ pressed }) => [
         styles.base,
         {
-          height,
+          minHeight: height,
           backgroundColor: pressed && !isInactive ? palette.pressed : palette.background,
           borderColor: palette.border,
         },
@@ -109,8 +119,14 @@ function ButtonBase({
         <ActivityIndicator size="small" color={palette.text} testID="button-spinner" />
       ) : (
         <View style={styles.content}>
-          {leftIcon ? <Feather name={leftIcon} size={18} color={palette.text} /> : null}
-          <AppText variant="label" style={{ color: palette.text }} numberOfLines={1}>
+          {leftAdornment ??
+            (leftIcon ? <Feather name={leftIcon} size={18} color={palette.text} /> : null)}
+          <AppText
+            variant="label"
+            family={labelFamily}
+            uppercase={uppercase}
+            style={[styles.label, { color: palette.text }]}
+          >
             {title}
           </AppText>
           {rightIcon ? <Feather name={rightIcon} size={18} color={palette.text} /> : null}
@@ -127,12 +143,21 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     borderRadius: radius.button,
     borderWidth: 1,
+    paddingVertical: spacing.xs,
   },
   paddingMedium: { paddingHorizontal: spacing.xl },
   paddingSmall: { paddingHorizontal: spacing.lg },
   fullWidth: { alignSelf: 'stretch' },
   disabled: { opacity: 0.5 },
-  content: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  content: {
+    maxWidth: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  // A long label (or a large system font) wraps instead of being cut off.
+  label: { flexShrink: 1, textAlign: 'center' },
 });
 
 export const Button = memo(ButtonBase);

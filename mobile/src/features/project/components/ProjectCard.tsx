@@ -11,6 +11,8 @@ export type ProjectCardProps = { submission: ProjectSubmissionDto };
 
 export const PROJECT_CARD_WIDTH = 154;
 const IMAGE_HEIGHT = 68;
+/** Card height in the design with a one-line author: 1 + 12 + 68 + 12 + 20 + 4 + 20 + 12 + 1. */
+export const PROJECT_CARD_HEIGHT = 150;
 
 /** A student project in the horizontal list: cover image, title, author. */
 function ProjectCardBase({ submission }: ProjectCardProps) {
@@ -32,13 +34,13 @@ function ProjectCardBase({ submission }: ProjectCardProps) {
             accessibilityIgnoresInvertColors
           />
         ) : (
-          <Feather name="image" size={24} color={colors.textMuted} />
+          <Feather name="image" size={24} color={colors.iconMuted} />
         )}
       </View>
-      <AppText variant="bodyLarge" numberOfLines={1} style={styles.title}>
+      <AppText variant="body" numberOfLines={1} style={styles.title}>
         {submission.title}
       </AppText>
-      <AppText variant="caption" numberOfLines={2}>
+      <AppText variant="caption" numberOfLines={1} style={styles.author}>
         {submission.user.fullName}
       </AppText>
     </View>
@@ -63,6 +65,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   title: { marginTop: spacing.md, marginBottom: spacing.xs },
+  // Design: the author line has a 20 dp pitch (the `caption` token is 16).
+  author: { lineHeight: 20 },
 });
 
 export const ProjectCard = memo(ProjectCardBase);

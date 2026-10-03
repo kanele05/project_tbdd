@@ -49,7 +49,7 @@ function TeacherCardBase({ teacher, onPress, style }: TeacherCardProps) {
           />
         ) : (
           <View style={styles.fallback}>
-            <AppText variant="h2" color="secondary">
+            <AppText variant="h2" color="secondaryText">
               {getInitials(teacher.fullName) || '?'}
             </AppText>
           </View>

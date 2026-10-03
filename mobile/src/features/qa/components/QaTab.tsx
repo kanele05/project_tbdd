@@ -103,7 +103,7 @@ export function QaTab({ courseId, header }: QaTabProps) {
         data={items}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        ListHeaderComponent={header}
+        ListHeaderComponent={header ? <View style={styles.header}>{header}</View> : null}
         ListEmptyComponent={empty}
         ListFooterComponent={
           isFetchingNextPage ? (
@@ -124,6 +124,8 @@ export function QaTab({ courseId, header }: QaTabProps) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { paddingBottom: spacing.lg },
+  // The first card sits 24 dp under the tabs (header 8 + item 16), the others 16 dp apart.
+  header: { paddingBottom: spacing.sm },
   item: { paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.lg },
   skeletons: { gap: spacing.lg, paddingTop: spacing.lg, paddingHorizontal: layout.screenPaddingX },
   footer: { paddingVertical: spacing.lg },

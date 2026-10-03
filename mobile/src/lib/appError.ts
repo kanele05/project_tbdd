@@ -94,7 +94,8 @@ export function getErrorMessage(error: unknown): string {
 
 /**
  * Field-level validation errors from a `VALIDATION_ERROR` response, if the server sent them as
- * `details: { fieldName: "message" }` or `details: [{ path, message }]`.
+ * `details: { fieldName: "message" }`, `details: [{ source, field, message }]` (server format) or
+ * the older `details: [{ path, message }]`.
  */
 export function getFieldErrors(error: unknown): Record<string, string> {
   const appError = toAppError(error);
@@ -103,8 +104,17 @@ export function getFieldErrors(error: unknown): Record<string, string> {
   if (Array.isArray(details)) {
     for (const item of details) {
       if (typeof item === 'object' && item !== null) {
-        const { path, message } = item as { path?: unknown; message?: unknown };
-        const key = Array.isArray(path) ? path.join('.') : typeof path === 'string' ? path : '';
+        const { path, field, message } = item as {
+          path?: unknown;
+          field?: unknown;
+          message?: unknown;
+        };
+        const rawKey = field ?? path;
+        const key = Array.isArray(rawKey)
+          ? rawKey.join('.')
+          : typeof rawKey === 'string'
+            ? rawKey
+            : '';
         if (key && typeof message === 'string' && !(key in result)) result[key] = message;
       }
     }

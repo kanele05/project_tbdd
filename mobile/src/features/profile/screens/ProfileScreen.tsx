@@ -41,7 +41,12 @@ function goToMyCourses(status: 'ongoing' | 'completed'): void {
 
 function SavedSkeleton() {
   return (
-    <View style={styles.skeletons} accessibilityLabel="Loading" accessibilityState={{ busy: true }}>
+    <View
+      style={styles.skeletons}
+      accessible
+      accessibilityLabel="Loading"
+      accessibilityState={{ busy: true }}
+    >
       <CourseCardHorizontalSkeleton />
       <CourseCardHorizontalSkeleton />
       <CourseCardHorizontalSkeleton />
@@ -148,7 +153,7 @@ export function ProfileScreen() {
               onPressOngoing={() => goToMyCourses('ongoing')}
               onPressCompleted={() => goToMyCourses('completed')}
             />
-            <AppText variant="h3" accessibilityRole="header">
+            <AppText variant="title" accessibilityRole="header" style={styles.savedTitle}>
               {PROFILE_STRINGS.saved}
             </AppText>
           </View>
@@ -170,5 +175,7 @@ export function ProfileScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   header: { gap: spacing.xl, marginBottom: spacing.lg },
+  // Design: ~34 dp between the stats row and the "Saved courses" title.
+  savedTitle: { marginTop: spacing.md },
   skeletons: { gap: spacing.lg },
 });

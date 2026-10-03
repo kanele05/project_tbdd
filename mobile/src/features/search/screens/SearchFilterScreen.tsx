@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText, Button, IconButton } from '@/components/ui';
@@ -112,7 +112,7 @@ export function SearchFilterScreen() {
   }, [applyFilters, values]);
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView style={styles.screen} behavior="padding">
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerRow}>
           <IconButton icon="x" onPress={handleClose} accessibilityLabel={STRINGS.common.close} />
@@ -128,7 +128,7 @@ export function SearchFilterScreen() {
             accessibilityState={{ disabled: isDefault }}
             style={styles.reset}
           >
-            <AppText variant="label" color="primary" style={isDefault ? styles.dimmed : null}>
+            <AppText variant="label" color="primaryText" style={isDefault ? styles.dimmed : null}>
               Reset
             </AppText>
           </Pressable>
@@ -162,7 +162,7 @@ export function SearchFilterScreen() {
           fullWidth
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

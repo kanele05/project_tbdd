@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
@@ -23,10 +23,7 @@ type AuthLayoutProps = {
 export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProps) {
   const insets = useSafeAreaInsets();
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.flex} behavior="padding">
       <ScrollView
         style={styles.flex}
         contentContainerStyle={[
@@ -38,9 +35,9 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
       >
         <View style={styles.brand}>
           <View style={styles.logo}>
-            <Feather name="book-open" size={32} color={colors.white} />
+            <Feather name="book-open" size={32} color={colors.textOnPrimary} />
           </View>
-          <AppText variant="h3" color="primary" align="center">
+          <AppText variant="h3" color="primaryText" align="center">
             {STRINGS.appName}
           </AppText>
         </View>

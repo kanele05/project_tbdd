@@ -48,6 +48,20 @@ describe('getFieldErrors', () => {
     expect(getFieldErrors(error)).toEqual({ fullName: 'Too short', email: 'Bad' });
   });
 
+  it('reads the server format of { source, field, message } issues', () => {
+    const error = new AppError({
+      status: 400,
+      code: 'VALIDATION_ERROR',
+      message: 'Invalid',
+      details: [
+        { source: 'body', field: 'password', message: 'Too long' },
+        { source: 'body', field: 'password', message: 'Second message is ignored' },
+        { source: 'body', field: 'profile.name', message: 'Required' },
+      ],
+    });
+    expect(getFieldErrors(error)).toEqual({ password: 'Too long', 'profile.name': 'Required' });
+  });
+
   it('returns an empty object without details', () => {
     expect(getFieldErrors(new Error('x'))).toEqual({});
   });

@@ -15,7 +15,13 @@ export type CourseMoreMenuProps = {
 export function CourseMoreMenu({ visible, onClose, onShare }: CourseMoreMenuProps) {
   const insets = useSafeAreaInsets();
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      statusBarTranslucent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
       <Pressable
         style={styles.backdrop}
         onPress={onClose}

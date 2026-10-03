@@ -27,6 +27,11 @@ function FileTypeIcon({ name }: { name: string }) {
       <AppText variant="micro" color="textSecondary">
         {kind.label}
       </AppText>
+      <View style={styles.lines}>
+        <View style={styles.line} />
+        <View style={styles.line} />
+        <View style={styles.line} />
+      </View>
     </View>
   );
 }
@@ -48,15 +53,17 @@ function ResourceItemBase({
     <View style={styles.card}>
       <FileTypeIcon name={resource.name} />
       <View style={styles.texts}>
-        <AppText variant="body" numberOfLines={1}>
+        <AppText variant="body" numberOfLines={1} style={styles.line22}>
           {resource.name}
         </AppText>
-        <AppText variant="caption">{statusText}</AppText>
+        <AppText variant="body" color="textMuted" style={styles.line22}>
+          {statusText}
+        </AppText>
       </View>
       <Pressable
         onPress={() => onDownload(resource)}
         disabled={isDownloading || isDisabled}
-        hitSlop={4}
+        hitSlop={spacing.md}
         accessibilityRole="button"
         accessibilityLabel={
           isDownloading ? `Downloading ${resource.name}` : `Download ${resource.name}, ${sizeText}`
@@ -67,7 +74,7 @@ function ResourceItemBase({
         {isDownloading ? (
           <ActivityIndicator size="small" color={colors.primary} testID="resource-spinner" />
         ) : (
-          <Feather name="download" size={22} color={colors.textMuted} />
+          <Feather name="download" size={24} color={colors.textMuted} />
         )}
       </Pressable>
     </View>
@@ -78,38 +85,43 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.sm,
+    gap: spacing.lg,
+    paddingVertical: spacing.sm + spacing.xxs,
     paddingLeft: spacing.md,
-    paddingRight: spacing.xs,
+    paddingRight: spacing.sm,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.card,
     backgroundColor: colors.background,
   },
+  // Design: 36 x 44 page icon - folded corner, ".txt" label and three text lines.
   doc: {
-    width: 32,
-    height: 40,
-    justifyContent: 'flex-end',
+    width: 36,
+    height: 44,
     alignItems: 'center',
-    paddingBottom: spacing.xs,
+    paddingTop: spacing.md,
     borderWidth: 1.5,
     borderColor: colors.textSecondary,
-    borderRadius: radius.badge,
+    borderRadius: radius.button,
   },
   corner: {
     position: 'absolute',
     top: -1,
     right: -1,
-    width: 10,
-    height: 10,
+    width: 12,
+    height: 12,
     borderBottomLeftRadius: radius.badge,
-    borderTopRightRadius: radius.badge,
+    borderTopRightRadius: radius.button,
   },
+  lines: { marginTop: spacing.xs, gap: spacing.xxs + 1 },
+  line: { width: 22, height: 1.5, backgroundColor: colors.iconMuted },
   texts: { flex: 1 },
+  // Design: both text lines are 14 dp with a 22 dp pitch.
+  line22: { lineHeight: 22 },
+  // 24 dp glyph; `hitSlop` (12) lifts the touch target to 48 dp.
   download: {
-    width: layout.minTouchTarget,
-    height: layout.minTouchTarget,
+    width: layout.minTouchTarget / 2,
+    height: layout.minTouchTarget / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },

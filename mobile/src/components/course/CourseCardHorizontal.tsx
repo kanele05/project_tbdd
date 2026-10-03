@@ -77,7 +77,12 @@ function CourseCardHorizontalBase({
             {course.teacher.fullName}
           </AppText>
           {showPrice ? (
-            <AppText variant="cardTitle" color="primary" family="headingBold" style={styles.price}>
+            <AppText
+              variant="cardTitle"
+              color="primaryText"
+              family="headingBold"
+              style={styles.price}
+            >
               {formatPriceOrFree(course.priceCents)}
             </AppText>
           ) : null}
@@ -85,7 +90,7 @@ function CourseCardHorizontalBase({
             rating={course.ratingAvg}
             count={course.ratingCount}
             lessonCount={course.lessonCount}
-            style={styles.rating}
+            style={showPrice ? styles.rating : styles.ratingNoPrice}
           />
         </View>
       </Pressable>
@@ -103,12 +108,13 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderSubtle,
     borderRadius: radius.card,
   },
   pressable: {
     flexDirection: 'row',
-    gap: spacing.md,
+    // Design: the texts start 8 dp after the 96 dp thumbnail.
+    gap: spacing.sm,
     padding: PADDING,
     borderRadius: radius.card,
   },
@@ -123,8 +129,10 @@ const styles = StyleSheet.create({
   badge: { position: 'absolute', top: spacing.xs, left: spacing.xs },
   info: { flex: 1, justifyContent: 'center', gap: spacing.xxs },
   title: { paddingRight: spacing.xxl },
-  price: { marginTop: spacing.xs },
+  // Design: 14 dp between the teacher and the price (15 dp bold), 5 dp between price and rating.
+  price: { marginTop: spacing.md, fontSize: 15, lineHeight: 20 },
   rating: { marginTop: spacing.xs },
+  ratingNoPrice: { marginTop: spacing.md },
   bookmark: { position: 'absolute', top: PADDING, right: PADDING },
 });
 

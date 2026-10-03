@@ -16,8 +16,12 @@ export type RatingInlineProps = {
   style?: StyleProp<ViewStyle>;
 };
 
+function lessonNoun(count: number): string {
+  return count === 1 ? 'lesson' : STRINGS.common.lessons;
+}
+
 function formatLessons(count: number): string {
-  return `${count} ${count === 1 ? 'lesson' : STRINGS.common.lessons}`;
+  return `${count} ${lessonNoun(count)}`;
 }
 
 /** "☆ 4.5 (1233) · 12 lessons" - the rating line of course cards and headers. */
@@ -45,8 +49,12 @@ function RatingInlineBase({ rating, count, lessonCount, style }: RatingInlinePro
       {lessonCount != null ? (
         <>
           <View style={styles.dot} />
-          <AppText variant="caption" color="textSecondary" numberOfLines={1} style={styles.lessons}>
-            {formatLessons(lessonCount)}
+          {/* Design: the number is dark, the word "lessons" is muted. */}
+          <AppText variant="caption" color="textPrimary" numberOfLines={1} style={styles.lessons}>
+            {lessonCount}
+            <AppText variant="caption" color="textMuted">
+              {` ${lessonNoun(lessonCount)}`}
+            </AppText>
           </AppText>
         </>
       ) : null}
@@ -60,7 +68,8 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    marginHorizontal: spacing.xs,
+    // Design: 6 dp between "(1233)" and the dot, 4 dp between the dot and the number.
+    marginLeft: spacing.xxs,
     backgroundColor: colors.border,
   },
   lessons: { flexShrink: 1 },

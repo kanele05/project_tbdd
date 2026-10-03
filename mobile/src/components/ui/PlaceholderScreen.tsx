@@ -28,7 +28,7 @@ export function PlaceholderScreen({
     <View style={styles.container} testID={`placeholder-${code}`}>
       {showHeader ? <ScreenHeader title={title} showBack={showBack} /> : null}
       <View style={styles.body}>
-        <AppText variant="caption" color="primary" family="bodySemiBold">
+        <AppText variant="caption" color="primaryText" family="bodySemiBold">
           {code}
         </AppText>
         <AppText variant="h2" align="center">

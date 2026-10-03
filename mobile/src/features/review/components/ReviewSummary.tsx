@@ -64,9 +64,9 @@ const styles = StyleSheet.create({
   average: { alignItems: 'center', gap: spacing.xs, minWidth: 72 },
   bars: { flex: 1, gap: spacing.xs },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-  starLabel: { width: 10, textAlign: 'right' },
+  starLabel: { minWidth: 10, textAlign: 'right' },
   track: { flex: 1, marginLeft: spacing.xs },
-  starCount: { width: 32, textAlign: 'right' },
+  starCount: { minWidth: 32, textAlign: 'right' },
 });
 
 export const ReviewSummary = memo(ReviewSummaryBase);

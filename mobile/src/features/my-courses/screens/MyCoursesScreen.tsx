@@ -167,7 +167,12 @@ export function MyCoursesScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingBottom: spacing.xxl },
-  header: { gap: spacing.xxl, paddingHorizontal: layout.screenPaddingX, paddingBottom: spacing.lg },
+  header: {
+    gap: spacing.xxl,
+    paddingHorizontal: layout.screenPaddingX,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxl,
+  },
   item: { paddingHorizontal: layout.screenPaddingX, paddingBottom: spacing.md },
   skeletons: { gap: spacing.md, paddingHorizontal: layout.screenPaddingX },
 });

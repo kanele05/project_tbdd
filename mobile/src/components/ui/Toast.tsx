@@ -150,7 +150,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   current.onAction?.();
                   hide();
                 }}
-                hitSlop={12}
+                hitSlop={{ top: 14, bottom: 14, left: 12, right: 12 }}
                 accessibilityRole="button"
                 accessibilityLabel={current.actionLabel}
               >

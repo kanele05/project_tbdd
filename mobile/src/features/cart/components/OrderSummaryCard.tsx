@@ -27,7 +27,7 @@ export function OrderSummaryCard({ items, totalCents }: OrderSummaryCardProps) {
       <View style={styles.divider} />
       <View style={styles.row}>
         <AppText variant="title">Total</AppText>
-        <AppText variant="title" color="primary" family="headingBold" testID="order-total">
+        <AppText variant="title" color="primaryText" family="headingBold" testID="order-total">
           {formatPriceOrFree(totalCents)}
         </AppText>
       </View>

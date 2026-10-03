@@ -11,12 +11,12 @@ export function CourseDetailSkeleton() {
         <Skeleton height={243} borderRadius={0} />
       </View>
       <View style={styles.body}>
-        <Skeleton width="90%" height={22} />
-        <Skeleton width="60%" height={22} />
+        <Skeleton width="90%" height={20} />
+        <Skeleton width="60%" height={20} />
         <Skeleton width="45%" height={14} />
-        <Skeleton height={44} style={styles.tabs} />
+        <Skeleton height={48} style={styles.tabs} />
         <View style={styles.teacherRow}>
-          <Skeleton width={40} height={40} borderRadius={20} />
+          <Skeleton width={36} height={36} borderRadius={18} />
           <View style={styles.teacherTexts}>
             <Skeleton width="50%" height={14} />
             <Skeleton width="35%" height={12} />
@@ -34,6 +34,6 @@ const styles = StyleSheet.create({
   heroWrap: { width: '100%' },
   body: { padding: layout.screenPaddingX, gap: spacing.md },
   tabs: { marginVertical: spacing.sm },
-  teacherRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  teacherRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   teacherTexts: { flex: 1, gap: spacing.sm },
 });

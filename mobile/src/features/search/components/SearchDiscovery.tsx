@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   section: { gap: spacing.lg },
   sectionHeader: { paddingHorizontal: layout.screenPaddingX },
   padded: { paddingHorizontal: layout.screenPaddingX },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  rows: { gap: spacing.md },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', columnGap: spacing.xs, rowGap: spacing.sm },
+  rows: { gap: spacing.sm },
   cardsSkeleton: { flexDirection: 'row', gap: spacing.md, overflow: 'hidden' },
 });

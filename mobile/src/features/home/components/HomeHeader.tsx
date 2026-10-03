@@ -31,16 +31,16 @@ export function HomeHeader({
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.row}>
         <View style={styles.texts}>
-          <AppText variant="h2" color="white" numberOfLines={1} accessibilityRole="header">
+          <AppText variant="h2" color="textOnPrimary" numberOfLines={1} accessibilityRole="header">
             {greeting}
           </AppText>
-          <AppText variant="caption" color="white">
+          <AppText variant="caption" color="textOnPrimary" style={styles.subtitle}>
             {HOME_SUBTITLE}
           </AppText>
         </View>
         <IconButton
           icon="shopping-cart"
-          color="white"
+          color="textOnPrimary"
           badgeCount={cartCount}
           onPress={onPressCart}
           accessibilityLabel={countLabel(
@@ -51,7 +51,7 @@ export function HomeHeader({
         />
         <IconButton
           icon="bell"
-          color="white"
+          color="textOnPrimary"
           badgeCount={unreadCount}
           onPress={onPressNotifications}
           accessibilityLabel={countLabel('Open notifications', unreadCount, 'unread')}
@@ -62,12 +62,17 @@ export function HomeHeader({
 }
 
 const styles = StyleSheet.create({
+  // Design (375 x 812 frame): greeting line starts right below the status bar, header is 66 dp
+  // tall without the inset, icons end 8 dp before the right edge.
   container: {
     paddingLeft: spacing.xl,
-    paddingRight: spacing.xs,
+    paddingRight: spacing.sm,
     paddingBottom: spacing.lg,
     backgroundColor: colors.primary,
   },
-  row: { minHeight: 52, flexDirection: 'row', alignItems: 'center' },
+  // The design centers the icons on the greeting line (11 dp higher); the 48 dp targets are kept
+  // inside the safe area instead, so they are centered on the text block.
+  row: { flexDirection: 'row', alignItems: 'center' },
   texts: { flex: 1, paddingRight: spacing.sm },
+  subtitle: { marginTop: spacing.xxs, lineHeight: 20 },
 });

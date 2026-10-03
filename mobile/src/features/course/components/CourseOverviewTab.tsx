@@ -32,11 +32,13 @@ export function CourseOverviewTab({ course }: CourseOverviewTabProps) {
 
   return (
     <View style={styles.container}>
-      <TeacherRow
-        teacher={teacher}
-        onOpenTeacher={handleOpenTeacher}
-        onToggleFollow={handleToggleFollow}
-      />
+      <View style={styles.teacher}>
+        <TeacherRow
+          teacher={teacher}
+          onOpenTeacher={handleOpenTeacher}
+          onToggleFollow={handleToggleFollow}
+        />
+      </View>
       <View style={styles.section}>
         <AppText variant="title" accessibilityRole="header">
           Description
@@ -58,5 +60,7 @@ export function CourseOverviewTab({ course }: CourseOverviewTabProps) {
 
 const styles = StyleSheet.create({
   container: { gap: spacing.xxl },
-  section: { gap: spacing.md },
+  section: { gap: spacing.sm },
+  // Design: 28 dp from the 36 dp teacher row to "Description" (24 dp between the other sections).
+  teacher: { marginBottom: spacing.xs },
 });

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -52,10 +52,7 @@ export function WriteReviewScreen({ courseId }: WriteReviewScreenProps) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.screen} behavior="padding">
       <ScreenHeader
         title={REVIEW_STRINGS.writeTitle}
         showBack={false}

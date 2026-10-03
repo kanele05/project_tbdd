@@ -3,12 +3,12 @@ import { Image } from 'expo-image';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
 import { Avatar } from '@/components/ui/Avatar';
@@ -41,15 +41,13 @@ export function EditProfileScreen() {
     pickAvatar,
     save,
   } = useEditProfile();
+  const insets = useSafeAreaInsets();
 
   return (
-    <KeyboardAvoidingView
-      style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.screen} behavior="padding">
       <ScreenHeader title="Edit profile" />
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -82,7 +80,7 @@ export function EditProfileScreen() {
             </View>
           ) : null}
           <View style={styles.cameraBadge}>
-            <Feather name="camera" size={16} color={colors.white} />
+            <Feather name="camera" size={16} color={colors.textOnPrimary} />
           </View>
         </Pressable>
 

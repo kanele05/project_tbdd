@@ -29,13 +29,13 @@ function formatNumber(value: number): string {
 /** BR-02 icon: ✓ completed · ▶ in progress / active · ▷ unlocked · 🔒 locked. */
 function StatusIcon({ status, isActive }: { status: LessonStatus; isActive: boolean }) {
   if (status === 'COMPLETED') return <Feather name="check" size={20} color={colors.primary} />;
-  if (status === 'LOCKED') return <Feather name="lock" size={16} color={colors.textMuted} />;
+  if (status === 'LOCKED') return <Feather name="lock" size={16} color={colors.iconMuted} />;
   const isHighlighted = isActive || status === 'IN_PROGRESS';
   return (
     <Feather
       name="play"
       size={isHighlighted ? 20 : 18}
-      color={isHighlighted ? colors.primary : colors.textMuted}
+      color={isHighlighted ? colors.primary : colors.iconMuted}
     />
   );
 }
@@ -85,13 +85,12 @@ function LessonRowBase({ lesson, isActive = false, onPress }: LessonRowProps) {
 }
 
 const styles = StyleSheet.create({
+  // Design: a 58 dp row (1 border + 8 padding + title 20 + 4 + duration 16), title at x = 56.
   row: {
-    minHeight: 62,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.xs,
-    paddingVertical: spacing.md,
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
     borderRadius: radius.card,
     borderWidth: 1,
@@ -99,8 +98,8 @@ const styles = StyleSheet.create({
   },
   active: { backgroundColor: colors.primaryLight, borderColor: colors.primary },
   pressed: { opacity: 0.7 },
-  number: { width: 20 },
-  texts: { flex: 1, gap: spacing.xxs },
+  number: { minWidth: 20 },
+  texts: { flex: 1, gap: spacing.xs },
   icon: { width: 24, alignItems: 'center' },
 });
 

@@ -109,7 +109,9 @@ export function ProjectsTab({ courseId }: ProjectsTabProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: spacing.xxl },
+  // Design: 32 dp between sections, 12 dp under each heading. The Learning screen already pads the
+  // tab content by 8 dp, so +8 here gives the 16 dp the design leaves under the tab bar.
+  container: { gap: spacing.xxxl, paddingTop: spacing.sm },
   section: { gap: spacing.md },
   skeletonGap: { marginTop: spacing.lg },
 });

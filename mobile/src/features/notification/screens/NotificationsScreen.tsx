@@ -2,6 +2,7 @@ import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useCallback, useMemo, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -22,6 +23,7 @@ const keyExtractor = (item: NotificationDto): string => item.id;
  * the Home badge drops at once) and opens its target; "Mark all as read" clears the list.
  */
 export function NotificationsScreen() {
+  const insets = useSafeAreaInsets();
   const query = useNotificationsInfinite();
   const { mutate: markRead } = useMarkRead();
   const { mutate: markAllRead } = useMarkAllRead();
@@ -74,6 +76,7 @@ export function NotificationsScreen() {
         onEndReachedThreshold={0.5}
         refreshing={isRefetching && !isFetchingNextPage}
         onRefresh={handleRefresh}
+        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <EmptyState
@@ -102,13 +105,13 @@ export function NotificationsScreen() {
           <Pressable
             onPress={handleMarkAll}
             disabled={unreadCount === 0}
-            hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             accessibilityRole="button"
             accessibilityLabel="Mark all as read"
             accessibilityState={{ disabled: unreadCount === 0 }}
             style={unreadCount === 0 ? styles.disabled : null}
           >
-            <AppText variant="label" color="primary">
+            <AppText variant="label" color="primaryText">
               Mark all as read
             </AppText>
           </Pressable>

@@ -102,9 +102,9 @@ export function CourseLessonsTab({ courseId, onPlayPreview }: CourseLessonsTabPr
 }
 
 const styles = StyleSheet.create({
+  // The first chapter title sits 20 dp under the tabs: the course screen's `tabContent` adds it.
   container: {
     paddingHorizontal: layout.screenPaddingX,
-    paddingTop: spacing.sm,
     paddingBottom: spacing.lg,
   },
 });

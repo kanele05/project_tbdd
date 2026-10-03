@@ -2,6 +2,7 @@ import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Share, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorState } from '@/components/ui/ErrorState';
 import { IconButton } from '@/components/ui/IconButton';
@@ -47,6 +48,7 @@ const TABS: readonly SegmentedTab<TeacherTab>[] = [
  * tab paginates infinitely), so there is no nested vertical scrolling.
  */
 export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
+  const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<TeacherTab>('overview');
   const currentUserId = useAuthStore((state) => state.user?.id);
 
@@ -193,7 +195,7 @@ export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
           ListFooterComponent={footer}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxxl }]}
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -203,7 +205,8 @@ export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  tabs: { marginHorizontal: layout.screenPaddingX, marginTop: spacing.xl },
+  // Design: 36 dp between the location line and the tab row.
+  tabs: { marginHorizontal: layout.screenPaddingX, marginTop: spacing.xxxl + spacing.xs },
   content: { paddingBottom: spacing.xxxl },
   review: { paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.md },
   footer: { paddingVertical: spacing.lg },

@@ -2,6 +2,7 @@ import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { memo, useCallback, useMemo, type ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -42,6 +43,7 @@ function SkeletonGrid() {
 
 /** SC-19 Top teachers (Could): two-column grid of `TeacherCard`, infinite scroll -> SC-18. */
 export function TopTeachersScreen() {
+  const insets = useSafeAreaInsets();
   const query = useTeachersInfinite();
   const { data, hasNextPage, isFetchingNextPage, isRefetching, fetchNextPage, refetch } = query;
 
@@ -80,7 +82,7 @@ export function TopTeachersScreen() {
         onEndReachedThreshold={0.5}
         refreshing={isRefetching && !isFetchingNextPage}
         onRefresh={handleRefresh}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <EmptyState
@@ -111,11 +113,16 @@ const GAP = spacing.md;
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   // Cells carry half the column gap on each side; the list padding makes up the rest of 20 dp.
-  content: { paddingHorizontal: layout.screenPaddingX - GAP / 2, paddingBottom: spacing.xxl },
+  content: {
+    paddingHorizontal: layout.screenPaddingX - GAP / 2,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xxl,
+  },
   skeletonGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: layout.screenPaddingX - GAP / 2,
+    paddingTop: spacing.sm,
   },
   cell: { width: '50%', padding: GAP / 2 },
   card: { width: '100%' },

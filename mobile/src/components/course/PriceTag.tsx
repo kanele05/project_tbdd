@@ -39,7 +39,7 @@ function PriceTagBase({
   if (layout === 'stacked') {
     return (
       <View style={style} accessible accessibilityLabel={a11y}>
-        <AppText variant="h2" color="textPrimary" family="headingBold">
+        <AppText variant="h3" color="textPrimary" family="headingBold">
           {priceText}
         </AppText>
         {hasDiscount ? (
@@ -60,7 +60,7 @@ function PriceTagBase({
 
   return (
     <View style={[styles.row, style]} accessible accessibilityLabel={a11y}>
-      <AppText variant="title" color="primary" family="headingBold" style={styles.inlinePrice}>
+      <AppText variant="title" color="primaryText" family="headingBold" style={styles.inlinePrice}>
         {priceText}
       </AppText>
       {hasDiscount ? (

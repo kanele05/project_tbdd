@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BookmarkButton } from '@/components/course/BookmarkButton';
@@ -180,10 +180,7 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.screen} behavior="padding">
       <ScreenHeader
         title={courseData ? getShortCourseTitle(courseData.title) : undefined}
         right={
@@ -223,13 +220,15 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
+  // Design draws the video 3:2 (375 x 250); we keep 16:9 because the lesson videos are 16:9 (a 3:2
+  // box would letterbox them) and the lesson list keeps ~40 dp more room on small phones.
   player: { aspectRatio: 16 / 9, backgroundColor: colors.textPrimary },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   headerBlock: {
-    gap: spacing.lg,
+    gap: spacing.md,
     paddingHorizontal: layout.screenPaddingX,
-    paddingTop: spacing.lg,
+    paddingTop: spacing.xl,
   },
   infoSkeleton: { gap: spacing.md },
-  tabContent: { paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.sm },
+  tabContent: { paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.xl },
 });

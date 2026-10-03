@@ -25,7 +25,7 @@ describe('ExpandableText', () => {
     expect(screen.queryByText(/See more/)).not.toBeOnTheScreen();
   });
 
-  it('clamps long text to 4 lines with an inline "See more"', async () => {
+  it('clamps long text to 4 lines with a "See more" button below', async () => {
     await render(<ExpandableText text={LONG_TEXT} />);
     await measure([
       'Culpa aliquip commodo ',
@@ -35,9 +35,10 @@ describe('ExpandableText', () => {
       'laborum.',
     ]);
 
-    expect(screen.getByText(/See more/)).toBeOnTheScreen();
-    // The visible copy is cut (the hidden measurer holds the full text).
-    expect(screen.queryByText(LONG_TEXT)).not.toBeOnTheScreen();
+    expect(screen.getByText('See more')).toBeOnTheScreen();
+    expect(screen.getByRole('link', { name: 'See more' })).toBeOnTheScreen();
+    // The visible copy is clamped to 4 lines (the hidden measurer holds the full text).
+    expect(screen.getByText(LONG_TEXT).props.numberOfLines).toBe(4);
   });
 
   it('expands to the full text and offers "See less"', async () => {
@@ -46,8 +47,8 @@ describe('ExpandableText', () => {
 
     await fireEvent.press(screen.getByText(/See more/));
 
-    expect(screen.getByText(LONG_TEXT)).toBeOnTheScreen();
-    expect(screen.queryByText(/See more/)).not.toBeOnTheScreen();
+    expect(screen.getByText(LONG_TEXT).props.numberOfLines).toBeUndefined();
+    expect(screen.queryByText('See more')).not.toBeOnTheScreen();
 
     await fireEvent.press(screen.getByText('See less'));
     expect(screen.getByText(/See more/)).toBeOnTheScreen();

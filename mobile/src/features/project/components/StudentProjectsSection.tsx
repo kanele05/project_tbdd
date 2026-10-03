@@ -5,7 +5,7 @@ import { AppText, Button, Skeleton } from '@/components/ui';
 import { layout, spacing } from '@/theme';
 import type { ProjectSubmissionDto } from '@/types/api';
 
-import { PROJECT_CARD_WIDTH, ProjectCard } from './ProjectCard';
+import { PROJECT_CARD_HEIGHT, PROJECT_CARD_WIDTH, ProjectCard } from './ProjectCard';
 
 export type StudentProjectsSectionProps = {
   /** Total number of submissions of the course (title: "12 Student Projects"). */
@@ -44,8 +44,8 @@ export function StudentProjectsSection({
   if (isLoading) {
     body = (
       <View style={styles.skeletons}>
-        <Skeleton width={PROJECT_CARD_WIDTH} height={150} />
-        <Skeleton width={PROJECT_CARD_WIDTH} height={150} />
+        <Skeleton width={PROJECT_CARD_WIDTH} height={PROJECT_CARD_HEIGHT} />
+        <Skeleton width={PROJECT_CARD_WIDTH} height={PROJECT_CARD_HEIGHT} />
       </View>
     );
   } else if (isError) {
@@ -93,8 +93,8 @@ const styles = StyleSheet.create({
   section: { gap: spacing.md },
   list: { marginHorizontal: -layout.screenPaddingX },
   listContent: { paddingHorizontal: layout.screenPaddingX },
-  separator: { width: spacing.md },
-  skeletons: { flexDirection: 'row', gap: spacing.md },
+  separator: { width: spacing.sm },
+  skeletons: { flexDirection: 'row', gap: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   flex: { flex: 1 },
 });

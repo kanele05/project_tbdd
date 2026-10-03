@@ -17,6 +17,8 @@ export type TeacherProfileHeaderProps = {
 
 const COVER_HEIGHT = 128;
 const AVATAR_SIZE = 96;
+/** Design: the avatar's top edge sits 44 dp above the cover's bottom edge. */
+const AVATAR_OVERLAP = 44;
 
 /**
  * Top of SC-18: cover, round avatar overlapping the cover (secondaryLight background), name +
@@ -50,7 +52,7 @@ function TeacherProfileHeaderBase({ teacher }: TeacherProfileHeaderProps) {
           <Badge label="Teacher" shape="pill" style={styles.badge} />
         </View>
         {teacher.jobTitle ? (
-          <AppText variant="body" color="textSecondary" align="center">
+          <AppText variant="body" color="textSecondary" align="center" style={styles.jobTitle}>
             {teacher.jobTitle}
           </AppText>
         ) : null}
@@ -75,8 +77,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     backgroundColor: colors.surface,
   },
-  // The avatar sits half over the cover (design: top of the circle ~44 dp above the cover edge).
-  identity: { alignItems: 'center', gap: spacing.xs, marginTop: -(AVATAR_SIZE / 2) },
+  // Vertical rhythm measured from the design: avatar bottom -> name row 8, name row -> job 12,
+  // job -> location 8.
+  identity: { alignItems: 'center', marginTop: -AVATAR_OVERLAP },
   nameRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -86,7 +89,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   badge: { alignSelf: 'center' },
-  place: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  jobTitle: { marginTop: spacing.md },
+  place: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.sm },
 });
 
 export const TeacherProfileHeader = memo(TeacherProfileHeaderBase);

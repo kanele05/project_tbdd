@@ -14,7 +14,8 @@ export type CourseHeroProps = {
 
 /** Artboard ratio of the purple banner in the design (375 x 243). */
 const HERO_ASPECT_RATIO = 375 / 243;
-const PLAY_SIZE = 48;
+/** The design's play button is a 44 dp white disc; `hitSlop` keeps the touch target at 48 dp. */
+const PLAY_SIZE = 44;
 
 /** Purple banner (`secondary`) with the course image and a centered white play button. */
 function CourseHeroBase({ imageUrl, canPlayPreview, onPlayPreview }: CourseHeroProps) {
@@ -33,10 +34,10 @@ function CourseHeroBase({ imageUrl, canPlayPreview, onPlayPreview }: CourseHeroP
           onPress={onPlayPreview}
           accessibilityRole="button"
           accessibilityLabel="Play course preview"
-          hitSlop={8}
+          hitSlop={4}
           style={({ pressed }) => [styles.play, shadows.card, pressed ? styles.pressed : null]}
         >
-          <Ionicons name="play" size={22} color={colors.secondary} style={styles.playIcon} />
+          <Ionicons name="play" size={20} color={colors.secondary} style={styles.playIcon} />
         </Pressable>
       ) : null}
     </View>

@@ -9,10 +9,10 @@ export function CourseProgressCardSkeleton() {
     <View style={styles.card}>
       <Skeleton width={96} height={96} borderRadius={radius.button} />
       <View style={styles.info}>
-        <Skeleton width="70%" height={18} />
-        <Skeleton width="45%" height={14} />
-        <Skeleton width="35%" height={14} />
-        <Skeleton height={6} borderRadius={radius.pill} />
+        <Skeleton width="70%" height={16} />
+        <Skeleton width="45%" height={12} />
+        <Skeleton width="35%" height={12} />
+        <Skeleton height={4} borderRadius={radius.pill} />
       </View>
     </View>
   );
@@ -21,11 +21,11 @@ export function CourseProgressCardSkeleton() {
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
     padding: spacing.md,
-    borderRadius: radius.card,
+    borderRadius: radius.badge,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.surface,
   },
-  info: { flex: 1, justifyContent: 'center', gap: spacing.sm },
+  info: { flex: 1, gap: spacing.sm },
 });

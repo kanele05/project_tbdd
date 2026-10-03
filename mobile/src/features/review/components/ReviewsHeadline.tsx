@@ -35,11 +35,11 @@ function ReviewsHeadlineBase({ summary, onViewAll }: ReviewsHeadlineProps) {
       </View>
       <Pressable
         onPress={onViewAll}
-        hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+        hitSlop={{ top: 16, bottom: 16, left: 8, right: 8 }}
         accessibilityRole="link"
         accessibilityLabel={`${REVIEW_STRINGS.viewAll} reviews`}
       >
-        <AppText variant="body" color="primary" family="bodyMedium">
+        <AppText variant="caption" color="primaryText" family="bodyMedium">
           {REVIEW_STRINGS.viewAll}
         </AppText>
       </Pressable>

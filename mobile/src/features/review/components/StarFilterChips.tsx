@@ -23,6 +23,7 @@ function StarFilterChipsBase({
   return (
     <ScrollView
       horizontal
+      style={styles.scroll}
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={[styles.row, { paddingHorizontal: inset }]}
       accessibilityRole="radiogroup"
@@ -34,6 +35,7 @@ function StarFilterChipsBase({
           leftIcon="star"
           selected={filter === value}
           onPress={() => onChange(filter)}
+          style={styles.chip}
           testID={`review-filter-${filter}`}
         />
       ))}
@@ -41,8 +43,16 @@ function StarFilterChipsBase({
   );
 }
 
+/** The `Chip` hitSlop (6 dp above/below) has to stay inside the scroll view to be tappable. */
+const HIT_SLOP_ROOM = 6;
+
 const styles = StyleSheet.create({
-  row: { gap: spacing.md, alignItems: 'center' },
+  // Design chips are 28 dp tall and fit all six in one row (44 dp wide, 12 dp apart). The 6 dp
+  // padding keeps the chip's own hitSlop inside the scroll view; the negative margin gives the
+  // layout back, so the row takes 28 dp. The touch target is 40 dp.
+  scroll: { flexGrow: 0, marginVertical: -HIT_SLOP_ROOM },
+  row: { gap: spacing.md, alignItems: 'center', paddingVertical: HIT_SLOP_ROOM },
+  chip: { minHeight: 28, paddingHorizontal: spacing.sm },
 });
 
 export const StarFilterChips = memo(StarFilterChipsBase);

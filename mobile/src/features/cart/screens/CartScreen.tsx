@@ -132,6 +132,7 @@ export function CartScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  list: { gap: spacing.md, padding: layout.screenPaddingX },
+  // 16 dp between rows, like the Similar courses cards of the design.
+  list: { gap: spacing.lg, padding: layout.screenPaddingX },
   empty: { flex: 1 },
 });

@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { AccessibilityInfo, BackHandler, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -27,6 +27,7 @@ import { useCart, useCheckout } from '../hooks';
 type Phase = { kind: 'form' } | { kind: 'success'; result: CheckoutResponse } | { kind: 'failed' };
 
 const PAYMENT_FAILED_CODE = 'PAYMENT_FAILED';
+const PAYMENT_SUCCESS_ANNOUNCEMENT = 'Payment successful. Your courses are ready.';
 
 function isPaymentFailure(error: unknown): boolean {
   return isAppError(error) && (error.status === 402 || error.code === PAYMENT_FAILED_CODE);
@@ -97,7 +98,7 @@ function CheckoutForm({
           </View>
         ) : null}
       </ScrollView>
-      <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
+      <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
         <Button
           title={`Pay ${formatPrice(cart.totalCents)}`}
           fullWidth
@@ -135,6 +136,19 @@ export function CheckoutScreen() {
       else toast.error(getErrorMessage(e));
     }
   }, [method, payAsync, simulateFailure, toast]);
+
+  const isSuccess = phase.kind === 'success';
+  useEffect(() => {
+    if (!isSuccess) return undefined;
+    AccessibilityInfo.announceForAccessibility(PAYMENT_SUCCESS_ANNOUNCEMENT);
+    // The cart is empty after a successful payment: system Back goes to My Courses, not back to
+    // an empty checkout form / cart.
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      router.dismissTo('/my-courses');
+      return true;
+    });
+    return () => subscription.remove();
+  }, [isSuccess]);
 
   const handleStartLearning = useCallback(() => {
     if (phase.kind !== 'success') return;
@@ -217,10 +231,11 @@ const styles = StyleSheet.create({
   },
   devLabel: { flex: 1 },
   bar: {
-    paddingTop: spacing.md,
+    paddingTop: spacing.lg,
     paddingHorizontal: layout.screenPaddingX,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    // Same hairline divider as the SC-09 bottom bar.
+    borderTopColor: colors.surface,
     backgroundColor: colors.background,
   },
   empty: { flex: 1 },

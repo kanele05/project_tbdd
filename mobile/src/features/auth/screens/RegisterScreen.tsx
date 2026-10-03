@@ -60,11 +60,11 @@ export function RegisterScreen() {
           </AppText>
           <Pressable
             onPress={goToLogin}
-            hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             accessibilityRole="link"
             accessibilityLabel={STRINGS.auth.login}
           >
-            <AppText variant="label" color="primary">
+            <AppText variant="label" color="primaryText">
               {STRINGS.auth.login}
             </AppText>
           </Pressable>

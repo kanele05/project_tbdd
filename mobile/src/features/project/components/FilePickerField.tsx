@@ -1,4 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -80,14 +81,14 @@ export function FilePickerField({
           style={({ pressed }) => [styles.empty, pressed ? styles.pressed : null]}
           testID={testID}
         >
-          <Feather name="upload-cloud" size={22} color={colors.primary} />
-          <AppText variant="body" color="primary" family="bodyMedium">
+          <Ionicons name="cloud-upload-outline" size={28} color={colors.primary} />
+          <AppText variant="body" color="primaryText" family="bodyMedium">
             Choose file
           </AppText>
         </Pressable>
       )}
       {error ? (
-        <AppText variant="caption" color="danger" accessibilityRole="alert">
+        <AppText variant="caption" color="dangerText" accessibilityRole="alert">
           {error}
         </AppText>
       ) : (
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderStyle: 'dashed',
     borderColor: colors.primary,
     borderRadius: radius.card,

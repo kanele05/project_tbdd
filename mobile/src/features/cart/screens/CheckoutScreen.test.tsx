@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { AccessibilityInfo, BackHandler } from 'react-native';
 
 import { makeCourse } from '@/components/course/courseFixtures';
 import { ToastProvider } from '@/components/ui/Toast';
@@ -106,6 +107,26 @@ describe('CheckoutScreen', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Start learning' }));
     expect(mockDismissTo).toHaveBeenCalledWith('/my-courses');
     expect(mockPush).toHaveBeenCalledWith('/learn/a');
+  });
+
+  it('announces the success to screen readers and sends system Back to My Courses', async () => {
+    const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
+    const backHandlers: (() => boolean | null | undefined)[] = [];
+    const addListener = jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_, cb) => {
+      backHandlers.push(cb as () => boolean);
+      return { remove: jest.fn() };
+    });
+    mockPay.mockResolvedValue(SUCCESS);
+    await renderScreen();
+    await fireEvent.press(screen.getByRole('button', { name: 'Pay $84' }));
+    await screen.findByText('Payment successful');
+
+    expect(announce).toHaveBeenCalledWith(expect.stringContaining('Payment successful'));
+    expect(backHandlers.at(-1)?.()).toBe(true);
+    expect(mockDismissTo).toHaveBeenCalledWith('/my-courses');
+    expect(mockBack).not.toHaveBeenCalled();
+    announce.mockRestore();
+    addListener.mockRestore();
   });
 
   it('goes to My Courses from the success result', async () => {

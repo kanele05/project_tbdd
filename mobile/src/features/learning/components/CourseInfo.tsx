@@ -28,7 +28,7 @@ function CourseInfoBase({
 }: CourseInfoProps) {
   return (
     <View style={styles.container}>
-      <AppText variant="title" numberOfLines={2}>
+      <AppText variant="title" numberOfLines={2} style={styles.title}>
         {title}
       </AppText>
       <View style={styles.row}>
@@ -44,9 +44,11 @@ function CourseInfoBase({
           <Ionicons
             name={isLiked ? 'heart' : 'heart-outline'}
             size={24}
-            color={isLiked ? colors.danger : colors.textSecondary}
+            color={isLiked ? colors.danger : colors.textMuted}
           />
-          <AppText variant="body">{`${likeCount} ${LEARNING_STRINGS.like}`}</AppText>
+          <AppText variant="caption" color="textPrimary">
+            {`${likeCount} ${LEARNING_STRINGS.like}`}
+          </AppText>
         </Pressable>
         <View style={styles.dot} />
         <Pressable
@@ -57,8 +59,10 @@ function CourseInfoBase({
           style={styles.action}
           testID="course-share"
         >
-          <Feather name="share-2" size={22} color={colors.textSecondary} />
-          <AppText variant="body">{`${shareCount} ${LEARNING_STRINGS.share}`}</AppText>
+          <Feather name="share-2" size={24} color={colors.textMuted} />
+          <AppText variant="caption" color="textPrimary">
+            {`${shareCount} ${LEARNING_STRINGS.share}`}
+          </AppText>
         </Pressable>
       </View>
     </View>
@@ -66,8 +70,10 @@ function CourseInfoBase({
 }
 
 const styles = StyleSheet.create({
-  container: { gap: spacing.md },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: 32 },
+  container: { gap: spacing.xs },
+  // Design: 16 px Epilogue with a 27 dp line pitch.
+  title: { lineHeight: 27 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 32 },
   action: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.border },
 });

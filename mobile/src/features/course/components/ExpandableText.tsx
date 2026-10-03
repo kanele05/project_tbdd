@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
+  Pressable,
   StyleSheet,
   View,
   type NativeSyntheticEvent,
@@ -8,7 +9,7 @@ import {
 
 import { AppText } from '@/components/ui/AppText';
 import { STRINGS } from '@/constants/strings';
-import { spacing } from '@/theme';
+import { layout, spacing } from '@/theme';
 
 export type ExpandableTextProps = {
   text: string;
@@ -16,11 +17,11 @@ export type ExpandableTextProps = {
   maxLines?: number;
 };
 
-/** Characters removed from the last visible line to make room for "...  See more". */
-const TRIM_CHARS = 16;
-
 /**
- * Paragraph clamped to `maxLines` with an inline "See more" link (design: Overview / Projects).
+ * Paragraph clamped to `maxLines` with a "See more" / "See less" link (design: Overview / Projects).
+ * Design: 14/22 Inter in `textPrimary`; the link is a 12 dp primary caption. It is its own
+ * `Pressable` under the paragraph (48 dp tall) instead of nested text, so it is easy to hit and
+ * TalkBack / VoiceOver can focus it.
  * A hidden copy of the full text is measured with `onTextLayout` to know whether it overflows.
  */
 export function ExpandableText({ text, maxLines = 4 }: ExpandableTextProps) {
@@ -35,11 +36,6 @@ export function ExpandableText({ text, maxLines = 4 }: ExpandableTextProps) {
   }, []);
 
   const isTruncatable = lines !== null && lines.length > maxLines;
-  const collapsedText = useMemo(() => {
-    if (!lines || lines.length <= maxLines) return text;
-    const visible = lines.slice(0, maxLines).join('').trimEnd();
-    return `${visible.slice(0, Math.max(0, visible.length - TRIM_CHARS)).trimEnd()}...`;
-  }, [lines, maxLines, text]);
 
   const expand = useCallback(() => setIsExpanded(true), []);
   const collapse = useCallback(() => setIsExpanded(false), []);
@@ -47,9 +43,8 @@ export function ExpandableText({ text, maxLines = 4 }: ExpandableTextProps) {
   return (
     <View>
       <AppText
-        variant="bodyLarge"
-        color="textSecondary"
-        style={styles.measure}
+        variant="body"
+        style={[styles.paragraph, styles.measure]}
         onTextLayout={handleMeasure}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
@@ -58,40 +53,37 @@ export function ExpandableText({ text, maxLines = 4 }: ExpandableTextProps) {
         {text}
       </AppText>
       <AppText
-        variant="bodyLarge"
-        color="textSecondary"
+        variant="body"
+        style={styles.paragraph}
         numberOfLines={isExpanded ? undefined : maxLines}
       >
-        {isExpanded || !isTruncatable ? text : collapsedText}
-        {isTruncatable && !isExpanded ? (
-          <AppText
-            variant="body"
-            color="primary"
-            family="bodyMedium"
-            accessibilityRole="link"
-            onPress={expand}
-          >
-            {`  ${STRINGS.common.seeMore}`}
-          </AppText>
-        ) : null}
+        {text}
       </AppText>
-      {isTruncatable && isExpanded ? (
-        <AppText
-          variant="body"
-          color="primary"
-          family="bodyMedium"
+      {isTruncatable ? (
+        <Pressable
+          onPress={isExpanded ? collapse : expand}
           accessibilityRole="link"
-          onPress={collapse}
-          style={styles.seeLess}
+          accessibilityState={{ expanded: isExpanded }}
+          style={styles.toggle}
         >
-          {STRINGS.common.seeLess}
-        </AppText>
+          <AppText variant="caption" color="primaryText">
+            {isExpanded ? STRINGS.common.seeLess : STRINGS.common.seeMore}
+          </AppText>
+        </Pressable>
       ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // The design's paragraph pitch is 22 dp (the `body` token is 20).
+  paragraph: { lineHeight: 22 },
   measure: { position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 },
-  seeLess: { marginTop: spacing.xs, paddingVertical: spacing.sm, alignSelf: 'flex-start' },
+  // 48 dp target; the negative margin keeps the visible gap to the paragraph at ~8 dp.
+  toggle: {
+    minHeight: layout.minTouchTarget,
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+    marginTop: -spacing.sm,
+  },
 });

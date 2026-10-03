@@ -23,24 +23,24 @@ function CategoryRowBase({ category, onPress }: CategoryRowProps) {
       style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}
     >
       <Feather name={toFeatherIcon(category.icon)} size={24} color={getCategoryColor(category)} />
-      <AppText variant="body" color="textSecondary" style={styles.name} numberOfLines={1}>
+      <AppText variant="body" style={styles.name} numberOfLines={1}>
         {category.name}
       </AppText>
-      <Feather name="chevron-right" size={20} color={colors.textSecondary} />
+      <Feather name="chevron-right" size={24} color={colors.iconMuted} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  // Design: 48 dp row, 12 dp around the 24 dp icon and chevron, 12 dp between icon and name.
   row: {
     minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    gap: spacing.md,
+    paddingHorizontal: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderSubtle,
     borderRadius: radius.card,
     backgroundColor: colors.background,
   },

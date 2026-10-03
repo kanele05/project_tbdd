@@ -21,7 +21,8 @@ export type CourseBottomBarProps = {
   onAction: (action: CourseAction) => void;
 };
 
-const MIN_BUTTON_WIDTH = 160;
+/** The design's button is 162 x 36 dp, right-aligned to the 20 dp screen padding. */
+const MIN_BUTTON_WIDTH = 162;
 
 /**
  * Fixed bottom bar of SC-09: price + "x% Disc. ~~$original~~" on the left, the BR-17 action button
@@ -33,12 +34,12 @@ function CourseBottomBarBase({ course, isLoading, onAction }: CourseBottomBarPro
   const discountPercent = getDiscountPercent(course);
 
   return (
-    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
+    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
       <View style={styles.price}>
         {course.enrollment ? (
           <>
             <AppText variant="caption">Your progress</AppText>
-            <AppText variant="title" family="headingBold">
+            <AppText variant="h3" family="headingBold">
               {`${course.enrollment.progressPercent}% complete`}
             </AppText>
           </>
@@ -70,10 +71,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.lg,
-    paddingTop: spacing.md,
+    paddingTop: spacing.lg,
     paddingHorizontal: spacing.xl,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    // The design's divider is a barely visible hairline (#F6F6F7), not the card `border` color.
+    borderTopColor: colors.surface,
     backgroundColor: colors.background,
   },
   price: { flexShrink: 1 },

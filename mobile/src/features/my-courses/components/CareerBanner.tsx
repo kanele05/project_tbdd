@@ -16,10 +16,21 @@ export function CareerBanner({ onPress }: CareerBannerProps) {
   return (
     <View style={styles.banner}>
       <View style={styles.texts}>
-        <AppText variant="h3" color="primary" accessibilityRole="header">
+        <AppText
+          variant="title"
+          family="headingBold"
+          color="white"
+          style={styles.title}
+          accessibilityRole="header"
+        >
           {MY_COURSES_STRINGS.bannerTitle}
         </AppText>
-        <Button title={MY_COURSES_STRINGS.bannerAction} size="sm" onPress={onPress} />
+        <Button
+          title={MY_COURSES_STRINGS.bannerAction}
+          size="sm"
+          onPress={onPress}
+          style={styles.button}
+        />
       </View>
       <View style={styles.art} importantForAccessibility="no-hide-descendants">
         <Feather name="trending-up" size={72} color={colors.secondaryLight} />
@@ -32,12 +43,15 @@ const styles = StyleSheet.create({
   banner: {
     minHeight: 150,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: spacing.md,
     padding: spacing.xl,
-    borderRadius: radius.card,
+    borderRadius: radius.badge,
     backgroundColor: colors.secondary,
   },
-  texts: { flex: 1, gap: spacing.lg, alignItems: 'flex-start' },
-  art: { width: 88, alignItems: 'center', justifyContent: 'center' },
+  // Design: text block pinned to the top-left (title 16 px / 27 dp line pitch, 12 dp, button).
+  texts: { flex: 1, gap: spacing.md, alignItems: 'flex-start' },
+  title: { lineHeight: 27 },
+  button: { paddingHorizontal: spacing.sm },
+  art: { width: 88, alignSelf: 'center', alignItems: 'center', justifyContent: 'center' },
 });

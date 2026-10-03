@@ -1,3 +1,4 @@
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -34,7 +35,10 @@ export function SearchTopBar({
       <View>
         <Button
           title="Filter"
-          leftIcon="sliders"
+          size="sm"
+          leftAdornment={
+            <MaterialIcons name="filter-list" size={18} color={colors.textOnPrimary} />
+          }
           onPress={onPressFilter}
           accessibilityLabel={filterCount > 0 ? `Filter, ${filterCount} active` : 'Filter'}
         />

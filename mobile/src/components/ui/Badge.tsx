@@ -1,7 +1,8 @@
 import { memo } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius } from '@/theme';
+import type { ColorToken } from '@/theme';
 
 import { AppText } from './AppText';
 
@@ -20,11 +21,21 @@ export type BadgeProps = {
   style?: StyleProp<ViewStyle>;
 };
 
+const BADGE_PADDING_X = 6;
+
 const TONE_COLOR: Record<BadgeTone, string> = {
   primary: colors.primary,
   secondary: colors.secondary,
   danger: colors.danger,
   success: colors.success,
+};
+
+/** Label colour per fill: white fails AA on primary / danger / success, so those use dark text. */
+const TONE_TEXT: Record<BadgeTone, ColorToken> = {
+  primary: 'textOnPrimary',
+  secondary: 'textOnSecondary',
+  danger: 'textPrimary',
+  success: 'textPrimary',
 };
 
 function BadgeBase({ label, count, max = 99, tone, shape = 'rect', style }: BadgeProps) {
@@ -36,7 +47,12 @@ function BadgeBase({ label, count, max = 99, tone, shape = 'rect', style }: Badg
         style={[styles.count, { backgroundColor: TONE_COLOR[tone ?? 'danger'] }, style]}
         accessibilityLabel={`${count} new`}
       >
-        <AppText variant="micro" color="white" family="bodySemiBold" style={styles.countText}>
+        <AppText
+          variant="micro"
+          color={TONE_TEXT[tone ?? 'danger']}
+          family="bodySemiBold"
+          style={styles.countText}
+        >
           {text}
         </AppText>
       </View>
@@ -52,7 +68,7 @@ function BadgeBase({ label, count, max = 99, tone, shape = 'rect', style }: Badg
         style,
       ]}
     >
-      <AppText variant="caption" color="white" family="bodyMedium" numberOfLines={1}>
+      <AppText variant="micro" color={TONE_TEXT[tone ?? 'primary']} numberOfLines={1}>
         {label}
       </AppText>
     </View>
@@ -62,15 +78,16 @@ function BadgeBase({ label, count, max = 99, tone, shape = 'rect', style }: Badg
 const styles = StyleSheet.create({
   label: {
     alignSelf: 'flex-start',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xxs,
+    // Design: "Best-seller" = 69 x 20 dp, "Teacher" = 54 x 20 dp (11 px text, 6 dp side padding).
+    paddingHorizontal: BADGE_PADDING_X,
+    paddingVertical: 3,
     justifyContent: 'center',
   },
   rect: { borderRadius: radius.badge },
-  pill: { borderRadius: radius.pill, paddingHorizontal: spacing.md },
+  pill: { borderRadius: radius.pill },
   count: {
     minWidth: 16,
-    height: 16,
+    minHeight: 16,
     paddingHorizontal: 4,
     borderRadius: radius.pill,
     alignItems: 'center',

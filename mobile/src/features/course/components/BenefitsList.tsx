@@ -29,7 +29,7 @@ function BenefitsListBase({ benefits }: BenefitsListProps) {
       {benefits.map((text) => (
         <View key={text} style={styles.row}>
           <BenefitIconView text={text} />
-          <AppText variant="bodyLarge" color="textSecondary" style={styles.text}>
+          <AppText variant="body" style={styles.text}>
             {text}
           </AppText>
         </View>
@@ -40,7 +40,7 @@ function BenefitsListBase({ benefits }: BenefitsListProps) {
 
 const styles = StyleSheet.create({
   list: { gap: spacing.lg },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   text: { flex: 1 },
 });
 

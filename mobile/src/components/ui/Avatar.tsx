@@ -54,7 +54,7 @@ function AvatarBase({
       ) : (
         <AppText
           variant="label"
-          color="secondary"
+          color="secondaryText"
           style={{ fontSize: Math.max(10, Math.round(size * 0.36)), lineHeight: undefined }}
         >
           {getInitials(name) || '?'}

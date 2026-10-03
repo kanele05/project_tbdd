@@ -51,7 +51,7 @@ function BannerCard({ banner, width, onPress }: BannerCardProps) {
         />
       </View>
       <View style={styles.texts}>
-        <AppText variant="label" color="white" uppercase numberOfLines={2}>
+        <AppText variant="body" color="white" uppercase numberOfLines={2}>
           {banner.title}
         </AppText>
         {banner.subtitle ? (
@@ -62,6 +62,8 @@ function BannerCard({ banner, width, onPress }: BannerCardProps) {
         <Button
           title={banner.ctaText}
           size="sm"
+          uppercase
+          labelFamily="body"
           onPress={() => onPress(banner)}
           accessibilityLabel={`${banner.ctaText}, ${banner.title}`}
           style={styles.cta}
@@ -128,14 +130,15 @@ export function BannerCarousel({ banners, onPressBanner }: BannerCarouselProps) 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: layout.screenPaddingX },
   separator: { width: GAP },
+  // Design: 20 dp above the title, 8 dp between title / "20% OFF" / button, 16 dp from the left.
   card: {
-    height: BANNER_HEIGHT,
+    minHeight: BANNER_HEIGHT,
     overflow: 'hidden',
-    justifyContent: 'center',
     borderRadius: radius.badge,
   },
-  texts: { width: '58%', gap: spacing.xs, paddingLeft: spacing.lg },
-  cta: { marginTop: spacing.sm },
+  texts: { width: '58%', gap: spacing.sm, paddingTop: spacing.xl, paddingLeft: spacing.lg },
+  // "JOIN NOW" button: 96 dp wide = 12 dp padding around a 72 dp label.
+  cta: { paddingHorizontal: spacing.md },
   imageWrap: { position: 'absolute', top: 0, right: 0, bottom: 0, width: '45%' },
   image: { width: '100%', height: '100%' },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: spacing.xs, marginTop: spacing.sm },

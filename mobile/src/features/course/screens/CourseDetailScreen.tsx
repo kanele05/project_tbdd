@@ -128,7 +128,7 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
               onPlayPreview={handlePlayHeroPreview}
             />
             <View style={styles.info}>
-              <AppText variant="h3" accessibilityRole="header">
+              <AppText variant="title" accessibilityRole="header" style={styles.title}>
                 {course.title}
               </AppText>
               <RatingInline
@@ -164,14 +164,18 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { paddingBottom: spacing.xxl },
+  scrollContent: { paddingBottom: spacing.xxxl },
   info: {
     gap: spacing.sm,
     paddingHorizontal: layout.screenPaddingX,
     paddingTop: spacing.xl,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.xxl,
   },
+  // Design: 16 dp Epilogue with a 26 dp line pitch (the `title` token is 16/24).
+  title: { lineHeight: 26 },
   tabs: { marginHorizontal: layout.screenPaddingX },
-  tabContent: { paddingTop: spacing.xxl },
-  overviewPadding: { paddingHorizontal: layout.screenPaddingX },
+  // Design: content starts 20 dp under the tab underline (Lessons/Review pad themselves).
+  tabContent: { paddingTop: spacing.xl },
+  // The Overview teacher row sits 28 dp under the tabs: 20 above + 8 here.
+  overviewPadding: { paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.sm },
 });

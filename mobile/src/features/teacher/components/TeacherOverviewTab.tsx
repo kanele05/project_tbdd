@@ -50,7 +50,7 @@ function TeacherOverviewTabBase({
             accessible
             accessibilityLabel={`${stat.label}: ${stat.value}`}
           >
-            <AppText variant="h3" numberOfLines={1} adjustsFontSizeToFit>
+            <AppText variant="h3" numberOfLines={1}>
               {stat.value}
             </AppText>
             <AppText variant="caption" numberOfLines={1}>

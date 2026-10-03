@@ -88,7 +88,7 @@ export function TextField({
         {secureTextEntry ? (
           <Pressable
             onPress={() => setIsRevealed((value) => !value)}
-            hitSlop={12}
+            hitSlop={14}
             accessibilityRole="button"
             accessibilityLabel={isRevealed ? STRINGS.auth.hidePassword : STRINGS.auth.showPassword}
             style={styles.toggle}
@@ -100,7 +100,7 @@ export function TextField({
       {hasError ? (
         <AppText
           variant="caption"
-          color="danger"
+          color="dangerText"
           style={styles.message}
           accessibilityLiveRegion="polite"
         >

@@ -20,15 +20,19 @@ export type CourseCardVerticalProps = {
   isBookmarked?: boolean;
   /** When omitted the bookmark icon is shown as a read-only indicator. */
   onToggleBookmark?: (course: CourseSummary) => void;
-  /** Card width in dp. Default 196 (the Home horizontal lists). */
+  /** Card width in dp. Default 200 (the Home horizontal lists). */
   width?: number;
   style?: StyleProp<ViewStyle>;
 };
 
-export const COURSE_CARD_VERTICAL_WIDTH = 196;
+export const COURSE_CARD_VERTICAL_WIDTH = 200;
 const PADDING = spacing.md;
-const BORDER = 1;
-const IMAGE_RATIO = 2 / 3; // height / width of the thumbnail (3:2)
+/** The thumbnail is always 116 dp tall (Home card 174 x 116, Teacher profile card 180 x 116). */
+export const COURSE_CARD_VERTICAL_IMAGE_HEIGHT = 116;
+/** Thumbnail bottom -> title line (design: 14 dp). */
+const INFO_OFFSET = 14;
+/** Distance from the title line top to the top of the 24 dp bookmark icon (its ink starts 3 dp lower). */
+const BOOKMARK_INSET = 3;
 
 /**
  * Card of the horizontally scrolling lists (Home: Popular / Recommended, Teacher courses):
@@ -44,7 +48,7 @@ function CourseCardVerticalBase({
 }: CourseCardVerticalProps) {
   const saved = isBookmarked ?? course.isBookmarked;
   const badge = getCourseBadge(course);
-  const imageHeight = Math.round((width - 2 * (PADDING + BORDER)) * IMAGE_RATIO);
+  const imageHeight = COURSE_CARD_VERTICAL_IMAGE_HEIGHT;
 
   return (
     <View style={[styles.card, { width }, style]}>
@@ -79,23 +83,28 @@ function CourseCardVerticalBase({
           <AppText variant="caption" numberOfLines={1}>
             {course.teacher.fullName}
           </AppText>
-          <AppText variant="cardTitle" color="primary" family="headingBold" style={styles.price}>
+          <AppText
+            variant="cardTitle"
+            color="primaryText"
+            family="headingBold"
+            style={styles.price}
+          >
             {formatPriceOrFree(course.priceCents)}
           </AppText>
           <RatingInline
             rating={course.ratingAvg}
             count={course.ratingCount}
             lessonCount={course.lessonCount}
-            style={styles.rating}
           />
         </View>
       </Pressable>
       <View
-        style={[styles.bookmark, { top: PADDING + imageHeight + spacing.md - 2 }]}
+        style={[styles.bookmark, { top: PADDING + imageHeight + INFO_OFFSET - BOOKMARK_INSET }]}
         pointerEvents="box-none"
       >
         <BookmarkButton
           isBookmarked={saved}
+          idleColor="textPrimary"
           onPress={onToggleBookmark ? () => onToggleBookmark(course) : undefined}
         />
       </View>
@@ -106,8 +115,8 @@ function CourseCardVerticalBase({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.background,
-    borderWidth: BORDER,
-    borderColor: colors.border,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
     borderRadius: radius.card,
   },
   pressable: { padding: PADDING, borderRadius: radius.card },
@@ -119,10 +128,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   badge: { position: 'absolute', top: spacing.xs, left: spacing.xs },
-  info: { marginTop: spacing.md, gap: spacing.xxs },
+  info: { marginTop: INFO_OFFSET, gap: spacing.xxs },
   title: { paddingRight: spacing.xxl },
-  price: { marginTop: spacing.xs },
-  rating: { marginTop: spacing.xs },
+  // Design: price 15 dp bold; 5 dp below the teacher and 1 dp above the rating line.
+  price: { marginTop: spacing.xs, fontSize: 15, lineHeight: 20 },
   bookmark: { position: 'absolute', right: PADDING },
 });
 

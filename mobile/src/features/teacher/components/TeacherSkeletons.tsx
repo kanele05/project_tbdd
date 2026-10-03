@@ -56,9 +56,9 @@ export function TeacherReviewsSkeleton() {
 
 const styles = StyleSheet.create({
   profile: { paddingHorizontal: layout.screenPaddingX },
-  identity: { alignItems: 'center', gap: spacing.sm, marginTop: -48, marginBottom: spacing.xl },
+  identity: { alignItems: 'center', gap: spacing.sm, marginTop: -44, marginBottom: spacing.xxxl },
   tabs: { borderRadius: 0 },
-  courses: { gap: spacing.md, paddingVertical: spacing.xl },
+  courses: { gap: spacing.md, paddingTop: spacing.xxxl },
   padded: { marginHorizontal: layout.screenPaddingX },
   row: { flexDirection: 'row', gap: spacing.md, paddingHorizontal: layout.screenPaddingX },
   reviews: { gap: spacing.md, padding: layout.screenPaddingX },
