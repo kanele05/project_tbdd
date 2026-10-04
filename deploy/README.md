@@ -292,9 +292,41 @@ dig +short app.<domain>             # macOS/Linux/Git Bash có dig
 
 Cả 4 tên (`<domain>`, `app.`, `api.`, `grafana.`) phải ra cùng IP trước khi sang mục 6.
 
-### 5.1 Hướng dẫn theo từng nhà đăng ký tên miền *(bổ sung sau)*
+### 5.1 Tên miền của nhóm: `eliuh.site` (đăng ký tại Tenten)
 
-> Phần này để trống cho tới khi nhóm chọn nhà đăng ký cụ thể (Namecheap, Name.com, Porkbun, Cloudflare Registrar, nhà đăng ký `.vn`...). Cần ghi: vào trang quản lý DNS ở đâu, cách tạo 4 bản ghi A ở trên, cách đặt TTL.
+Bốn địa chỉ sau khi deploy: `https://eliuh.site` và `https://app.eliuh.site` (web app), `https://api.eliuh.site` (API), `https://grafana.eliuh.site` (giám sát). Trong `.env` trên VPS đặt `DOMAIN=eliuh.site`.
+
+**Cách A (khuyên dùng) — tạo bản ghi ngay trên DNS của Tenten:**
+
+1. Đăng nhập <https://id.tenten.vn> (tài khoản Tenten gửi khi mua) → **Quản lý dịch vụ** → **Tên miền** → ở dòng `eliuh.site` bấm **biểu tượng bánh răng** → **Cài đặt DNS** (hoặc vào thẳng <https://domain.tenten.vn>).
+2. Nếu tên miền đã có sẵn bản ghi mặc định của Tenten (bản ghi `A` cho `@`/`www` trỏ về trang đỗ tên miền), **sửa** bản ghi `@` thay vì tạo trùng; xóa bản ghi `www` cũ hoặc trỏ nó về cùng IP.
+3. Bấm **Thêm** và tạo lần lượt (Loại `A`, Giá trị = IP droplet, độ ưu tiên để mặc định, TTL 300 nếu có ô TTL):
+
+   | Tên | Loại | Giá trị |
+   |---|---|---|
+   | `@` | A | IP droplet |
+   | `app` | A | IP droplet |
+   | `api` | A | IP droplet |
+   | `grafana` | A | IP droplet |
+   | `www` *(tùy chọn)* | A | IP droplet |
+
+4. Bấm **Lưu**. **Không** dùng nút "Cấu hình theo IP" của Tenten nếu tên miền đã có bản ghi khác (nút này xóa toàn bộ bản ghi cũ — sẽ mất cả bản ghi email SPF/DKIM ở mục 12).
+5. Các bản ghi email của Brevo/Resend (mục 12.2: `TXT` SPF, `TXT`/`CNAME` DKIM, `TXT` `_dmarc`) cũng thêm ở đúng trang **Cài đặt DNS** này.
+
+**Cách B — giao DNS cho DigitalOcean:** trên DigitalOcean vào **Networking → Domains**, thêm `eliuh.site` và tạo 4 bản ghi A ở bảng trên; rồi ở Tenten chọn bánh răng → **Cài đặt NS** → nhập `ns1.digitalocean.com`, `ns2.digitalocean.com`, `ns3.digitalocean.com` → **Thêm NS**. Đổi nameserver có thể mất vài giờ mới có hiệu lực; từ đó mọi bản ghi (kể cả email) quản lý ở DigitalOcean.
+
+Kiểm tra (Git Bash/PowerShell trên máy bạn):
+
+```bash
+nslookup eliuh.site
+nslookup api.eliuh.site
+nslookup app.eliuh.site
+nslookup grafana.eliuh.site
+```
+
+Cả bốn phải trả về **đúng IP droplet** rồi mới sang mục 6 (Caddy chỉ xin được chứng chỉ HTTPS khi DNS đã đúng).
+
+Tham khảo hướng dẫn của Tenten: [Hướng dẫn trỏ tên miền](https://help.tenten.vn/huong-dan-tro-ten-mien-ve-secureweb/), [Cập nhật bản ghi tên miền](https://tenten.vn/tin-tuc/cap-nhat-ban-ghi-ten-mien/).
 
 ---
 
@@ -508,7 +540,7 @@ Mở `mobile/eas.json`, ở hai profile `preview` và `production` sửa:
 "EXPO_PUBLIC_TURNSTILE_SITE_KEY": "<site key Turnstile - mục 11>"
 ```
 
-(thay `api.example.com` và `REPLACE_WITH_TURNSTILE_SITE_KEY`; **luôn dùng `https://`** — Android chặn HTTP thường.) Rồi build:
+(`eas.json` đã trỏ `api.eliuh.site`; thay `REPLACE_WITH_TURNSTILE_SITE_KEY`; **luôn dùng `https://`** — Android chặn HTTP thường.) Rồi build:
 
 ```bash
 eas build -p android --profile preview       # ra file APK cài trực tiếp được (khuyên dùng)

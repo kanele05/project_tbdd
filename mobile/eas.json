@@ -21,7 +21,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.example.com/api/v1",
+        "EXPO_PUBLIC_API_URL": "https://api.eliuh.site/api/v1",
         "EXPO_PUBLIC_TURNSTILE_SITE_KEY": "REPLACE_WITH_TURNSTILE_SITE_KEY"
       }
     },
@@ -31,7 +31,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.example.com/api/v1",
+        "EXPO_PUBLIC_API_URL": "https://api.eliuh.site/api/v1",
         "EXPO_PUBLIC_TURNSTILE_SITE_KEY": "REPLACE_WITH_TURNSTILE_SITE_KEY"
       }
     }
