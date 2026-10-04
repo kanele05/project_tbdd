@@ -13,7 +13,7 @@ export type ProgressBarProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-/** Course progress: primary fill on a `primaryTrack` background (My Courses cards). */
+/** Course progress: neon fill on a `primaryTrack` background (My Courses cards, 4 dp by default). */
 function ProgressBarBase({ percent, height = 4, color, trackColor, style }: ProgressBarProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();

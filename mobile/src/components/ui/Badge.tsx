@@ -7,7 +7,7 @@ import type { Palette, PaletteToken } from '@/theme';
 
 import { AppText } from './AppText';
 
-export type BadgeTone = 'primary' | 'secondary' | 'danger' | 'success';
+export type BadgeTone = 'primary' | 'secondary' | 'danger' | 'success' | 'gold';
 
 export type BadgeProps = {
   /** Text badge: "Best-seller", "20% Off", "Teacher", "Top-rated"... */
@@ -17,12 +17,12 @@ export type BadgeProps = {
   /** Counts above `max` render as "99+". */
   max?: number;
   tone?: BadgeTone;
-  /** `pill` = fully rounded (Teacher / Top-rated); `rect` = 4 dp radius (Best-seller / 20% Off). */
+  /** `pill` = fully rounded (Teacher / Top-rated); `rect` = 6 dp radius (Best-seller / -40 %). */
   shape?: 'rect' | 'pill';
   style?: StyleProp<ViewStyle>;
 };
 
-const BADGE_PADDING_X = 6;
+const BADGE_PADDING_X = 8;
 
 /** Fill token per tone. */
 const TONE_FILL: Record<BadgeTone, PaletteToken> = {
@@ -30,6 +30,7 @@ const TONE_FILL: Record<BadgeTone, PaletteToken> = {
   secondary: 'secondary',
   danger: 'danger',
   success: 'success',
+  gold: 'gold',
 };
 
 /** Label color per fill: white fails AA on primary / danger / success, so those use dark text. */
@@ -38,6 +39,7 @@ const TONE_TEXT: Record<BadgeTone, PaletteToken> = {
   secondary: 'onSecondary',
   danger: 'onDanger',
   success: 'onSuccess',
+  gold: 'onGold',
 };
 
 function fillOf(colors: Palette, tone: BadgeTone): string {
@@ -88,7 +90,6 @@ function BadgeBase({ label, count, max = 99, tone, shape = 'rect', style }: Badg
 const styles = StyleSheet.create({
   label: {
     alignSelf: 'flex-start',
-    // Design: "Best-seller" = 69 x 20 dp, "Teacher" = 54 x 20 dp (11 px text, 6 dp side padding).
     paddingHorizontal: BADGE_PADDING_X,
     paddingVertical: 3,
     justifyContent: 'center',
@@ -96,9 +97,9 @@ const styles = StyleSheet.create({
   rect: { borderRadius: radius.badge },
   pill: { borderRadius: radius.pill },
   count: {
-    minWidth: 16,
-    minHeight: 16,
-    paddingHorizontal: 4,
+    minWidth: 18,
+    minHeight: 18,
+    paddingHorizontal: 5,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',

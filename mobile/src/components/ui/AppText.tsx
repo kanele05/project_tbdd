@@ -16,7 +16,7 @@ export type AppTextProps = TextProps & {
 };
 
 /**
- * The only Text component to use in the app: applies Epilogue/Inter + size/line-height from the
+ * The only Text component to use in the app: applies Playfair Display / Be Vietnam Pro + size/line-height from the
  * theme and keeps font scaling enabled (CLAUDE.md §7). The color follows the active palette.
  */
 function AppTextBase({

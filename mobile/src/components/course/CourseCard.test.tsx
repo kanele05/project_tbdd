@@ -1,14 +1,23 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
+import { renderWithProviders } from '@/test/renderWithProviders';
+import { darkPalette, lightPalette } from '@/theme';
+
+import { BookmarkButton } from './BookmarkButton';
 import { CourseCardHorizontal } from './CourseCardHorizontal';
-import { CourseCardVertical } from './CourseCardVertical';
+import {
+  COURSE_CARD_VERTICAL_IMAGE_HEIGHT,
+  COURSE_CARD_VERTICAL_WIDTH,
+  CourseCardVertical,
+  getCourseCardVerticalImageHeight,
+} from './CourseCardVertical';
 import { makeCourse } from './courseFixtures';
 
 describe.each([
   ['CourseCardVertical', CourseCardVertical],
   ['CourseCardHorizontal', CourseCardHorizontal],
 ])('%s', (_name, Card) => {
-  it('renders title, teacher, price, rating and lessons', async () => {
+  it('renders title, teacher, price and rating', async () => {
     await render(<Card course={makeCourse()} onPress={jest.fn()} />);
 
     expect(screen.getByText('PHP in One Click')).toBeOnTheScreen();
@@ -16,7 +25,6 @@ describe.each([
     expect(screen.getByText('$59')).toBeOnTheScreen();
     expect(screen.getByText('4.5')).toBeOnTheScreen();
     expect(screen.getByText('(1233)')).toBeOnTheScreen();
-    expect(screen.getByText('18 lessons')).toBeOnTheScreen();
   });
 
   it('calls onPress with the course', async () => {
@@ -61,5 +69,54 @@ describe.each([
       />,
     );
     expect(screen.getByRole('button', { name: 'Remove from saved courses' })).toBeSelected();
+  });
+});
+
+describe('CourseCardHorizontal', () => {
+  it('shows the lesson count next to the rating', async () => {
+    await render(<CourseCardHorizontal course={makeCourse()} onPress={jest.fn()} />);
+    expect(screen.getByText('18 lessons')).toBeOnTheScreen();
+  });
+});
+
+describe('CourseCardVertical', () => {
+  it('is a borderless poster: two-line title and a taller-than-wide image', async () => {
+    await render(<CourseCardVertical course={makeCourse()} onPress={jest.fn()} width={160} />);
+    expect(screen.getByText('PHP in One Click').props.numberOfLines).toBe(2);
+    expect(getCourseCardVerticalImageHeight(160)).toBeGreaterThan(160);
+    expect(COURSE_CARD_VERTICAL_IMAGE_HEIGHT).toBe(
+      getCourseCardVerticalImageHeight(COURSE_CARD_VERTICAL_WIDTH),
+    );
+  });
+
+  it('tags a discounted course with a gold badge', async () => {
+    await render(
+      <CourseCardVertical
+        course={makeCourse({ badge: 'DISCOUNT', discountPercent: 20 })}
+        onPress={jest.fn()}
+      />,
+    );
+    expect(screen.getByText('20% Off')).toHaveStyle({ color: lightPalette.onGold });
+  });
+});
+
+describe('BookmarkButton on a photo', () => {
+  it('shows a filled neon bookmark on a glass disc when saved', async () => {
+    await renderWithProviders(<BookmarkButton isBookmarked isOnPhoto onPress={jest.fn()} />);
+    const button = screen.getByRole('button', { name: 'Remove from saved courses' });
+    expect(button).toBeSelected();
+    expect(JSON.stringify(screen.toJSON())).toContain(darkPalette.primary);
+  });
+
+  it('keeps the 48 dp touch target around the 36 dp disc', async () => {
+    await renderWithProviders(
+      <BookmarkButton isBookmarked={false} isOnPhoto onPress={jest.fn()} />,
+    );
+    expect(screen.getByRole('button', { name: 'Save course' }).props.hitSlop).toEqual({
+      top: 6,
+      bottom: 6,
+      left: 6,
+      right: 6,
+    });
   });
 });

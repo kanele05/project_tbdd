@@ -71,7 +71,8 @@ describe('UI kit in dark mode', () => {
     });
     expect(screen.getByText('Primary')).toHaveStyle({ color: darkPalette.onPrimary });
     expect(screen.getByRole('button', { name: 'Secondary' })).toHaveStyle({
-      backgroundColor: darkPalette.primarySoft,
+      backgroundColor: darkPalette.surface,
+      borderColor: darkPalette.border,
     });
     expect(screen.getByText('Outline')).toHaveStyle({ color: darkPalette.primaryText });
   });
@@ -86,7 +87,7 @@ describe('UI kit in dark mode', () => {
       </>,
       { theme: 'dark' },
     );
-    expect(screen.getByText('Outline chip')).toHaveStyle({ color: darkPalette.primaryText });
+    expect(screen.getByText('Outline chip')).toHaveStyle({ color: darkPalette.text });
     expect(screen.getByText('Filled chip')).toHaveStyle({ color: darkPalette.onPrimary });
     expect(screen.getByText('Hot')).toHaveStyle({ color: darkPalette.onDanger });
     expect(screen.getByRole('progressbar')).toHaveStyle({
@@ -132,8 +133,8 @@ describe('UI kit in dark mode', () => {
     expect(screen.getByTestId('offline-banner')).toHaveStyle({
       backgroundColor: darkPalette.banner,
     });
-    expect(screen.getByText('Overview')).toHaveStyle({ color: darkPalette.primaryText });
-    expect(screen.getByText('Lessons')).toHaveStyle({ color: darkPalette.textSecondary });
+    expect(screen.getByText('Overview')).toHaveStyle({ color: darkPalette.text });
+    expect(screen.getByText('Lessons')).toHaveStyle({ color: darkPalette.textMuted });
     expect(screen.getByText('Details')).toHaveStyle({ color: darkPalette.textSecondary });
   });
 

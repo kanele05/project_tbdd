@@ -12,7 +12,7 @@ export type PriceTagProps = {
   originalPriceCents?: number | null;
   /**
    * `inline`  - "$59  ~~$73.75~~" on one line (cards).
-   * `stacked` - big "$59" with "20% Disc. ~~$73.75~~" underneath (course details bottom bar).
+   * `stacked` - big serif "$59" with a gold "20% Disc." and ~~$73.75~~ underneath (course CTA bar).
    */
   layout?: 'inline' | 'stacked';
   /** Text for a zero price. Default: the translated "Free". */
@@ -42,19 +42,19 @@ function PriceTagBase({
   if (layout === 'stacked') {
     return (
       <View style={style} accessible accessibilityLabel={a11y}>
-        <AppText variant="h3" color="text" family="headingBold">
+        <AppText variant="h2" color="text" style={styles.stackedPrice}>
           {priceText}
         </AppText>
         {hasDiscount ? (
           <View style={styles.row}>
-            {discountPercent ? (
-              <AppText variant="caption" color="textMuted">
-                {t('priceTag.discShort', { percent: discountPercent })}
-              </AppText>
-            ) : null}
             <AppText variant="caption" color="textMuted" style={styles.strike}>
               {originalText}
             </AppText>
+            {discountPercent ? (
+              <AppText variant="caption" color="goldText" family="bodySemiBold">
+                {t('priceTag.discShort', { percent: discountPercent })}
+              </AppText>
+            ) : null}
           </View>
         ) : null}
       </View>
@@ -77,7 +77,8 @@ function PriceTagBase({
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.xs },
-  inlinePrice: { fontSize: 14, lineHeight: 20 },
+  inlinePrice: { fontSize: 15, lineHeight: 20 },
+  stackedPrice: { fontSize: 26, lineHeight: 32 },
   strike: { textDecorationLine: 'line-through' },
 });
 

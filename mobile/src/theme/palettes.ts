@@ -1,26 +1,31 @@
 /**
- * Semantic color palettes (UI-02). THIS IS THE ONLY FILE TO EDIT TO RE-SKIN THE APP: when the team
- * picks a design concept, replace the values below (keep the keys) and run `npm run check:contrast`.
+ * Semantic color palettes (UI-02, skinned with concept B "Noir" in UI-04a). THIS IS THE ONLY FILE
+ * TO EDIT TO RE-SKIN THE APP: replace the values below (keep the keys) and run
+ * `npm run check:contrast`.
+ *
+ * Concept B in one sentence: dark-first and cinematic (near-black surfaces, warm off-white text),
+ * ONE neon cyan accent for the primary action, champagne gold for ratings / promotions. The light
+ * palette is the same structure printed on warm "magazine paper" (cream background, white cards).
  *
  * Rules
  * - Components never read hex values; they read `useTheme().colors.<token>` (see `makeStyles`).
  * - TEXT tokens must reach WCAG AA (>= 4,5:1) on every surface they are drawn on - the pairs are
  *   listed in `contrast.ts` and enforced by `palettes.test.ts`.
- * - FILL tokens (primary, secondary, danger, success...) are brand fills for buttons, banners and
+ * - FILL tokens (primary, secondary, danger, gold...) are brand fills for buttons, banners and
  *   icons; the text drawn on top of them uses the matching `onXxx` token.
  * - Keep this file free of runtime imports (it is also loaded by `scripts/contrast-report.mjs`).
  */
 export type Palette = {
   /* Surfaces */
-  /** Screen background. */
+  /** Screen background (dark: near-black, light: cream paper). */
   background: string;
-  /** Input / search-field / unselected-chip fill. */
+  /** Input / search-field / unselected-chip fill (raised one step above `card`). */
   surface: string;
   /** Alternate background (review card, pressed rows). */
   surfaceAlt: string;
   /** Card / sheet / popover fill. */
   card: string;
-  /** Dividers, unselected control outlines, tab tracks. */
+  /** Hairlines, unselected control outlines, tab tracks. */
   border: string;
   /** Card outline (lighter than `border`). */
   borderSubtle: string;
@@ -34,22 +39,29 @@ export type Palette = {
   iconMuted: string;
 
   /* Brand */
+  /** Neon fill: primary buttons, active tab pill, progress. Text on it is `onPrimary`. */
   primary: string;
   primaryPressed: string;
-  /** `primary` as TEXT/link on `background`, `surface`, `card`, `primarySoft`. */
+  /** The accent as TEXT / link / thin line on `background`, `surface`, `card`, `primarySoft`. */
   primaryText: string;
-  /** Soft tint behind the active lesson, icon wraps, outline-button pressed state. */
+  /** Soft tint behind the active lesson, selected chips, icon wraps. */
   primarySoft: string;
   /** Track behind progress bars. */
   primaryTrack: string;
   /** Text / icon drawn on `primary` fills. */
   onPrimary: string;
+  /** Violet: AI glow, secondary badges. */
   secondary: string;
   /** Text / icon drawn on `secondary` fills. */
   onSecondary: string;
   secondarySoft: string;
   /** `secondary` as TEXT on `secondarySoft` (avatar initials). */
   secondaryText: string;
+  /** Champagne gold fill: promo / sale / best-seller tags. Text on it is `onGold`. */
+  gold: string;
+  onGold: string;
+  /** Gold as TEXT (rating number, "-44%") on `background`, `surface`, `card`. */
+  goldText: string;
 
   /* Status */
   danger: string;
@@ -61,7 +73,7 @@ export type Palette = {
   /** Text drawn on `success` fills. */
   onSuccess: string;
   warning: string;
-  /** Filled rating star. */
+  /** Filled rating star (champagne gold). */
   star: string;
   /** Unfilled rating star (still visible on dark surfaces). */
   starEmpty: string;
@@ -74,8 +86,17 @@ export type Palette = {
   /** Dim layer behind modals / sheets. */
   overlay: string;
   skeleton: string;
+  /**
+   * Base color of floating chrome (tab bar, bottom CTA bar). Drawn at ~86 % opacity over a blur,
+   * so every text token must also hold on this color blended with white and with black
+   * (`GLASS_PAIRS` in `contrast.ts`).
+   */
   tabBar: string;
-  /** Toast surface and the colors drawn on it (dark chip in light mode, raised panel in dark mode). */
+  /** Hairline around floating glass (translucent on purpose). */
+  glassBorder: string;
+  /** Last color of the bottom scrim on a hero photo (the page background in dark mode). */
+  scrim: string;
+  /** Toast surface and the colors drawn on it (raised panel in dark mode, ink chip in light mode). */
   toast: string;
   onToast: string;
   toastAccent: string;
@@ -89,103 +110,118 @@ export type Palette = {
 
 export type PaletteToken = keyof Palette;
 
+/** Tokens whose value is not a plain `#RRGGBB` (translucent / keyword). */
+export const NON_HEX_TOKENS: readonly PaletteToken[] = ['overlay', 'glassBorder', 'transparent'];
+
+/** Warm "magazine paper" - same structure as the dark palette. */
 export const lightPalette: Palette = {
-  background: '#FFFFFF',
-  surface: '#F3F4F6',
-  surfaceAlt: '#F8F9FA',
+  background: '#F5F2EA',
+  surface: '#ECE7DB',
+  surfaceAlt: '#FBF9F4',
   card: '#FFFFFF',
-  border: '#DEE1E6',
-  borderSubtle: '#F3F4F6',
+  border: '#D9D2C2',
+  borderSubtle: '#E8E2D4',
 
-  text: '#171A1F',
-  textSecondary: '#565E6C',
-  textMuted: '#636B78',
-  placeholder: '#636B78',
-  iconMuted: '#9095A0',
+  text: '#0D0D12',
+  textSecondary: '#3D3A47',
+  textMuted: '#5A5764',
+  placeholder: '#625F6C',
+  iconMuted: '#8C877A',
 
-  primary: '#00BDD6',
-  primaryPressed: '#00A3BA',
-  primaryText: '#00788A',
-  primarySoft: '#EBFDFF',
-  primaryTrack: '#A6F5FF',
-  onPrimary: '#171A1F',
-  secondary: '#8353E2',
+  primary: '#00DCEB',
+  primaryPressed: '#00C4D2',
+  primaryText: '#006B78',
+  primarySoft: '#DCF1EF',
+  primaryTrack: '#CBE7E5',
+  onPrimary: '#04161A',
+  secondary: '#5B3FD9',
   onSecondary: '#FFFFFF',
-  secondarySoft: '#D9CBF6',
-  secondaryText: '#6336BE',
+  secondarySoft: '#E6E0FB',
+  secondaryText: '#4B2FB8',
+  gold: '#C9A24B',
+  onGold: '#1A1203',
+  goldText: '#7A5A0B',
 
-  danger: '#E05858',
-  dangerText: '#C23B3B',
-  dangerSoft: '#FDECEC',
-  onDanger: '#171A1F',
-  success: '#2FA66A',
-  onSuccess: '#171A1F',
-  warning: '#F59E0B',
-  star: '#F3C63F',
-  starEmpty: '#DEE1E6',
+  danger: '#D2343F',
+  dangerText: '#B3261E',
+  dangerSoft: '#F9E3E1',
+  onDanger: '#FFFFFF',
+  success: '#12844F',
+  onSuccess: '#FFFFFF',
+  warning: '#C98A12',
+  star: '#C9A24B',
+  starEmpty: '#CCC4AE',
 
-  orange: '#ED7D2D',
-  blue: '#4069E5',
+  orange: '#D9661C',
+  blue: '#3B5BDB',
 
-  overlay: 'rgba(23, 26, 31, 0.5)',
-  skeleton: '#F3F4F6',
+  overlay: 'rgba(13, 13, 18, 0.5)',
+  skeleton: '#E6E0D2',
   tabBar: '#FFFFFF',
-  toast: '#171A1F',
-  onToast: '#FFFFFF',
-  toastAccent: '#A6F5FF',
-  banner: '#565E6C',
-  onBanner: '#FFFFFF',
+  glassBorder: 'rgba(13, 13, 18, 0.1)',
+  scrim: '#0D0D12',
+  toast: '#0D0D12',
+  onToast: '#F6F2EA',
+  toastAccent: '#2EF2FF',
+  banner: '#3D3A47',
+  onBanner: '#F5F2EA',
 
   white: '#FFFFFF',
   transparent: 'transparent',
 };
 
+/** Near-black with warm off-white text and the neon accent at full strength. */
 export const darkPalette: Palette = {
-  background: '#0E1217',
-  surface: '#1B222B',
-  surfaceAlt: '#151B22',
-  card: '#151B22',
-  border: '#2E3744',
-  borderSubtle: '#232B36',
+  background: '#08080C',
+  surface: '#1C1C27',
+  surfaceAlt: '#101016',
+  card: '#13131A',
+  border: '#2A2A38',
+  borderSubtle: '#1F1F2B',
 
-  text: '#F1F3F6',
-  textSecondary: '#B9C1CD',
-  textMuted: '#9AA3B2',
-  placeholder: '#9AA3B2',
-  iconMuted: '#6F7A8A',
+  text: '#F6F2EA',
+  textSecondary: '#C8C6D4',
+  textMuted: '#A9A7B8',
+  placeholder: '#9B99AC',
+  iconMuted: '#7A7A92',
 
-  primary: '#00BDD6',
-  primaryPressed: '#26CFE6',
-  primaryText: '#3DD3E8',
-  primarySoft: '#10303A',
-  primaryTrack: '#1F4A55',
-  onPrimary: '#06161A',
-  secondary: '#8353E2',
+  primary: '#2EF2FF',
+  primaryPressed: '#1FD3E0',
+  primaryText: '#2EF2FF',
+  primarySoft: '#0C2326',
+  primaryTrack: '#14383D',
+  onPrimary: '#021417',
+  secondary: '#6D4DFF',
   onSecondary: '#FFFFFF',
-  secondarySoft: '#2B2250',
-  secondaryText: '#C9B6F7',
+  secondarySoft: '#221B4D',
+  secondaryText: '#CBBDFF',
+  gold: '#E9C77B',
+  onGold: '#1A1203',
+  goldText: '#E9C77B',
 
-  danger: '#E05858',
-  dangerText: '#FF8D8D',
-  dangerSoft: '#3A1E22',
-  onDanger: '#171A1F',
-  success: '#2FA66A',
-  onSuccess: '#06160D',
-  warning: '#F5B53D',
-  star: '#F3C63F',
-  starEmpty: '#5F6B7D',
+  danger: '#FF5C6C',
+  dangerText: '#FF8E98',
+  dangerSoft: '#2B1219',
+  onDanger: '#1A0508',
+  success: '#3DDC97',
+  onSuccess: '#04170E',
+  warning: '#F2B84B',
+  star: '#E9C77B',
+  starEmpty: '#6A6A84',
 
-  orange: '#ED7D2D',
-  blue: '#6C8CF0',
+  orange: '#FF9F5A',
+  blue: '#7C9CFF',
 
-  overlay: 'rgba(0, 0, 0, 0.65)',
-  skeleton: '#232B36',
-  tabBar: '#11161C',
-  toast: '#2B3442',
-  onToast: '#F1F3F6',
-  toastAccent: '#6FE0F0',
-  banner: '#2E3744',
-  onBanner: '#F1F3F6',
+  overlay: 'rgba(0, 0, 0, 0.7)',
+  skeleton: '#1C1C27',
+  tabBar: '#13131A',
+  glassBorder: 'rgba(255, 255, 255, 0.14)',
+  scrim: '#08080C',
+  toast: '#1C1C27',
+  onToast: '#F6F2EA',
+  toastAccent: '#2EF2FF',
+  banner: '#2A2A38',
+  onBanner: '#F6F2EA',
 
   white: '#FFFFFF',
   transparent: 'transparent',

@@ -40,7 +40,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
           <View style={styles.logo}>
             <Feather name="book-open" size={32} color={colors.onPrimary} />
           </View>
-          <AppText variant="h3" color="primaryText" align="center">
+          <AppText variant="h2" family="displayItalic" align="center">
             {t('appName')}
           </AppText>
         </View>

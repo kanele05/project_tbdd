@@ -17,3 +17,16 @@ describe('SectionHeader', () => {
     expect(screen.queryByText('View more')).not.toBeOnTheScreen();
   });
 });
+
+describe('SectionHeader (concept B)', () => {
+  it('sets the title in the display serif (>= 18 dp) as a header', async () => {
+    await render(<SectionHeader title="Continue watching" />);
+    const title = screen.getByRole('header', { name: 'Continue watching' });
+    expect(title).toHaveStyle({ fontFamily: 'PlayfairDisplay_700Bold', fontSize: 22 });
+  });
+
+  it('labels the link with its section for screen readers', async () => {
+    await render(<SectionHeader title="Popular" onViewMore={jest.fn()} viewMoreLabel="View all" />);
+    expect(screen.getByRole('link', { name: 'View all, Popular' })).toBeOnTheScreen();
+  });
+});

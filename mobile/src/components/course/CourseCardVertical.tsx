@@ -22,23 +22,28 @@ export type CourseCardVerticalProps = {
   isBookmarked?: boolean;
   /** When omitted the bookmark icon is shown as a read-only indicator. */
   onToggleBookmark?: (course: CourseSummary) => void;
-  /** Card width in dp. Default 200 (the Home horizontal lists). */
+  /** Card width in dp. Default 168: two posters + a peek of the third on a 390 dp screen. */
   width?: number;
   style?: StyleProp<ViewStyle>;
 };
 
-export const COURSE_CARD_VERTICAL_WIDTH = 200;
-const PADDING = spacing.md;
-/** The thumbnail is always 116 dp tall (Home card 174 x 116, Teacher profile card 180 x 116). */
-export const COURSE_CARD_VERTICAL_IMAGE_HEIGHT = 116;
-/** Thumbnail bottom -> title line (design: 14 dp). */
-const INFO_OFFSET = 14;
-/** Distance from the title line top to the top of the 24 dp bookmark icon (its ink starts 3 dp lower). */
-const BOOKMARK_INSET = 3;
+export const COURSE_CARD_VERTICAL_WIDTH = 168;
+/** The poster is 1 : 1.3 - tall enough to feel like a movie poster, safe for 16:9 thumbnails. */
+const IMAGE_RATIO = 1.3;
+
+/** Poster height for a given card width (the skeleton uses it to keep the same footprint). */
+export function getCourseCardVerticalImageHeight(width: number): number {
+  return Math.round(width * IMAGE_RATIO);
+}
+
+export const COURSE_CARD_VERTICAL_IMAGE_HEIGHT = getCourseCardVerticalImageHeight(
+  COURSE_CARD_VERTICAL_WIDTH,
+);
 
 /**
- * Card of the horizontally scrolling lists (Home: Popular / Recommended, Teacher courses):
- * thumbnail with badge, title + bookmark, teacher, price and rating line.
+ * Poster card of the horizontally scrolling rails (Home: Popular / Recommended, Teacher courses):
+ * borderless full-bleed thumbnail with a gold tag (top-left) and a glass bookmark (top-right), then
+ * two-line title, teacher, gold rating and accent price underneath (concept B "PosterCard").
  */
 function CourseCardVerticalBase({
   course,
@@ -52,7 +57,7 @@ function CourseCardVerticalBase({
   const styles = useStyles();
   const saved = isBookmarked ?? course.isBookmarked;
   const badge = getCourseBadge(course);
-  const imageHeight = COURSE_CARD_VERTICAL_IMAGE_HEIGHT;
+  const imageHeight = getCourseCardVerticalImageHeight(width);
 
   return (
     <View style={[styles.card, { width }, style]}>
@@ -68,7 +73,7 @@ function CourseCardVerticalBase({
             maximumFractionDigits: 1,
           }),
         })}
-        style={({ pressed }) => [styles.pressable, pressed ? styles.pressed : null]}
+        style={({ pressed }) => [pressed ? styles.pressed : null]}
       >
         <View style={[styles.imageWrap, { height: imageHeight }]}>
           <Image
@@ -80,21 +85,16 @@ function CourseCardVerticalBase({
             recyclingKey={course.id}
             accessibilityIgnoresInvertColors
           />
-          {badge ? (
-            <Badge
-              label={badge.label}
-              tone={badge.kind === 'BEST_SELLER' ? 'primary' : 'secondary'}
-              style={styles.badge}
-            />
-          ) : null}
+          {badge ? <Badge label={badge.label} tone="gold" style={styles.badge} /> : null}
         </View>
         <View style={styles.info}>
-          <AppText variant="cardTitle" numberOfLines={1} style={styles.title}>
+          <AppText variant="cardTitle" numberOfLines={2} style={styles.title}>
             {course.title}
           </AppText>
           <AppText variant="caption" numberOfLines={1}>
             {course.teacher.fullName}
           </AppText>
+          <RatingInline rating={course.ratingAvg} count={course.ratingCount} />
           <AppText
             variant="cardTitle"
             color="primaryText"
@@ -103,20 +103,12 @@ function CourseCardVerticalBase({
           >
             {formatPriceOrFree(course.priceCents)}
           </AppText>
-          <RatingInline
-            rating={course.ratingAvg}
-            count={course.ratingCount}
-            lessonCount={course.lessonCount}
-          />
         </View>
       </Pressable>
-      <View
-        style={[styles.bookmark, { top: PADDING + imageHeight + INFO_OFFSET - BOOKMARK_INSET }]}
-        pointerEvents="box-none"
-      >
+      <View style={styles.bookmark}>
         <BookmarkButton
           isBookmarked={saved}
-          idleColor="text"
+          isOnPhoto
           onPress={onToggleBookmark ? () => onToggleBookmark(course) : undefined}
         />
       </View>
@@ -125,26 +117,20 @@ function CourseCardVerticalBase({
 }
 
 const useStyles = makeStyles((t) => ({
-  card: {
-    backgroundColor: t.colors.card,
-    borderWidth: 1,
-    borderColor: t.colors.borderSubtle,
-    borderRadius: radius.card,
-  },
-  pressable: { padding: PADDING, borderRadius: radius.card },
-  pressed: { opacity: 0.85 },
+  card: { borderRadius: radius.card },
+  pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
   imageWrap: {
     width: '100%',
     overflow: 'hidden',
-    borderRadius: radius.button,
+    borderRadius: radius.card,
     backgroundColor: t.colors.surface,
   },
-  badge: { position: 'absolute', top: spacing.xs, left: spacing.xs },
-  info: { marginTop: INFO_OFFSET, gap: spacing.xxs },
-  title: { paddingRight: spacing.xxl },
-  // Design: price 15 dp bold; 5 dp below the teacher and 1 dp above the rating line.
-  price: { marginTop: spacing.xs, fontSize: 15, lineHeight: 20 },
-  bookmark: { position: 'absolute', right: PADDING },
+  badge: { position: 'absolute', top: spacing.sm, left: spacing.sm },
+  info: { marginTop: spacing.md - 2, gap: spacing.xxs },
+  // Two lines reserved so every card in a rail has the same height.
+  title: { minHeight: 42 },
+  price: { marginTop: spacing.xs },
+  bookmark: { position: 'absolute', top: spacing.sm, right: spacing.sm },
 }));
 
 export const CourseCardVertical = memo(CourseCardVerticalBase);

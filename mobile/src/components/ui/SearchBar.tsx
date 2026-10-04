@@ -50,14 +50,13 @@ export function SearchBar({
     [ref],
   );
   return (
-    // The field is 36 dp tall (design); `hitSlop` + focusing on press keep a 48 dp touch target.
+    // The field is a 48 dp pill: the whole row focuses the input on press.
     <Pressable
       onPress={() => inputRef.current?.focus()}
-      hitSlop={{ top: 6, bottom: 6 }}
       accessible={false}
       style={[styles.container, isFocused ? styles.focused : null, style]}
     >
-      <Feather name="search" size={18} color={colors.text} />
+      <Feather name="search" size={20} color={colors.textMuted} />
       <TextInput
         ref={setRefs}
         value={value}
@@ -87,33 +86,32 @@ export function SearchBar({
             onChangeText('');
             onClear?.();
           }}
-          hitSlop={15}
+          hitSlop={14}
           accessibilityRole="button"
           accessibilityLabel={t('search.clear')}
         >
-          <Feather name="x-circle" size={18} color={colors.textMuted} />
+          <Feather name="x-circle" size={20} color={colors.textMuted} />
         </Pressable>
       ) : null}
     </Pressable>
   );
 }
 
-const SEARCH_BAR_HEIGHT = 36;
+const SEARCH_BAR_HEIGHT = 48;
 
 const useStyles = makeStyles((t) => ({
   container: {
     height: SEARCH_BAR_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
-    // Design: the text starts 4 dp after the 18 dp magnifier.
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.button,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: t.colors.transparent,
+    borderColor: t.colors.border,
     backgroundColor: t.colors.surface,
   },
-  focused: { borderColor: t.colors.primary },
+  focused: { borderColor: t.colors.primaryText },
   input: {
     flex: 1,
     alignSelf: 'stretch',
@@ -121,7 +119,7 @@ const useStyles = makeStyles((t) => ({
     color: t.colors.text,
     fontFamily: fontFamily.body,
     fontSize: typography.body.fontSize,
-    // Android adds vertical padding to a TextInput; keep the text centered in the 36 dp field.
+    // Android adds vertical padding to a TextInput; keep the text centered in the field.
     textAlignVertical: 'center',
   },
 }));

@@ -32,7 +32,8 @@ const PADDING = spacing.md;
 
 /**
  * List card (Search results, Course list, Saved courses, Similar courses, Course that inspires):
- * square thumbnail on the left, texts on the right, bookmark in the top-right corner.
+ * rounded thumbnail on the left with a gold tag, texts on the right, bookmark in the top-right
+ * corner, on a `card` surface with a hairline.
  */
 function CourseCardHorizontalBase({
   course,
@@ -73,13 +74,7 @@ function CourseCardHorizontalBase({
             recyclingKey={course.id}
             accessibilityIgnoresInvertColors
           />
-          {badge ? (
-            <Badge
-              label={badge.label}
-              tone={badge.kind === 'BEST_SELLER' ? 'primary' : 'secondary'}
-              style={styles.badge}
-            />
-          ) : null}
+          {badge ? <Badge label={badge.label} tone="gold" style={styles.badge} /> : null}
         </View>
         <View style={styles.info}>
           <AppText variant="cardTitle" numberOfLines={1} style={styles.title}>
@@ -125,8 +120,8 @@ const useStyles = makeStyles((t) => ({
   },
   pressable: {
     flexDirection: 'row',
-    // Design: the texts start 8 dp after the 96 dp thumbnail.
-    gap: spacing.sm,
+    // The texts start 12 dp after the 96 dp thumbnail.
+    gap: spacing.md,
     padding: PADDING,
     borderRadius: radius.card,
   },
@@ -141,10 +136,9 @@ const useStyles = makeStyles((t) => ({
   badge: { position: 'absolute', top: spacing.xs, left: spacing.xs },
   info: { flex: 1, justifyContent: 'center', gap: spacing.xxs },
   title: { paddingRight: spacing.xxl },
-  // Design: 14 dp between the teacher and the price (15 dp bold), 5 dp between price and rating.
-  price: { marginTop: spacing.md, fontSize: 15, lineHeight: 20 },
+  price: { marginTop: spacing.sm, fontSize: 15, lineHeight: 20 },
   rating: { marginTop: spacing.xs },
-  ratingNoPrice: { marginTop: spacing.md },
+  ratingNoPrice: { marginTop: spacing.sm },
   bookmark: { position: 'absolute', top: PADDING, right: PADDING },
 }));
 

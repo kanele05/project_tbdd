@@ -12,7 +12,7 @@ import { radius, useTheme } from '@/theme';
 export type SkeletonProps = {
   width?: DimensionValue;
   height?: number;
-  /** Corner radius. Default `card` (8). Use `pill` for circles/avatars. */
+  /** Corner radius. Default `radius.badge` (6): fits text lines. Use `pill` for circles/avatars. */
   borderRadius?: number;
   style?: StyleProp<ViewStyle>;
 };
@@ -24,7 +24,7 @@ export type SkeletonProps = {
 export function Skeleton({
   width = '100%',
   height = 16,
-  borderRadius = radius.card,
+  borderRadius = radius.badge,
   style,
 }: SkeletonProps) {
   const { colors } = useTheme();

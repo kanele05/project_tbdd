@@ -10,17 +10,20 @@ export type SegmentedTabsProps<K extends string> = {
   tabs: readonly SegmentedTab<K>[];
   value: K;
   onChange: (key: K) => void;
+  /** Upper-case the labels (old design). Concept B uses sentence case. Default false. */
+  isUppercase?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
 /**
- * Equal-width text tabs with a primary underline under the active one
- * (OVERVIEW | LESSONS | REVIEW, ALL | ON GOING | COMPLETED...).
+ * Equal-width text tabs on a hairline with a neon underline under the active one
+ * (Overview | Lessons | Reviews | Q&A). Active label = `text`, inactive = `textMuted`.
  */
 export function SegmentedTabs<K extends string>({
   tabs,
   value,
   onChange,
+  isUppercase = false,
   style,
 }: SegmentedTabsProps<K>) {
   const styles = useStyles();
@@ -39,9 +42,9 @@ export function SegmentedTabs<K extends string>({
           >
             <AppText
               variant="tab"
-              uppercase
-              color={isActive ? 'primaryText' : 'textSecondary'}
-              family={isActive ? 'bodySemiBold' : 'bodyMedium'}
+              uppercase={isUppercase}
+              color={isActive ? 'text' : 'textMuted'}
+              family={isActive ? 'bodyBold' : 'bodySemiBold'}
               numberOfLines={1}
             >
               {tab.label}
@@ -53,9 +56,9 @@ export function SegmentedTabs<K extends string>({
   );
 }
 
-/** Design: 2 dp gray track under all tabs, 4 dp primary underline under the active one. */
-const TRACK_WIDTH = 2;
-const UNDERLINE_WIDTH = 4;
+/** 1 dp hairline under all tabs, 3 dp neon underline under the active one. */
+const TRACK_WIDTH = 1;
+const UNDERLINE_WIDTH = 3;
 
 const useStyles = makeStyles((t) => ({
   row: {

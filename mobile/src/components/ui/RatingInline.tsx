@@ -17,7 +17,7 @@ export type RatingInlineProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-/** "☆ 4.5 (1233) · 12 lessons" - the rating line of course cards and headers. */
+/** "★ 4.8 (1233) · 12 lessons" - gold star + gold number, muted counts (cards and headers). */
 function RatingInlineBase({ rating, count, lessonCount, style }: RatingInlineProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -33,8 +33,8 @@ function RatingInlineBase({ rating, count, lessonCount, style }: RatingInlinePro
 
   return (
     <View style={[styles.row, style]} accessible accessibilityLabel={label}>
-      <Ionicons name="star-outline" size={14} color={colors.star} />
-      <AppText variant="caption" color="text" family="bodyMedium">
+      <Ionicons name="star" size={13} color={colors.star} />
+      <AppText variant="caption" color="goldText" family="bodySemiBold">
         {ratingText}
       </AppText>
       {count != null ? (
@@ -45,7 +45,7 @@ function RatingInlineBase({ rating, count, lessonCount, style }: RatingInlinePro
       {lessonCount != null ? (
         <>
           <View style={[styles.dot, themed.dot]} />
-          {/* Design: the number is dark, the word "lessons" is muted. */}
+          {/* The number is normal text, the word "lessons" is muted. */}
           <AppText variant="caption" color="text" numberOfLines={1} style={styles.lessons}>
             {lessonCount}
             <AppText variant="caption" color="textMuted">

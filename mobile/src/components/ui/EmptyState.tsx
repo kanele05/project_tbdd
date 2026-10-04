@@ -18,7 +18,7 @@ export type EmptyStateProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-/** "Nothing here" placeholder: icon, title, optional message and CTA. */
+/** "Nothing here" placeholder: accent icon in a soft tint, serif title, optional message and CTA. */
 export function EmptyState({
   title,
   message,
@@ -33,9 +33,9 @@ export function EmptyState({
   return (
     <View style={[styles.container, style]} accessibilityRole="summary">
       <View style={[styles.iconWrap, themed.iconWrap]}>
-        <Feather name={icon} size={32} color={colors.primary} />
+        <Feather name={icon} size={32} color={colors.primaryText} />
       </View>
-      <AppText variant="title" align="center">
+      <AppText variant="h3" align="center">
         {title ?? t('empty.defaultTitle')}
       </AppText>
       {message ? (

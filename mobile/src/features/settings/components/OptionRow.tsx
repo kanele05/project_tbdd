@@ -38,7 +38,7 @@ function OptionRowBase({ label, hint, isSelected, onPress, testID }: OptionRowPr
       <Feather
         name="check"
         size={20}
-        color={isSelected ? colors.primary : colors.transparent}
+        color={isSelected ? colors.primaryText : colors.transparent}
         accessibilityElementsHidden
         importantForAccessibility="no"
       />

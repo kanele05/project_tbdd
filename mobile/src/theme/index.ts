@@ -6,6 +6,8 @@ import { fontFamily, typography } from './typography';
 
 export { categoryColors, colors, resolveColor } from './colors';
 export type { ColorToken, LegacyColorToken } from './colors';
+export { withAlpha } from './colorUtils';
+export { GLASS_ALPHA } from './contrast';
 export { makeStyles } from './makeStyles';
 export { darkPalette, lightPalette } from './palettes';
 export type { Palette, PaletteToken } from './palettes';

@@ -1,5 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
+import { renderWithProviders } from '@/test/renderWithProviders';
+import { lightPalette, radius } from '@/theme';
+
 import { Chip } from './Chip';
 
 describe('Chip', () => {
@@ -20,5 +23,30 @@ describe('Chip', () => {
     await render(<Chip label="Top-rated" />);
     expect(screen.getByText('Top-rated')).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: 'Top-rated' })).not.toBeOnTheScreen();
+  });
+});
+
+describe('Chip (concept B)', () => {
+  it('tints a selected chip with the accent (soft fill, accent border and text)', async () => {
+    await renderWithProviders(<Chip label="Code" selected onPress={() => undefined} />);
+    expect(screen.getByRole('button', { name: 'Code' })).toHaveStyle({
+      backgroundColor: lightPalette.primarySoft,
+      borderColor: lightPalette.primaryText,
+    });
+    expect(screen.getByText('Code')).toHaveStyle({ color: lightPalette.primaryText });
+  });
+
+  it('draws an unselected chip as a hairline pill with normal text', async () => {
+    await renderWithProviders(<Chip label="Design" onPress={() => undefined} />);
+    expect(screen.getByRole('button', { name: 'Design' })).toHaveStyle({
+      borderColor: lightPalette.border,
+      borderRadius: radius.pill,
+    });
+    expect(screen.getByText('Design')).toHaveStyle({ color: lightPalette.text });
+  });
+
+  it('fills a `filled` chip with neon and a dark label', async () => {
+    await renderWithProviders(<Chip label="New" variant="filled" />);
+    expect(screen.getByText('New')).toHaveStyle({ color: lightPalette.onPrimary });
   });
 });

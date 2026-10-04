@@ -1,23 +1,24 @@
+import Feather from '@expo/vector-icons/Feather';
 import { memo } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTranslation } from '@/i18n';
-import { spacing } from '@/theme';
+import { spacing, useTheme } from '@/theme';
 
 import { AppText } from './AppText';
 
 export type SectionHeaderProps = {
   title: string;
-  /** When provided, a "View more" link is shown on the right. */
+  /** When provided, a "View more →" link is shown on the right. */
   onViewMore?: () => void;
   /** Default: the translated "View more". */
   viewMoreLabel?: string;
-  /** "View more" size: `sm` = 12 px (default, most sections), `md` = 14 px (Home "Categories"). */
+  /** Link size: `sm` = 13 dp (default, most sections), `md` = 15 dp. */
   viewMoreSize?: 'sm' | 'md';
   style?: StyleProp<ViewStyle>;
 };
 
-/** Section title (Epilogue 16) on the left, optional primary "View more" link on the right. */
+/** Section title (Playfair serif, 22 dp) on the left, optional accent "View more →" link on the right. */
 function SectionHeaderBase({
   title,
   onViewMore,
@@ -26,10 +27,11 @@ function SectionHeaderBase({
   style,
 }: SectionHeaderProps) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const linkLabel = viewMoreLabel ?? t('actions.viewMore');
   return (
     <View style={[styles.row, style]}>
-      <AppText variant="title" accessibilityRole="header" numberOfLines={1} style={styles.title}>
+      <AppText variant="h2" accessibilityRole="header" numberOfLines={2} style={styles.title}>
         {title}
       </AppText>
       {onViewMore ? (
@@ -40,9 +42,14 @@ function SectionHeaderBase({
           accessibilityLabel={`${linkLabel}, ${title}`}
           style={styles.link}
         >
-          <AppText variant={viewMoreSize === 'md' ? 'body' : 'caption'} color="primaryText">
+          <AppText
+            variant={viewMoreSize === 'md' ? 'body' : 'caption'}
+            family="bodySemiBold"
+            color="primaryText"
+          >
             {linkLabel}
           </AppText>
+          <Feather name="arrow-right" size={16} color={colors.primaryText} />
         </Pressable>
       ) : null}
     </View>
@@ -58,9 +65,13 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   title: { flexShrink: 1 },
-  // Design: the link ends 9 dp before the content edge (x = 346 of 375) - 8 dp of padding that is
-  // also part of the touch target.
-  link: { minHeight: 32, justifyContent: 'center', paddingHorizontal: spacing.sm },
+  link: {
+    minHeight: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    justifyContent: 'flex-end',
+  },
 });
 
 export const SectionHeader = memo(SectionHeaderBase);

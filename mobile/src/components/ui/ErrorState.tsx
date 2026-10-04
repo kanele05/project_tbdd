@@ -31,9 +31,13 @@ export function ErrorState({ error, title, message, onRetry, retryLabel, style }
   return (
     <View style={[styles.container, style]} accessibilityRole="alert">
       <View style={[styles.iconWrap, themed.iconWrap]}>
-        <Feather name={isNetwork ? 'wifi-off' : 'alert-circle'} size={32} color={colors.danger} />
+        <Feather
+          name={isNetwork ? 'wifi-off' : 'alert-circle'}
+          size={32}
+          color={colors.dangerText}
+        />
       </View>
-      <AppText variant="title" align="center">
+      <AppText variant="h3" align="center">
         {title ?? t('errors:loadFailedTitle')}
       </AppText>
       <AppText variant="body" color="textSecondary" align="center">

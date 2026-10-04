@@ -41,6 +41,7 @@ export const TEXT_PAIRS: readonly ContrastPair[] = [
   pair('textMuted', 'card', 'Muted text on cards'),
   pair('textMuted', 'primarySoft', 'Muted text on the active lesson'),
   pair('placeholder', 'surface', 'Input placeholder'),
+  pair('placeholder', 'card', 'Placeholder on a card'),
   pair('primaryText', 'background', 'Links, prices, active tab label'),
   pair('primaryText', 'surface', 'Links on surfaces'),
   pair('primaryText', 'card', 'Prices on cards'),
@@ -50,6 +51,11 @@ export const TEXT_PAIRS: readonly ContrastPair[] = [
   pair('onPrimary', 'primary', 'Primary button / selected chip'),
   pair('onPrimary', 'primaryPressed', 'Primary button pressed'),
   pair('onSecondary', 'secondary', 'Secondary badge / banner'),
+  pair('onGold', 'gold', 'Sale / best-seller tag'),
+  pair('goldText', 'background', 'Rating number, discount percent'),
+  pair('goldText', 'surface', 'Gold text on inputs / chips'),
+  pair('goldText', 'card', 'Rating number on cards'),
+  pair('goldText', 'surfaceAlt', 'Rating number on review cards'),
   pair('secondaryText', 'secondarySoft', 'Avatar initials'),
   pair('secondaryText', 'primaryTrack', 'Profile avatar initials'),
   pair('dangerText', 'background', 'Error text'),
@@ -85,6 +91,17 @@ export const GRAPHIC_PAIRS: readonly ContrastPair[] = [
 ];
 
 export const ALL_PAIRS: readonly ContrastPair[] = [...TEXT_PAIRS, ...GRAPHIC_PAIRS];
+
+/** Opacity of floating glass (tab bar, CTA bar): the blur is only decoration, this fill carries contrast. */
+export const GLASS_ALPHA = 0.86;
+
+/** Text drawn on floating glass. The glass is tested over the two worst backgrounds a photo can give. */
+const GLASS_TEXT_TOKENS: readonly PaletteToken[] = [
+  'text',
+  'textSecondary',
+  'textMuted',
+  'primaryText',
+];
 
 function channel(value: number): number {
   const v = value / 255;
@@ -128,4 +145,43 @@ export function evaluatePairs(
     const ratio = contrastRatio(palette[p.fg], palette[p.bg]);
     return { ...p, ratio, passes: ratio >= p.min };
   });
+}
+
+/** Mix `foreground` over `background` with the given opacity (0-1) and return `#RRGGBB`. */
+export function blendHex(foreground: string, background: string, alpha: number): string {
+  const fg = parseHex(foreground);
+  const bg = parseHex(background);
+  const mixed = fg.map((value, index) => Math.round(value * alpha + bg[index]! * (1 - alpha)));
+  return `#${mixed
+    .map((value) => value.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()}`;
+}
+
+export type GlassResult = {
+  fg: PaletteToken;
+  /** What the glass lies on: pure white or pure black (the worst cases for dark / light text). */
+  over: 'white' | 'black';
+  ratio: number;
+  passes: boolean;
+};
+
+/**
+ * Text on floating glass (`tabBar` at `GLASS_ALPHA` over white / black). Android shows no real
+ * blur by default, so the translucent fill alone must keep text readable over any content.
+ * `primaryText` is only checked on the dark palette (the light tab bar shows the active tab as a
+ * neon pill with `onPrimary` text instead).
+ */
+export function evaluateGlassPairs(palette: Palette): GlassResult[] {
+  const isDarkGlass = luminance(palette.tabBar) < 0.5;
+  const results: GlassResult[] = [];
+  for (const fg of GLASS_TEXT_TOKENS) {
+    if (fg === 'primaryText' && !isDarkGlass) continue;
+    for (const over of ['white', 'black'] as const) {
+      const glass = blendHex(palette.tabBar, over === 'white' ? '#FFFFFF' : '#000000', GLASS_ALPHA);
+      const ratio = contrastRatio(palette[fg], glass);
+      results.push({ fg, over, ratio, passes: ratio >= 4.5 });
+    }
+  }
+  return results;
 }

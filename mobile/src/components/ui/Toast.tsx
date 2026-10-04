@@ -51,8 +51,8 @@ function iconColor(colors: Palette, type: ToastType): string {
   return colors.primary;
 }
 
-/** Space kept below the toast so it floats above the bottom tab bar. */
-const BOTTOM_OFFSET = 80;
+/** Space kept below the toast so it floats above the floating tab bar (64 dp + gaps). */
+const BOTTOM_OFFSET = 88;
 
 const ToastContext = createContext<ToastApi | null>(null);
 
@@ -191,11 +191,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    minHeight: 48,
+    minHeight: 52,
     maxWidth: 480,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    borderRadius: radius.card,
+    borderRadius: radius.lg,
   },
   message: { flexShrink: 1 },
 });

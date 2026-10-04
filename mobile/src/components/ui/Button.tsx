@@ -9,12 +9,18 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { layout, radius, spacing, useTheme } from '@/theme';
+import { layout, radius, shadows, spacing, useTheme } from '@/theme';
 import type { FontFamilyToken, Palette } from '@/theme';
 
 import { AppText } from './AppText';
 import type { FeatherIconName } from './icons';
 
+/**
+ * `primary`   neon pill, dark label - THE call to action (one per screen section).
+ * `secondary` raised neutral pill (surface fill + hairline) - the alternative action.
+ * `outline`   accent hairline, accent label - tertiary, on photos / cards.
+ * `ghost`     text-only accent label - inline actions.
+ */
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 export type ButtonSize = 'md' | 'sm';
 
@@ -30,7 +36,7 @@ export type ButtonProps = {
   rightIcon?: FeatherIconName;
   /** Custom node instead of `leftIcon` (an icon that Feather does not have, e.g. filter-list). */
   leftAdornment?: ReactNode;
-  /** Label font; default `bodySemiBold`. */
+  /** Label font; default `bodyBold`. */
   labelFamily?: FontFamilyToken;
   /** Render the label in upper case (Home banner CTA). */
   uppercase?: boolean;
@@ -54,16 +60,16 @@ function getVariantStyle(colors: Palette, variant: ButtonVariant): VariantStyle 
       };
     case 'secondary':
       return {
-        background: colors.primarySoft,
-        pressed: colors.primaryTrack,
-        border: colors.primarySoft,
+        background: colors.surface,
+        pressed: colors.border,
+        border: colors.border,
         text: colors.text,
       };
     case 'outline':
       return {
         background: colors.transparent,
         pressed: colors.primarySoft,
-        border: colors.primary,
+        border: colors.primaryText,
         text: colors.primaryText,
       };
     case 'ghost':
@@ -93,11 +99,12 @@ function ButtonBase({
   style,
   testID,
 }: ButtonProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const palette = getVariantStyle(colors, variant);
   const isInactive = disabled || loading;
+  const iconSize = size === 'sm' ? 18 : 20;
   const height = size === 'sm' ? layout.buttonHeightSmall : layout.buttonHeight;
-  // Small buttons are visually 36 dp but keep a 48 dp touch target.
+  // Small buttons are visually 40 dp but keep a 48 dp touch target.
   const slop = Math.max(0, Math.ceil((layout.minTouchTarget - height) / 2));
 
   return (
@@ -117,6 +124,8 @@ function ButtonBase({
           borderColor: palette.border,
         },
         size === 'sm' ? styles.paddingSmall : styles.paddingMedium,
+        variant === 'primary' && isDark && !isInactive ? shadows.glow : null,
+        pressed && !isInactive ? styles.pressed : null,
         fullWidth ? styles.fullWidth : null,
         disabled && !loading ? styles.disabled : null,
         style,
@@ -127,16 +136,20 @@ function ButtonBase({
       ) : (
         <View style={styles.content}>
           {leftAdornment ??
-            (leftIcon ? <Feather name={leftIcon} size={18} color={palette.text} /> : null)}
+            (leftIcon ? <Feather name={leftIcon} size={iconSize} color={palette.text} /> : null)}
           <AppText
             variant="label"
-            family={labelFamily}
+            family={labelFamily ?? 'bodyBold'}
             uppercase={uppercase}
-            style={[styles.label, { color: palette.text }]}
+            style={[
+              styles.label,
+              size === 'md' ? styles.labelMedium : null,
+              { color: palette.text },
+            ]}
           >
             {title}
           </AppText>
-          {rightIcon ? <Feather name={rightIcon} size={18} color={palette.text} /> : null}
+          {rightIcon ? <Feather name={rightIcon} size={iconSize} color={palette.text} /> : null}
         </View>
       )}
     </Pressable>
@@ -148,12 +161,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'flex-start',
-    borderRadius: radius.button,
+    borderRadius: radius.pill,
     borderWidth: 1,
     paddingVertical: spacing.xs,
   },
-  paddingMedium: { paddingHorizontal: spacing.xl },
+  paddingMedium: { paddingHorizontal: spacing.xxl },
   paddingSmall: { paddingHorizontal: spacing.lg },
+  pressed: { transform: [{ scale: 0.98 }] },
   fullWidth: { alignSelf: 'stretch' },
   disabled: { opacity: 0.5 },
   content: {
@@ -165,6 +179,7 @@ const styles = StyleSheet.create({
   },
   // A long label (or a large system font) wraps instead of being cut off.
   label: { flexShrink: 1, textAlign: 'center' },
+  labelMedium: { fontSize: 15, lineHeight: 20 },
 });
 
 export const Button = memo(ButtonBase);

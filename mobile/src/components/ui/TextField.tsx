@@ -127,11 +127,12 @@ const useStyles = makeStyles((t) => ({
     backgroundColor: t.colors.surface,
     borderRadius: radius.input,
     borderWidth: 1,
-    borderColor: t.colors.transparent,
+    borderColor: t.colors.border,
     paddingHorizontal: spacing.lg,
   },
-  focused: { borderColor: t.colors.primary, backgroundColor: t.colors.background },
-  errored: { borderColor: t.colors.danger, backgroundColor: t.colors.background },
+  // The focus ring uses the AA-safe accent (neon on dark, teal on paper) so it is visible in both.
+  focused: { borderColor: t.colors.primaryText },
+  errored: { borderColor: t.colors.danger },
   readOnly: { opacity: 0.7 },
   leftIcon: { marginRight: spacing.sm },
   input: {

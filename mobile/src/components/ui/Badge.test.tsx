@@ -1,5 +1,8 @@
 import { render, screen } from '@testing-library/react-native';
 
+import { renderWithProviders } from '@/test/renderWithProviders';
+import { lightPalette } from '@/theme';
+
 import { Badge } from './Badge';
 
 describe('Badge', () => {
@@ -22,5 +25,12 @@ describe('Badge', () => {
 
     await rerender(<Badge />);
     expect(toJSON()).toBeNull();
+  });
+});
+
+describe('Badge (concept B)', () => {
+  it('draws the gold tone with the dark gold label (sale / best-seller tags)', async () => {
+    await renderWithProviders(<Badge label="-40%" tone="gold" />);
+    expect(screen.getByText('-40%')).toHaveStyle({ color: lightPalette.onGold });
   });
 });

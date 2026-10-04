@@ -1,11 +1,9 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Tabs } from 'expo-router/js-tabs';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { TabBarLabel } from '@/components/TabBarLabel';
+import { FloatingTabBar } from '@/components/FloatingTabBar';
 import type { FeatherIconName } from '@/components/ui/icons';
 import { useTranslation } from '@/i18n';
-import { layout, useTheme } from '@/theme';
 
 type TabKey = 'home' | 'search' | 'myCourses' | 'profile';
 type TabConfig = { name: string; titleKey: TabKey; icon: FeatherIconName };
@@ -17,31 +15,14 @@ const TABS: readonly TabConfig[] = [
   { name: 'profile', titleKey: 'profile', icon: 'user' },
 ];
 
-/** Bottom tabs: Home | Search | My Courses | Profile - active primary, inactive textSecondary. */
+/**
+ * Bottom tabs: Home | Search | My Courses | Profile, drawn by the floating glass `FloatingTabBar`
+ * (concept B): icons only, the active tab is a neon pill with its label.
+ */
 export default function TabsLayout() {
-  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { colors } = useTheme();
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        // Label text uses the AA-safe `primaryText`; the icon keeps the brand `primary`.
-        tabBarActiveTintColor: colors.primaryText,
-        tabBarInactiveTintColor: colors.textSecondary,
-        tabBarHideOnKeyboard: true,
-        tabBarLabelPosition: 'below-icon',
-        tabBarStyle: {
-          height: layout.tabBarHeight + insets.bottom,
-          paddingTop: 8,
-          paddingBottom: insets.bottom + 8,
-          backgroundColor: colors.tabBar,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-        },
-        tabBarItemStyle: { minHeight: 48 },
-      }}
-    >
+    <Tabs tabBar={(props) => <FloatingTabBar {...props} />} screenOptions={{ headerShown: false }}>
       {TABS.map((tab) => {
         const title = t(`tabs.${tab.titleKey}`);
         return (
@@ -51,11 +32,8 @@ export default function TabsLayout() {
             options={{
               title,
               tabBarAccessibilityLabel: title,
-              tabBarLabel: ({ focused, color }) => (
-                <TabBarLabel label={title} focused={focused} color={color} />
-              ),
-              tabBarIcon: ({ focused, color }) => (
-                <Feather name={tab.icon} size={24} color={focused ? colors.primary : color} />
+              tabBarIcon: ({ color, size }) => (
+                <Feather name={tab.icon} size={size} color={color} />
               ),
             }}
           />

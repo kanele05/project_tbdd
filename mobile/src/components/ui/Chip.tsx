@@ -10,16 +10,19 @@ import type { FeatherIconName } from './icons';
 export type ChipProps = {
   label: string;
   /**
-   * `outline` = primary border + primary text (hot topics, unselected star filters).
-   * `filled`  = solid primary with dark text (white on primary is only 2,27:1) (the selected "All" chip).
+   * `outline` = hairline border + normal text (unselected topic / filter chips).
+   * `filled`  = solid neon with dark text (a strong, always-on tag).
    */
   variant?: 'outline' | 'filled';
-  /** A selected chip always renders filled. Announced as "selected" to screen readers. */
+  /**
+   * Selected = accent hairline + soft accent tint + accent text (concept B topic chips).
+   * Announced as "selected" to screen readers.
+   */
   selected?: boolean;
   leftIcon?: FeatherIconName;
   /**
-   * `md` = 36 dp high, 12 dp padding (default, Hot topics / filters).
-   * `sm` = 28 dp high, 8 dp padding (compact chip rows); the touch target is padded to 48 dp.
+   * `md` = 40 dp high, 16 dp padding (default, topics / filters), touch target padded to 48 dp.
+   * `sm` = 32 dp high, 12 dp padding (compact chip rows), touch target padded to 48 dp.
    */
   size?: 'md' | 'sm';
   /** When omitted the chip is a static label. */
@@ -40,9 +43,10 @@ function ChipBase({
 }: ChipProps) {
   const { colors } = useTheme();
   const styles = useStyles();
-  const isFilled = variant === 'filled' || selected;
-  const textColor = isFilled ? colors.onPrimary : colors.primaryText;
-  const slop = size === 'sm' ? 10 : 6;
+  const isFilled = variant === 'filled' && !selected;
+  const textColor = isFilled ? colors.onPrimary : selected ? colors.primaryText : colors.text;
+  const iconColor = isFilled ? colors.onPrimary : selected ? colors.primaryText : colors.textMuted;
+  const slop = size === 'sm' ? 8 : 4;
   return (
     <Pressable
       onPress={onPress}
@@ -55,13 +59,20 @@ function ChipBase({
       style={({ pressed }) => [
         styles.base,
         size === 'sm' ? styles.small : null,
-        isFilled ? styles.filled : styles.outline,
+        isFilled ? styles.filled : selected ? styles.selected : styles.outline,
         pressed ? styles.pressed : null,
         style,
       ]}
     >
-      {leftIcon ? <Feather name={leftIcon} size={14} color={textColor} /> : null}
-      <AppText variant="body" family="bodyMedium" style={{ color: textColor }} numberOfLines={1}>
+      {leftIcon ? (
+        <Feather name={leftIcon} size={size === 'sm' ? 14 : 16} color={iconColor} />
+      ) : null}
+      <AppText
+        variant={size === 'sm' ? 'caption' : 'label'}
+        family="bodyMedium"
+        style={{ color: textColor }}
+        numberOfLines={1}
+      >
         {label}
       </AppText>
     </Pressable>
@@ -70,20 +81,19 @@ function ChipBase({
 
 const useStyles = makeStyles((t) => ({
   base: {
-    minHeight: 36,
+    minHeight: 40,
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    gap: spacing.xs,
-    // Design: 12 dp from the chip edge to the text, border included.
-    paddingHorizontal: spacing.md - 1,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: t.colors.primary,
   },
-  small: { minHeight: 28, paddingHorizontal: spacing.sm - 1 },
-  outline: { backgroundColor: t.colors.background },
-  filled: { backgroundColor: t.colors.primary },
+  small: { minHeight: 32, paddingHorizontal: spacing.md, gap: spacing.xs },
+  outline: { backgroundColor: t.colors.transparent, borderColor: t.colors.border },
+  selected: { backgroundColor: t.colors.primarySoft, borderColor: t.colors.primaryText },
+  filled: { backgroundColor: t.colors.primary, borderColor: t.colors.primary },
   pressed: { opacity: 0.7 },
 }));
 

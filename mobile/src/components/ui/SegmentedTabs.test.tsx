@@ -1,5 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
+import { renderWithProviders } from '@/test/renderWithProviders';
+import { lightPalette } from '@/theme';
+
 import { SegmentedTabs } from './SegmentedTabs';
 
 const TABS = [
@@ -22,5 +25,28 @@ describe('SegmentedTabs', () => {
 
     await fireEvent.press(screen.getByRole('tab', { name: 'Review' }));
     expect(onChange).toHaveBeenCalledWith('review');
+  });
+});
+
+describe('SegmentedTabs (concept B)', () => {
+  it('keeps sentence case by default and upper-cases only on request', async () => {
+    const { rerender } = await render(
+      <SegmentedTabs tabs={TABS} value="overview" onChange={jest.fn()} />,
+    );
+    expect(screen.getByText('Overview').props.style).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ textTransform: 'uppercase' })]),
+    );
+
+    await rerender(<SegmentedTabs tabs={TABS} value="overview" onChange={jest.fn()} isUppercase />);
+    expect(screen.getByText('Overview')).toHaveStyle({ textTransform: 'uppercase' });
+  });
+
+  it('draws the active tab in the text color with a neon underline, the others muted', async () => {
+    await renderWithProviders(<SegmentedTabs tabs={TABS} value="lessons" onChange={jest.fn()} />);
+    expect(screen.getByText('Lessons')).toHaveStyle({ color: lightPalette.text });
+    expect(screen.getByText('Overview')).toHaveStyle({ color: lightPalette.textMuted });
+    expect(screen.getByRole('tab', { name: 'Lessons' })).toHaveStyle({
+      borderBottomColor: lightPalette.primary,
+    });
   });
 });

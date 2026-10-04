@@ -14,6 +14,8 @@ export type AvatarProps = {
   size?: number;
   /** Background behind the initials / transparent image. Default `secondarySoft`. */
   backgroundColor?: string;
+  /** Neon ring around the avatar (teachers, the signed-in user). Drawn inside the `size`. */
+  hasRing?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -27,8 +29,15 @@ export function getInitials(name?: string): string {
   return (first + last).toUpperCase();
 }
 
-/** Round avatar: cached remote image, or initials on a soft purple circle. */
-function AvatarBase({ uri, name, size = 40, backgroundColor, style }: AvatarProps) {
+/** Round avatar: cached remote image, or initials on a soft violet circle; optional neon ring. */
+function AvatarBase({
+  uri,
+  name,
+  size = 40,
+  backgroundColor,
+  hasRing = false,
+  style,
+}: AvatarProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const dimension = {
@@ -37,9 +46,10 @@ function AvatarBase({ uri, name, size = 40, backgroundColor, style }: AvatarProp
     borderRadius: size / 2,
     backgroundColor: backgroundColor ?? colors.secondarySoft,
   };
+  const ring = hasRing ? { borderWidth: 2, borderColor: colors.primaryText, padding: 0 } : null;
   return (
     <View
-      style={[styles.container, dimension, style]}
+      style={[styles.container, dimension, ring, style]}
       accessible={Boolean(name)}
       accessibilityRole="image"
       accessibilityLabel={name ? t('a11y.avatarOf', { name }) : undefined}
