@@ -49,6 +49,8 @@ const MODULES: readonly ModuleMount[] = [
   ['/', 'review'],
   ['/', 'question'],
   ['/', 'like'],
+  // Module AI (Gemini; gắn ở gốc, khai báo đầy đủ đường dẫn trong router):
+  ['/', 'ai'],
 ];
 
 function loadRouter(moduleName: string): Router {

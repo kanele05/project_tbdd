@@ -272,3 +272,84 @@ export type CourseProjectDto = {
   resources: ResourceDto[];
   submissionCount: number;
 };
+
+// ---------------------------------------------------------------- AI (Google Gemini)
+
+/** Ngôn ngữ AI trả lời. */
+export type AiLangDto = 'vi' | 'en';
+
+/** `GET /courses/:id/ai/summary` */
+export type AiCourseSummaryDto = {
+  courseId: string;
+  lang: AiLangDto;
+  /** 2-3 câu giới thiệu khóa học. */
+  overview: string;
+  /** Mục tiêu học tập (3-6). */
+  objectives: string[];
+  /** Nội dung chính theo từng chương (đúng thứ tự chương của khóa). */
+  sections: { title: string; summary: string }[];
+  /** Ai nên học (2-5). */
+  targetAudience: string[];
+  /** Kết quả đạt được sau khóa (3-6). */
+  outcomes: string[];
+  /** `gemini-...` hoặc `mock-ai-1` khi chưa cấu hình GEMINI_API_KEY. */
+  model: string;
+  generatedAt: string;
+};
+
+/** `GET /lessons/:id/ai/summary` */
+export type AiLessonSummaryDto = {
+  lessonId: string;
+  lang: AiLangDto;
+  summary: string;
+  /** Ý chính (3-6). */
+  keyPoints: string[];
+  model: string;
+  generatedAt: string;
+};
+
+export type AiQuizQuestionDto = {
+  question: string;
+  /** Đúng 4 lựa chọn. */
+  options: string[];
+  /** Chỉ số (0-3) của đáp án đúng trong `options`. */
+  correctIndex: number;
+  explanation: string;
+};
+
+/** `POST /lessons/:id/ai/quiz` - 5 câu trắc nghiệm (cache theo bài + ngôn ngữ). */
+export type AiQuizDto = {
+  lessonId: string;
+  lang: AiLangDto;
+  questions: AiQuizQuestionDto[];
+  model: string;
+  generatedAt: string;
+};
+
+export type AiRecommendationItemDto = { course: CourseSummaryDto; reason: string };
+
+/** `GET /me/ai/recommendations` - lộ trình 3-5 khóa theo thứ tự nên học (cache 24 h theo user + ngôn ngữ). */
+export type AiRecommendationsDto = {
+  lang: AiLangDto;
+  /** 1 câu động viên. */
+  encouragement: string;
+  items: AiRecommendationItemDto[];
+  model: string;
+  generatedAt: string;
+};
+
+export type AiChatRole = 'USER' | 'ASSISTANT';
+
+/** `GET /courses/:id/ai/chat` (mới nhất trước). */
+export type AiChatMessageDto = {
+  id: string;
+  role: AiChatRole;
+  content: string;
+  createdAt: string;
+};
+
+/** Sự kiện SSE của `POST /courses/:id/ai/chat` (`event:` + `data:` JSON). */
+export type AiChatSseEvent =
+  | { event: 'delta'; data: { text: string } }
+  | { event: 'done'; data: { messageId: string } }
+  | { event: 'error'; data: { code: string; message: string } };

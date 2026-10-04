@@ -24,6 +24,9 @@ const SEED_RANDOM = 20260930;
 
 /** Xóa toàn bộ dữ liệu, con trước - cha sau. */
 async function clearAll(): Promise<void> {
+  // AiContent tham chiếu courseId/lessonId/userId bằng id thường (không FK) nên phải xóa tay.
+  await prisma.aiContent.deleteMany();
+  await prisma.aiChatMessage.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.projectSubmission.deleteMany();
   await prisma.resource.deleteMany();
@@ -119,7 +122,7 @@ async function seedCatalog(now: number): Promise<ReturnType<typeof buildCatalog>
   await prisma.section.createMany({ data: catalog.sections });
   await prisma.lesson.createMany({
     data: catalog.lessons.map(
-      ({ id, sectionId, title, order, durationSec, videoUrl, isPreview }) => ({
+      ({ id, sectionId, title, order, durationSec, videoUrl, isPreview, content }) => ({
         id,
         sectionId,
         title,
@@ -127,6 +130,7 @@ async function seedCatalog(now: number): Promise<ReturnType<typeof buildCatalog>
         durationSec,
         videoUrl,
         isPreview,
+        content,
       }),
     ),
   });

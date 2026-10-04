@@ -7,6 +7,7 @@ import path from 'node:path';
 
 import { courseId, COURSES, type CourseSeed } from './courses';
 import { CURRICULUM } from './curriculum';
+import { buildLessonContent } from './lessonContent';
 import { PHOTO, staticUrl, unsplash, VIDEOS } from './media';
 import { tagId } from './tags';
 import { teacherByKey, TEACHERS } from './teachers';
@@ -24,6 +25,8 @@ export type LessonRow = {
   durationSec: number;
   videoUrl: string;
   isPreview: boolean;
+  /** Ghi chú chữ của bài (nguồn cho AI) - sinh từ template theo danh mục, không gọi AI. */
+  content: string;
 };
 
 export type SectionRow = { id: string; courseId: string; title: string; order: number };
@@ -112,8 +115,9 @@ export function buildCatalog(now: number): Catalog {
         number += 1;
         const video = VIDEOS[(courseIndex + number) % VIDEOS.length];
         if (!video) throw new Error('Danh sách VIDEOS rỗng');
+        const lessonId = `les_${id.slice(4)}_${String(number).padStart(2, '0')}`;
         const lesson: LessonRow = {
-          id: `les_${id.slice(4)}_${String(number).padStart(2, '0')}`,
+          id: lessonId,
           sectionId,
           courseId: id,
           title,
@@ -122,6 +126,13 @@ export function buildCatalog(now: number): Catalog {
           durationSec: video.durationSec,
           videoUrl: video.url,
           isPreview: number <= 2, // 2 bài đầu xem thử (PLAN §11)
+          content: buildLessonContent({
+            lessonId,
+            category: seed.category,
+            courseTitle: seed.title,
+            sectionTitle: section.title,
+            lessonTitle: title,
+          }),
         };
         row.lessons.push(lesson);
         catalog.lessons.push(lesson);

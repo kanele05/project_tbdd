@@ -8,3 +8,5 @@ process.env.JWT_EXPIRES_IN ??= '7d';
 process.env.DATABASE_URL ??=
   'postgresql://postgres:postgres@localhost:5433/elearning_test?schema=public';
 process.env.PUBLIC_BASE_URL ??= 'http://localhost:4001';
+// Test không bao giờ gọi Gemini thật dù máy dev có GEMINI_API_KEY.
+process.env.AI_PROVIDER = 'mock';

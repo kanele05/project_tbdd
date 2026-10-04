@@ -35,6 +35,18 @@ enum BannerTarget {
   CATEGORY
 }
 
+enum AiContentKind {
+  COURSE_SUMMARY
+  LESSON_SUMMARY
+  RECOMMENDATIONS
+  QUIZ
+}
+
+enum AiChatRole {
+  USER
+  ASSISTANT
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -61,6 +73,7 @@ model User {
   submissions    ProjectSubmission[]
   notifications  Notification[]
   follows        Follow[]
+  aiChatMessages AiChatMessage[]
 }
 
 model TeacherProfile {
@@ -141,19 +154,20 @@ model Course {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  category    Category            @relation(fields: [categoryId], references: [id])
-  teacher     TeacherProfile      @relation(fields: [teacherId], references: [id])
-  tags        CourseTag[]
-  sections    Section[]
-  enrollments Enrollment[]
-  bookmarks   Bookmark[]
-  likes       CourseLike[]
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
-  reviews     Review[]
-  questions   Question[]
-  resources   Resource[]
-  submissions ProjectSubmission[]
+  category       Category            @relation(fields: [categoryId], references: [id])
+  teacher        TeacherProfile      @relation(fields: [teacherId], references: [id])
+  tags           CourseTag[]
+  sections       Section[]
+  enrollments    Enrollment[]
+  bookmarks      Bookmark[]
+  likes          CourseLike[]
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+  reviews        Review[]
+  questions      Question[]
+  resources      Resource[]
+  submissions    ProjectSubmission[]
+  aiChatMessages AiChatMessage[]
 
   @@index([categoryId])
   @@index([teacherId])
@@ -182,6 +196,8 @@ model Lesson {
   durationSec Int
   videoUrl    String
   isPreview   Boolean @default(false)
+  // Ghi chú / nội dung chữ của bài - nguồn cho tính năng AI (video mẫu không có transcript).
+  content     String?
 
   section  Section          @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   progress LessonProgress[]
@@ -389,4 +405,34 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead, createdAt])
+}
+
+// Cache kết quả AI (tóm tắt khóa/bài, quiz, gợi ý). `refId` là courseId / lessonId / userId tùy `kind`
+// (không có FK vì tham chiếu nhiều bảng) -> seed phải xóa bảng này khi xóa dữ liệu gốc.
+model AiContent {
+  id        String        @id @default(cuid())
+  kind      AiContentKind
+  refId     String
+  lang      String        @default("en")
+  content   Json
+  model     String
+  createdAt DateTime      @default(now())
+  expiresAt DateTime?
+
+  @@unique([kind, refId, lang])
+}
+
+// Lịch sử hội thoại AI Tutor của một học viên trong một khóa học.
+model AiChatMessage {
+  id        String     @id @default(cuid())
+  userId    String
+  courseId  String
+  role      AiChatRole
+  content   String
+  createdAt DateTime   @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([userId, courseId, createdAt])
 }

@@ -26,6 +26,10 @@ export const ERROR_STATUS = {
   CART_EMPTY: 422,
   CANNOT_FOLLOW_SELF: 422,
   RATE_LIMITED: 429,
+  // AI (Gemini): hết hạn mức / bị chặn an toàn / dịch vụ AI không dùng được.
+  AI_RATE_LIMITED: 429,
+  AI_BLOCKED: 422,
+  AI_UNAVAILABLE: 503,
   INTERNAL_ERROR: 500,
 } as const;
 
