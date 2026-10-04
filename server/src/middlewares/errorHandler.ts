@@ -84,6 +84,10 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   const mapped = mapError(err);
   if (mapped) {
     logError(req, err, mapped.status);
+    // 423 ACCOUNT_LOCKED / 429 RESEND_TOO_SOON / AI_RATE_LIMITED có `details.retryAfterSec` -> đặt thêm header chuẩn.
+    const retryAfterSec = (mapped.body.error.details as { retryAfterSec?: unknown } | undefined)
+      ?.retryAfterSec;
+    if (typeof retryAfterSec === 'number') res.setHeader('Retry-After', String(retryAfterSec));
     res.status(mapped.status).json(mapped.body);
     return;
   }

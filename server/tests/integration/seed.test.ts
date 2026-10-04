@@ -187,12 +187,21 @@ describe('seed', () => {
     expect(notifications.filter((n) => !n.isRead)).toHaveLength(2);
   });
 
+  it('seeds verified accounts without 2FA so the demo can sign in right away', async () => {
+    expect(await prisma.user.count({ where: { emailVerifiedAt: null } })).toBe(0);
+    expect(await prisma.user.count({ where: { totpEnabledAt: { not: null } } })).toBe(0);
+    expect(await prisma.session.count()).toBe(0);
+  });
+
   it('lets the demo account log in and reads seeded catalog data through the API', async () => {
     const api = createTestApi();
     const login = await api
       .post(`${API}/auth/login`)
       .send({ email: DEMO_ACCOUNT.email, password: SEED_PASSWORD });
     expect(login.status).toBe(200);
+    expect(login.body.data.twoFactorRequired).toBe(false);
+    expect(login.body.data.accessToken).toEqual(expect.any(String));
+    expect(login.body.data.token).toBe(login.body.data.accessToken);
     expect(login.body.data.user.fullName).toBe('Martha Rosie');
 
     const categories = await api.get(`${API}/categories`);

@@ -6,8 +6,11 @@
  *   const { course, lessons } = await createCourseWithLessons({ sections: 2, lessonsPerSection: 3 });
  *   await createEnrollment(user.id, course.id, { progressPercent: 30 });
  */
+import { signAccessToken } from '@/lib/jwt';
 import { hashPassword } from '@/lib/password';
 import { prisma } from '@/lib/prisma';
+
+import { registerTestToken } from './authHelper';
 
 export const DEFAULT_TEST_PASSWORD = 'Passw0rdTest';
 
@@ -30,6 +33,10 @@ export async function createUser(
     role?: Role;
     headline?: string | null;
     avatarUrl?: string | null;
+    /** Mặc định true: tài khoản đã xác minh email (đăng nhập được ngay). */
+    verified?: boolean;
+    /** Mặc định true: tạo sẵn một Session + access token để `authHeader(user)` dùng được. */
+    session?: boolean;
   } = {},
 ) {
   const password = overrides.password ?? DEFAULT_TEST_PASSWORD;
@@ -48,9 +55,31 @@ export async function createUser(
       avatarUrl: overrides.avatarUrl ?? null,
       role: overrides.role ?? 'STUDENT',
       passwordHash,
+      emailVerifiedAt: overrides.verified === false ? null : new Date(),
     },
   });
-  return { ...user, password };
+  const sessionId = overrides.session === false ? null : await createTestSession(user);
+  return { ...user, password, sessionId };
+}
+
+/**
+ * Tạo Session trong DB và ghi nhớ access token tương ứng cho `authHeader(user)`.
+ * Trả id phiên (claim `sid`).
+ */
+export async function createTestSession(user: { id: string; role: Role }): Promise<string> {
+  const session = await prisma.session.create({
+    data: {
+      userId: user.id,
+      deviceName: 'Test helper',
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+    select: { id: true },
+  });
+  registerTestToken(
+    user.id,
+    signAccessToken({ id: user.id, role: user.role, sessionId: session.id }),
+  );
+  return session.id;
 }
 
 /** Giảng viên = User (role TEACHER) + TeacherProfile. `profile.id` là id dùng trong API (`teacher.id`). */

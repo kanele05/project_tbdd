@@ -353,3 +353,72 @@ export type AiChatSseEvent =
   | { event: 'delta'; data: { text: string } }
   | { event: 'done'; data: { messageId: string } }
   | { event: 'error'; data: { code: string; message: string } };
+
+// ---------------------------------------------------------------- Xác thực chuẩn app thật (AUTH-01…AUTH-06)
+
+/** Cặp token trả về khi đăng nhập / xác minh email / 2FA / refresh. */
+export type TokenPairDto = {
+  /** JWT sống ngắn (mặc định 15 phút) - gửi trong `Authorization: Bearer`. */
+  accessToken: string;
+  /** Chuỗi ngẫu nhiên sống 30 ngày, dùng một lần (xoay vòng) ở `POST /auth/refresh`. Lưu ở SecureStore. */
+  refreshToken: string;
+  /** Số giây access token còn sống kể từ lúc cấp (vd. 900). */
+  accessTokenExpiresIn: number;
+  /** @deprecated Bằng `accessToken`; chỉ để app cũ chạy tiếp, bỏ sau AUTH-08. */
+  token: string;
+};
+
+/** `POST /auth/login` (không bật 2FA), `POST /auth/2fa/verify`, `POST /auth/verify-email`, `POST /auth/refresh`. */
+export type AuthSessionDto = TokenPairDto & { twoFactorRequired: false; user: UserDto };
+
+/** `POST /auth/login` khi tài khoản bật 2FA: mật khẩu đúng, cần thêm mã ở `POST /auth/2fa/verify`. */
+export type TwoFactorChallengeDto = {
+  twoFactorRequired: true;
+  /** JWT 5 phút, chỉ dùng ở `POST /auth/2fa/verify`. */
+  challengeToken: string;
+  challengeExpiresIn: number;
+};
+
+export type LoginResultDto = AuthSessionDto | TwoFactorChallengeDto;
+
+/** `POST /auth/register`: chưa cấp token, phải xác minh email bằng OTP (xem `POST /auth/verify-email`). */
+export type RegisterResultDto = {
+  user: UserDto;
+  emailVerificationRequired: true;
+  /** Mã hết hạn sau (giây). */
+  codeExpiresIn: number;
+  /** Được gửi lại mã sau (giây). */
+  resendAfter: number;
+};
+
+export type SentCodeDto = { sent: true; codeExpiresIn: number; resendAfter: number };
+
+/** `GET /me/sessions`: thiết bị đang đăng nhập. */
+export type SessionDto = {
+  id: string;
+  deviceName: string;
+  /** Đã rút gọn, vd. `113.161.45.x`. */
+  ipAddress: string | null;
+  createdAt: string;
+  lastUsedAt: string;
+  isCurrent: boolean;
+};
+
+/** `GET /me/security` */
+export type SecurityOverviewDto = {
+  emailVerified: boolean;
+  twoFactorEnabled: boolean;
+  /** Số mã khôi phục 2FA chưa dùng (0 nếu chưa bật 2FA). */
+  recoveryCodesRemaining: number;
+};
+
+/** `POST /me/2fa/setup` */
+export type TwoFactorSetupDto = {
+  /** Secret base32 để nhập tay vào app Authenticator. */
+  secret: string;
+  /** `otpauth://totp/...` -> client vẽ mã QR. */
+  otpauthUrl: string;
+};
+
+/** `POST /me/2fa/enable`, `POST /me/2fa/recovery-codes`: hiện đúng 1 lần, server chỉ lưu hash. */
+export type RecoveryCodesDto = { recoveryCodes: string[] };

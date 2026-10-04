@@ -4,13 +4,18 @@ import { z } from 'zod';
 
 import { Prisma } from '@/generated/prisma/client';
 import { ApiError } from '@/lib/ApiError';
-import { signToken } from '@/lib/jwt';
+import { signAccessToken } from '@/lib/jwt';
 import { errorHandler } from '@/middlewares/errorHandler';
 import { notFound } from '@/middlewares/notFound';
 import { createRateLimiter } from '@/middlewares/rateLimit';
 import { getAuthUser, optionalAuth, requireAuth } from '@/middlewares/requireAuth';
 import { createUpload } from '@/middlewares/upload';
 import { validate } from '@/middlewares/validate';
+
+const mockIsSessionActive = jest.fn();
+jest.mock('@/lib/sessionGuard', () => ({
+  isSessionActive: (...args: unknown[]) => mockIsSessionActive(...args),
+}));
 
 function buildApp(setup: (router: Router) => void): Express {
   const app = express();
@@ -35,6 +40,17 @@ describe('errorHandler', () => {
     expect(res.body).toEqual({
       error: { code: 'CART_EMPTY', message: 'Your cart is empty', details: { a: 1 } },
     });
+  });
+
+  it('sets the Retry-After header when details.retryAfterSec is present', async () => {
+    const app = buildApp((r) =>
+      r.get('/locked', () => {
+        throw new ApiError(423, 'ACCOUNT_LOCKED', 'Locked', { retryAfterSec: 42 });
+      }),
+    );
+    const res = await request(app).get('/locked');
+    expect(res.status).toBe(423);
+    expect(res.headers['retry-after']).toBe('42');
   });
 
   it('turns unknown errors into 500 INTERNAL_ERROR without leaking the stack', async () => {
@@ -148,15 +164,38 @@ describe('validate', () => {
 
 describe('requireAuth / optionalAuth', () => {
   const app = buildApp((r) => {
-    r.get('/private', requireAuth, (req, res) => void res.json({ id: getAuthUser(req).id }));
+    r.get(
+      '/private',
+      requireAuth,
+      (req, res) => void res.json({ id: getAuthUser(req).id, sid: getAuthUser(req).sessionId }),
+    );
     r.get('/public', optionalAuth, (req, res) => void res.json({ id: req.user?.id ?? null }));
   });
-  const token = signToken({ id: 'user-1', role: 'STUDENT' });
+  const token = signAccessToken({ id: 'user-1', role: 'STUDENT', sessionId: 'sess-1' });
 
-  it('requireAuth accepts a valid Bearer token', async () => {
+  beforeEach(() => {
+    mockIsSessionActive.mockReset();
+    mockIsSessionActive.mockResolvedValue(true);
+  });
+
+  it('requireAuth accepts a valid Bearer token and exposes the session id', async () => {
     const res = await request(app).get('/private').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ id: 'user-1' });
+    expect(res.body).toEqual({ id: 'user-1', sid: 'sess-1' });
+    expect(mockIsSessionActive).toHaveBeenCalledWith('sess-1');
+  });
+
+  it('requireAuth returns 401 when the session of a valid token was revoked', async () => {
+    mockIsSessionActive.mockResolvedValue(false);
+    const res = await request(app).get('/private').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(401);
+    expect(res.body.error.code).toBe('UNAUTHORIZED');
+  });
+
+  it('optionalAuth also rejects a token whose session was revoked', async () => {
+    mockIsSessionActive.mockResolvedValue(false);
+    const res = await request(app).get('/public').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(401);
   });
 
   it('requireAuth returns 401 UNAUTHORIZED for missing, malformed or wrong tokens', async () => {

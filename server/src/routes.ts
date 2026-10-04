@@ -39,6 +39,7 @@ const MODULES: readonly ModuleMount[] = [
   ['/teachers', 'teacher'],
   ['/cart', 'cart'],
   ['/me', 'user'],
+  ['/me', 'security'], // /me/security, /me/password, /me/sessions, /me/2fa/*
   ['/notifications', 'notification'],
   ['/', 'order'], // /orders/*, /courses/:id/enroll
   ['/', 'project'], // /courses/:id/project, /courses/:id/submissions

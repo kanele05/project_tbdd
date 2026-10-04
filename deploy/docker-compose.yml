@@ -83,7 +83,6 @@ services:
       NODE_OPTIONS: --max-old-space-size=384
       DATABASE_URL: "postgresql://${POSTGRES_USER:-elearning}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in deploy/.env}@postgres:5432/${POSTGRES_DB:-elearning}?schema=public"
       JWT_SECRET: "${JWT_SECRET:?Set JWT_SECRET in deploy/.env (openssl rand -hex 32)}"
-      JWT_EXPIRES_IN: "${JWT_EXPIRES_IN:-7d}"
       ACCESS_TOKEN_TTL: "${ACCESS_TOKEN_TTL:-15m}"
       REFRESH_TOKEN_TTL: "${REFRESH_TOKEN_TTL:-30d}"
       CORS_ORIGIN: "https://app.${DOMAIN},https://${DOMAIN}"

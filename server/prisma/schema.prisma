@@ -47,6 +47,33 @@ enum AiChatRole {
   ASSISTANT
 }
 
+// Mục đích của mã OTP 6 số gửi qua email (AUTH-02, AUTH-03).
+enum OneTimeCodePurpose {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+// Nhật ký bảo mật (AUTH-06). Chỉ ghi sự kiện của tài khoản có thật (không lưu email người lạ thử đăng nhập).
+enum AuthEventType {
+  REGISTER
+  EMAIL_VERIFIED
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOGIN_LOCKED
+  NEW_DEVICE_LOGIN
+  LOGOUT
+  SESSION_REVOKED
+  REFRESH_REUSE
+  PASSWORD_RESET_REQUESTED
+  PASSWORD_RESET
+  PASSWORD_CHANGED
+  TWO_FACTOR_ENABLED
+  TWO_FACTOR_DISABLED
+  TWO_FACTOR_FAILED
+  RECOVERY_CODE_USED
+  RECOVERY_CODES_REGENERATED
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -58,6 +85,20 @@ model User {
   role         Role     @default(STUDENT)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  // --- Bảo mật tài khoản (AUTH-01…AUTH-06) ---
+  // null = chưa xác minh email (chưa đăng nhập được).
+  emailVerifiedAt  DateTime?
+  // Số lần sai liên tiếp (mật khẩu hoặc mã 2FA); về 0 khi đăng nhập thành công / khi bị khóa.
+  failedLoginCount Int       @default(0)
+  // Khóa đăng nhập tới thời điểm này (sau 5 lần sai).
+  lockedUntil      DateTime?
+  // Secret TOTP đã mã hóa AES-256-GCM ("v1.<iv>.<tag>.<ciphertext>"); có giá trị từ lúc /me/2fa/setup.
+  totpSecretEnc    String?
+  // null = 2FA chưa bật (secret mới chỉ là bản chờ xác nhận).
+  totpEnabledAt    DateTime?
+  // Bước thời gian (unix / 30 s) của mã TOTP đã dùng gần nhất - chặn dùng lại cùng một mã.
+  totpLastStep     Int?
 
   teacherProfile TeacherProfile?
   enrollments    Enrollment[]
@@ -74,6 +115,10 @@ model User {
   notifications  Notification[]
   follows        Follow[]
   aiChatMessages AiChatMessage[]
+  sessions       Session[]
+  oneTimeCodes   OneTimeCode[]
+  recoveryCodes  RecoveryCode[]
+  authEvents     AuthEvent[]
 }
 
 model TeacherProfile {
@@ -435,4 +480,88 @@ model AiChatMessage {
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@index([userId, courseId, createdAt])
+}
+
+// ---------------------------------------------------------------- Xác thực (AUTH-01…AUTH-06)
+
+// Một lần đăng nhập trên một thiết bị. `id` chính là claim `sid` trong access token; thu hồi phiên
+// (`revokedAt`) làm mọi access token của phiên đó bị từ chối ngay.
+model Session {
+  id            String    @id @default(cuid())
+  userId        String
+  deviceName    String
+  userAgent     String?
+  // Đã rút gọn khi lưu (vd. "113.161.45.x"), không lưu IP đầy đủ.
+  ipAddress     String?
+  createdAt     DateTime  @default(now())
+  lastUsedAt    DateTime  @default(now())
+  // Hạn của refresh token mới nhất (trượt theo mỗi lần refresh).
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  revokedReason String?
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+
+  @@index([userId, revokedAt])
+}
+
+// Refresh token xoay vòng: mỗi lần refresh đánh dấu token cũ `usedAt` và cấp token mới cùng `sessionId`.
+// Chỉ lưu SHA-256 của token. Token đã dùng mà bị trình lại = bị đánh cắp -> thu hồi cả phiên.
+model RefreshToken {
+  id        String    @id @default(cuid())
+  sessionId String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, usedAt])
+}
+
+// Mã OTP 6 số (HMAC, không lưu thô). Mỗi (user, purpose) chỉ có một mã còn hiệu lực: cấp mã mới xóa mã cũ.
+model OneTimeCode {
+  id         String             @id @default(cuid())
+  userId     String
+  purpose    OneTimeCodePurpose
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int                @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime           @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose, createdAt])
+}
+
+// Mã khôi phục 2FA (dùng một lần, lưu HMAC).
+model RecoveryCode {
+  id        String    @id @default(cuid())
+  userId    String
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, codeHash])
+}
+
+model AuthEvent {
+  id        String        @id @default(cuid())
+  userId    String
+  type      AuthEventType
+  sessionId String?
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
 }

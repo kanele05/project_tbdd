@@ -53,13 +53,14 @@ async function clearAll(): Promise<void> {
   await prisma.banner.deleteMany();
 }
 
-async function seedPeople(passwordHash: string): Promise<void> {
+async function seedPeople(passwordHash: string, verifiedAt: Date): Promise<void> {
   await prisma.user.createMany({
     data: [
       ...TEACHERS.map((t) => ({
         id: t.userId,
         email: t.email,
         passwordHash,
+        emailVerifiedAt: verifiedAt,
         fullName: t.fullName,
         headline: t.jobTitle,
         avatarUrl: t.avatarUrl,
@@ -70,6 +71,7 @@ async function seedPeople(passwordHash: string): Promise<void> {
         id: s.id,
         email: s.email,
         passwordHash,
+        emailVerifiedAt: verifiedAt,
         fullName: s.fullName,
         headline: s.headline,
         avatarUrl: s.avatarUrl,
@@ -194,7 +196,8 @@ async function main(): Promise<void> {
   const passwordHash = await hashPassword(SEED_PASSWORD);
 
   await clearAll();
-  await seedPeople(passwordHash);
+  // Tài khoản mẫu đã xác minh email (AUTH-02) để đăng nhập demo ngay; 2FA tắt.
+  await seedPeople(passwordHash, new Date(now));
   const catalog = await seedCatalog(now);
   await seedActivity(catalog, now);
   await recomputeDenormalized();
