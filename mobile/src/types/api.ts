@@ -294,7 +294,24 @@ export type ApiErrorCode =
   | 'INTERNAL_ERROR'
   | 'AI_RATE_LIMITED'
   | 'AI_BLOCKED'
-  | 'AI_UNAVAILABLE';
+  | 'AI_UNAVAILABLE'
+  | 'EMAIL_NOT_VERIFIED'
+  | 'ACCOUNT_LOCKED'
+  | 'CAPTCHA_REQUIRED'
+  | 'CAPTCHA_FAILED'
+  | 'CAPTCHA_UNAVAILABLE'
+  | 'INVALID_CODE'
+  | 'CODE_EXPIRED'
+  | 'TOO_MANY_ATTEMPTS'
+  | 'RESEND_TOO_SOON'
+  | 'ALREADY_VERIFIED'
+  | 'INVALID_REFRESH_TOKEN'
+  | 'INVALID_CHALLENGE'
+  | 'INVALID_PASSWORD'
+  | 'TWO_FACTOR_NOT_SETUP'
+  | 'TWO_FACTOR_NOT_ENABLED'
+  | 'TWO_FACTOR_ALREADY_ENABLED'
+  | 'SESSION_NOT_FOUND';
 
 /** Error envelope: `{ error: { code, message, details? } }`. */
 export type ApiErrorBody = {
@@ -424,3 +441,84 @@ export type AiChatSseEvent =
   | { event: 'delta'; data: { text: string } }
   | { event: 'done'; data: { messageId: string } }
   | { event: 'error'; data: { code: string; message: string } };
+
+// ---------------------------------------------------------------- Auth (phase 2, AUTH-01..04, PLAN §9.2)
+
+/** Tokens of a signed-in session. Access token: JWT 15 min bound to a session; refresh token: 30 days, single use. */
+export type TokenPairDto = {
+  accessToken: string;
+  refreshToken: string;
+  /** Seconds (900). */
+  accessTokenExpiresIn: number;
+  /** @deprecated Same as `accessToken`; kept for the pre-AUTH-08 app, will be removed. */
+  token: string;
+};
+
+/** `POST /auth/verify-email`, `/auth/2fa/verify`, `/auth/refresh`, and `/auth/login` without 2FA. */
+export type AuthSessionDto = TokenPairDto & { twoFactorRequired: false; user: UserDto };
+
+/** `POST /auth/login` when 2FA is on: send `challengeToken` + code to `/auth/2fa/verify` within 5 min. */
+export type TwoFactorChallengeDto = {
+  twoFactorRequired: true;
+  challengeToken: string;
+  /** Seconds (300). */
+  challengeExpiresIn: number;
+};
+
+export type LoginResultDto = AuthSessionDto | TwoFactorChallengeDto;
+
+/** `POST /auth/register` (201): no tokens until the email OTP is verified. */
+export type RegisterResultDto = {
+  user: UserDto;
+  emailVerificationRequired: true;
+  /** Seconds (600). */
+  codeExpiresIn: number;
+  /** Seconds before "resend" is allowed (60). */
+  resendAfter: number;
+};
+
+/** `POST /auth/resend-verification`, `/auth/forgot-password` (always 200). */
+export type SentCodeDto = { sent: true; codeExpiresIn: number; resendAfter: number };
+
+/** `GET /me/sessions`. `ipAddress` is truncated ("113.161.45.x"). */
+export type SessionDto = {
+  id: string;
+  deviceName: string;
+  ipAddress: string | null;
+  createdAt: string;
+  lastUsedAt: string;
+  isCurrent: boolean;
+};
+
+/** `GET /me/security`. */
+export type SecurityOverviewDto = {
+  emailVerified: boolean;
+  twoFactorEnabled: boolean;
+  recoveryCodesRemaining: number;
+};
+
+/** `POST /me/2fa/setup`: render `otpauthUrl` as a QR code; `secret` (base32) for manual entry. */
+export type TwoFactorSetupDto = { secret: string; otpauthUrl: string };
+
+/** `POST /me/2fa/enable`, `/me/2fa/recovery-codes`: 10 codes "XXXXX-XXXXX", shown once. */
+export type RecoveryCodesDto = { recoveryCodes: string[] };
+
+export type LoginRequestV2 = {
+  email: string;
+  password: string;
+  captchaToken?: string;
+  deviceName?: string;
+};
+export type RegisterRequestV2 = {
+  fullName: string;
+  email: string;
+  password: string;
+  captchaToken: string;
+  lang?: AiLang;
+};
+export type VerifyEmailRequest = { email: string; code: string; deviceName?: string };
+export type TwoFactorVerifyRequest =
+  | { challengeToken: string; code: string; deviceName?: string }
+  | { challengeToken: string; recoveryCode: string; deviceName?: string };
+export type ResetPasswordRequest = { email: string; code: string; newPassword: string };
+export type ChangePasswordRequest = { currentPassword: string; newPassword: string };
