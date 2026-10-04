@@ -1,4 +1,4 @@
-import type { CourseListParams, MyCoursesStatus } from '@/types/api';
+import type { AiLang, CourseListParams, MyCoursesStatus } from '@/types/api';
 
 /**
  * Central query-key factory (CLAUDE.md §7, PLAN.md §10). Never write key arrays inline.
@@ -79,6 +79,22 @@ export const queryKeys = {
   teacherCourses: (id: string) => ['teacher', id, 'courses'] as const,
   /** `GET /teachers/:id/reviews` (infinite) - persisted. */
   teacherReviews: (id: string) => ['teacher', id, 'reviews'] as const,
+
+  /* ---- AI (phase 2) - keys carry the UI language; NOT persisted (answers are cached server-side) ---- */
+  /** Prefix of every AI key. */
+  aiAll: () => ['ai'] as const,
+  /** `GET /courses/:id/ai/summary`. */
+  aiCourseSummary: (courseId: string, lang: AiLang) =>
+    ['ai', 'course-summary', courseId, lang] as const,
+  /** `GET /lessons/:id/ai/summary`. */
+  aiLessonSummary: (lessonId: string, lang: AiLang) =>
+    ['ai', 'lesson-summary', lessonId, lang] as const,
+  /** Result of `POST /lessons/:id/ai/quiz`, kept so reopening the quiz is instant. */
+  aiLessonQuiz: (lessonId: string, lang: AiLang) => ['ai', 'lesson-quiz', lessonId, lang] as const,
+  /** `GET /me/ai/recommendations`. */
+  aiRecommendations: (lang: AiLang) => ['ai', 'recommendations', lang] as const,
+  /** `GET /courses/:id/ai/chat` (infinite). */
+  aiChat: (courseId: string) => ['ai', 'chat', courseId] as const,
 
   /* ---- notifications ---- */
   /** `GET /notifications`. */

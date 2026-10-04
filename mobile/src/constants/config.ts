@@ -39,6 +39,8 @@ export const STALE_TIME = {
   submissions: 30 * 1000,
   teacher: 5 * MINUTE,
   notifications: 30 * 1000,
+  /** AI answers are cached in the DB, so they rarely change. */
+  ai: 1 * HOUR,
 } as const;
 
 /** Persisted query cache lives 24 h; `gcTime` must be >= this so restored queries are not dropped. */
