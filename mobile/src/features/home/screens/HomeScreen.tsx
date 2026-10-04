@@ -1,11 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useIsFocused } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useState, type ReactNode } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CourseCardHorizontal } from '@/components/course';
-import { EmptyState, ErrorState, SectionHeader } from '@/components/ui';
+import { CourseCardVertical } from '@/components/course';
+import { useTabBarClearance } from '@/components/FloatingTabBar';
+import { EmptyState, ErrorState, RailList } from '@/components/ui';
 import { useToggleBookmark } from '@/features/bookmark/hooks';
 import { useCartCount } from '@/features/cart/hooks';
 import { useUnreadNotificationCount } from '@/features/notification/hooks';
@@ -17,57 +19,24 @@ import {
   openTeacher,
   openTopTeachers,
 } from '@/features/search/navigation';
+import { useTranslation } from '@/i18n';
 import { queryKeys } from '@/lib/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
-import { colors, layout, spacing } from '@/theme';
-import type { BannerDto, CategoryDto, CourseSummary, HomeResponse } from '@/types/api';
+import { layout, makeStyles, spacing } from '@/theme';
+import type { CategoryDto, CourseSummary, HomeResponse } from '@/types/api';
 
-import { BannerCarousel } from '../components/BannerCarousel';
-import { CategoryGrid } from '../components/CategoryGrid';
-import { CourseCarousel } from '../components/CourseCarousel';
-import { HomeHeader } from '../components/HomeHeader';
+import { AiRecommendationsCard } from '../components/AiRecommendationsCard';
+import { CategoryChips } from '../components/CategoryChips';
+import { ContinueRail } from '../components/ContinueRail';
+import { HomeHero, HomeHeroSkeleton } from '../components/HomeHero';
 import { HomeSkeleton } from '../components/HomeSkeleton';
-import { TeacherCarousel } from '../components/TeacherCarousel';
-import { getGreeting } from '../greeting';
+import { HomeTopBar } from '../components/HomeTopBar';
+import { InspireRail } from '../components/InspireRail';
+import { RankedRail } from '../components/RankedRail';
+import { TeacherRail } from '../components/TeacherRail';
+import { getGivenName } from '../greeting';
+import { buildHeroSlides } from '../heroSlides';
 import { useHome } from '../hooks';
-
-const HOME_STRINGS = {
-  categories: 'Categories',
-  popular: 'Popular courses',
-  recommended: 'Recommended for you',
-  inspires: 'Course that inspires',
-  topTeachers: 'Top teachers',
-  refresh: 'Refresh',
-  emptyTitle: 'No courses to show yet',
-  emptyMessage: 'New courses are added regularly. Pull down to refresh or check back soon.',
-} as const;
-
-type SectionProps = {
-  title: string;
-  onViewMore: () => void;
-  /** Design: the "Categories" link is 14 px, the other sections use 12 px. */
-  viewMoreSize?: 'sm' | 'md';
-  children: ReactNode;
-};
-
-function Section({ title, onViewMore, viewMoreSize, children }: SectionProps) {
-  return (
-    <View style={styles.section}>
-      <SectionHeader
-        title={title}
-        onViewMore={onViewMore}
-        viewMoreSize={viewMoreSize}
-        style={styles.sectionHeader}
-      />
-      {children}
-    </View>
-  );
-}
-
-type HomeContentProps = {
-  home: HomeResponse;
-  onToggleBookmark: (course: CourseSummary) => void;
-};
 
 function isHomeEmpty(home: HomeResponse): boolean {
   return (
@@ -80,73 +49,88 @@ function isHomeEmpty(home: HomeResponse): boolean {
   );
 }
 
-/** Success state of SC-04: every section is hidden when the server sent an empty list for it. */
-function HomeContent({ home, onToggleBookmark }: HomeContentProps) {
+function keyExtractor(course: CourseSummary): string {
+  return course.id;
+}
+
+type HomeSectionsProps = {
+  home: HomeResponse;
+  onToggleBookmark: (course: CourseSummary) => void;
+};
+
+/** Everything below the hero. A section is hidden when the server sent an empty list for it. */
+function HomeSections({ home, onToggleBookmark }: HomeSectionsProps) {
+  const { t } = useTranslation('home');
   const handlePressCourse = useCallback((course: CourseSummary) => openCourse(course.id), []);
-  const handlePressBanner = useCallback((banner: BannerDto) => {
-    if (banner.target.type === 'COURSE') openCourse(banner.target.id);
-    else openCourseList({ categoryId: banner.target.id });
-  }, []);
   const handlePressCategory = useCallback(
     (category: CategoryDto) => openCourseList({ categoryId: category.id, title: category.name }),
     [],
   );
-  const carouselProps = { onPressCourse: handlePressCourse, onToggleBookmark };
+  const renderRecommended = useCallback(
+    (course: CourseSummary) => (
+      <CourseCardVertical
+        course={course}
+        onPress={handlePressCourse}
+        onToggleBookmark={onToggleBookmark}
+      />
+    ),
+    [handlePressCourse, onToggleBookmark],
+  );
 
   return (
     <>
-      {home.banners.length > 0 ? (
-        <BannerCarousel banners={home.banners} onPressBanner={handlePressBanner} />
-      ) : null}
+      <ContinueRail />
       {home.categories.length > 0 ? (
-        <Section title={HOME_STRINGS.categories} onViewMore={openSearchTab} viewMoreSize="md">
-          <CategoryGrid categories={home.categories} onPressCategory={handlePressCategory} />
-        </Section>
+        <CategoryChips
+          categories={home.categories}
+          onPressCategory={handlePressCategory}
+          onPressAll={openSearchTab}
+        />
       ) : null}
       {home.popular.length > 0 ? (
-        <Section
-          title={HOME_STRINGS.popular}
+        <RankedRail
+          title={t('popular')}
+          courses={home.popular}
+          onPressCourse={handlePressCourse}
           onViewMore={() => openCourseList({ section: 'popular' })}
-        >
-          <CourseCarousel courses={home.popular} {...carouselProps} />
-        </Section>
+        />
       ) : null}
+      <AiRecommendationsCard />
       {home.recommended.length > 0 ? (
-        <Section
-          title={HOME_STRINGS.recommended}
+        <RailList
+          title={t('recommended')}
           onViewMore={() => openCourseList({ section: 'recommended' })}
-        >
-          <CourseCarousel courses={home.recommended} {...carouselProps} />
-        </Section>
+          data={home.recommended}
+          keyExtractor={keyExtractor}
+          renderItem={renderRecommended}
+        />
       ) : null}
       {home.inspires.length > 0 ? (
-        <Section
-          title={HOME_STRINGS.inspires}
+        <InspireRail
+          title={t('inspires')}
+          courses={home.inspires}
+          onPressCourse={handlePressCourse}
           onViewMore={() => openCourseList({ section: 'inspires' })}
-        >
-          <View style={styles.inspires}>
-            {home.inspires.map((course) => (
-              <CourseCardHorizontal
-                key={course.id}
-                course={course}
-                onPress={handlePressCourse}
-                onToggleBookmark={onToggleBookmark}
-              />
-            ))}
-          </View>
-        </Section>
+        />
       ) : null}
       {home.topTeachers.length > 0 ? (
-        <Section title={HOME_STRINGS.topTeachers} onViewMore={openTopTeachers}>
-          <TeacherCarousel teachers={home.topTeachers} onPressTeacher={openTeacher} />
-        </Section>
+        <TeacherRail
+          title={t('topTeachers')}
+          teachers={home.topTeachers}
+          onPressTeacher={openTeacher}
+          onViewMore={openTopTeachers}
+        />
       ) : null}
     </>
   );
 }
 
-/** SC-04 Home: 1 request (`GET /home`), badges from the cart / notification hooks. */
+/** SC-04 Home: 1 request (`GET /home`) + "continue learning", AI picks, badges from their hooks. */
 export function HomeScreen() {
+  const { t } = useTranslation('home');
+  const styles = useStyles();
+  const insets = useSafeAreaInsets();
+  const clearance = useTabBarClearance();
   const queryClient = useQueryClient();
   const isFocused = useIsFocused();
   const fullName = useAuthStore((state) => state.user?.fullName);
@@ -160,31 +144,68 @@ export function HomeScreen() {
     (course: CourseSummary) => toggleBookmark(course.id, course.isBookmarked),
     [toggleBookmark],
   );
-
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      // The header badges live in other queries: refresh them together with the home data.
+      // The badges and "continue learning" live in other queries: refresh them with the home data.
       void queryClient.invalidateQueries({ queryKey: queryKeys.cart() });
       void queryClient.invalidateQueries({ queryKey: queryKeys.notifications() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.meCourses('ongoing') });
       await refetch();
     } finally {
       setIsRefreshing(false);
     }
   }, [queryClient, refetch]);
 
+  const slides = useMemo(
+    () =>
+      data
+        ? buildHeroSlides(data, {
+            featuredTag: t('hero.featuredTag'),
+            viewCourse: t('hero.viewCourse'),
+          })
+        : [],
+    [data, t],
+  );
+
+  const givenName = getGivenName(fullName);
+  const renderTopBar = (isOnPhoto: boolean) => (
+    <HomeTopBar
+      greeting={givenName ? t('greeting', { name: givenName }) : t('greetingAnonymous')}
+      subtitle={t('subtitle')}
+      cartCount={cartCount}
+      unreadCount={unreadCount}
+      isOnPhoto={isOnPhoto}
+      onPressCart={() => router.push('/cart')}
+      onPressNotifications={() => router.push('/notifications')}
+    />
+  );
+  const plainTopBar = (
+    <View style={[styles.plainTop, { paddingTop: insets.top + spacing.sm }]}>
+      {renderTopBar(false)}
+    </View>
+  );
+
+  let top: ReactNode;
   let body: ReactNode;
+  if (data && slides.length > 0) {
+    top = <HomeHero slides={slides} topBar={renderTopBar(true)} />;
+  } else if (isPending) {
+    top = <HomeHeroSkeleton topBar={renderTopBar(false)} />;
+  } else {
+    top = plainTopBar;
+  }
   if (data) {
     body = isHomeEmpty(data) ? (
       <EmptyState
         icon="book-open"
-        title={HOME_STRINGS.emptyTitle}
-        message={HOME_STRINGS.emptyMessage}
-        actionLabel={HOME_STRINGS.refresh}
+        title={t('emptyTitle')}
+        message={t('emptyMessage')}
+        actionLabel={t('refresh')}
         onAction={() => void handleRefresh()}
       />
     ) : (
-      <HomeContent home={data} onToggleBookmark={handleToggleBookmark} />
+      <HomeSections home={data} onToggleBookmark={handleToggleBookmark} />
     );
   } else if (isPending) {
     body = <HomeSkeleton />;
@@ -194,33 +215,23 @@ export function HomeScreen() {
 
   return (
     <View style={styles.screen}>
-      {isFocused ? <StatusBar style="light" /> : null}
-      <HomeHeader
-        greeting={getGreeting(fullName)}
-        cartCount={cartCount}
-        unreadCount={unreadCount}
-        onPressCart={() => router.push('/cart')}
-        onPressNotifications={() => router.push('/notifications')}
-      />
+      {isFocused && slides.length > 0 ? <StatusBar style="light" /> : null}
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: clearance + spacing.xxxl }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <BrandRefreshControl isRefreshing={isRefreshing} onRefresh={handleRefresh} />
         }
       >
-        {body}
+        {top}
+        <View style={styles.sections}>{body}</View>
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  content: { flexGrow: 1, paddingTop: spacing.lg, paddingBottom: spacing.xxxl, gap: spacing.xxxl },
-  // Design: ~12 dp between the section title and its content, ~36 dp between sections (the header
-  // row adds 4 dp above and below the 24 dp title line).
-  section: { gap: spacing.sm },
-  sectionHeader: { paddingHorizontal: layout.screenPaddingX },
-  inspires: { gap: spacing.lg, paddingHorizontal: layout.screenPaddingX },
-});
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
+  plainTop: { paddingHorizontal: layout.screenPaddingX, paddingBottom: spacing.md },
+  sections: { marginTop: layout.sectionGap, gap: layout.sectionGap },
+}));

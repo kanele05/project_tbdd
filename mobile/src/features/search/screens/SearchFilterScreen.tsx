@@ -1,24 +1,23 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText, Button, IconButton } from '@/components/ui';
-import { STRINGS } from '@/constants/strings';
+import { useTranslation } from '@/i18n';
 import {
   INITIAL_SEARCH_FILTERS,
   useSearchFilterStore,
   type PriceType,
   type SearchFilterValues,
 } from '@/stores/searchFilterStore';
-import { colors, layout, spacing } from '@/theme';
+import { layout, makeStyles, spacing } from '@/theme';
 import type { CourseSort } from '@/types/api';
 
 import { FilterForm } from '../components/FilterForm';
 import {
   centsToDollars,
   dollarsToCents,
-  formatApplyLabel,
   hasPriceRangeError,
   isSameFilters,
   sanitizeMoneyInput,
@@ -42,6 +41,8 @@ function closeModal(): void {
  * "Reset" clears the draft, closing with unsaved changes asks for confirmation.
  */
 export function SearchFilterScreen() {
+  const { t } = useTranslation(['search', 'common']);
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const { q } = useLocalSearchParams<{ q?: string }>();
   const applied = useAppliedFilters();
@@ -101,35 +102,42 @@ export function SearchFilterScreen() {
       closeModal();
       return;
     }
-    Alert.alert('Discard changes?', 'Your filter changes have not been applied.', [
-      { text: 'Keep editing', style: 'cancel' },
-      { text: 'Discard', style: 'destructive', onPress: closeModal },
+    Alert.alert(t('filter.discardTitle'), t('filter.discardMessage'), [
+      { text: t('filter.keepEditing'), style: 'cancel' },
+      { text: t('filter.discard'), style: 'destructive', onPress: closeModal },
     ]);
-  }, [hasChanges]);
+  }, [hasChanges, t]);
   const handleApply = useCallback(() => {
     applyFilters(values);
     closeModal();
   }, [applyFilters, values]);
 
+  const applyLabel =
+    total == null || hasRangeError ? t('filter.apply') : t('filter.applyCount', { count: total });
+
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerRow}>
-          <IconButton icon="x" onPress={handleClose} accessibilityLabel={STRINGS.common.close} />
+          <IconButton
+            icon="x"
+            onPress={handleClose}
+            accessibilityLabel={t('common:actions.close')}
+          />
           <AppText variant="h3" align="center" accessibilityRole="header" style={styles.title}>
-            Filter
+            {t('filter.title')}
           </AppText>
           <Pressable
             onPress={handleReset}
             disabled={isDefault}
             hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
             accessibilityRole="button"
-            accessibilityLabel="Reset filters"
+            accessibilityLabel={t('filter.resetLabel')}
             accessibilityState={{ disabled: isDefault }}
             style={styles.reset}
           >
             <AppText variant="label" color="primaryText" style={isDefault ? styles.dimmed : null}>
-              Reset
+              {t('filter.reset')}
             </AppText>
           </Pressable>
         </View>
@@ -155,25 +163,20 @@ export function SearchFilterScreen() {
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
-        <Button
-          title={formatApplyLabel(hasRangeError ? undefined : total)}
-          onPress={handleApply}
-          disabled={hasRangeError}
-          fullWidth
-        />
+        <Button title={applyLabel} onPress={handleApply} disabled={hasRangeError} fullWidth />
       </View>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.xs, backgroundColor: colors.background },
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
+  header: { paddingHorizontal: spacing.xs, backgroundColor: t.colors.background },
   headerRow: { height: layout.headerHeight, flexDirection: 'row', alignItems: 'center' },
   title: { flex: 1 },
   reset: {
-    minWidth: 48,
-    minHeight: 48,
+    minWidth: layout.minTouchTarget,
+    minHeight: layout.minTouchTarget,
     alignItems: 'flex-end',
     justifyContent: 'center',
     paddingRight: spacing.md,
@@ -184,7 +187,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingHorizontal: layout.screenPaddingX,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.background,
+    borderTopColor: t.colors.border,
+    backgroundColor: t.colors.background,
   },
-});
+}));

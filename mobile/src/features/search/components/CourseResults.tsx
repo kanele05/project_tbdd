@@ -1,9 +1,10 @@
-import { useCallback, useState, type ReactElement } from 'react';
+import { useCallback, useState, type ReactElement, type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { CourseCardHorizontalSkeleton } from '@/components/course';
 import { AppText, ErrorState, Skeleton } from '@/components/ui';
 import { useToggleBookmark } from '@/features/bookmark/hooks';
+import { useTranslation } from '@/i18n';
 import { layout, spacing } from '@/theme';
 import type { CourseSummary } from '@/types/api';
 
@@ -18,20 +19,24 @@ type CourseResultsProps = {
   emptyState: ReactElement;
   /** Extra list padding, e.g. the bottom inset on screens without a tab bar. */
   contentContainerStyle?: StyleProp<ViewStyle>;
+  /** Shown under the "{total} Results" title (the Search tab puts its sort chips here). */
+  headerExtra?: ReactNode;
 };
 
 const SKELETON_COUNT = 5;
-
-export function formatResultCount(total: number): string {
-  return `${total} ${total === 1 ? 'Result' : 'Results'}`;
-}
 
 /**
  * "{total} Results" + infinite list of `CourseCardHorizontal` for a `GET /courses` query with
  * all 4 data states (skeleton, error + Retry, empty, list). Used by Search (SC-06) and
  * Course list (SC-08).
  */
-export function CourseResults({ params, emptyState, contentContainerStyle }: CourseResultsProps) {
+export function CourseResults({
+  params,
+  emptyState,
+  contentContainerStyle,
+  headerExtra,
+}: CourseResultsProps) {
+  const { t } = useTranslation(['search', 'common']);
   const query = useCoursesInfinite(params);
   const { toggleBookmark } = useToggleBookmark();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -60,7 +65,7 @@ export function CourseResults({ params, emptyState, contentContainerStyle }: Cou
       <View
         style={styles.skeletons}
         accessible
-        accessibilityLabel="Loading"
+        accessibilityLabel={t('common:loading')}
         accessibilityState={{ busy: true }}
       >
         <Skeleton width={110} height={24} />
@@ -86,19 +91,19 @@ export function CourseResults({ params, emptyState, contentContainerStyle }: Cou
       isRefreshing={isRefreshing}
       ListHeaderComponent={
         total ? (
-          <AppText variant="title" style={styles.title} accessibilityRole="header">
-            {formatResultCount(total)}
-          </AppText>
+          <View style={styles.header}>
+            <AppText variant="title" accessibilityRole="header">
+              {t('search:results', { count: total })}
+            </AppText>
+            {headerExtra}
+          </View>
         ) : null
       }
       ListEmptyComponent={emptyState}
       ListFooterComponent={
         isFetchNextPageError ? (
           <View style={styles.footerError}>
-            <InlineError
-              message="Couldn't load more courses."
-              onRetry={() => void fetchNextPage()}
-            />
+            <InlineError message={t('search:loadMoreError')} onRetry={() => void fetchNextPage()} />
           </View>
         ) : null
       }
@@ -112,6 +117,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: layout.screenPaddingX,
     paddingTop: spacing.sm,
   },
-  title: { marginBottom: spacing.md },
+  header: { gap: spacing.md, marginBottom: spacing.md },
   footerError: { marginTop: spacing.lg },
 });

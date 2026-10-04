@@ -1,6 +1,6 @@
 import { RefreshControl, type RefreshControlProps } from 'react-native';
 
-import { colors } from '@/theme';
+import { useTheme } from '@/theme';
 
 type BrandRefreshControlProps = Omit<RefreshControlProps, 'refreshing' | 'onRefresh'> & {
   isRefreshing: boolean;
@@ -8,7 +8,8 @@ type BrandRefreshControlProps = Omit<RefreshControlProps, 'refreshing' | 'onRefr
 };
 
 /**
- * Pull-to-refresh spinner in the primary color (iOS `tintColor`, Android `colors`).
+ * Pull-to-refresh spinner in the accent color (iOS `tintColor`, Android `colors`). It uses
+ * `primaryText`, not the neon `primary`: neon on the cream light background is barely visible.
  *
  * Must forward every other prop: on Android and web, `ScrollView` clones its `refreshControl`
  * element and passes the scroll view itself as `children` (plus `style`). Dropping them renders
@@ -19,13 +20,15 @@ export function BrandRefreshControl({
   onRefresh,
   ...rest
 }: BrandRefreshControlProps) {
+  const { colors } = useTheme();
   return (
     <RefreshControl
       {...rest}
       refreshing={isRefreshing}
       onRefresh={onRefresh}
-      tintColor={colors.primary}
-      colors={[colors.primary]}
+      tintColor={colors.primaryText}
+      colors={[colors.primaryText]}
+      progressBackgroundColor={colors.card}
     />
   );
 }

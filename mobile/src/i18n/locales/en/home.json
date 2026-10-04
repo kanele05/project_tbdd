@@ -1,1 +1,56 @@
-{}
+{
+  "greeting": "Hello, {{name}}!",
+  "greetingAnonymous": "Hello!",
+  "subtitle": "What do you want to learn today?",
+  "cart": {
+    "open": "Open cart",
+    "openCount_one": "Open cart, {{count}} item",
+    "openCount_other": "Open cart, {{count}} items"
+  },
+  "notifications": {
+    "open": "Open notifications",
+    "openCount": "Open notifications, {{unread}} unread"
+  },
+  "hero": {
+    "position": "Featured {{current}} of {{total}}",
+    "featuredTag": "Featured",
+    "viewCourse": "View course"
+  },
+  "continue": {
+    "title": "Continue learning",
+    "meta": "{{percent}}% done · {{time}} left",
+    "label": "Continue {{title}}, {{meta}}"
+  },
+  "categories": {
+    "title": "Categories",
+    "all": "All topics",
+    "label_one": "{{name}}, {{count}} course",
+    "label_other": "{{name}}, {{count}} courses"
+  },
+  "popular": "Popular courses",
+  "recommended": "Recommended for you",
+  "inspires": "Course that inspires",
+  "topTeachers": "Top teachers",
+  "ranked": {
+    "label": "Number {{rank}}: {{title}}, {{teacher}}, rated {{rating}}"
+  },
+  "inspire": {
+    "meta": "{{teacher}} · {{lessons}}",
+    "label": "{{title}}, {{meta}}"
+  },
+  "teacher": {
+    "label": "{{name}}, {{organization}}, rated {{rating}}",
+    "labelNoOrganization": "{{name}}, rated {{rating}}"
+  },
+  "ai": {
+    "title": "AI picks for you",
+    "subtitle": "A learning path made just for you",
+    "stepLabel": "Step {{step}}: {{title}}. {{reason}}",
+    "empty": "Finish or save a few courses and the AI will suggest your next steps.",
+    "explore": "Explore courses",
+    "retry": "Try again"
+  },
+  "refresh": "Refresh",
+  "emptyTitle": "No courses to show yet",
+  "emptyMessage": "New courses are added regularly. Pull down to refresh or check back soon."
+}

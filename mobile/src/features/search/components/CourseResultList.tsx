@@ -3,7 +3,7 @@ import { useCallback, type ReactElement } from 'react';
 import { ActivityIndicator, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { CourseCardHorizontal } from '@/components/course';
-import { colors, spacing } from '@/theme';
+import { layout, spacing, useTheme } from '@/theme';
 import type { CourseSummary } from '@/types/api';
 
 import { BrandRefreshControl } from './BrandRefreshControl';
@@ -50,6 +50,7 @@ export function CourseResultList({
   ListFooterComponent,
   contentContainerStyle,
 }: CourseResultListProps) {
+  const { colors } = useTheme();
   const renderItem = useCallback(
     ({ item }: { item: CourseSummary }) => (
       <CourseCardHorizontal
@@ -72,7 +73,7 @@ export function CourseResultList({
       ListFooterComponent={
         isFetchingNextPage ? (
           <View style={styles.footer}>
-            <ActivityIndicator color={colors.primary} />
+            <ActivityIndicator color={colors.primaryText} />
           </View>
         ) : (
           (ListFooterComponent ?? null)
@@ -94,7 +95,7 @@ export function CourseResultList({
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: layout.screenPaddingX, paddingBottom: spacing.xxl },
   separator: { height: spacing.lg },
   footer: { paddingVertical: spacing.lg, alignItems: 'center' },
 });

@@ -3,10 +3,10 @@ import { INITIAL_SEARCH_FILTERS, type SearchFilterValues } from '@/stores/search
 import {
   centsToDollars,
   dollarsToCents,
-  formatApplyLabel,
   hasPriceRangeError,
   isSameFilters,
   sanitizeMoneyInput,
+  SORT_VALUES,
 } from './filterUtils';
 
 const base: SearchFilterValues = { ...INITIAL_SEARCH_FILTERS };
@@ -63,14 +63,9 @@ describe('isSameFilters', () => {
   });
 });
 
-describe('formatApplyLabel', () => {
-  it('shows the result count when known', () => {
-    expect(formatApplyLabel(120)).toBe('Apply (120 results)');
-    expect(formatApplyLabel(1)).toBe('Apply (1 result)');
-    expect(formatApplyLabel(0)).toBe('Apply (0 results)');
-  });
-
-  it('falls back to a plain label while counting', () => {
-    expect(formatApplyLabel(undefined)).toBe('Apply');
+describe('SORT_VALUES', () => {
+  it('lists every sort order once, the default first', () => {
+    expect(SORT_VALUES[0]).toBe(INITIAL_SEARCH_FILTERS.sort);
+    expect(new Set(SORT_VALUES).size).toBe(SORT_VALUES.length);
   });
 });

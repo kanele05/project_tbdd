@@ -1,1 +1,54 @@
-{}
+{
+  "greeting": "Xin chào, {{name}}!",
+  "greetingAnonymous": "Xin chào!",
+  "subtitle": "Hôm nay bạn muốn học gì?",
+  "cart": {
+    "open": "Mở giỏ hàng",
+    "openCount_other": "Mở giỏ hàng, {{count}} khóa học"
+  },
+  "notifications": {
+    "open": "Mở thông báo",
+    "openCount": "Mở thông báo, {{unread}} chưa đọc"
+  },
+  "hero": {
+    "position": "Nổi bật {{current}} trên {{total}}",
+    "featuredTag": "Nổi bật",
+    "viewCourse": "Xem khóa học"
+  },
+  "continue": {
+    "title": "Tiếp tục học",
+    "meta": "Đã học {{percent}}% · còn {{time}}",
+    "label": "Tiếp tục {{title}}, {{meta}}"
+  },
+  "categories": {
+    "title": "Danh mục",
+    "all": "Tất cả chủ đề",
+    "label_other": "{{name}}, {{count}} khóa học"
+  },
+  "popular": "Khóa học phổ biến",
+  "recommended": "Dành riêng cho bạn",
+  "inspires": "Truyền cảm hứng",
+  "topTeachers": "Giảng viên nổi bật",
+  "ranked": {
+    "label": "Hạng {{rank}}: {{title}}, giảng viên {{teacher}}, đánh giá {{rating}}"
+  },
+  "inspire": {
+    "meta": "{{teacher}} · {{lessons}}",
+    "label": "{{title}}, {{meta}}"
+  },
+  "teacher": {
+    "label": "{{name}}, {{organization}}, đánh giá {{rating}}",
+    "labelNoOrganization": "{{name}}, đánh giá {{rating}}"
+  },
+  "ai": {
+    "title": "AI gợi ý cho bạn",
+    "subtitle": "Lộ trình học dành riêng cho bạn",
+    "stepLabel": "Bước {{step}}: {{title}}. {{reason}}",
+    "empty": "Hãy học hoặc lưu thêm vài khóa, AI sẽ gợi ý những bước tiếp theo cho bạn.",
+    "explore": "Khám phá khóa học",
+    "retry": "Thử lại"
+  },
+  "refresh": "Làm mới",
+  "emptyTitle": "Chưa có khóa học nào",
+  "emptyMessage": "Khóa học mới được thêm thường xuyên. Kéo xuống để làm mới hoặc quay lại sau nhé."
+}

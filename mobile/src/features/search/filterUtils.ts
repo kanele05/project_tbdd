@@ -4,15 +4,14 @@ import type { CourseSort } from '@/types/api';
 /** Minimum-rating chips of SC-07 (PLAN.md §7.3). */
 export const RATING_OPTIONS = [4.5, 4.0, 3.5, 3.0] as const;
 
-export const SORT_OPTIONS: readonly { value: CourseSort; label: string }[] = [
-  { value: 'popular', label: 'Most popular' },
-  { value: 'rating', label: 'Highest rated' },
-  { value: 'newest', label: 'Newest' },
-  { value: 'price_asc', label: 'Price: low to high' },
-  { value: 'price_desc', label: 'Price: high to low' },
+/** Sort orders of SC-07, in display order (the labels live in the `search` locale: `sort.<value>`). */
+export const SORT_VALUES: readonly CourseSort[] = [
+  'popular',
+  'rating',
+  'newest',
+  'price_asc',
+  'price_desc',
 ];
-
-export const PRICE_RANGE_ERROR = 'Max must be greater than min';
 
 /** Keep digits and at most one dot with at most 2 decimals ("12.345" -> "12.34"). */
 export function sanitizeMoneyInput(text: string): string {
@@ -57,10 +56,4 @@ export function isSameFilters(a: SearchFilterValues, b: SearchFilterValues): boo
     a.minRating === b.minRating &&
     a.sort === b.sort
   );
-}
-
-/** Label of the Apply button: "Apply (120 results)"; just "Apply" until the count is known. */
-export function formatApplyLabel(total: number | undefined): string {
-  if (total == null) return 'Apply';
-  return `Apply (${total} ${total === 1 ? 'result' : 'results'})`;
 }

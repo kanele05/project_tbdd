@@ -1,8 +1,8 @@
 import { memo } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/ui';
-import { colors, spacing } from '@/theme';
+import { layout, makeStyles, spacing } from '@/theme';
 
 type RadioRowProps = {
   label: string;
@@ -12,6 +12,7 @@ type RadioRowProps = {
 
 /** Radio option with a full-width 48 dp touch target ("Sort by" in SC-07). */
 function RadioRowBase({ label, isSelected, onPress }: RadioRowProps) {
+  const styles = useStyles();
   return (
     <Pressable
       onPress={onPress}
@@ -23,27 +24,33 @@ function RadioRowBase({ label, isSelected, onPress }: RadioRowProps) {
       <View style={[styles.outer, isSelected ? styles.outerSelected : null]}>
         {isSelected ? <View style={styles.inner} /> : null}
       </View>
-      <AppText variant="body" color={isSelected ? 'textPrimary' : 'textSecondary'}>
+      <AppText variant="body" color={isSelected ? 'text' : 'textSecondary'}>
         {label}
       </AppText>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  row: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+const useStyles = makeStyles((t) => ({
+  row: {
+    minHeight: layout.minTouchTarget,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
   pressed: { opacity: 0.7 },
   outer: {
-    width: 20,
-    height: 20,
+    width: 22,
+    height: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
+    borderRadius: 11,
     borderWidth: 2,
-    borderColor: colors.border,
+    borderColor: t.colors.border,
   },
-  outerSelected: { borderColor: colors.primary },
-  inner: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary },
-});
+  // `primaryText`, not the neon: the neon ring is invisible on the cream light background.
+  outerSelected: { borderColor: t.colors.primaryText },
+  inner: { width: 10, height: 10, borderRadius: 5, backgroundColor: t.colors.primaryText },
+}));
 
 export const RadioRow = memo(RadioRowBase);

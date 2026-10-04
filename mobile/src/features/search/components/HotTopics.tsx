@@ -21,6 +21,6 @@ export function HotTopics({ tags, onPressTag }: HotTopicsProps) {
 }
 
 const styles = StyleSheet.create({
-  // Design: 4 dp between chips in a row, 8 dp between rows.
-  row: { flexDirection: 'row', flexWrap: 'wrap', columnGap: spacing.xs, rowGap: spacing.sm },
+  // 8 dp between chips in a row and between rows (the 40 dp chips keep a 48 dp touch target).
+  row: { flexDirection: 'row', flexWrap: 'wrap', columnGap: spacing.sm, rowGap: spacing.sm },
 });

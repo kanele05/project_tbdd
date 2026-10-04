@@ -1,9 +1,10 @@
 import Feather from '@expo/vector-icons/Feather';
 import { memo } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, spacing, useTheme, withAlpha } from '@/theme';
 import type { CategoryDto } from '@/types/api';
 
 import { getCategoryColor, toFeatherIcon } from '../categoryIcon';
@@ -13,39 +14,58 @@ type CategoryRowProps = {
   onPress: (category: CategoryDto) => void;
 };
 
-/** One row of the Search "Categories" list: colored icon, name, chevron (SC-05). */
+const ICON_CIRCLE = 44;
+
+/** One row of the Search "Categories" list: tinted icon circle, name + course count, chevron. */
 function CategoryRowBase({ category, onPress }: CategoryRowProps) {
+  const { t } = useTranslation('search');
+  const { colors } = useTheme();
+  const styles = useStyles();
+  const color = getCategoryColor(category, colors.primaryText);
   return (
     <Pressable
       onPress={() => onPress(category)}
       accessibilityRole="button"
-      accessibilityLabel={`${category.name}, ${category.courseCount} courses`}
+      accessibilityLabel={t('categories.label', {
+        name: category.name,
+        count: category.courseCount,
+      })}
       style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}
     >
-      <Feather name={toFeatherIcon(category.icon)} size={24} color={getCategoryColor(category)} />
-      <AppText variant="body" style={styles.name} numberOfLines={1}>
-        {category.name}
-      </AppText>
-      <Feather name="chevron-right" size={24} color={colors.iconMuted} />
+      <View style={[styles.circle, { backgroundColor: withAlpha(color, 0.16) }]}>
+        <Feather name={toFeatherIcon(category.icon)} size={20} color={color} />
+      </View>
+      <View style={styles.texts}>
+        <AppText variant="title" numberOfLines={1}>
+          {category.name}
+        </AppText>
+        <AppText variant="caption" numberOfLines={1}>
+          {t('categories.count', { count: category.courseCount })}
+        </AppText>
+      </View>
+      <Feather name="chevron-right" size={22} color={colors.iconMuted} />
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  // Design: 48 dp row, 12 dp around the 24 dp icon and chevron, 12 dp between icon and name.
+const useStyles = makeStyles((t) => ({
   row: {
-    minHeight: 48,
+    minHeight: 68,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
-    borderRadius: radius.card,
-    backgroundColor: colors.background,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
-  pressed: { backgroundColor: colors.backgroundAlt },
-  name: { flex: 1 },
-});
+  pressed: { backgroundColor: t.colors.surfaceAlt },
+  circle: {
+    width: ICON_CIRCLE,
+    height: ICON_CIRCLE,
+    borderRadius: ICON_CIRCLE / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  texts: { flex: 1 },
+}));
 
 export const CategoryRow = memo(CategoryRowBase);

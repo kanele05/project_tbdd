@@ -1,22 +1,20 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Chip, Skeleton, TextField } from '@/components/ui';
+import { useTranslation } from '@/i18n';
+import { formatFixed } from '@/i18n/format';
 import { getErrorMessage } from '@/lib/appError';
 import type { PriceType, SearchFilterValues } from '@/stores/searchFilterStore';
 import { radius, spacing } from '@/theme';
 import type { CourseSort } from '@/types/api';
 
-import { PRICE_RANGE_ERROR, RATING_OPTIONS, SORT_OPTIONS } from '../filterUtils';
+import { RATING_OPTIONS, SORT_VALUES } from '../filterUtils';
 import { useCategories } from '../hooks';
 import { ChipRow, FilterSection } from './FilterSection';
 import { InlineError } from './InlineError';
 import { RadioRow } from './RadioRow';
 
-const PRICE_OPTIONS: readonly { value: PriceType; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'free', label: 'Free' },
-  { value: 'paid', label: 'Paid' },
-];
+const PRICE_OPTIONS: readonly PriceType[] = ['all', 'free', 'paid'];
 
 export type FilterFormProps = {
   draft: SearchFilterValues;
@@ -43,7 +41,7 @@ function CategoryChips({
     return (
       <ChipRow>
         {[88, 72, 64, 80, 72, 88].map((width, index) => (
-          <Skeleton key={index} width={width} height={36} borderRadius={radius.pill} />
+          <Skeleton key={index} width={width} height={40} borderRadius={radius.pill} />
         ))}
       </ChipRow>
     );
@@ -77,27 +75,28 @@ export function FilterForm({
   onChangeRating,
   onChangeSort,
 }: FilterFormProps) {
+  const { t } = useTranslation('search');
   return (
     <View style={styles.form}>
-      <FilterSection title="Category">
+      <FilterSection title={t('filter.category')}>
         <CategoryChips selectedIds={draft.categoryIds} onToggle={onToggleCategory} />
       </FilterSection>
 
-      <FilterSection title="Price">
+      <FilterSection title={t('filter.price')}>
         <ChipRow>
-          {PRICE_OPTIONS.map((option) => (
+          {PRICE_OPTIONS.map((price) => (
             <Chip
-              key={option.value}
-              label={option.label}
-              selected={draft.price === option.value}
-              onPress={() => onChangePrice(option.value)}
+              key={price}
+              label={t(`filter.priceOptions.${price}`)}
+              selected={draft.price === price}
+              onPress={() => onChangePrice(price)}
             />
           ))}
         </ChipRow>
         {draft.price === 'paid' ? (
           <View style={styles.range}>
             <TextField
-              label="Min ($)"
+              label={t('filter.minPrice')}
               value={minText}
               onChangeText={onChangeMin}
               placeholder="0"
@@ -105,24 +104,24 @@ export function FilterForm({
               containerStyle={styles.rangeField}
             />
             <TextField
-              label="Max ($)"
+              label={t('filter.maxPrice')}
               value={maxText}
               onChangeText={onChangeMax}
               placeholder="200"
               keyboardType="decimal-pad"
-              error={hasRangeError ? PRICE_RANGE_ERROR : undefined}
+              error={hasRangeError ? t('filter.rangeError') : undefined}
               containerStyle={styles.rangeField}
             />
           </View>
         ) : null}
       </FilterSection>
 
-      <FilterSection title="Rating">
+      <FilterSection title={t('filter.rating')}>
         <ChipRow>
           {RATING_OPTIONS.map((rating) => (
             <Chip
               key={rating}
-              label={`${rating.toFixed(1)}+`}
+              label={`${formatFixed(rating, 1)}+`}
               leftIcon="star"
               selected={draft.minRating === rating}
               onPress={() => onChangeRating(draft.minRating === rating ? null : rating)}
@@ -131,14 +130,14 @@ export function FilterForm({
         </ChipRow>
       </FilterSection>
 
-      <FilterSection title="Sort by">
+      <FilterSection title={t('filter.sortBy')}>
         <View accessibilityRole="radiogroup">
-          {SORT_OPTIONS.map((option) => (
+          {SORT_VALUES.map((value) => (
             <RadioRow
-              key={option.value}
-              label={option.label}
-              isSelected={draft.sort === option.value}
-              onPress={() => onChangeSort(option.value)}
+              key={value}
+              label={t(`sort.${value}`)}
+              isSelected={draft.sort === value}
+              onPress={() => onChangeSort(value)}
             />
           ))}
         </View>

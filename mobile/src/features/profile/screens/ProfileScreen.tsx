@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 
 import { CourseCardHorizontalSkeleton } from '@/components/course';
+import { useTabBarClearance } from '@/components/FloatingTabBar';
 import {
   AppText,
   EmptyState,
@@ -50,6 +51,7 @@ function SavedSkeleton() {
 export function ProfileScreen() {
   const { t } = useTranslation(['profile', 'common']);
   const styles = useStyles();
+  const clearance = useTabBarClearance();
   const user = useAuthStore((state) => state.user);
   const confirmLogout = useConfirmLogout();
   const stats = useMeStats();
@@ -154,6 +156,7 @@ export function ProfileScreen() {
           </View>
         }
         ListEmptyComponent={emptyState}
+        contentContainerStyle={{ paddingBottom: clearance + spacing.xxxl }}
       />
       {isMenuOpen ? (
         <ProfileMenu

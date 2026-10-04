@@ -1,9 +1,10 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { StyleSheet, View } from 'react-native';
+import Feather from '@expo/vector-icons/Feather';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Badge, Button, SearchBar } from '@/components/ui';
-import { colors, layout, spacing } from '@/theme';
+import { AppText, Badge, SearchBar } from '@/components/ui';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, spacing, useTheme } from '@/theme';
 
 type SearchTopBarProps = {
   value: string;
@@ -14,7 +15,7 @@ type SearchTopBarProps = {
   onPressFilter: () => void;
 };
 
-/** Search field + Filter button (primary, with a badge of the active-filter count) - SC-05/06. */
+/** Serif title, the search pill and a round Filter button with an active-count badge (SC-05/06). */
 export function SearchTopBar({
   value,
   onChangeText,
@@ -22,49 +23,73 @@ export function SearchTopBar({
   filterCount,
   onPressFilter,
 }: SearchTopBarProps) {
+  const { t } = useTranslation('search');
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const isActive = filterCount > 0;
   return (
-    <View style={[styles.container, { paddingTop: insets.top + spacing.sm }]}>
-      <SearchBar
-        value={value}
-        onChangeText={onChangeText}
-        onSubmit={onSubmit}
-        placeholder="Search course"
-        style={styles.search}
-      />
-      <View>
-        <Button
-          title="Filter"
-          size="sm"
-          leftAdornment={
-            <MaterialIcons name="filter-list" size={18} color={colors.textOnPrimary} />
-          }
-          onPress={onPressFilter}
-          accessibilityLabel={filterCount > 0 ? `Filter, ${filterCount} active` : 'Filter'}
+    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
+      <AppText variant="h1" accessibilityRole="header">
+        {t('title')}
+      </AppText>
+      <View style={styles.row}>
+        <SearchBar
+          value={value}
+          onChangeText={onChangeText}
+          onSubmit={onSubmit}
+          style={styles.search}
         />
-        {filterCount > 0 ? (
-          <View
-            style={styles.badge}
-            pointerEvents="none"
-            importantForAccessibility="no-hide-descendants"
+        <View>
+          <Pressable
+            onPress={onPressFilter}
+            accessibilityRole="button"
+            accessibilityLabel={
+              isActive ? t('filter.buttonActive', { active: filterCount }) : t('filter.button')
+            }
+            style={({ pressed }) => [
+              styles.filter,
+              isActive ? styles.filterActive : null,
+              pressed ? styles.pressed : null,
+            ]}
           >
-            <Badge count={filterCount} />
-          </View>
-        ) : null}
+            <Feather name="sliders" size={20} color={isActive ? colors.primaryText : colors.text} />
+          </Pressable>
+          {isActive ? (
+            <View
+              style={styles.badge}
+              pointerEvents="none"
+              importantForAccessibility="no-hide-descendants"
+            >
+              <Badge count={filterCount} />
+            </View>
+          ) : null}
+        </View>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
     paddingHorizontal: layout.screenPaddingX,
     paddingBottom: spacing.lg,
-    backgroundColor: colors.background,
+    backgroundColor: t.colors.background,
   },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   search: { flex: 1 },
-  badge: { position: 'absolute', top: -6, right: -6 },
-});
+  filter: {
+    width: layout.minTouchTarget,
+    height: layout.minTouchTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: layout.minTouchTarget / 2,
+    borderWidth: 1,
+    borderColor: t.colors.border,
+    backgroundColor: t.colors.surface,
+  },
+  filterActive: { borderColor: t.colors.primaryText, backgroundColor: t.colors.primarySoft },
+  pressed: { opacity: 0.7 },
+  badge: { position: 'absolute', top: -4, right: -4 },
+}));

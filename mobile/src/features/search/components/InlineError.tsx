@@ -1,8 +1,8 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText, Button } from '@/components/ui';
-import { STRINGS } from '@/constants/strings';
-import { colors, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, radius, spacing } from '@/theme';
 
 type InlineErrorProps = {
   message: string;
@@ -11,25 +11,28 @@ type InlineErrorProps = {
 
 /** Compact error with a Retry button, for one failed section of a screen that has other content. */
 export function InlineError({ message, onRetry }: InlineErrorProps) {
+  const { t } = useTranslation();
+  const styles = useStyles();
   return (
     <View style={styles.container} accessibilityRole="alert">
       <AppText variant="body" color="textSecondary" style={styles.message}>
         {message}
       </AppText>
-      <Button title={STRINGS.common.retry} onPress={onRetry} variant="outline" size="sm" />
+      <Button title={t('actions.retry')} onPress={onRetry} variant="outline" size="sm" />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.borderSubtle,
+    borderColor: t.colors.borderSubtle,
     borderRadius: radius.card,
+    backgroundColor: t.colors.card,
   },
   message: { flex: 1 },
-});
+}));

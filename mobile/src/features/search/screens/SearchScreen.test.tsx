@@ -6,6 +6,7 @@ import { homeApi } from '@/features/home/api';
 import { useSearchFilterStore } from '@/stores/searchFilterStore';
 
 import { searchApi } from '../api';
+import { resetRecentSearchesForTest } from '../recentSearches';
 import { SAMPLE_CATEGORIES, SAMPLE_TAGS, makeHome, makePage, renderWithClient } from '../testUtils';
 import { SearchScreen } from './SearchScreen';
 
@@ -30,9 +31,10 @@ const DESIGN_COURSES = [
 ];
 
 describe('SearchScreen', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
     useSearchFilterStore.getState().reset();
+    await resetRecentSearchesForTest();
     (searchApi.categories as jest.Mock).mockResolvedValue(SAMPLE_CATEGORIES);
     (searchApi.hotTags as jest.Mock).mockResolvedValue(SAMPLE_TAGS);
     (homeApi.get as jest.Mock).mockResolvedValue(makeHome());
@@ -128,5 +130,70 @@ describe('SearchScreen', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Clear search' }));
 
     expect(await screen.findByText('Hot topics')).toBeOnTheScreen();
+  });
+  it('remembers searches and lists them as recent searches', async () => {
+    await renderWithClient(<SearchScreen />);
+    await fireEvent.press(await screen.findByRole('button', { name: 'Java' }));
+    await screen.findByText('120 Results');
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Clear search' }));
+
+    expect(await screen.findByText('Recent searches')).toBeOnTheScreen();
+    // The chip in "Hot topics" and the recent row share the label: the row has the clock icon.
+    expect(screen.getAllByRole('button', { name: 'Java' })).toHaveLength(2);
+  });
+
+  it('forgets a recent search with its remove button', async () => {
+    await renderWithClient(<SearchScreen />);
+    const input = screen.getByLabelText('Search course');
+    await fireEvent.changeText(input, 'python');
+    await act(async () => {
+      fireEvent(input, 'submitEditing');
+    });
+    await screen.findByText('120 Results');
+    await fireEvent.press(screen.getByRole('button', { name: 'Clear search' }));
+
+    await fireEvent.press(
+      await screen.findByRole('button', { name: 'Remove python from recent searches' }),
+    );
+    expect(screen.queryByText('Recent searches')).not.toBeOnTheScreen();
+  });
+
+  it('re-runs a recent search when it is pressed', async () => {
+    await renderWithClient(<SearchScreen />);
+    const input = screen.getByLabelText('Search course');
+    await fireEvent.changeText(input, 'python');
+    await act(async () => {
+      fireEvent(input, 'submitEditing');
+    });
+    await screen.findByText('120 Results');
+    await fireEvent.press(screen.getByRole('button', { name: 'Clear search' }));
+
+    await fireEvent.press(await screen.findByRole('button', { name: 'python' }));
+
+    expect(await screen.findByText('120 Results')).toBeOnTheScreen();
+    expect(screen.getByDisplayValue('python')).toBeOnTheScreen();
+  });
+
+  it('changes the sort order from the quick sort chips', async () => {
+    await renderWithClient(<SearchScreen />);
+    await fireEvent.press(await screen.findByRole('button', { name: 'Java' }));
+    await screen.findByText('120 Results');
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Newest' }));
+
+    await waitFor(() =>
+      expect(mockCourses).toHaveBeenCalledWith(
+        expect.objectContaining({ q: 'Java', sort: 'newest' }),
+      ),
+    );
+    expect(useSearchFilterStore.getState().sort).toBe('newest');
+  });
+
+  it('renders the discovery screen in Vietnamese', async () => {
+    await renderWithClient(<SearchScreen />, { language: 'vi' });
+
+    expect(await screen.findByText('Chủ đề nổi bật')).toBeOnTheScreen();
+    expect(await screen.findByRole('button', { name: 'Business, 6 khóa học' })).toBeOnTheScreen();
   });
 });

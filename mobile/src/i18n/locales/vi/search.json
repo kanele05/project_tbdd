@@ -1,1 +1,70 @@
-{}
+{
+  "title": "Khám phá",
+  "hot": {
+    "title": "Chủ đề nổi bật"
+  },
+  "recent": {
+    "title": "Tìm kiếm gần đây",
+    "clear": "Xóa tất cả",
+    "clearLabel": "Xóa các tìm kiếm gần đây",
+    "remove": "Xóa {{keyword}} khỏi tìm kiếm gần đây"
+  },
+  "categories": {
+    "title": "Danh mục",
+    "label_other": "{{name}}, {{count}} khóa học",
+    "count_other": "{{count}} khóa học"
+  },
+  "recommended": "Dành riêng cho bạn",
+  "results_other": "{{count}} kết quả",
+  "empty": {
+    "title": "Không tìm thấy khóa học",
+    "message": "Hãy thử từ khóa khác hoặc chỉnh lại bộ lọc. Bạn cũng có thể thử:"
+  },
+  "loadMoreError": "Không tải thêm được khóa học.",
+  "sort": {
+    "popular": "Phổ biến nhất",
+    "rating": "Đánh giá cao nhất",
+    "newest": "Mới nhất",
+    "price_asc": "Giá: thấp đến cao",
+    "price_desc": "Giá: cao đến thấp"
+  },
+  "sortChip": {
+    "popular": "Phổ biến",
+    "rating": "Đánh giá cao",
+    "newest": "Mới nhất",
+    "price_asc": "Giá thấp nhất",
+    "price_desc": "Giá cao nhất"
+  },
+  "filter": {
+    "button": "Bộ lọc",
+    "buttonActive": "Bộ lọc, đang bật {{active}}",
+    "title": "Bộ lọc",
+    "reset": "Đặt lại",
+    "resetLabel": "Đặt lại bộ lọc",
+    "apply": "Áp dụng",
+    "applyCount_other": "Áp dụng ({{count}} kết quả)",
+    "discardTitle": "Bỏ thay đổi?",
+    "discardMessage": "Các thay đổi bộ lọc chưa được áp dụng.",
+    "keepEditing": "Tiếp tục chỉnh sửa",
+    "discard": "Bỏ thay đổi",
+    "category": "Danh mục",
+    "price": "Giá",
+    "priceOptions": {
+      "all": "Tất cả",
+      "free": "Miễn phí",
+      "paid": "Có phí"
+    },
+    "minPrice": "Tối thiểu ($)",
+    "maxPrice": "Tối đa ($)",
+    "rangeError": "Giá tối đa phải lớn hơn giá tối thiểu",
+    "rating": "Đánh giá",
+    "sortBy": "Sắp xếp theo"
+  },
+  "list": {
+    "all": "Tất cả khóa học",
+    "popular": "Khóa học phổ biến",
+    "recommended": "Dành riêng cho bạn",
+    "inspires": "Truyền cảm hứng",
+    "emptyMessage": "Chưa có khóa học nào ở đây. Hãy thử khám phá các chủ đề khác."
+  }
+}

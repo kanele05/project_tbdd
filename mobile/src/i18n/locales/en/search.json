@@ -1,1 +1,74 @@
-{}
+{
+  "title": "Explore",
+  "hot": {
+    "title": "Hot topics"
+  },
+  "recent": {
+    "title": "Recent searches",
+    "clear": "Clear all",
+    "clearLabel": "Clear recent searches",
+    "remove": "Remove {{keyword}} from recent searches"
+  },
+  "categories": {
+    "title": "Categories",
+    "label_one": "{{name}}, {{count}} course",
+    "label_other": "{{name}}, {{count}} courses",
+    "count_one": "{{count}} course",
+    "count_other": "{{count}} courses"
+  },
+  "recommended": "Recommended for you",
+  "results_one": "{{count}} Result",
+  "results_other": "{{count}} Results",
+  "empty": {
+    "title": "No courses found",
+    "message": "Try a different keyword or adjust your filters. You could also try:"
+  },
+  "loadMoreError": "Couldn't load more courses.",
+  "sort": {
+    "popular": "Most popular",
+    "rating": "Highest rated",
+    "newest": "Newest",
+    "price_asc": "Price: low to high",
+    "price_desc": "Price: high to low"
+  },
+  "sortChip": {
+    "popular": "Popular",
+    "rating": "Top rated",
+    "newest": "Newest",
+    "price_asc": "Lowest price",
+    "price_desc": "Highest price"
+  },
+  "filter": {
+    "button": "Filter",
+    "buttonActive": "Filter, {{active}} active",
+    "title": "Filter",
+    "reset": "Reset",
+    "resetLabel": "Reset filters",
+    "apply": "Apply",
+    "applyCount_one": "Apply ({{count}} result)",
+    "applyCount_other": "Apply ({{count}} results)",
+    "discardTitle": "Discard changes?",
+    "discardMessage": "Your filter changes have not been applied.",
+    "keepEditing": "Keep editing",
+    "discard": "Discard",
+    "category": "Category",
+    "price": "Price",
+    "priceOptions": {
+      "all": "All",
+      "free": "Free",
+      "paid": "Paid"
+    },
+    "minPrice": "Min ($)",
+    "maxPrice": "Max ($)",
+    "rangeError": "Max must be greater than min",
+    "rating": "Rating",
+    "sortBy": "Sort by"
+  },
+  "list": {
+    "all": "All courses",
+    "popular": "Popular courses",
+    "recommended": "Recommended for you",
+    "inspires": "Course that inspires",
+    "emptyMessage": "There are no courses here yet. Try exploring other topics."
+  }
+}

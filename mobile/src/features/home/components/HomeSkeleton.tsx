@@ -1,74 +1,61 @@
 import { StyleSheet, View } from 'react-native';
 
-import { CourseCardHorizontalSkeleton, CourseCardVerticalSkeleton } from '@/components/course';
+import { CourseCardVerticalSkeleton } from '@/components/course';
 import { Skeleton } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { layout, radius, spacing } from '@/theme';
 
-import { BANNER_HEIGHT } from './BannerCarousel';
-import { useCategoryTileWidth } from './CategoryGrid';
-
-function SectionTitleSkeleton() {
-  return (
-    <View style={styles.titleRow}>
-      <Skeleton width={140} height={24} />
-      <Skeleton width={56} height={16} />
-    </View>
-  );
-}
-
-/** Loading placeholder with the shape of the Home content: banner, categories, cards. */
+/** Loading placeholder of the Home sections below the hero: topic chips and two poster rails. */
 export function HomeSkeleton() {
-  const tileWidth = useCategoryTileWidth();
+  const { t } = useTranslation();
   return (
     <View
       style={styles.content}
       accessible
-      accessibilityLabel="Loading"
+      accessibilityLabel={t('loading')}
       accessibilityState={{ busy: true }}
     >
-      <View style={styles.padded}>
-        <Skeleton height={BANNER_HEIGHT} borderRadius={radius.badge} />
+      <View style={styles.chips}>
+        {[96, 84, 112, 92].map((width, index) => (
+          <Skeleton key={index} width={width} height={48} borderRadius={radius.pill} />
+        ))}
       </View>
-
-      <View style={styles.section}>
-        <SectionTitleSkeleton />
-        <View style={styles.grid}>
-          {Array.from({ length: 6 }, (_, index) => (
-            <Skeleton key={index} width={tileWidth} height={60} />
-          ))}
+      {[0, 1].map((index) => (
+        <View key={index} style={styles.section}>
+          <View style={styles.titleRow}>
+            <Skeleton width={180} height={24} />
+            <Skeleton width={64} height={16} />
+          </View>
+          <View style={styles.cards}>
+            <CourseCardVerticalSkeleton />
+            <CourseCardVerticalSkeleton />
+          </View>
         </View>
-      </View>
-
-      <View style={styles.section}>
-        <SectionTitleSkeleton />
-        <View style={styles.cardsRow}>
-          <CourseCardVerticalSkeleton />
-          <CourseCardVerticalSkeleton />
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <SectionTitleSkeleton />
-        <View style={styles.list}>
-          <CourseCardHorizontalSkeleton />
-          <CourseCardHorizontalSkeleton />
-        </View>
-      </View>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.xxxl },
-  padded: { paddingHorizontal: layout.screenPaddingX },
-  section: { gap: spacing.sm, paddingHorizontal: layout.screenPaddingX },
+  content: { gap: layout.sectionGap },
+  chips: {
+    flexDirection: 'row',
+    gap: spacing.sm + 2,
+    paddingHorizontal: layout.screenPaddingX,
+    overflow: 'hidden',
+  },
+  section: { gap: spacing.md },
   titleRow: {
     minHeight: 32,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: layout.screenPaddingX,
   },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
-  cardsRow: { flexDirection: 'row', gap: spacing.md, overflow: 'hidden' },
-  list: { gap: spacing.lg },
+  cards: {
+    flexDirection: 'row',
+    gap: layout.railGap,
+    paddingHorizontal: layout.screenPaddingX,
+    overflow: 'hidden',
+  },
 });

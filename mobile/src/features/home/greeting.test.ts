@@ -1,4 +1,4 @@
-import { getGivenName, getGreeting } from './greeting';
+import { getGivenName } from './greeting';
 
 describe('getGivenName', () => {
   it('uses the last word of the full name', () => {
@@ -16,15 +16,5 @@ describe('getGivenName', () => {
     expect(getGivenName('   ')).toBe('');
     expect(getGivenName(null)).toBe('');
     expect(getGivenName(undefined)).toBe('');
-  });
-});
-
-describe('getGreeting', () => {
-  it('builds the greeting from the given name', () => {
-    expect(getGreeting('Martha Rosie')).toBe('Hello, Rosie!');
-  });
-
-  it('falls back to a plain greeting', () => {
-    expect(getGreeting(null)).toBe('Hello!');
   });
 });

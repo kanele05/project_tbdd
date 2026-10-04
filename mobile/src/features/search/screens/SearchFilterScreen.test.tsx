@@ -122,4 +122,12 @@ describe('SearchFilterScreen', () => {
     expect(mockBack).toHaveBeenCalledTimes(1);
     alertSpy.mockRestore();
   });
+  it('shows the filter labels in Vietnamese', async () => {
+    await renderWithClient(<SearchFilterScreen />, { language: 'vi' });
+
+    expect(await screen.findByRole('button', { name: 'Áp dụng (120 kết quả)' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Miễn phí' })).toBeOnTheScreen();
+    expect(screen.getByRole('radio', { name: 'Mới nhất' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Đặt lại bộ lọc' })).toBeOnTheScreen();
+  });
 });
