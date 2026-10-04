@@ -1,8 +1,8 @@
 import Feather from '@expo/vector-icons/Feather';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { STRINGS } from '@/constants/strings';
-import { colors, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 import { AppText } from './AppText';
 import { Button } from './Button';
@@ -20,20 +20,23 @@ export type EmptyStateProps = {
 
 /** "Nothing here" placeholder: icon, title, optional message and CTA. */
 export function EmptyState({
-  title = STRINGS.empty.defaultTitle,
+  title,
   message,
   icon = 'inbox',
   actionLabel,
   onAction,
   style,
 }: EmptyStateProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const themed = useStyles();
   return (
     <View style={[styles.container, style]} accessibilityRole="summary">
-      <View style={styles.iconWrap}>
+      <View style={[styles.iconWrap, themed.iconWrap]}>
         <Feather name={icon} size={32} color={colors.primary} />
       </View>
       <AppText variant="title" align="center">
-        {title}
+        {title ?? t('empty.defaultTitle')}
       </AppText>
       {message ? (
         <AppText variant="body" color="textSecondary" align="center">
@@ -46,6 +49,10 @@ export function EmptyState({
     </View>
   );
 }
+
+const useStyles = makeStyles((t) => ({
+  iconWrap: { backgroundColor: t.colors.primarySoft },
+}));
 
 const styles = StyleSheet.create({
   container: {
@@ -62,7 +69,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.sm,
-    backgroundColor: colors.primaryLight,
   },
-  action: { marginTop: spacing.md },
+  // The Button is `alignSelf: 'flex-start'` by default; centre it under the centred texts.
+  action: { marginTop: spacing.md, alignSelf: 'center' },
 });

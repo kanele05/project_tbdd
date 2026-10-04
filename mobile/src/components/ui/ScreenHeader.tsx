@@ -3,8 +3,8 @@ import { type ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { STRINGS } from '@/constants/strings';
-import { colors, layout, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, spacing } from '@/theme';
 
 import { AppText } from './AppText';
 import { IconButton } from './IconButton';
@@ -42,13 +42,15 @@ export function ScreenHeader({
   transparent = false,
   style,
 }: ScreenHeaderProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const themed = useStyles();
   return (
     <View
       style={[
         styles.container,
         { paddingTop: withTopInset ? insets.top : 0 },
-        transparent ? null : styles.solid,
+        transparent ? null : themed.solid,
         style,
       ]}
     >
@@ -58,7 +60,7 @@ export function ScreenHeader({
             <IconButton
               icon="chevron-left"
               onPress={onBack ?? goBack}
-              accessibilityLabel={STRINGS.common.back}
+              accessibilityLabel={t('actions.back')}
               color="textSecondary"
             />
           ) : null}
@@ -78,10 +80,13 @@ export function ScreenHeader({
   );
 }
 
+const useStyles = makeStyles((t) => ({
+  solid: { backgroundColor: t.colors.background },
+}));
+
 const styles = StyleSheet.create({
   // Design: back icon centered at x = 22, right icon at x = 342 (48 dp targets: 0 dp left, 8 dp right).
   container: { paddingLeft: 0, paddingRight: spacing.sm },
-  solid: { backgroundColor: colors.background },
   row: { height: layout.headerHeight, flexDirection: 'row', alignItems: 'center' },
   side: { minWidth: 48, flexDirection: 'row', alignItems: 'center' },
   sideRight: { justifyContent: 'flex-end' },

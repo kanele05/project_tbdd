@@ -7,6 +7,7 @@ import { showToast } from '@/components/ui/Toast';
 import { makePage, renderWithClient } from '@/features/search/testUtils';
 import { AppError } from '@/lib/appError';
 import { useAuthStore } from '@/stores/authStore';
+import { darkPalette } from '@/theme';
 
 import { profileApi } from '../api';
 import { ProfileScreen } from './ProfileScreen';
@@ -148,7 +149,50 @@ describe('ProfileScreen', () => {
     expect(mockLogout).not.toHaveBeenCalled();
     const buttons = alertSpy.mock.calls[0]?.[2] as AlertButton[];
     buttons.find((button) => button.text === 'Log out')?.onPress?.();
-    expect(mockLogout).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockLogout).toHaveBeenCalledTimes(1));
     alertSpy.mockRestore();
+  });
+
+  it('does not log out when the confirmation is cancelled', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    await renderWithClient(<ProfileScreen />);
+
+    await screen.findByText('Product Design');
+
+    await fireEvent.press(screen.getByRole('button', { name: 'More options' }));
+    await fireEvent.press(screen.getByRole('menuitem', { name: 'Log out' }));
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledTimes(1));
+    const buttons = alertSpy.mock.calls[0]?.[2] as AlertButton[];
+    buttons.find((button) => button.text === 'Cancel')?.onPress?.();
+
+    expect(mockLogout).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
+  });
+
+  it('shows the whole screen in Vietnamese', async () => {
+    await renderWithClient(<ProfileScreen />, { language: 'vi' });
+
+    expect(screen.getByText('Hồ sơ của tôi')).toBeOnTheScreen();
+    expect(screen.getByText('Khóa học đã lưu')).toBeOnTheScreen();
+    expect(await screen.findByRole('button', { name: 'Đang học, 24' })).toBeOnTheScreen();
+    await screen.findByText('Product Design');
+    expect(screen.getByRole('button', { name: 'Thêm tùy chọn' })).toBeOnTheScreen();
+  });
+
+  it('shows the Vietnamese empty state', async () => {
+    mockBookmarks.mockResolvedValue(makePage([]));
+    await renderWithClient(<ProfileScreen />, { language: 'vi' });
+
+    expect(await screen.findByText('Chưa có khóa học nào được lưu')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Khám phá khóa học' })).toBeOnTheScreen();
+  });
+
+  it('draws on the dark palette in dark mode', async () => {
+    await renderWithClient(<ProfileScreen />, { theme: 'dark' });
+    await screen.findByText('Product Design');
+
+    expect(screen.getByTestId('profile-screen')).toHaveStyle({
+      backgroundColor: darkPalette.background,
+    });
   });
 });

@@ -8,7 +8,7 @@ import {
 } from 'axios';
 
 import { API_TIMEOUT_MS, API_URL } from '@/constants/config';
-import { STRINGS } from '@/constants/strings';
+import { i18n } from '@/i18n';
 import type { ApiSuccess, Paginated } from '@/types/api';
 
 import { AppError, toAppError } from './appError';
@@ -49,11 +49,13 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   if (accessToken) {
     config.headers.set('Authorization', `Bearer ${accessToken}`);
   }
+  // The server localizes AI replies (and later other texts) by this header.
+  config.headers.set('Accept-Language', i18n.language);
   // Writes are blocked while offline (PLAN.md §10); the UI shows "You're offline".
   const method = (config.method ?? 'get').toLowerCase();
   if (method !== 'get' && method !== 'head' && !onlineManager.isOnline()) {
     return Promise.reject(
-      new AppError({ status: 0, code: 'OFFLINE', message: STRINGS.errors.offline }),
+      new AppError({ status: 0, code: 'OFFLINE', message: i18n.t('errors:offline') }),
     );
   }
   return config;

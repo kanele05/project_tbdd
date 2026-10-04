@@ -1,8 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render } from '@testing-library/react-native';
+import { QueryClient } from '@tanstack/react-query';
 import type { ReactElement } from 'react';
 
 import { makeCourse } from '@/components/course/courseFixtures';
+import { renderWithProviders, type ProviderOptions } from '@/test/renderWithProviders';
 import type { CategoryDto, CourseSummary, HomeResponse, Paginated, TagDto } from '@/types/api';
 
 /** Test helpers shared by the Home / Search / Filter / Course list / Profile screen tests. */
@@ -25,10 +25,16 @@ export function createTestClient(): QueryClient {
   return client;
 }
 
-/** Render `ui` inside a fresh `QueryClientProvider`. */
-export async function renderWithClient(ui: ReactElement) {
+/**
+ * Render `ui` inside the app providers (theme + i18n + safe area, English / light by default)
+ * and a fresh `QueryClientProvider`.
+ */
+export async function renderWithClient(
+  ui: ReactElement,
+  options: Pick<ProviderOptions, 'theme' | 'language' | 'insets'> = {},
+) {
   const client = createTestClient();
-  const utils = await render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+  const utils = await renderWithProviders(ui, { ...options, client });
   return { ...utils, client };
 }
 

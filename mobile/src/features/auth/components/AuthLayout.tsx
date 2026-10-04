@@ -1,11 +1,11 @@
 import Feather from '@expo/vector-icons/Feather';
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
-import { STRINGS } from '@/constants/strings';
-import { colors, layout, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 
 type AuthLayoutProps = {
   title: string;
@@ -18,9 +18,12 @@ type AuthLayoutProps = {
 /**
  * Shared frame of Login / Register: logo tile, title, form slot and footer link.
  * The keyboard never covers the inputs: KeyboardAvoidingView (iOS) + scrollable content, and
- * Android uses `softwareKeyboardLayoutMode: "pan"` from app.json.
+ * Android uses `softwareKeyboardLayoutMode: "resize"` from app.json.
  */
 export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   return (
     <KeyboardAvoidingView style={styles.flex} behavior="padding">
@@ -35,10 +38,10 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
       >
         <View style={styles.brand}>
           <View style={styles.logo}>
-            <Feather name="book-open" size={32} color={colors.textOnPrimary} />
+            <Feather name="book-open" size={32} color={colors.onPrimary} />
           </View>
           <AppText variant="h3" color="primaryText" align="center">
-            {STRINGS.appName}
+            {t('appName')}
           </AppText>
         </View>
         <View style={styles.heading}>
@@ -56,8 +59,8 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.background },
+const useStyles = makeStyles((t) => ({
+  flex: { flex: 1, backgroundColor: t.colors.background },
   content: { flexGrow: 1, paddingHorizontal: layout.screenPaddingX },
   brand: { alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xxxl },
   logo: {
@@ -66,7 +69,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.lg + 4,
-    backgroundColor: colors.primary,
+    backgroundColor: t.colors.primary,
   },
   heading: { gap: spacing.xs, marginBottom: spacing.xxl },
   form: { gap: spacing.lg },
@@ -78,4 +81,4 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     marginTop: spacing.xxl,
   },
-});
+}));

@@ -1,6 +1,6 @@
 import { isAxiosError, isCancel } from 'axios';
 
-import { ERROR_MESSAGES, STRINGS } from '@/constants/strings';
+import { hasTranslation, i18n, tr } from '@/i18n';
 import type { ApiErrorBody } from '@/types/api';
 
 type AppErrorInit = {
@@ -68,28 +68,34 @@ export function toAppError(error: unknown): AppError {
       return new AppError({
         status: response.status,
         code: response.status === 401 ? 'UNAUTHORIZED' : `HTTP_${response.status}`,
-        message: STRINGS.errors.generic,
+        message: i18n.t('errors:generic'),
       });
     }
     if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-      return new AppError({ status: 0, code: 'TIMEOUT', message: STRINGS.errors.timeout });
+      return new AppError({ status: 0, code: 'TIMEOUT', message: i18n.t('errors:timeout') });
     }
-    return new AppError({ status: 0, code: 'NETWORK_ERROR', message: STRINGS.errors.network });
+    return new AppError({ status: 0, code: 'NETWORK_ERROR', message: i18n.t('errors:network') });
   }
 
   if (error instanceof Error) {
     return new AppError({ status: 0, code: 'UNKNOWN', message: error.message });
   }
-  return new AppError({ status: 0, code: 'UNKNOWN', message: STRINGS.errors.generic });
+  return new AppError({ status: 0, code: 'UNKNOWN', message: i18n.t('errors:generic') });
+}
+
+/** Translated message for a server/client error `code`, or `undefined` when none is defined. */
+export function getErrorMessageForCode(code: string): string | undefined {
+  const key = `errors:codes.${code}`;
+  return hasTranslation(key) ? tr(key) : undefined;
 }
 
 /**
- * Friendly message to show a user (toast / ErrorState / form banner).
+ * Friendly message to show a user (toast / ErrorState / form banner), in the current language.
  * Prefers the message mapped to the error code, then the server message, then a generic one.
  */
 export function getErrorMessage(error: unknown): string {
   const appError = toAppError(error);
-  return ERROR_MESSAGES[appError.code] ?? (appError.message || STRINGS.errors.generic);
+  return getErrorMessageForCode(appError.code) ?? (appError.message || i18n.t('errors:generic'));
 }
 
 /**

@@ -1,6 +1,6 @@
-import { StyleSheet, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors } from '@/theme';
+import { makeStyles } from '@/theme';
 
 import { AppText } from './AppText';
 
@@ -23,6 +23,7 @@ export function SegmentedTabs<K extends string>({
   onChange,
   style,
 }: SegmentedTabsProps<K>) {
+  const styles = useStyles();
   return (
     <View style={[styles.row, style]} accessibilityRole="tablist">
       {tabs.map((tab) => {
@@ -56,11 +57,11 @@ export function SegmentedTabs<K extends string>({
 const TRACK_WIDTH = 2;
 const UNDERLINE_WIDTH = 4;
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   row: {
     flexDirection: 'row',
     borderBottomWidth: TRACK_WIDTH,
-    borderBottomColor: colors.border,
+    borderBottomColor: t.colors.border,
   },
   tab: {
     flex: 1,
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
     // Overlap the row's bottom border so the active underline replaces it.
     marginBottom: -TRACK_WIDTH,
     borderBottomWidth: UNDERLINE_WIDTH,
-    borderBottomColor: colors.transparent,
+    borderBottomColor: t.colors.transparent,
   },
-  tabActive: { borderBottomColor: colors.primary },
-});
+  tabActive: { borderBottomColor: t.colors.primary },
+}));

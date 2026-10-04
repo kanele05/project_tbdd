@@ -5,7 +5,9 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 import { AppText } from '@/components/ui/AppText';
 import { Badge } from '@/components/ui/Badge';
 import { RatingInline } from '@/components/ui/RatingInline';
-import { colors, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { formatNumber } from '@/i18n/format';
+import { makeStyles, radius, spacing } from '@/theme';
 import type { CourseSummary } from '@/types/api';
 import { getCourseBadge } from '@/utils/discount';
 import { formatPriceOrFree } from '@/utils/formatPrice';
@@ -40,6 +42,8 @@ function CourseCardHorizontalBase({
   showPrice = true,
   style,
 }: CourseCardHorizontalProps) {
+  const { t } = useTranslation();
+  const styles = useStyles();
   const saved = isBookmarked ?? course.isBookmarked;
   const badge = getCourseBadge(course);
 
@@ -48,7 +52,15 @@ function CourseCardHorizontalBase({
       <Pressable
         onPress={() => onPress(course)}
         accessibilityRole="button"
-        accessibilityLabel={`${course.title}, by ${course.teacher.fullName}, ${formatPriceOrFree(course.priceCents)}, rated ${course.ratingAvg.toFixed(1)}`}
+        accessibilityLabel={t('courseCard.label', {
+          title: course.title,
+          teacher: course.teacher.fullName,
+          price: formatPriceOrFree(course.priceCents),
+          rating: formatNumber(course.ratingAvg, {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          }),
+        })}
         style={({ pressed }) => [styles.pressable, pressed ? styles.pressed : null]}
       >
         <View style={styles.imageWrap}>
@@ -104,11 +116,11 @@ function CourseCardHorizontalBase({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   card: {
-    backgroundColor: colors.background,
+    backgroundColor: t.colors.card,
     borderWidth: 1,
-    borderColor: colors.borderSubtle,
+    borderColor: t.colors.borderSubtle,
     borderRadius: radius.card,
   },
   pressable: {
@@ -124,7 +136,7 @@ const styles = StyleSheet.create({
     height: THUMBNAIL_SIZE,
     overflow: 'hidden',
     borderRadius: radius.button,
-    backgroundColor: colors.surface,
+    backgroundColor: t.colors.surface,
   },
   badge: { position: 'absolute', top: spacing.xs, left: spacing.xs },
   info: { flex: 1, justifyContent: 'center', gap: spacing.xxs },
@@ -134,6 +146,6 @@ const styles = StyleSheet.create({
   rating: { marginTop: spacing.xs },
   ratingNoPrice: { marginTop: spacing.md },
   bookmark: { position: 'absolute', top: PADDING, right: PADDING },
-});
+}));
 
 export const CourseCardHorizontal = memo(CourseCardHorizontalBase);

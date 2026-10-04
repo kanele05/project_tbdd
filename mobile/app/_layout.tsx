@@ -1,8 +1,9 @@
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, ThemeProvider as NavigationThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -14,7 +15,8 @@ import { useAppBootstrap } from '@/hooks/useAppBootstrap';
 import { persistOptions } from '@/lib/persister';
 import { queryClient, setupQueryEnvironment } from '@/lib/queryClient';
 import { selectIsLoggedIn, useAuthStore } from '@/stores/authStore';
-import { colors, fontAssets } from '@/theme';
+import { fontAssets, ThemeProvider, useTheme } from '@/theme';
+import { useNavigationTheme } from '@/theme/navigationTheme';
 
 // Keep the native splash visible until fonts + cache + session are ready (SC-01).
 void SplashScreen.preventAutoHideAsync();
@@ -28,45 +30,63 @@ export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Pro
 function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const isReady = useAppBootstrap(fontsReady);
   const isLoggedIn = useAuthStore(selectIsLoggedIn);
+  const { colors, statusBarStyle } = useTheme();
+  const navigationTheme = useNavigationTheme();
 
   if (!isReady) return null;
 
   return (
-    <AppFrame>
-      <StatusBar style="dark" />
-      <Stack
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}
-      >
-        <Stack.Screen name="index" />
+    <NavigationThemeProvider value={navigationTheme}>
+      <AppFrame>
+        <StatusBar style={statusBarStyle} />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        >
+          <Stack.Screen name="index" />
 
-        {/* Logged-out only. Guard flips => Expo Router redirects automatically. */}
-        <Stack.Protected guard={!isLoggedIn}>
-          <Stack.Screen name="(auth)" />
-        </Stack.Protected>
+          {/* Logged-out only. Guard flips => Expo Router redirects automatically. */}
+          <Stack.Protected guard={!isLoggedIn}>
+            <Stack.Screen name="(auth)" />
+          </Stack.Protected>
 
-        {/* Logged-in only. */}
-        <Stack.Protected guard={isLoggedIn}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="search-filter" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="course-list" />
-          <Stack.Screen name="course/[id]/index" />
-          <Stack.Screen name="course/[id]/reviews" />
-          <Stack.Screen name="course/[id]/write-review" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="learn/[courseId]/index" />
-          <Stack.Screen
-            name="learn/[courseId]/submit-project"
-            options={{ presentation: 'modal' }}
-          />
-          <Stack.Screen name="question/[id]" />
-          <Stack.Screen name="teacher/[id]" />
-          <Stack.Screen name="teachers" />
-          <Stack.Screen name="cart" />
-          <Stack.Screen name="checkout" />
-          <Stack.Screen name="notifications" />
-          <Stack.Screen name="profile/edit" />
-        </Stack.Protected>
-      </Stack>
-    </AppFrame>
+          {/* Logged-in only. */}
+          <Stack.Protected guard={isLoggedIn}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="search-filter" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="course-list" />
+            <Stack.Screen name="course/[id]/index" />
+            <Stack.Screen name="course/[id]/reviews" />
+            <Stack.Screen name="course/[id]/write-review" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="learn/[courseId]/index" />
+            <Stack.Screen
+              name="learn/[courseId]/submit-project"
+              options={{ presentation: 'modal' }}
+            />
+            <Stack.Screen name="question/[id]" />
+            <Stack.Screen name="teacher/[id]" />
+            <Stack.Screen name="teachers" />
+            <Stack.Screen name="cart" />
+            <Stack.Screen name="checkout" />
+            <Stack.Screen name="notifications" />
+            <Stack.Screen name="profile/edit" />
+            <Stack.Screen name="settings" />
+          </Stack.Protected>
+        </Stack>
+      </AppFrame>
+    </NavigationThemeProvider>
+  );
+}
+
+/** Root view: the screen color follows the theme (no white flash behind the navigator in dark mode). */
+function ThemedRoot({ children }: { children: ReactNode }) {
+  const { colors } = useTheme();
+  return (
+    <GestureHandlerRootView style={[styles.root, { backgroundColor: colors.background }]}>
+      {children}
+    </GestureHandlerRootView>
   );
 }
 
@@ -75,20 +95,22 @@ export default function RootLayout() {
   const [areFontsLoaded, fontError] = useFonts(fontAssets);
 
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <SafeAreaProvider>
-        <AppErrorBoundary>
-          <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
-            <ToastProvider>
-              <RootNavigator fontsReady={areFontsLoaded || fontError !== null} />
-            </ToastProvider>
-          </PersistQueryClientProvider>
-        </AppErrorBoundary>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <ThemedRoot>
+          <AppErrorBoundary>
+            <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
+              <ToastProvider>
+                <RootNavigator fontsReady={areFontsLoaded || fontError !== null} />
+              </ToastProvider>
+            </PersistQueryClientProvider>
+          </AppErrorBoundary>
+        </ThemedRoot>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
+  root: { flex: 1 },
 });

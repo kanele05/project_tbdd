@@ -1,0 +1,81 @@
+{
+  "appName": "E-Learning",
+  "tabs": {
+    "home": "Home",
+    "search": "Search",
+    "myCourses": "My Courses",
+    "profile": "Profile"
+  },
+  "actions": {
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "done": "Done",
+    "close": "Close",
+    "back": "Back",
+    "viewMore": "View more",
+    "viewAll": "View all",
+    "seeMore": "See more",
+    "seeLess": "See less",
+    "exploreCourses": "Explore courses"
+  },
+  "loading": "Loading...",
+  "free": "Free",
+  "bookmark": {
+    "save": "Save course",
+    "remove": "Remove from saved courses"
+  },
+  "empty": {
+    "defaultTitle": "Nothing here yet"
+  },
+  "offline": {
+    "banner": "You're offline - showing saved data"
+  },
+  "search": {
+    "placeholder": "Search course",
+    "clear": "Clear search"
+  },
+  "lessons": {
+    "count_one": "{{count}} lesson",
+    "count_other": "{{count}} lessons",
+    "noun_one": "lesson",
+    "noun_other": "lessons"
+  },
+  "duration": {
+    "minute_one": "{{count}} min",
+    "minute_other": "{{count}} mins",
+    "hour_one": "{{count}} hr",
+    "hour_other": "{{count}} hrs",
+    "hourLong_one": "{{count}} hour",
+    "hourLong_other": "{{count}} hours",
+    "lesson": "{{time}} mins"
+  },
+  "badge": {
+    "bestSeller": "Best-seller",
+    "discount": "{{percent}}% Off",
+    "newCount": "{{count}} new"
+  },
+  "courseCard": {
+    "label": "{{title}}, by {{teacher}}, {{price}}, rated {{rating}}"
+  },
+  "a11y": {
+    "avatarOf": "{{name}}'s avatar",
+    "percentComplete": "{{percent}}% complete",
+    "ratedStars": "Rated {{rating}} out of 5 stars",
+    "star_one": "{{count}} star",
+    "star_other": "{{count}} stars",
+    "ratedOutOf": "Rated {{rating}} out of 5",
+    "ratingCount_one": "{{count}} rating",
+    "ratingCount_other": "{{count}} ratings",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "placeholder": {
+    "notImplemented": "This screen is not implemented yet."
+  },
+  "priceTag": {
+    "was": "{{price}}, was {{original}}",
+    "discShort": "{{percent}}% Disc."
+  }
+}

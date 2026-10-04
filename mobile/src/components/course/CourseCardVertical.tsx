@@ -5,7 +5,9 @@ import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'rea
 import { AppText } from '@/components/ui/AppText';
 import { Badge } from '@/components/ui/Badge';
 import { RatingInline } from '@/components/ui/RatingInline';
-import { colors, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { formatNumber } from '@/i18n/format';
+import { makeStyles, radius, spacing } from '@/theme';
 import type { CourseSummary } from '@/types/api';
 import { getCourseBadge } from '@/utils/discount';
 import { formatPriceOrFree } from '@/utils/formatPrice';
@@ -46,6 +48,8 @@ function CourseCardVerticalBase({
   width = COURSE_CARD_VERTICAL_WIDTH,
   style,
 }: CourseCardVerticalProps) {
+  const { t } = useTranslation();
+  const styles = useStyles();
   const saved = isBookmarked ?? course.isBookmarked;
   const badge = getCourseBadge(course);
   const imageHeight = COURSE_CARD_VERTICAL_IMAGE_HEIGHT;
@@ -55,7 +59,15 @@ function CourseCardVerticalBase({
       <Pressable
         onPress={() => onPress(course)}
         accessibilityRole="button"
-        accessibilityLabel={`${course.title}, by ${course.teacher.fullName}, ${formatPriceOrFree(course.priceCents)}, rated ${course.ratingAvg.toFixed(1)}`}
+        accessibilityLabel={t('courseCard.label', {
+          title: course.title,
+          teacher: course.teacher.fullName,
+          price: formatPriceOrFree(course.priceCents),
+          rating: formatNumber(course.ratingAvg, {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          }),
+        })}
         style={({ pressed }) => [styles.pressable, pressed ? styles.pressed : null]}
       >
         <View style={[styles.imageWrap, { height: imageHeight }]}>
@@ -104,7 +116,7 @@ function CourseCardVerticalBase({
       >
         <BookmarkButton
           isBookmarked={saved}
-          idleColor="textPrimary"
+          idleColor="text"
           onPress={onToggleBookmark ? () => onToggleBookmark(course) : undefined}
         />
       </View>
@@ -112,11 +124,11 @@ function CourseCardVerticalBase({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   card: {
-    backgroundColor: colors.background,
+    backgroundColor: t.colors.card,
     borderWidth: 1,
-    borderColor: colors.borderSubtle,
+    borderColor: t.colors.borderSubtle,
     borderRadius: radius.card,
   },
   pressable: { padding: PADDING, borderRadius: radius.card },
@@ -125,7 +137,7 @@ const styles = StyleSheet.create({
     width: '100%',
     overflow: 'hidden',
     borderRadius: radius.button,
-    backgroundColor: colors.surface,
+    backgroundColor: t.colors.surface,
   },
   badge: { position: 'absolute', top: spacing.xs, left: spacing.xs },
   info: { marginTop: INFO_OFFSET, gap: spacing.xxs },
@@ -133,6 +145,6 @@ const styles = StyleSheet.create({
   // Design: price 15 dp bold; 5 dp below the teacher and 1 dp above the rating line.
   price: { marginTop: spacing.xs, fontSize: 15, lineHeight: 20 },
   bookmark: { position: 'absolute', right: PADDING },
-});
+}));
 
 export const CourseCardVertical = memo(CourseCardVerticalBase);

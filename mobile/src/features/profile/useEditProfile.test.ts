@@ -1,9 +1,10 @@
+import { applyLanguage } from '@/i18n';
 import type { UserDto } from '@/types/api';
 
 import {
-  AVATAR_SIZE_MESSAGE,
-  AVATAR_TYPE_MESSAGE,
   editProfileSchema,
+  getAvatarSizeMessage,
+  getAvatarTypeMessage,
   getProfileChanges,
   mergeUpdatedUser,
   toAvatarFile,
@@ -35,9 +36,9 @@ describe('validateAvatarImage', () => {
 
   it('rejects other image types, by MIME type or by extension', () => {
     expect(validateAvatarImage({ uri: 'file:///a.gif', mimeType: 'image/gif' })).toBe(
-      AVATAR_TYPE_MESSAGE,
+      getAvatarTypeMessage(),
     );
-    expect(validateAvatarImage({ uri: 'file:///photo.heic' })).toBe(AVATAR_TYPE_MESSAGE);
+    expect(validateAvatarImage({ uri: 'file:///photo.heic' })).toBe(getAvatarTypeMessage());
   });
 
   it('rejects files over 5 MB', () => {
@@ -47,7 +48,7 @@ describe('validateAvatarImage', () => {
         mimeType: 'image/png',
         fileSize: 5 * 1024 * 1024 + 1,
       }),
-    ).toBe(AVATAR_SIZE_MESSAGE);
+    ).toBe(getAvatarSizeMessage());
   });
 
   it('lets the server decide when nothing is known about the file', () => {
@@ -84,6 +85,25 @@ describe('editProfileSchema', () => {
     expect(
       editProfileSchema.safeParse({ fullName: 'Rosie', headline: 'x'.repeat(81) }).success,
     ).toBe(false);
+  });
+
+  it('reports validation errors in the active language', async () => {
+    const messageOf = () => {
+      const result = editProfileSchema.safeParse({ fullName: 'A', headline: '' });
+      return result.success ? null : result.error.issues[0]?.message;
+    };
+    expect(messageOf()).toBe('Full name must be at least 2 characters');
+    await applyLanguage('vi');
+    expect(messageOf()).toBe('Họ và tên phải có ít nhất 2 ký tự');
+  });
+});
+
+describe('avatar messages', () => {
+  it('follow the active language', async () => {
+    expect(getAvatarSizeMessage()).toBe('Image is too large (max 5 MB).');
+    await applyLanguage('vi');
+    expect(getAvatarSizeMessage()).toBe('Ảnh quá lớn (tối đa 5 MB).');
+    expect(getAvatarTypeMessage()).toBe('Vui lòng chọn ảnh PNG hoặc JPG.');
   });
 });
 

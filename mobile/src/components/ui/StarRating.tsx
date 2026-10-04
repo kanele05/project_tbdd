@@ -2,7 +2,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors, layout } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, useTheme } from '@/theme';
 
 export type StarRatingProps = {
   /** Current rating, 0-5 (whole stars). */
@@ -18,6 +19,8 @@ const STARS = [1, 2, 3, 4, 5] as const;
 
 /** Five stars: filled yellow up to `value`, light gray after. Interactive when `onChange` is set. */
 function StarRatingBase({ value, onChange, size = 16, style }: StarRatingProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
   const rounded = Math.round(value);
   const isInteractive = Boolean(onChange);
 
@@ -27,14 +30,14 @@ function StarRatingBase({ value, onChange, size = 16, style }: StarRatingProps) 
         style={[styles.row, style]}
         accessible
         accessibilityRole="image"
-        accessibilityLabel={`Rated ${rounded} out of 5 stars`}
+        accessibilityLabel={t('a11y.ratedStars', { rating: rounded })}
       >
         {STARS.map((star) => (
           <Ionicons
             key={star}
             name="star"
             size={size}
-            color={star <= rounded ? colors.star : colors.border}
+            color={star <= rounded ? colors.star : colors.starEmpty}
           />
         ))}
       </View>
@@ -49,10 +52,14 @@ function StarRatingBase({ value, onChange, size = 16, style }: StarRatingProps) 
           onPress={() => onChange?.(star)}
           style={styles.starButton}
           accessibilityRole="radio"
-          accessibilityLabel={`${star} ${star === 1 ? 'star' : 'stars'}`}
+          accessibilityLabel={t('a11y.star', { count: star })}
           accessibilityState={{ selected: star === rounded }}
         >
-          <Ionicons name="star" size={size} color={star <= rounded ? colors.star : colors.border} />
+          <Ionicons
+            name="star"
+            size={size}
+            color={star <= rounded ? colors.star : colors.starEmpty}
+          />
         </Pressable>
       ))}
     </View>

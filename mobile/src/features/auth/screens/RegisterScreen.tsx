@@ -7,7 +7,7 @@ import { Pressable, type TextInput } from 'react-native';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { FormTextField } from '@/components/ui/FormTextField';
-import { STRINGS } from '@/constants/strings';
+import { useTranslation } from '@/i18n';
 
 import { applyAuthError } from '../authErrors';
 import { AuthLayout } from '../components/AuthLayout';
@@ -24,6 +24,7 @@ function goToLogin(): void {
 
 /** SC-03 Register: on success the user is logged in and lands on Home. */
 export function RegisterScreen() {
+  const { t } = useTranslation('auth');
   const register = useRegister();
   const [formError, setFormError] = useState<string | null>(null);
   const emailRef = useRef<TextInput>(null);
@@ -51,21 +52,21 @@ export function RegisterScreen() {
 
   return (
     <AuthLayout
-      title={STRINGS.auth.createAccountTitle}
-      subtitle={STRINGS.auth.createAccountSubtitle}
+      title={t('createAccountTitle')}
+      subtitle={t('createAccountSubtitle')}
       footer={
         <>
           <AppText variant="body" color="textSecondary">
-            {STRINGS.auth.haveAccount}
+            {t('haveAccount')}
           </AppText>
           <Pressable
             onPress={goToLogin}
             hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             accessibilityRole="link"
-            accessibilityLabel={STRINGS.auth.login}
+            accessibilityLabel={t('login')}
           >
             <AppText variant="label" color="primaryText">
-              {STRINGS.auth.login}
+              {t('login')}
             </AppText>
           </Pressable>
         </>
@@ -74,8 +75,8 @@ export function RegisterScreen() {
       <FormTextField
         control={control}
         name="fullName"
-        label={STRINGS.auth.fullName}
-        placeholder="Your full name"
+        label={t('fullName')}
+        placeholder={t('placeholders.fullName')}
         autoCapitalize="words"
         autoComplete="name"
         textContentType="name"
@@ -86,8 +87,8 @@ export function RegisterScreen() {
         ref={emailRef}
         control={control}
         name="email"
-        label={STRINGS.auth.email}
-        placeholder="you@example.com"
+        label={t('email')}
+        placeholder={t('placeholders.email')}
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
@@ -100,8 +101,8 @@ export function RegisterScreen() {
         ref={passwordRef}
         control={control}
         name="password"
-        label={STRINGS.auth.password}
-        placeholder="At least 8 characters, letters and numbers"
+        label={t('password')}
+        placeholder={t('placeholders.newPassword')}
         secureTextEntry
         autoCapitalize="none"
         autoComplete="new-password"
@@ -113,8 +114,8 @@ export function RegisterScreen() {
         ref={confirmRef}
         control={control}
         name="confirmPassword"
-        label={STRINGS.auth.confirmPassword}
-        placeholder="Re-enter your password"
+        label={t('confirmPassword')}
+        placeholder={t('placeholders.confirmPassword')}
         secureTextEntry
         autoCapitalize="none"
         autoComplete="new-password"
@@ -124,7 +125,7 @@ export function RegisterScreen() {
       />
       <FormError message={formError} />
       <Button
-        title={STRINGS.auth.register}
+        title={t('register')}
         onPress={onSubmit}
         loading={register.isPending}
         fullWidth

@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors, spacing } from '@/theme';
+import { spacing, useTheme } from '@/theme';
 
 import { AppText } from './AppText';
 
@@ -26,6 +26,7 @@ export function Accordion({
   onToggle,
   style,
 }: AccordionProps) {
+  const { colors } = useTheme();
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
   const isExpanded = expanded ?? internalExpanded;
 
@@ -47,11 +48,7 @@ export function Accordion({
         <AppText variant="title" style={styles.title} numberOfLines={2}>
           {title}
         </AppText>
-        <Feather
-          name={isExpanded ? 'chevron-up' : 'chevron-down'}
-          size={20}
-          color={colors.textPrimary}
-        />
+        <Feather name={isExpanded ? 'chevron-up' : 'chevron-down'} size={20} color={colors.text} />
       </Pressable>
       {isExpanded ? <View>{children}</View> : null}
     </View>

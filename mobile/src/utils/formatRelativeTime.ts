@@ -1,6 +1,8 @@
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
+import { getCurrentLanguage } from '@/i18n';
+
 dayjs.extend(relativeTime);
 
 function capitalize(text: string): string {
@@ -8,11 +10,11 @@ function capitalize(text: string): string {
 }
 
 /**
- * ISO date -> "A day ago", "5 days ago" (capitalized like the design).
+ * ISO date -> "A day ago" / "Một ngày trước" (capitalized like the design), in the UI language.
  * `now` is injectable for tests.
  */
 export function formatRelativeTime(isoDate: string, now: Date | number = Date.now()): string {
-  const date = dayjs(isoDate);
+  const date = dayjs(isoDate).locale(getCurrentLanguage());
   if (!date.isValid()) return '';
   return capitalize(date.from(dayjs(now)));
 }

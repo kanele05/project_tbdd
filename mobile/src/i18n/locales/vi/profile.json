@@ -1,0 +1,36 @@
+{
+  "title": "Hồ sơ của tôi",
+  "savedCourses": "Khóa học đã lưu",
+  "removedFromSaved": "Đã bỏ khỏi khóa học đã lưu",
+  "undo": "Hoàn tác",
+  "empty": {
+    "title": "Chưa có khóa học nào được lưu",
+    "message": "Chạm vào biểu tượng đánh dấu trên một khóa học để lưu nó tại đây."
+  },
+  "menu": {
+    "open": "Thêm tùy chọn",
+    "close": "Đóng menu",
+    "editProfile": "Chỉnh sửa hồ sơ",
+    "notifications": "Thông báo",
+    "settings": "Cài đặt"
+  },
+  "stats": {
+    "saved": "Đã lưu",
+    "ongoing": "Đang học",
+    "completed": "Hoàn thành",
+    "unavailable": "chưa có",
+    "opensMyCourses": "Mở Khóa học của tôi"
+  },
+  "edit": {
+    "title": "Chỉnh sửa hồ sơ",
+    "changePhoto": "Đổi ảnh đại diện",
+    "headline": "Giới thiệu ngắn",
+    "headlinePlaceholder": "VD: Nhà thiết kế UX/UI",
+    "emailHelper": "Không thể thay đổi email của bạn.",
+    "updated": "Đã cập nhật hồ sơ",
+    "uploadProgress": "{{percent}}%",
+    "avatarType": "Vui lòng chọn ảnh PNG hoặc JPG.",
+    "avatarSize": "Ảnh quá lớn (tối đa 5 MB).",
+    "headlineMax": "Giới thiệu ngắn tối đa 80 ký tự"
+  }
+}

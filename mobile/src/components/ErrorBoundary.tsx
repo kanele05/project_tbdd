@@ -1,9 +1,9 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { ErrorState } from '@/components/ui/ErrorState';
-import { STRINGS } from '@/constants/strings';
-import { colors } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles } from '@/theme';
 
 export type ErrorFallbackProps = {
   error?: unknown;
@@ -12,14 +12,16 @@ export type ErrorFallbackProps = {
 
 /** Full-screen fallback shown when rendering crashes. Reused by the Expo Router `ErrorBoundary` export. */
 export function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
+  const { t } = useTranslation('errors');
+  const styles = useStyles();
   const detail = __DEV__ && error instanceof Error ? error.message : undefined;
   return (
     <View style={styles.container}>
       <ErrorState
-        title={STRINGS.errors.boundaryTitle}
-        message={detail ?? STRINGS.errors.boundaryMessage}
+        title={t('boundaryTitle')}
+        message={detail ?? t('boundaryMessage')}
         onRetry={onRetry}
-        retryLabel="Try again"
+        retryLabel={t('tryAgain')}
       />
     </View>
   );
@@ -63,11 +65,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: t.colors.background,
   },
-});
+}));

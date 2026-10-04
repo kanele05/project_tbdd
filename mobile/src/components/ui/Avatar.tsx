@@ -2,7 +2,8 @@ import { Image } from 'expo-image';
 import { memo } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { useTheme } from '@/theme';
 
 import { AppText } from './AppText';
 
@@ -11,7 +12,7 @@ export type AvatarProps = {
   /** Used for the initials fallback and the screen-reader label. */
   name?: string;
   size?: number;
-  /** Background behind the initials / transparent image. `secondaryLight` per design. */
+  /** Background behind the initials / transparent image. Default `secondarySoft`. */
   backgroundColor?: string;
   style?: StyleProp<ViewStyle>;
 };
@@ -26,21 +27,22 @@ export function getInitials(name?: string): string {
   return (first + last).toUpperCase();
 }
 
-/** Round avatar: cached remote image, or initials on a light purple circle. */
-function AvatarBase({
-  uri,
-  name,
-  size = 40,
-  backgroundColor = colors.secondaryLight,
-  style,
-}: AvatarProps) {
-  const dimension = { width: size, height: size, borderRadius: size / 2, backgroundColor };
+/** Round avatar: cached remote image, or initials on a soft purple circle. */
+function AvatarBase({ uri, name, size = 40, backgroundColor, style }: AvatarProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const dimension = {
+    width: size,
+    height: size,
+    borderRadius: size / 2,
+    backgroundColor: backgroundColor ?? colors.secondarySoft,
+  };
   return (
     <View
       style={[styles.container, dimension, style]}
       accessible={Boolean(name)}
       accessibilityRole="image"
-      accessibilityLabel={name ? `${name}'s avatar` : undefined}
+      accessibilityLabel={name ? t('a11y.avatarOf', { name }) : undefined}
     >
       {uri ? (
         <Image

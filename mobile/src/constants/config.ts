@@ -56,4 +56,11 @@ export const STORAGE_KEYS = {
   authToken: 'elearning.auth.token',
   queryCache: 'elearning.query-cache',
   recentSearches: 'elearning.recent-searches',
+  /** `system | light | dark` (AsyncStorage). */
+  themeMode: 'elearning.pref.theme-mode',
+  /** `system | vi | en` (AsyncStorage). */
+  language: 'elearning.pref.language',
 } as const;
+
+/** Content column is capped on wide screens (web / desktop / tablet) and centered. */
+export const MAX_CONTENT_WIDTH = 520;

@@ -291,7 +291,10 @@ export type ApiErrorCode =
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'PAYLOAD_TOO_LARGE'
-  | 'INTERNAL_ERROR';
+  | 'INTERNAL_ERROR'
+  | 'AI_RATE_LIMITED'
+  | 'AI_BLOCKED'
+  | 'AI_UNAVAILABLE';
 
 /** Error envelope: `{ error: { code, message, details? } }`. */
 export type ApiErrorBody = {
@@ -340,3 +343,84 @@ export type UploadAvatarResponse = { avatarUrl: string };
 
 /** Body of `POST /orders/checkout`. `simulateFailure` is only sent by dev builds (BR-07). */
 export type CheckoutRequest = { paymentMethod: PaymentMethod; simulateFailure?: boolean };
+
+// ---------------------------------------------------------------- AI (phase 2, PLAN §9.2 "AI")
+
+/** Language of AI answers (`?lang=`; falls back to `Accept-Language`, then `en`). */
+export type AiLang = 'vi' | 'en';
+
+/** `GET /courses/:id/ai/summary` (cached in DB per course + language). */
+export type AiCourseSummaryDto = {
+  courseId: string;
+  lang: AiLang;
+  overview: string;
+  /** 3-6 items. */
+  objectives: string[];
+  /** In curriculum order, at most 15 sections. */
+  sections: { title: string; summary: string }[];
+  /** 2-5 items. */
+  targetAudience: string[];
+  /** 3-6 items. */
+  outcomes: string[];
+  /** `gemini-...`, or `mock-ai-1` when the server has no Gemini key. */
+  model: string;
+  generatedAt: string;
+};
+
+/** `GET /lessons/:id/ai/summary` (enrolled, or a preview lesson). */
+export type AiLessonSummaryDto = {
+  lessonId: string;
+  lang: AiLang;
+  summary: string;
+  /** 3-6 items. */
+  keyPoints: string[];
+  model: string;
+  generatedAt: string;
+};
+
+export type AiQuizQuestionDto = {
+  question: string;
+  /** Exactly 4 options. */
+  options: string[];
+  /** 0-3, index into `options`. */
+  correctIndex: number;
+  explanation: string;
+};
+
+/** `POST /lessons/:id/ai/quiz` (enrolled only): exactly 5 questions. */
+export type AiQuizDto = {
+  lessonId: string;
+  lang: AiLang;
+  questions: AiQuizQuestionDto[];
+  model: string;
+  generatedAt: string;
+};
+
+export type AiRecommendationItemDto = { course: CourseSummary; reason: string };
+
+/** `GET /me/ai/recommendations`: learning path of 3-5 courses (or none), in suggested order. */
+export type AiRecommendationsDto = {
+  lang: AiLang;
+  encouragement: string;
+  items: AiRecommendationItemDto[];
+  model: string;
+  generatedAt: string;
+};
+
+export type AiChatRole = 'USER' | 'ASSISTANT';
+
+/** `GET /courses/:id/ai/chat` (newest first, paginated). */
+export type AiChatMessageDto = { id: string; role: AiChatRole; content: string; createdAt: string };
+
+/** Body of `POST /courses/:id/ai/chat` (1-1000 chars after trim). */
+export type AiChatRequest = { message: string };
+
+/**
+ * Server-sent events of `POST /courses/:id/ai/chat` (`event: <name>` + one-line JSON `data:`).
+ * Order: `delta`… then `done`, or `delta`… then `error` (the message is not saved).
+ * Use a streaming `fetch`, not `EventSource` (needs POST + Authorization header).
+ */
+export type AiChatSseEvent =
+  | { event: 'delta'; data: { text: string } }
+  | { event: 'done'; data: { messageId: string } }
+  | { event: 'error'; data: { code: string; message: string } };

@@ -1,0 +1,25 @@
+{
+  "title": "Settings",
+  "language": {
+    "title": "Language",
+    "system": "System default",
+    "vi": "Tiếng Việt",
+    "en": "English"
+  },
+  "appearance": {
+    "title": "Appearance",
+    "system": "System default",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "about": {
+    "title": "About",
+    "appName": "App",
+    "version": "Version",
+    "api": "Server"
+  },
+  "account": {
+    "title": "Account",
+    "signedInAs": "Signed in as"
+  }
+}

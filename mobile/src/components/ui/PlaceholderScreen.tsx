@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { colors, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, spacing } from '@/theme';
 
 import { AppText } from './AppText';
 import { ScreenHeader } from './ScreenHeader';
@@ -24,8 +25,10 @@ export function PlaceholderScreen({
   showHeader = true,
   showBack = true,
 }: PlaceholderScreenProps) {
+  const { t } = useTranslation();
+  const themed = useStyles();
   return (
-    <View style={styles.container} testID={`placeholder-${code}`}>
+    <View style={[styles.container, themed.container]} testID={`placeholder-${code}`}>
       {showHeader ? <ScreenHeader title={title} showBack={showBack} /> : null}
       <View style={styles.body}>
         <AppText variant="caption" color="primaryText" family="bodySemiBold">
@@ -35,15 +38,19 @@ export function PlaceholderScreen({
           {title}
         </AppText>
         <AppText variant="body" color="textSecondary" align="center">
-          This screen is not implemented yet.
+          {t('placeholder.notImplemented')}
         </AppText>
       </View>
     </View>
   );
 }
 
+const useStyles = makeStyles((t) => ({
+  container: { backgroundColor: t.colors.background },
+}));
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1 },
   body: {
     flex: 1,
     alignItems: 'center',

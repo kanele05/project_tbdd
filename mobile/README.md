@@ -54,6 +54,7 @@ Khi dùng tunnel, API server vẫn phải truy cập được từ điện tho�
 | `npm run lint` / `lint:fix`          | ESLint (`--max-warnings 0`) — tự sắp xếp import                    |
 | `npm run format` / `format:check`    | Prettier                                                           |
 | `npm test` / `test:watch`            | Jest                                                               |
+| `npm run check:contrast`             | bảng tương phản WCAG light/dark (lỗi nếu cặp chữ < 4,5:1)          |
 | `npx expo export --platform android` | build thử bundle (kiểm tra import/route); xóa `dist/` sau khi chạy |
 
 Trước khi báo "xong" một task: chạy `typecheck`, `lint`, `test` và báo kết quả thật (CLAUDE.md §11).
@@ -151,7 +152,7 @@ export const courseApi = {
 
 ### 5. UI
 
-- Dùng token từ `@/theme` (`colors`, `spacing`, `radius`, `typography`, `shadows`); **không hard-code** màu/cỡ chữ/font. Chuỗi dùng chung đặt ở `constants/strings.ts`.
+- Dùng token từ `@/theme` (`spacing`, `radius`, `typography`, `shadows`); **màu lấy qua `useTheme()` / `makeStyles`**, chuỗi qua i18n — xem mục **Quy ước giai đoạn 2** bên dưới. **Không hard-code** màu/cỡ chữ/font/chuỗi.
 - Text luôn qua `AppText` (biến thể `h1 h2 h3 title cardTitle bodyLarge body label caption tab micro`). Không tắt font scaling.
 - Nút chỉ có icon → `IconButton` (bắt buộc `accessibilityLabel`, tự bù `hitSlop` đủ 48 dp). Thẻ khóa học: `CourseCardVertical` / `CourseCardHorizontal` (props `course`, `onPress`, `isBookmarked?`, `onToggleBookmark?`) — **truyền callback ổn định (`useCallback`)** để `React.memo` có tác dụng.
 - Header màn: `ScreenHeader` (đã xử lý safe area, nút back). Màn nằm trong tab thì không cần back.
@@ -159,8 +160,8 @@ export const courseApi = {
 - Toast: `const toast = useToast(); toast.success('Saved')` trong component, hoặc `showToast(msg, { actionLabel: 'Undo', onAction })` ngoài React.
 - Ảnh: `expo-image` với `cachePolicy="memory-disk"`. Danh sách > 20 item: `FlashList`.
 - **Icon**: import theo từng bộ để bundle nhỏ — `import Feather from '@expo/vector-icons/Feather'` (icon thường) và `import Ionicons from '@expo/vector-icons/Ionicons'` (sao/bookmark **đặc**). Đừng import từ `'@expo/vector-icons'` (kéo cả chục bộ font).
-- Status bar mặc định `dark`. Màn có header nền primary (Home) tự thêm `<StatusBar style="light" />`.
-- Bàn phím: Android dùng `softwareKeyboardLayoutMode: "pan"` (app.json), iOS dùng `KeyboardAvoidingView behavior="padding"` — xem `features/auth/components/AuthLayout.tsx`.
+- Status bar do `app/_layout.tsx` đặt theo theme (`useTheme().statusBarStyle`); màn có header nền primary tự thêm `<StatusBar style="light" />`.
+- Bàn phím: Android dùng `softwareKeyboardLayoutMode: "resize"` (app.json), iOS dùng `KeyboardAvoidingView behavior="padding"` — xem `features/auth/components/AuthLayout.tsx`.
 
 ### 6. Form
 
@@ -173,12 +174,61 @@ export const courseApi = {
 - Mock `expo-router` khi test component dùng `router` (xem `ScreenHeader.test.tsx`); mock tầng `api.ts`/`hooks.ts` khi test màn hình (xem `LoginScreen.test.tsx`).
 - Dữ liệu mẫu khóa học cho test: `makeCourse()` trong `src/components/course/courseFixtures.ts`.
 
+## Quy ước giai đoạn 2 (theme · i18n · Settings · web)
+
+Từ 03/10/2026 app có **dark mode**, **tiếng Việt / English** và bản **web**. Màn hình mới (và màn nào được sửa) phải theo các quy ước sau; chi tiết token/tương phản: `notes/dark-theme.md` (tài liệu nội bộ).
+
+### Màu & theme (UI-02)
+
+- Màu luôn lấy từ `useTheme()` hoặc `makeStyles` (`@/theme`), **không** dùng `colors` tĩnh cũ (đã `@deprecated`, chỉ còn ở các màn chưa chuyển — UI-04) và **không** viết hex/`rgba` trong component:
+
+  ```tsx
+  const useStyles = makeStyles((t) => ({
+    card: { backgroundColor: t.colors.card, borderColor: t.colors.border },
+  }));
+
+  function Card() {
+    const styles = useStyles(); // dựng lại khi đổi theme, memo theo theme
+    const { colors, isDark } = useTheme(); // cho giá trị truyền qua prop (màu icon, ActivityIndicator...)
+    return <View style={styles.card} />;
+  }
+  ```
+
+- Token ngữ nghĩa nằm ở `src/theme/palettes.ts` (`lightPalette` + `darkPalette` **cùng khóa**). Chữ phải đạt WCAG AA ≥ 4,5:1 ở **cả hai**: thêm cặp chữ/nền mới vào `src/theme/contrast.ts`, rồi chạy `npm run check:contrast` (test `palettes.test.ts` cũng kiểm). Chữ dùng `text/textSecondary/textMuted/primaryText/dangerText/onXxx`; **không** dùng `primary`, `danger`, `star`, `border` làm màu chữ.
+- Chế độ theo hệ thống / sáng / tối lưu bằng `preferencesStore`; `StyleSheet.create` ở module scope chỉ cho giá trị tĩnh (spacing, radius...).
+
+### Chuỗi & ngôn ngữ (UI-03)
+
+- **Không hard-code chuỗi hiển thị.** Thêm key vào **cả** `src/i18n/locales/vi/<ns>.json` và `en/<ns>.json` (test `locales.test.ts` bắt thiếu key hoặc sai `{{biến}}`). Mỗi feature có một namespace (`common`, `errors`, `auth`, `home`, `search`, `course`, `cart`, `learning`, `qa`, `review`, `project`, `teacher`, `profile`, `notification`, `myCourses`, `settings`); namespace mới = tạo 2 file JSON + khai báo trong `src/i18n/resources.ts`.
+- Dùng trong component: `const { t } = useTranslation('profile'); t('stats.saved')` (key được kiểm kiểu theo JSON tiếng Anh). Nhiều namespace: `useTranslation(['profile', 'common'])` rồi `t('common:actions.save')`. Số nhiều: `count_one` / `count_other` (tiếng Việt chỉ cần `_other`). Ngoài component: `i18n.t('ns:key')` ở **thời điểm gọi** (đừng giữ kết quả ở module scope); key chỉ biết lúc chạy (mã lỗi server) → `getErrorMessage(error)` / `tr(key)`. Message zod: `{ error: () => i18n.t('...') }` (lazy).
+- `constants/strings.ts` (`STRINGS`) chỉ còn là facade cho màn cũ, **không** tự render lại khi đổi ngôn ngữ — màn mới không dùng.
+- Số, ngày, giá theo ngôn ngữ: `formatNumber` / `formatFixed` / `formatDate` (`@/i18n/format`), `formatPrice` (luôn USD, chỉ đổi dấu phân cách: `$1,020` ↔ `$1.020`), `formatDuration`, `formatRelativeTime`. Component hiển thị chúng phải gọi `useTranslation()` hoặc `useLanguage()` để render lại khi đổi ngôn ngữ.
+- Dữ liệu mẫu từ server (tên khóa, nội dung bài) giữ tiếng Anh; `apiClient` gửi header `Accept-Language` theo ngôn ngữ đang chọn (AI trả lời theo đó).
+
+### Settings (UI-05)
+
+- Màn `/settings` (`features/settings`, mở từ Hồ sơ → ⋮ → Cài đặt): ngôn ngữ (theo hệ thống / Tiếng Việt / English), giao diện (theo hệ thống / sáng / tối), thông tin app, đăng xuất có xác nhận. Lưu ở AsyncStorage (`elearning.pref.language`, `elearning.pref.theme-mode`) và áp lại trước khi splash tắt.
+- Hộp xác nhận dùng `confirmAction` (`@/utils/confirmAction`): `Alert.alert` **không chạy trên web**, nên web dùng `window.confirm`. Đăng xuất: `useConfirmLogout()` (dùng chung Settings và menu Hồ sơ).
+
+### Chạy trên web (PLT-01)
+
+- Dev: `npx expo start --web` (thêm `--port 8091` nếu cổng bận). API phải cho phép CORS từ origin của web. Build tĩnh (SPA): `npx expo export --platform web --output-dir dist` — máy chủ phải trả `index.html` cho mọi đường dẫn không phải file (xem `Dockerfile.web`).
+- Token đăng nhập: SecureStore không có trên web nên `lib/secureStorage.ts` lưu vào `localStorage` (mọi script cùng origin đọc được — chấp nhận cho đồ án, đã ghi trong code); tải lại trang vẫn đăng nhập, trình duyệt chặn `localStorage` thì coi như chưa đăng nhập.
+- Layout: `AppFrame` giới hạn cột nội dung `MAX_CONTENT_WIDTH` (520 dp) và căn giữa; nền ngoài cột theo theme.
+- PWA: `public/manifest.json`, `public/icons/*` (sinh từ `assets/images/icon.png`) và `public/index.html` (mẫu HTML tùy biến: link manifest, meta, tô nền trước khi JS chạy để dark mode không nháy trắng); `app.json` → `web` (name, themeColor, display…). Chưa có service worker (không chạy offline), nhưng cài được qua "Install app" của Chrome/Edge.
+- API chỉ có trên native phải có nhánh `Platform.OS === 'web'` hoặc fallback (đã làm: `Alert` → `confirmAction`, SecureStore → `localStorage`).
+
+### Test
+
+- `renderWithProviders(ui, { theme?, language?, client?, insets? })` và `renderHookWithProviders` (`@/test/renderWithProviders`) bọc đủ SafeArea + Theme + i18n (+ QueryClient): mặc định **English + light** để câu chữ ổn định, truyền `language: 'vi'` / `theme: 'dark'` để thử bản khác. `renderWithClient` (`features/search/testUtils`) đã dùng nó. `jest.setup.ts` trả ngôn ngữ về `en` sau mỗi test; test đổi theme nên gọi `resetTestPreferences()` ở `beforeEach`.
+- Chế độ `system`: mock `react-native/Libraries/Utilities/useColorScheme` (mẫu `src/theme/ThemeProvider.test.tsx`).
+
 ## Ghi chú kỹ thuật / sai lệch có chủ đích so với template Expo
 
 - Route đặt ở `mobile/app/` (đúng PLAN §5.3), **không** dùng `src/app/` của template.
 - `experiments.reactCompiler = false` và `typedRoutes = false`: CLAUDE.md yêu cầu memo thủ công (`React.memo`/`useCallback`); typed routes sinh file trong `.expo/` (gitignore) nên kết quả `typecheck` sẽ khác nhau giữa các máy.
 - Tabs dùng `Tabs` từ `expo-router/js-tabs` (bản `Tabs` trong `expo-router` đã deprecated ở SDK 57).
 - `StyleSheet.absoluteFillObject` đã bị gỡ ở RN 0.86 → dùng `StyleSheet.absoluteFill` hoặc tự khai báo `position: 'absolute'`.
-- `expo-secure-store` không có trên web → chạy `npm run web` sẽ luôn ở trạng thái chưa đăng nhập sau khi reload (chỉ để xem UI; test đăng nhập thật trên Expo Go).
+- `expo-secure-store` không có trên web → token được lưu ở `localStorage` (xem **Web** ở mục giai đoạn 2); trên native vẫn là SecureStore.
 - Font (Epilogue 600/700, Inter 400/500/600) import theo từng trọng lượng (`@expo-google-fonts/inter/400Regular`) để không kéo cả họ font vào bundle.
 - Splash giữ tới khi: font xong + restore cache persist + đọc token và gọi `/auth/me` (tối đa 12 s).

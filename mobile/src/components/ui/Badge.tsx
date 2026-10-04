@@ -1,8 +1,9 @@
 import { memo } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors, radius } from '@/theme';
-import type { ColorToken } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { radius, useTheme } from '@/theme';
+import type { Palette, PaletteToken } from '@/theme';
 
 import { AppText } from './AppText';
 
@@ -23,33 +24,41 @@ export type BadgeProps = {
 
 const BADGE_PADDING_X = 6;
 
-const TONE_COLOR: Record<BadgeTone, string> = {
-  primary: colors.primary,
-  secondary: colors.secondary,
-  danger: colors.danger,
-  success: colors.success,
+/** Fill token per tone. */
+const TONE_FILL: Record<BadgeTone, PaletteToken> = {
+  primary: 'primary',
+  secondary: 'secondary',
+  danger: 'danger',
+  success: 'success',
 };
 
-/** Label colour per fill: white fails AA on primary / danger / success, so those use dark text. */
-const TONE_TEXT: Record<BadgeTone, ColorToken> = {
-  primary: 'textOnPrimary',
-  secondary: 'textOnSecondary',
-  danger: 'textPrimary',
-  success: 'textPrimary',
+/** Label color per fill: white fails AA on primary / danger / success, so those use dark text. */
+const TONE_TEXT: Record<BadgeTone, PaletteToken> = {
+  primary: 'onPrimary',
+  secondary: 'onSecondary',
+  danger: 'onDanger',
+  success: 'onSuccess',
 };
+
+function fillOf(colors: Palette, tone: BadgeTone): string {
+  return colors[TONE_FILL[tone]];
+}
 
 function BadgeBase({ label, count, max = 99, tone, shape = 'rect', style }: BadgeProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
   if (count !== undefined) {
     if (count <= 0) return null;
     const text = count > max ? `${max}+` : String(count);
+    const countTone = tone ?? 'danger';
     return (
       <View
-        style={[styles.count, { backgroundColor: TONE_COLOR[tone ?? 'danger'] }, style]}
-        accessibilityLabel={`${count} new`}
+        style={[styles.count, { backgroundColor: fillOf(colors, countTone) }, style]}
+        accessibilityLabel={t('badge.newCount', { count })}
       >
         <AppText
           variant="micro"
-          color={TONE_TEXT[tone ?? 'danger']}
+          color={TONE_TEXT[countTone]}
           family="bodySemiBold"
           style={styles.countText}
         >
@@ -59,16 +68,17 @@ function BadgeBase({ label, count, max = 99, tone, shape = 'rect', style }: Badg
     );
   }
   if (!label) return null;
+  const labelTone = tone ?? 'primary';
   return (
     <View
       style={[
         styles.label,
         shape === 'pill' ? styles.pill : styles.rect,
-        { backgroundColor: TONE_COLOR[tone ?? 'primary'] },
+        { backgroundColor: fillOf(colors, labelTone) },
         style,
       ]}
     >
-      <AppText variant="micro" color={TONE_TEXT[tone ?? 'primary']} numberOfLines={1}>
+      <AppText variant="micro" color={TONE_TEXT[labelTone]} numberOfLines={1}>
         {label}
       </AppText>
     </View>

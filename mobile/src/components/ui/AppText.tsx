@@ -1,13 +1,13 @@
 import { memo } from 'react';
 import { Text, type TextProps, type TextStyle } from 'react-native';
 
-import { colors, fontFamily, typography } from '@/theme';
+import { fontFamily, resolveColor, typography, useTheme } from '@/theme';
 import type { ColorToken, FontFamilyToken, TextVariant } from '@/theme';
 
 export type AppTextProps = TextProps & {
   /** Typography variant from the design type scale. Default `body`. */
   variant?: TextVariant;
-  /** Color token. Default: `textMuted` for `caption`, `textPrimary` for everything else. */
+  /** Color token. Default: `textMuted` for `caption`, `text` for everything else. */
   color?: ColorToken;
   align?: TextStyle['textAlign'];
   /** Override the font family (e.g. `bodyMedium`) while keeping the variant's size. */
@@ -17,7 +17,7 @@ export type AppTextProps = TextProps & {
 
 /**
  * The only Text component to use in the app: applies Epilogue/Inter + size/line-height from the
- * theme and keeps font scaling enabled (CLAUDE.md §7).
+ * theme and keeps font scaling enabled (CLAUDE.md §7). The color follows the active palette.
  */
 function AppTextBase({
   variant = 'body',
@@ -28,7 +28,11 @@ function AppTextBase({
   style,
   ...rest
 }: AppTextProps) {
-  const resolvedColor = colors[color ?? (variant === 'caption' ? 'textMuted' : 'textPrimary')];
+  const { colors } = useTheme();
+  const resolvedColor = resolveColor(
+    colors,
+    color ?? (variant === 'caption' ? 'textMuted' : 'text'),
+  );
   return (
     <Text
       {...rest}

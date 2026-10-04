@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
 import { useAuthStore } from '@/stores/authStore';
+import { usePreferencesStore } from '@/stores/preferencesStore';
 
 import { useAppBootstrap } from './useAppBootstrap';
 
@@ -14,10 +15,15 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('expo-splash-screen', () => ({ hideAsync: jest.fn(() => Promise.resolve()) }));
 
 const mockHydrate = jest.fn(() => Promise.resolve());
+const mockHydratePreferences = jest.fn(() => Promise.resolve());
 const hideAsync = SplashScreen.hideAsync as jest.Mock;
 
 function setAuth(status: 'idle' | 'loading' | 'authenticated' | 'unauthenticated') {
   useAuthStore.setState({ status, hydrate: mockHydrate });
+}
+
+function setPreferencesHydrated(isHydrated: boolean) {
+  usePreferencesStore.setState({ isHydrated, hydrate: mockHydratePreferences });
 }
 
 describe('useAppBootstrap', () => {
@@ -26,6 +32,7 @@ describe('useAppBootstrap', () => {
     jest.clearAllMocks();
     mockIsRestoring = false;
     setAuth('idle');
+    setPreferencesHydrated(true);
   });
 
   afterEach(async () => {
@@ -85,6 +92,25 @@ describe('useAppBootstrap', () => {
       jest.advanceTimersByTime(12_000);
     });
 
+    expect(result.current).toBe(true);
+    expect(hideAsync).toHaveBeenCalled();
+  });
+
+  it('loads the saved theme and language on start', async () => {
+    await renderHook(() => useAppBootstrap(true));
+    expect(mockHydratePreferences).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the splash until the saved theme and language are applied', async () => {
+    setAuth('authenticated');
+    setPreferencesHydrated(false);
+    const { result } = await renderHook(() => useAppBootstrap(true));
+    expect(result.current).toBe(false);
+    expect(hideAsync).not.toHaveBeenCalled();
+
+    await act(async () => {
+      usePreferencesStore.setState({ isHydrated: true });
+    });
     expect(result.current).toBe(true);
     expect(hideAsync).toHaveBeenCalled();
   });

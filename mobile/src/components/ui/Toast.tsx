@@ -12,7 +12,8 @@ import {
 import { AccessibilityInfo, Animated, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, radius, shadows, spacing } from '@/theme';
+import { makeStyles, radius, shadows, spacing, useTheme } from '@/theme';
+import type { Palette } from '@/theme';
 
 import { AppText } from './AppText';
 import type { FeatherIconName } from './icons';
@@ -44,11 +45,11 @@ const ICONS: Record<ToastType, FeatherIconName> = {
   info: 'info',
 };
 
-const ICON_COLORS: Record<ToastType, string> = {
-  success: colors.success,
-  error: colors.danger,
-  info: colors.primary,
-};
+function iconColor(colors: Palette, type: ToastType): string {
+  if (type === 'success') return colors.success;
+  if (type === 'error') return colors.danger;
+  return colors.primary;
+}
 
 /** Space kept below the toast so it floats above the bottom tab bar. */
 const BOTTOM_OFFSET = 80;
@@ -73,6 +74,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [opacity] = useState(() => new Animated.Value(0));
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const themed = useStyles();
 
   const clearTimer = useCallback(() => {
     if (timer.current) {
@@ -135,13 +138,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           style={[styles.host, { paddingBottom: insets.bottom + BOTTOM_OFFSET }]}
         >
           <Animated.View
-            style={[styles.toast, shadows.floating, { opacity }]}
+            style={[styles.toast, themed.toast, shadows.floating, { opacity }]}
             accessibilityLiveRegion="polite"
             accessibilityRole="alert"
             testID="toast"
           >
-            <Feather name={ICONS[type]} size={20} color={ICON_COLORS[type]} />
-            <AppText variant="body" color="white" style={styles.message}>
+            <Feather name={ICONS[type]} size={20} color={iconColor(colors, type)} />
+            <AppText variant="body" color="onToast" style={styles.message}>
               {current.message}
             </AppText>
             {current.actionLabel ? (
@@ -154,7 +157,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 accessibilityRole="button"
                 accessibilityLabel={current.actionLabel}
               >
-                <AppText variant="label" color="primaryTrack">
+                <AppText variant="label" color="toastAccent">
                   {current.actionLabel}
                 </AppText>
               </Pressable>
@@ -193,7 +196,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: radius.card,
-    backgroundColor: colors.textPrimary,
   },
   message: { flexShrink: 1 },
 });
+
+const useStyles = makeStyles((t) => ({
+  // In dark mode an outline keeps the toast visible where its shadow disappears.
+  toast: {
+    backgroundColor: t.colors.toast,
+    borderWidth: 1,
+    borderColor: t.isDark ? t.colors.border : t.colors.toast,
+  },
+}));

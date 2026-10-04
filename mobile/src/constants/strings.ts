@@ -1,103 +1,112 @@
+import { hasTranslation, tr } from '@/i18n';
+
 /**
- * Shared UI strings (English, matching the design). Screen-specific copy may live next to the
- * screen, but anything reused across features belongs here (CLAUDE.md §2).
+ * LEGACY facade over the i18n catalogue. The strings now live in `src/i18n/locales/<lang>/*.json`.
+ *
+ * @deprecated Kept only so screens that have not been migrated yet still compile and show the
+ * right language when they (re)mount. Each property reads the current language when accessed, but
+ * the component will NOT re-render on a language change by itself: migrate it to
+ * `const { t } = useTranslation('<ns>')` and delete the import (CLAUDE.md §6-§7).
  */
-export const STRINGS = {
-  appName: 'E-Learning',
+
+type KeyMap = { readonly [key: string]: string | KeyMap };
+type Lazy<T> = T extends string ? string : { readonly [K in keyof T]: Lazy<T[K]> };
+
+/** Turn `{ a: { b: 'ns:key' } }` into an object whose leaves translate on every read. */
+function lazyStrings<T extends KeyMap>(map: T): Lazy<T> {
+  const result: Record<string, unknown> = {};
+  for (const [name, value] of Object.entries(map)) {
+    if (typeof value === 'string') {
+      Object.defineProperty(result, name, { enumerable: true, get: () => tr(value) });
+    } else {
+      result[name] = lazyStrings(value);
+    }
+  }
+  return result as Lazy<T>;
+}
+
+export const STRINGS = lazyStrings({
+  appName: 'common:appName',
 
   tabs: {
-    home: 'Home',
-    search: 'Search',
-    myCourses: 'My Courses',
-    profile: 'Profile',
+    home: 'common:tabs.home',
+    search: 'common:tabs.search',
+    myCourses: 'common:tabs.myCourses',
+    profile: 'common:tabs.profile',
   },
 
   common: {
-    retry: 'Retry',
-    cancel: 'Cancel',
-    confirm: 'Confirm',
-    save: 'Save',
-    done: 'Done',
-    close: 'Close',
-    back: 'Back',
-    viewMore: 'View more',
-    viewAll: 'View all',
-    seeMore: 'See more',
-    seeLess: 'See less',
-    loading: 'Loading...',
-    lessons: 'lessons',
-    free: 'Free',
-    exploreCourses: 'Explore courses',
-    bookmark: 'Save course',
-    removeBookmark: 'Remove from saved courses',
+    retry: 'common:actions.retry',
+    cancel: 'common:actions.cancel',
+    confirm: 'common:actions.confirm',
+    save: 'common:actions.save',
+    done: 'common:actions.done',
+    close: 'common:actions.close',
+    back: 'common:actions.back',
+    viewMore: 'common:actions.viewMore',
+    viewAll: 'common:actions.viewAll',
+    seeMore: 'common:actions.seeMore',
+    seeLess: 'common:actions.seeLess',
+    loading: 'common:loading',
+    lessons: 'common:lessons.noun_other',
+    free: 'common:free',
+    exploreCourses: 'common:actions.exploreCourses',
+    bookmark: 'common:bookmark.save',
+    removeBookmark: 'common:bookmark.remove',
   },
 
   errors: {
-    generic: 'Something went wrong. Please try again.',
-    network: 'No internet connection. Please check your network and try again.',
-    timeout: 'The request took too long. Please try again.',
-    offline: "You're offline",
-    sessionExpired: 'Your session has expired. Please log in again.',
-    boundaryTitle: 'Something went wrong',
-    boundaryMessage: 'The app ran into an unexpected problem. You can try again.',
-    loadFailedTitle: "Couldn't load this content",
+    generic: 'errors:generic',
+    network: 'errors:network',
+    timeout: 'errors:timeout',
+    offline: 'errors:offline',
+    sessionExpired: 'errors:sessionExpired',
+    boundaryTitle: 'errors:boundaryTitle',
+    boundaryMessage: 'errors:boundaryMessage',
+    loadFailedTitle: 'errors:loadFailedTitle',
   },
 
   empty: {
-    defaultTitle: 'Nothing here yet',
+    defaultTitle: 'common:empty.defaultTitle',
   },
 
   auth: {
-    welcomeBack: 'Welcome back!',
-    loginSubtitle: 'Log in to continue learning',
-    login: 'Log in',
-    register: 'Create account',
-    createAccountTitle: 'Create your account',
-    createAccountSubtitle: 'Start learning with thousands of courses',
-    noAccount: "Don't have an account?",
-    signUp: 'Sign up',
-    haveAccount: 'Already have an account?',
-    logout: 'Log out',
-    fullName: 'Full name',
-    email: 'Email',
-    password: 'Password',
-    confirmPassword: 'Confirm password',
-    showPassword: 'Show password',
-    hidePassword: 'Hide password',
+    welcomeBack: 'auth:welcomeBack',
+    loginSubtitle: 'auth:loginSubtitle',
+    login: 'auth:login',
+    register: 'auth:register',
+    createAccountTitle: 'auth:createAccountTitle',
+    createAccountSubtitle: 'auth:createAccountSubtitle',
+    noAccount: 'auth:noAccount',
+    signUp: 'auth:signUp',
+    haveAccount: 'auth:haveAccount',
+    logout: 'auth:logout',
+    fullName: 'auth:fullName',
+    email: 'auth:email',
+    password: 'auth:password',
+    confirmPassword: 'auth:confirmPassword',
+    showPassword: 'common:a11y.showPassword',
+    hidePassword: 'common:a11y.hidePassword',
   },
 
   offline: {
-    banner: "You're offline - showing saved data",
+    banner: 'common:offline.banner',
   },
-} as const;
+});
 
-/** User-facing messages for server error codes (PLAN.md §9.4). Falls back to the server message. */
-export const ERROR_MESSAGES: Record<string, string> = {
-  VALIDATION_ERROR: 'Please check the highlighted fields and try again.',
-  UNAUTHORIZED: STRINGS.errors.sessionExpired,
-  INVALID_CREDENTIALS: 'Incorrect email or password.',
-  EMAIL_TAKEN: 'This email is already registered.',
-  FORBIDDEN: "You don't have permission to do that.",
-  NOT_ENROLLED: 'Enroll in this course to unlock this content.',
-  COURSE_NOT_FOUND: 'This course could not be found.',
-  LESSON_NOT_FOUND: 'This lesson could not be found.',
-  TEACHER_NOT_FOUND: 'This teacher could not be found.',
-  QUESTION_NOT_FOUND: 'This question could not be found.',
-  ALREADY_ENROLLED: "You're already enrolled in this course.",
-  ALREADY_IN_CART: 'This course is already in your cart.',
-  FREE_COURSE: 'This course is free - enroll directly.',
-  PAID_COURSE: 'This course is not free.',
-  CART_EMPTY: 'Your cart is empty.',
-  CANNOT_FOLLOW_SELF: "You can't follow yourself.",
-  FILE_TOO_LARGE: 'This file is too large (max 10 MB).',
-  UNSUPPORTED_FILE_TYPE: 'This file type is not supported.',
-  RATE_LIMITED: 'Too many requests. Please wait a moment and try again.',
-  PAYMENT_FAILED: 'Payment failed. Your cart is unchanged — please try again.',
-  NOT_FOUND: "We couldn't find what you were looking for.",
-  CONFLICT: 'This action conflicts with existing data. Please refresh and try again.',
-  PAYLOAD_TOO_LARGE: 'The request is too large.',
-  INTERNAL_ERROR: STRINGS.errors.generic,
-  NETWORK_ERROR: STRINGS.errors.network,
-  TIMEOUT: STRINGS.errors.timeout,
-  OFFLINE: STRINGS.errors.offline,
-};
+/**
+ * LEGACY: user-facing message per server error code (PLAN.md §9.4). Reads the translation of
+ * `errors:codes.<CODE>` on access; unknown codes give `undefined`.
+ *
+ * @deprecated Use `getErrorMessage(error)` / `getErrorMessageForCode(code)` from `@/lib/appError`.
+ */
+export const ERROR_MESSAGES: Record<string, string> = new Proxy<Record<string, string>>(
+  {},
+  {
+    get: (_target, code) => {
+      if (typeof code !== 'string') return undefined;
+      const key = `errors:codes.${code}`;
+      return hasTranslation(key) ? tr(key) : undefined;
+    },
+  },
+);

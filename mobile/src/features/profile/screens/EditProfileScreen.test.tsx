@@ -1,10 +1,11 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { QueryClient } from '@tanstack/react-query';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 import { showToast } from '@/components/ui/Toast';
 import { AppError } from '@/lib/appError';
 import { useAuthStore } from '@/stores/authStore';
+import { renderWithProviders, type ProviderOptions } from '@/test/renderWithProviders';
 import type { UserDto } from '@/types/api';
 
 import { editProfileApi } from '../editProfileApi';
@@ -36,18 +37,14 @@ const USER: UserDto = {
 
 let queryClient: QueryClient;
 
-async function renderScreen() {
+async function renderScreen(options: Pick<ProviderOptions, 'theme' | 'language'> = {}) {
   queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false, gcTime: Infinity },
       mutations: { retry: false, gcTime: Infinity },
     },
   });
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <EditProfileScreen />
-    </QueryClientProvider>,
-  );
+  return renderWithProviders(<EditProfileScreen />, { ...options, client: queryClient });
 }
 
 describe('EditProfileScreen', () => {
@@ -157,5 +154,17 @@ describe('EditProfileScreen', () => {
       expect(showToast).toHaveBeenCalledWith('Image is too large (max 5 MB).', { type: 'error' }),
     );
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
+  it('shows the form and its validation errors in Vietnamese', async () => {
+    await renderScreen({ language: 'vi' });
+
+    expect(screen.getByText('Chỉnh sửa hồ sơ')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Đổi ảnh đại diện' })).toBeOnTheScreen();
+    expect(screen.getByText('Không thể thay đổi email của bạn.')).toBeOnTheScreen();
+
+    await fireEvent.changeText(screen.getByLabelText('Họ và tên'), 'R');
+    await fireEvent.press(screen.getByRole('button', { name: 'Lưu' }));
+    expect(await screen.findByText('Họ và tên phải có ít nhất 2 ký tự')).toBeOnTheScreen();
   });
 });

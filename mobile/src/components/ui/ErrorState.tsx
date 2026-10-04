@@ -1,9 +1,9 @@
 import Feather from '@expo/vector-icons/Feather';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { STRINGS } from '@/constants/strings';
+import { useTranslation } from '@/i18n';
 import { getErrorMessage, toAppError } from '@/lib/appError';
-import { colors, radius, spacing } from '@/theme';
+import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 import { AppText } from './AppText';
 import { Button } from './Button';
@@ -20,35 +20,40 @@ export type ErrorStateProps = {
 };
 
 /** Error placeholder with a Retry button - the "error" state of every data screen. */
-export function ErrorState({
-  error,
-  title = STRINGS.errors.loadFailedTitle,
-  message,
-  onRetry,
-  retryLabel = STRINGS.common.retry,
-  style,
-}: ErrorStateProps) {
+export function ErrorState({ error, title, message, onRetry, retryLabel, style }: ErrorStateProps) {
+  const { t } = useTranslation(['common', 'errors']);
+  const { colors } = useTheme();
+  const themed = useStyles();
   const resolvedMessage =
-    message ?? (error !== undefined ? getErrorMessage(error) : STRINGS.errors.generic);
+    message ?? (error !== undefined ? getErrorMessage(error) : t('errors:generic'));
   const isNetwork = error !== undefined && toAppError(error).isNetworkError;
 
   return (
     <View style={[styles.container, style]} accessibilityRole="alert">
-      <View style={styles.iconWrap}>
+      <View style={[styles.iconWrap, themed.iconWrap]}>
         <Feather name={isNetwork ? 'wifi-off' : 'alert-circle'} size={32} color={colors.danger} />
       </View>
       <AppText variant="title" align="center">
-        {title}
+        {title ?? t('errors:loadFailedTitle')}
       </AppText>
       <AppText variant="body" color="textSecondary" align="center">
         {resolvedMessage}
       </AppText>
       {onRetry ? (
-        <Button title={retryLabel} onPress={onRetry} leftIcon="refresh-cw" style={styles.action} />
+        <Button
+          title={retryLabel ?? t('actions.retry')}
+          onPress={onRetry}
+          leftIcon="refresh-cw"
+          style={styles.action}
+        />
       ) : null}
     </View>
   );
 }
+
+const useStyles = makeStyles((t) => ({
+  iconWrap: { backgroundColor: t.colors.dangerSoft },
+}));
 
 const styles = StyleSheet.create({
   container: {
@@ -65,7 +70,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.sm,
-    backgroundColor: colors.dangerLight,
   },
-  action: { marginTop: spacing.md },
+  // The Button is `alignSelf: 'flex-start'` by default; centre it under the centred texts.
+  action: { marginTop: spacing.md, alignSelf: 'center' },
 });

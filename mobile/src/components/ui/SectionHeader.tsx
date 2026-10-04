@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { STRINGS } from '@/constants/strings';
+import { useTranslation } from '@/i18n';
 import { spacing } from '@/theme';
 
 import { AppText } from './AppText';
@@ -10,6 +10,7 @@ export type SectionHeaderProps = {
   title: string;
   /** When provided, a "View more" link is shown on the right. */
   onViewMore?: () => void;
+  /** Default: the translated "View more". */
   viewMoreLabel?: string;
   /** "View more" size: `sm` = 12 px (default, most sections), `md` = 14 px (Home "Categories"). */
   viewMoreSize?: 'sm' | 'md';
@@ -20,10 +21,12 @@ export type SectionHeaderProps = {
 function SectionHeaderBase({
   title,
   onViewMore,
-  viewMoreLabel = STRINGS.common.viewMore,
+  viewMoreLabel,
   viewMoreSize = 'sm',
   style,
 }: SectionHeaderProps) {
+  const { t } = useTranslation();
+  const linkLabel = viewMoreLabel ?? t('actions.viewMore');
   return (
     <View style={[styles.row, style]}>
       <AppText variant="title" accessibilityRole="header" numberOfLines={1} style={styles.title}>
@@ -34,11 +37,11 @@ function SectionHeaderBase({
           onPress={onViewMore}
           hitSlop={{ top: 8, bottom: 8 }}
           accessibilityRole="link"
-          accessibilityLabel={`${viewMoreLabel}, ${title}`}
+          accessibilityLabel={`${linkLabel}, ${title}`}
           style={styles.link}
         >
           <AppText variant={viewMoreSize === 'md' ? 'body' : 'caption'} color="primaryText">
-            {viewMoreLabel}
+            {linkLabel}
           </AppText>
         </Pressable>
       ) : null}

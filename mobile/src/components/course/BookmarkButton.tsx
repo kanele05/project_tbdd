@@ -2,8 +2,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { STRINGS } from '@/constants/strings';
-import { colors } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { resolveColor, useTheme } from '@/theme';
 import type { ColorToken } from '@/theme';
 
 export type BookmarkButtonProps = {
@@ -27,11 +27,13 @@ function BookmarkButtonBase({
   size = 24,
   idleColor = 'textMuted',
 }: BookmarkButtonProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
   const icon = (
     <Ionicons
       name="bookmark-outline"
       size={size}
-      color={isBookmarked ? colors.primary : colors[idleColor]}
+      color={isBookmarked ? colors.primary : resolveColor(colors, idleColor)}
     />
   );
   if (!onPress) {
@@ -43,7 +45,7 @@ function BookmarkButtonBase({
       onPress={onPress}
       hitSlop={{ top: slop, bottom: slop, left: slop, right: slop }}
       accessibilityRole="button"
-      accessibilityLabel={isBookmarked ? STRINGS.common.removeBookmark : STRINGS.common.bookmark}
+      accessibilityLabel={isBookmarked ? t('bookmark.remove') : t('bookmark.save')}
       accessibilityState={{ selected: isBookmarked }}
       style={styles.button}
     >

@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { memo } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors, layout, radius } from '@/theme';
+import { layout, makeStyles, radius, resolveColor, useTheme } from '@/theme';
 import type { ColorToken } from '@/theme';
 
 import { Badge } from './Badge';
@@ -18,7 +18,7 @@ export type IconButtonProps = {
   color?: ColorToken;
   /** Visible square size; the touch target is always padded up to 48 dp with `hitSlop`. */
   containerSize?: number;
-  /** Filled circular background (e.g. white circle over a hero image). */
+  /** Filled circular background (e.g. a card-colored circle over a hero image). */
   filled?: boolean;
   disabled?: boolean;
   /** Small count bubble in the top-right corner (cart / notification bell). */
@@ -32,7 +32,7 @@ function IconButtonBase({
   onPress,
   accessibilityLabel,
   size = 24,
-  color = 'textPrimary',
+  color = 'text',
   containerSize = layout.minTouchTarget,
   filled = false,
   disabled = false,
@@ -40,6 +40,8 @@ function IconButtonBase({
   style,
   testID,
 }: IconButtonProps) {
+  const { colors } = useTheme();
+  const themed = useStyles();
   const slop = Math.max(0, Math.ceil((layout.minTouchTarget - containerSize) / 2));
   return (
     <Pressable
@@ -53,13 +55,13 @@ function IconButtonBase({
       style={({ pressed }) => [
         styles.base,
         { width: containerSize, height: containerSize },
-        filled ? styles.filled : null,
+        filled ? themed.filled : null,
         pressed ? styles.pressed : null,
         disabled ? styles.disabled : null,
         style,
       ]}
     >
-      <Feather name={icon} size={size} color={colors[color]} />
+      <Feather name={icon} size={size} color={resolveColor(colors, color)} />
       {badgeCount != null && badgeCount > 0 ? (
         <View style={styles.badge} pointerEvents="none">
           <Badge count={badgeCount} />
@@ -69,9 +71,12 @@ function IconButtonBase({
   );
 }
 
+const useStyles = makeStyles((t) => ({
+  filled: { backgroundColor: t.colors.card },
+}));
+
 const styles = StyleSheet.create({
   base: { alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill },
-  filled: { backgroundColor: colors.white },
   pressed: { opacity: 0.6 },
   disabled: { opacity: 0.4 },
   badge: { position: 'absolute', top: 4, right: 4 },

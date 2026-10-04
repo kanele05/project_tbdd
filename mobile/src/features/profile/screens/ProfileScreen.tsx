@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { CourseCardHorizontalSkeleton } from '@/components/course';
 import {
@@ -11,12 +11,13 @@ import {
   ScreenHeader,
   showToast,
 } from '@/components/ui';
-import { STRINGS } from '@/constants/strings';
+import { useConfirmLogout } from '@/features/auth/useConfirmLogout';
 import { useToggleBookmark } from '@/features/bookmark/hooks';
 import { CourseResultList } from '@/features/search/components/CourseResultList';
 import { openCourse, openSearchTab } from '@/features/search/navigation';
+import { useTranslation } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
-import { colors, spacing } from '@/theme';
+import { makeStyles, spacing } from '@/theme';
 import type { CourseSummary } from '@/types/api';
 
 import { ProfileInfo } from '../components/ProfileInfo';
@@ -24,27 +25,18 @@ import { ProfileMenu } from '../components/ProfileMenu';
 import { ProfileStats } from '../components/ProfileStats';
 import { useBookmarks, useMeStats } from '../hooks';
 
-const PROFILE_STRINGS = {
-  title: "User's profile",
-  menu: 'More options',
-  saved: 'Saved courses',
-  emptyTitle: 'No saved courses yet',
-  emptyMessage: 'Tap the bookmark on a course to keep it here.',
-  removed: 'Removed from saved courses',
-  undo: 'Undo',
-  logoutMessage: 'Are you sure you want to log out?',
-} as const;
-
 function goToMyCourses(status: 'ongoing' | 'completed'): void {
   router.navigate({ pathname: '/my-courses', params: { tab: status } });
 }
 
 function SavedSkeleton() {
+  const { t } = useTranslation();
+  const styles = useStyles();
   return (
     <View
       style={styles.skeletons}
       accessible
-      accessibilityLabel="Loading"
+      accessibilityLabel={t('loading')}
       accessibilityState={{ busy: true }}
     >
       <CourseCardHorizontalSkeleton />
@@ -56,8 +48,10 @@ function SavedSkeleton() {
 
 /** SC-20 User profile: cover, avatar, name, stats, Saved courses and the "⋮" menu. */
 export function ProfileScreen() {
+  const { t } = useTranslation(['profile', 'common']);
+  const styles = useStyles();
   const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
+  const confirmLogout = useConfirmLogout();
   const stats = useMeStats();
   const bookmarks = useBookmarks();
   const { toggleBookmark } = useToggleBookmark();
@@ -69,12 +63,12 @@ export function ProfileScreen() {
   const handleToggleBookmark = useCallback(
     (course: CourseSummary) => {
       toggleBookmark(course.id, course.isBookmarked, course);
-      showToast(PROFILE_STRINGS.removed, {
-        actionLabel: PROFILE_STRINGS.undo,
+      showToast(t('removedFromSaved'), {
+        actionLabel: t('undo'),
         onAction: () => toggleBookmark(course.id, false, course),
       });
     },
-    [toggleBookmark],
+    [toggleBookmark, t],
   );
   const handlePressCourse = useCallback((course: CourseSummary) => openCourse(course.id), []);
   const handleEndReached = useCallback(() => {
@@ -98,13 +92,14 @@ export function ProfileScreen() {
     setIsMenuOpen(false);
     router.push('/notifications');
   }, []);
+  const handleSettings = useCallback(() => {
+    setIsMenuOpen(false);
+    router.push('/settings');
+  }, []);
   const handleLogout = useCallback(() => {
     setIsMenuOpen(false);
-    Alert.alert(STRINGS.auth.logout, PROFILE_STRINGS.logoutMessage, [
-      { text: STRINGS.common.cancel, style: 'cancel' },
-      { text: STRINGS.auth.logout, style: 'destructive', onPress: () => void logout() },
-    ]);
-  }, [logout]);
+    void confirmLogout();
+  }, [confirmLogout]);
 
   let emptyState;
   if (bookmarks.isPending) {
@@ -115,24 +110,24 @@ export function ProfileScreen() {
     emptyState = (
       <EmptyState
         icon="bookmark"
-        title={PROFILE_STRINGS.emptyTitle}
-        message={PROFILE_STRINGS.emptyMessage}
-        actionLabel={STRINGS.common.exploreCourses}
+        title={t('empty.title')}
+        message={t('empty.message')}
+        actionLabel={t('common:actions.exploreCourses')}
         onAction={openSearchTab}
       />
     );
   }
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.screen} testID="profile-screen">
       <ScreenHeader
-        title={PROFILE_STRINGS.title}
+        title={t('title')}
         showBack={false}
         right={
           <IconButton
             icon="more-vertical"
             onPress={() => setIsMenuOpen(true)}
-            accessibilityLabel={PROFILE_STRINGS.menu}
+            accessibilityLabel={t('menu.open')}
           />
         }
       />
@@ -154,7 +149,7 @@ export function ProfileScreen() {
               onPressCompleted={() => goToMyCourses('completed')}
             />
             <AppText variant="title" accessibilityRole="header" style={styles.savedTitle}>
-              {PROFILE_STRINGS.saved}
+              {t('savedCourses')}
             </AppText>
           </View>
         }
@@ -165,6 +160,7 @@ export function ProfileScreen() {
           onClose={closeMenu}
           onEditProfile={handleEditProfile}
           onNotifications={handleNotifications}
+          onSettings={handleSettings}
           onLogout={handleLogout}
         />
       ) : null}
@@ -172,10 +168,10 @@ export function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
   header: { gap: spacing.xl, marginBottom: spacing.lg },
   // Design: ~34 dp between the stats row and the "Saved courses" title.
   savedTitle: { marginTop: spacing.md },
   skeletons: { gap: spacing.lg },
-});
+}));

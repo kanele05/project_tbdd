@@ -9,8 +9,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors, layout, radius, spacing } from '@/theme';
-import type { FontFamilyToken } from '@/theme';
+import { layout, radius, spacing, useTheme } from '@/theme';
+import type { FontFamilyToken, Palette } from '@/theme';
 
 import { AppText } from './AppText';
 import type { FeatherIconName } from './icons';
@@ -43,32 +43,38 @@ export type ButtonProps = {
 
 type VariantStyle = { background: string; pressed: string; border: string; text: string };
 
-const VARIANTS: Record<ButtonVariant, VariantStyle> = {
-  primary: {
-    background: colors.primary,
-    pressed: colors.primaryDark,
-    border: colors.primary,
-    text: colors.textOnPrimary,
-  },
-  secondary: {
-    background: colors.primaryLight,
-    pressed: colors.primaryTrack,
-    border: colors.primaryLight,
-    text: colors.textPrimary,
-  },
-  outline: {
-    background: colors.transparent,
-    pressed: colors.primaryLight,
-    border: colors.primary,
-    text: colors.primaryText,
-  },
-  ghost: {
-    background: colors.transparent,
-    pressed: colors.primaryLight,
-    border: colors.transparent,
-    text: colors.primaryText,
-  },
-};
+function getVariantStyle(colors: Palette, variant: ButtonVariant): VariantStyle {
+  switch (variant) {
+    case 'primary':
+      return {
+        background: colors.primary,
+        pressed: colors.primaryPressed,
+        border: colors.primary,
+        text: colors.onPrimary,
+      };
+    case 'secondary':
+      return {
+        background: colors.primarySoft,
+        pressed: colors.primaryTrack,
+        border: colors.primarySoft,
+        text: colors.text,
+      };
+    case 'outline':
+      return {
+        background: colors.transparent,
+        pressed: colors.primarySoft,
+        border: colors.primary,
+        text: colors.primaryText,
+      };
+    case 'ghost':
+      return {
+        background: colors.transparent,
+        pressed: colors.primarySoft,
+        border: colors.transparent,
+        text: colors.primaryText,
+      };
+  }
+}
 
 function ButtonBase({
   title,
@@ -87,7 +93,8 @@ function ButtonBase({
   style,
   testID,
 }: ButtonProps) {
-  const palette = VARIANTS[variant];
+  const { colors } = useTheme();
+  const palette = getVariantStyle(colors, variant);
   const isInactive = disabled || loading;
   const height = size === 'sm' ? layout.buttonHeightSmall : layout.buttonHeight;
   // Small buttons are visually 36 dp but keep a 48 dp touch target.

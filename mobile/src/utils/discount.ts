@@ -1,3 +1,4 @@
+import { i18n } from '@/i18n';
 import type { CourseSummary } from '@/types/api';
 
 export type CourseBadgeInfo = {
@@ -20,11 +21,14 @@ export function calcDiscountPercent(priceCents: number, originalPriceCents: numb
 export function getCourseBadge(
   course: Pick<CourseSummary, 'badge' | 'discountPercent' | 'priceCents' | 'originalPriceCents'>,
 ): CourseBadgeInfo | null {
-  if (course.badge === 'BEST_SELLER') return { kind: 'BEST_SELLER', label: 'Best-seller' };
+  if (course.badge === 'BEST_SELLER')
+    return { kind: 'BEST_SELLER', label: i18n.t('common:badge.bestSeller') };
   if (course.badge === 'DISCOUNT') {
     const percent =
       course.discountPercent ?? calcDiscountPercent(course.priceCents, course.originalPriceCents);
-    return percent > 0 ? { kind: 'DISCOUNT', label: `${percent}% Off` } : null;
+    return percent > 0
+      ? { kind: 'DISCOUNT', label: i18n.t('common:badge.discount', { percent }) }
+      : null;
   }
   return null;
 }

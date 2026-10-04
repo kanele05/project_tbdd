@@ -8,7 +8,7 @@ import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { FormTextField } from '@/components/ui/FormTextField';
 import { useToast } from '@/components/ui/Toast';
-import { ERROR_MESSAGES, STRINGS } from '@/constants/strings';
+import { useTranslation } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
 
 import { applyAuthError } from '../authErrors';
@@ -21,6 +21,7 @@ const FIELDS = ['email', 'password'] as const;
 
 /** SC-02 Login: email + password, server errors under the form, link to Register. */
 export function LoginScreen() {
+  const { t } = useTranslation(['auth', 'errors']);
   const toast = useToast();
   const login = useLogin();
   const sessionExpired = useAuthStore((state) => state.sessionExpired);
@@ -34,8 +35,8 @@ export function LoginScreen() {
 
   useEffect(() => {
     // Tell the user why they landed here after a forced logout (401).
-    if (sessionExpired) toast.info(ERROR_MESSAGES.UNAUTHORIZED);
-  }, [sessionExpired, toast]);
+    if (sessionExpired) toast.info(t('errors:sessionExpired'));
+  }, [sessionExpired, toast, t]);
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
@@ -49,21 +50,21 @@ export function LoginScreen() {
 
   return (
     <AuthLayout
-      title={STRINGS.auth.welcomeBack}
-      subtitle={STRINGS.auth.loginSubtitle}
+      title={t('welcomeBack')}
+      subtitle={t('loginSubtitle')}
       footer={
         <>
           <AppText variant="body" color="textSecondary">
-            {STRINGS.auth.noAccount}
+            {t('noAccount')}
           </AppText>
           <Pressable
             onPress={() => router.push('/register')}
             hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             accessibilityRole="link"
-            accessibilityLabel={STRINGS.auth.signUp}
+            accessibilityLabel={t('signUp')}
           >
             <AppText variant="label" color="primaryText">
-              {STRINGS.auth.signUp}
+              {t('signUp')}
             </AppText>
           </Pressable>
         </>
@@ -72,8 +73,8 @@ export function LoginScreen() {
       <FormTextField
         control={control}
         name="email"
-        label={STRINGS.auth.email}
-        placeholder="you@example.com"
+        label={t('email')}
+        placeholder={t('placeholders.email')}
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
@@ -86,8 +87,8 @@ export function LoginScreen() {
         ref={passwordRef}
         control={control}
         name="password"
-        label={STRINGS.auth.password}
-        placeholder="Enter your password"
+        label={t('password')}
+        placeholder={t('placeholders.password')}
         secureTextEntry
         autoCapitalize="none"
         autoComplete="current-password"
@@ -97,7 +98,7 @@ export function LoginScreen() {
       />
       <FormError message={formError} />
       <Button
-        title={STRINGS.auth.login}
+        title={t('login')}
         onPress={onSubmit}
         loading={login.isPending}
         fullWidth

@@ -2,7 +2,6 @@ import Feather from '@expo/vector-icons/Feather';
 import { useState, type Ref } from 'react';
 import {
   Pressable,
-  StyleSheet,
   TextInput,
   View,
   type StyleProp,
@@ -10,8 +9,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { STRINGS } from '@/constants/strings';
-import { colors, fontFamily, layout, radius, spacing, typography } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { fontFamily, layout, makeStyles, radius, spacing, typography, useTheme } from '@/theme';
 
 import { AppText } from './AppText';
 import type { FeatherIconName } from './icons';
@@ -44,6 +43,9 @@ export function TextField({
   ref,
   ...inputProps
 }: TextFieldProps) {
+  const { t } = useTranslation();
+  const { colors, isDark } = useTheme();
+  const styles = useStyles();
   const [isFocused, setIsFocused] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
   const isSecure = Boolean(secureTextEntry) && !isRevealed;
@@ -72,7 +74,8 @@ export function TextField({
           {...inputProps}
           editable={editable}
           secureTextEntry={isSecure}
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.placeholder}
+          keyboardAppearance={isDark ? 'dark' : 'light'}
           accessibilityLabel={inputProps.accessibilityLabel ?? label}
           accessibilityState={{ disabled: !editable }}
           style={styles.input}
@@ -90,7 +93,7 @@ export function TextField({
             onPress={() => setIsRevealed((value) => !value)}
             hitSlop={14}
             accessibilityRole="button"
-            accessibilityLabel={isRevealed ? STRINGS.auth.hidePassword : STRINGS.auth.showPassword}
+            accessibilityLabel={isRevealed ? t('a11y.hidePassword') : t('a11y.showPassword')}
             style={styles.toggle}
           >
             <Feather name={isRevealed ? 'eye-off' : 'eye'} size={20} color={colors.textMuted} />
@@ -115,29 +118,29 @@ export function TextField({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   label: { marginBottom: spacing.sm },
   inputWrap: {
     minHeight: layout.inputHeight,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: t.colors.surface,
     borderRadius: radius.input,
     borderWidth: 1,
-    borderColor: colors.transparent,
+    borderColor: t.colors.transparent,
     paddingHorizontal: spacing.lg,
   },
-  focused: { borderColor: colors.primary, backgroundColor: colors.background },
-  errored: { borderColor: colors.danger, backgroundColor: colors.background },
+  focused: { borderColor: t.colors.primary, backgroundColor: t.colors.background },
+  errored: { borderColor: t.colors.danger, backgroundColor: t.colors.background },
   readOnly: { opacity: 0.7 },
   leftIcon: { marginRight: spacing.sm },
   input: {
     flex: 1,
     paddingVertical: spacing.md,
-    color: colors.textPrimary,
+    color: t.colors.text,
     fontFamily: fontFamily.body,
     fontSize: typography.body.fontSize,
   },
   toggle: { marginLeft: spacing.sm, padding: spacing.xs },
   message: { marginTop: spacing.xs },
-});
+}));

@@ -1,7 +1,7 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Skeleton } from '@/components/ui/Skeleton';
-import { colors, radius, spacing } from '@/theme';
+import { makeStyles, radius, spacing } from '@/theme';
 
 import {
   COURSE_CARD_VERTICAL_IMAGE_HEIGHT,
@@ -14,6 +14,7 @@ export function CourseCardVerticalSkeleton({
 }: {
   width?: number;
 }) {
+  const styles = useStyles();
   return (
     <View style={[styles.card, { width }]}>
       <Skeleton height={COURSE_CARD_VERTICAL_IMAGE_HEIGHT} borderRadius={radius.button} />
@@ -29,6 +30,7 @@ export function CourseCardVerticalSkeleton({
 
 /** Loading placeholder with the same footprint as `CourseCardHorizontal`. */
 export function CourseCardHorizontalSkeleton() {
+  const styles = useStyles();
   return (
     <View style={[styles.card, styles.row]}>
       <Skeleton width={96} height={96} borderRadius={radius.button} />
@@ -42,15 +44,15 @@ export function CourseCardHorizontalSkeleton() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   card: {
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.borderSubtle,
+    borderColor: t.colors.borderSubtle,
     borderRadius: radius.card,
-    backgroundColor: colors.background,
+    backgroundColor: t.colors.card,
   },
   row: { flexDirection: 'row', gap: spacing.md },
   lines: { marginTop: spacing.md, gap: spacing.sm },
   rowLines: { flex: 1, justifyContent: 'center', gap: spacing.sm },
-});
+}));

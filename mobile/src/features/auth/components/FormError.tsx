@@ -1,11 +1,13 @@
 import Feather from '@expo/vector-icons/Feather';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius, spacing } from '@/theme';
+import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 /** Form-level server error (wrong password, network failure...) shown above the submit button. */
 export function FormError({ message }: { message: string | null }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   if (!message) return null;
   return (
     <View
@@ -22,14 +24,14 @@ export function FormError({ message }: { message: string | null }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.sm,
     padding: spacing.md,
     borderRadius: radius.button,
-    backgroundColor: colors.dangerLight,
+    backgroundColor: t.colors.dangerSoft,
   },
   text: { flex: 1 },
-});
+}));

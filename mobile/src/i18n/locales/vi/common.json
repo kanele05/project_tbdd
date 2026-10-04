@@ -1,0 +1,74 @@
+{
+  "appName": "E-Learning",
+  "tabs": {
+    "home": "Trang chủ",
+    "search": "Tìm kiếm",
+    "myCourses": "Khóa học của tôi",
+    "profile": "Hồ sơ"
+  },
+  "actions": {
+    "retry": "Thử lại",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "save": "Lưu",
+    "done": "Xong",
+    "close": "Đóng",
+    "back": "Quay lại",
+    "viewMore": "Xem thêm",
+    "viewAll": "Xem tất cả",
+    "seeMore": "Xem thêm",
+    "seeLess": "Thu gọn",
+    "exploreCourses": "Khám phá khóa học"
+  },
+  "loading": "Đang tải...",
+  "free": "Miễn phí",
+  "bookmark": {
+    "save": "Lưu khóa học",
+    "remove": "Bỏ khỏi khóa học đã lưu"
+  },
+  "empty": {
+    "defaultTitle": "Chưa có gì ở đây"
+  },
+  "offline": {
+    "banner": "Bạn đang ngoại tuyến - đang hiển thị dữ liệu đã lưu"
+  },
+  "search": {
+    "placeholder": "Tìm khóa học",
+    "clear": "Xóa nội dung tìm kiếm"
+  },
+  "lessons": {
+    "count_other": "{{count}} bài học",
+    "noun_other": "bài học"
+  },
+  "duration": {
+    "minute_other": "{{count}} phút",
+    "hour_other": "{{count}} giờ",
+    "hourLong_other": "{{count}} giờ",
+    "lesson": "{{time}} phút"
+  },
+  "badge": {
+    "bestSeller": "Bán chạy",
+    "discount": "Giảm {{percent}}%",
+    "newCount": "{{count}} mới"
+  },
+  "courseCard": {
+    "label": "{{title}}, giảng viên {{teacher}}, {{price}}, đánh giá {{rating}}"
+  },
+  "a11y": {
+    "avatarOf": "Ảnh đại diện của {{name}}",
+    "percentComplete": "Đã hoàn thành {{percent}}%",
+    "ratedStars": "Đánh giá {{rating}} trên 5 sao",
+    "star_other": "{{count}} sao",
+    "ratedOutOf": "Đánh giá {{rating}} trên 5",
+    "ratingCount_other": "{{count}} lượt đánh giá",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu"
+  },
+  "placeholder": {
+    "notImplemented": "Màn hình này chưa được triển khai."
+  },
+  "priceTag": {
+    "was": "{{price}}, giá gốc {{original}}",
+    "discShort": "Giảm {{percent}}%"
+  }
+}

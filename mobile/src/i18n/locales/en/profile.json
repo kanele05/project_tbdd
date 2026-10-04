@@ -1,0 +1,36 @@
+{
+  "title": "User's profile",
+  "savedCourses": "Saved courses",
+  "removedFromSaved": "Removed from saved courses",
+  "undo": "Undo",
+  "empty": {
+    "title": "No saved courses yet",
+    "message": "Tap the bookmark on a course to keep it here."
+  },
+  "menu": {
+    "open": "More options",
+    "close": "Close menu",
+    "editProfile": "Edit profile",
+    "notifications": "Notifications",
+    "settings": "Settings"
+  },
+  "stats": {
+    "saved": "Save",
+    "ongoing": "On Going",
+    "completed": "Completed",
+    "unavailable": "unavailable",
+    "opensMyCourses": "Opens My Courses"
+  },
+  "edit": {
+    "title": "Edit profile",
+    "changePhoto": "Change profile photo",
+    "headline": "Headline",
+    "headlinePlaceholder": "e.g. UX/UI Designer",
+    "emailHelper": "Your email can't be changed.",
+    "updated": "Profile updated",
+    "uploadProgress": "{{percent}}%",
+    "avatarType": "Please choose a PNG or JPG image.",
+    "avatarSize": "Image is too large (max 5 MB).",
+    "headlineMax": "Headline must be 80 characters or fewer"
+  }
+}

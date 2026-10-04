@@ -1,7 +1,9 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppText, Skeleton } from '@/components/ui';
-import { colors, layout } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { formatNumber } from '@/i18n/format';
+import { layout, makeStyles } from '@/theme';
 import type { MeStatsDto } from '@/types/api';
 
 type ProfileStatsProps = {
@@ -21,7 +23,9 @@ type StatColumnProps = {
 };
 
 function StatColumn({ label, value, isLoading, onPress }: StatColumnProps) {
-  const text = value == null ? '-' : String(value);
+  const { t } = useTranslation('profile');
+  const styles = useStyles();
+  const text = value == null ? '-' : formatNumber(value);
   const content = (
     <>
       {isLoading ? (
@@ -31,12 +35,12 @@ function StatColumn({ label, value, isLoading, onPress }: StatColumnProps) {
           {text}
         </AppText>
       )}
-      <AppText variant="micro" family="body" align="center" style={styles.label}>
+      <AppText variant="micro" family="body" color="textMuted" align="center" style={styles.label}>
         {label}
       </AppText>
     </>
   );
-  const accessibilityLabel = `${label}, ${value == null ? 'unavailable' : value}`;
+  const accessibilityLabel = `${label}, ${value == null ? t('stats.unavailable') : text}`;
 
   if (!onPress) {
     return (
@@ -50,7 +54,7 @@ function StatColumn({ label, value, isLoading, onPress }: StatColumnProps) {
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      accessibilityHint="Opens My Courses"
+      accessibilityHint={t('stats.opensMyCourses')}
       style={({ pressed }) => [styles.column, pressed ? styles.pressed : null]}
     >
       {content}
@@ -65,19 +69,21 @@ export function ProfileStats({
   onPressOngoing,
   onPressCompleted,
 }: ProfileStatsProps) {
+  const { t } = useTranslation('profile');
+  const styles = useStyles();
   return (
     <View style={styles.row}>
-      <StatColumn label="Save" value={stats?.savedCount} isLoading={isLoading} />
+      <StatColumn label={t('stats.saved')} value={stats?.savedCount} isLoading={isLoading} />
       <View style={styles.divider} />
       <StatColumn
-        label="On Going"
+        label={t('stats.ongoing')}
         value={stats?.ongoingCount}
         isLoading={isLoading}
         onPress={onPressOngoing}
       />
       <View style={styles.divider} />
       <StatColumn
-        label="Completed"
+        label={t('stats.completed')}
         value={stats?.completedCount}
         isLoading={isLoading}
         onPress={onPressCompleted}
@@ -86,7 +92,7 @@ export function ProfileStats({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   row: { flexDirection: 'row', alignItems: 'center' },
   column: {
     flex: 1,
@@ -95,7 +101,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   // Design: the 10 px label sits right below the number; 11 px keeps it legible.
-  label: { lineHeight: 16, color: colors.textMuted },
+  label: { lineHeight: 16 },
   pressed: { opacity: 0.6 },
-  divider: { width: 1, height: 44, backgroundColor: colors.borderSubtle },
-});
+  divider: { width: 1, height: 44, backgroundColor: t.colors.borderSubtle },
+}));

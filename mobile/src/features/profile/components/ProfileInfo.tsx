@@ -1,8 +1,8 @@
 import { Image } from 'expo-image';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText, Avatar } from '@/components/ui';
-import { colors, layout, radius, spacing } from '@/theme';
+import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { UserDto } from '@/types/api';
 
 const COVER_HEIGHT = 128;
@@ -16,6 +16,8 @@ type ProfileInfoProps = {
 
 /** Cover image, avatar overlapping its bottom edge, full name and headline (SC-20). */
 export function ProfileInfo({ user }: ProfileInfoProps) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   return (
     <View>
       <View style={styles.cover}>
@@ -52,12 +54,12 @@ export function ProfileInfo({ user }: ProfileInfoProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   cover: {
     height: COVER_HEIGHT,
     overflow: 'hidden',
     borderRadius: radius.card,
-    backgroundColor: colors.surface,
+    backgroundColor: t.colors.surface,
   },
   coverImage: { width: '100%', height: '100%' },
   avatarWrap: { alignSelf: 'center', marginTop: -AVATAR_OVERLAP },
@@ -68,4 +70,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.md + 2,
     paddingHorizontal: layout.screenPaddingX,
   },
-});
+}));

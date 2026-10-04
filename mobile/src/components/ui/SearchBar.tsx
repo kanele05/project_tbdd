@@ -1,8 +1,9 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useCallback, useRef, useState, type Ref } from 'react';
-import { Pressable, StyleSheet, TextInput, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, TextInput, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors, fontFamily, radius, spacing, typography } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { fontFamily, makeStyles, radius, spacing, typography, useTheme } from '@/theme';
 
 export type SearchBarProps = {
   value: string;
@@ -11,6 +12,7 @@ export type SearchBarProps = {
   onSubmit?: (text: string) => void;
   /** Fired when the clear (x) button is pressed, after the text is emptied. */
   onClear?: () => void;
+  /** Default: the translated "Search course". */
   placeholder?: string;
   autoFocus?: boolean;
   onFocus?: () => void;
@@ -25,15 +27,19 @@ export function SearchBar({
   onChangeText,
   onSubmit,
   onClear,
-  placeholder = 'Search course',
+  placeholder,
   autoFocus,
   onFocus,
   onBlur,
   style,
   ref,
 }: SearchBarProps) {
+  const { t } = useTranslation();
+  const { colors, isDark } = useTheme();
+  const styles = useStyles();
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput | null>(null);
+  const resolvedPlaceholder = placeholder ?? t('search.placeholder');
   // Forward the TextInput to the caller's ref while keeping our own handle for `focus()`.
   const setRefs = useCallback(
     (node: TextInput | null) => {
@@ -51,19 +57,20 @@ export function SearchBar({
       accessible={false}
       style={[styles.container, isFocused ? styles.focused : null, style]}
     >
-      <Feather name="search" size={18} color={colors.textPrimary} />
+      <Feather name="search" size={18} color={colors.text} />
       <TextInput
         ref={setRefs}
         value={value}
         onChangeText={onChangeText}
         onSubmitEditing={() => onSubmit?.(value)}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         placeholderTextColor={colors.placeholder}
+        keyboardAppearance={isDark ? 'dark' : 'light'}
         returnKeyType="search"
         autoCapitalize="none"
         autoCorrect={false}
         autoFocus={autoFocus}
-        accessibilityLabel={placeholder}
+        accessibilityLabel={resolvedPlaceholder}
         style={styles.input}
         onFocus={() => {
           setIsFocused(true);
@@ -82,7 +89,7 @@ export function SearchBar({
           }}
           hitSlop={15}
           accessibilityRole="button"
-          accessibilityLabel="Clear search"
+          accessibilityLabel={t('search.clear')}
         >
           <Feather name="x-circle" size={18} color={colors.textMuted} />
         </Pressable>
@@ -93,7 +100,7 @@ export function SearchBar({
 
 const SEARCH_BAR_HEIGHT = 36;
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     height: SEARCH_BAR_HEIGHT,
     flexDirection: 'row',
@@ -103,18 +110,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radius.button,
     borderWidth: 1,
-    borderColor: colors.transparent,
-    backgroundColor: colors.surface,
+    borderColor: t.colors.transparent,
+    backgroundColor: t.colors.surface,
   },
-  focused: { borderColor: colors.primary },
+  focused: { borderColor: t.colors.primary },
   input: {
     flex: 1,
     alignSelf: 'stretch',
     paddingVertical: 0,
-    color: colors.textPrimary,
+    color: t.colors.text,
     fontFamily: fontFamily.body,
     fontSize: typography.body.fontSize,
     // Android adds vertical padding to a TextInput; keep the text centered in the 36 dp field.
     textAlignVertical: 'center',
   },
-});
+}));

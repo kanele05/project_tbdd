@@ -4,13 +4,14 @@ import { BackHandler, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText, type FeatherIconName } from '@/components/ui';
-import { STRINGS } from '@/constants/strings';
-import { colors, layout, radius, shadows, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, radius, shadows, spacing, useTheme } from '@/theme';
 
 type ProfileMenuProps = {
   onClose: () => void;
   onEditProfile: () => void;
   onNotifications: () => void;
+  onSettings: () => void;
   /** Called after the menu closed; the screen asks for confirmation. */
   onLogout: () => void;
 };
@@ -23,8 +24,10 @@ type MenuItemProps = {
 };
 
 function MenuItem({ icon, label, onPress, isDanger = false }: MenuItemProps) {
-  const tint = isDanger ? colors.danger : colors.textPrimary;
-  const textTint = isDanger ? colors.dangerText : colors.textPrimary;
+  const { colors } = useTheme();
+  const styles = useStyles();
+  const tint = isDanger ? colors.danger : colors.text;
+  const textTint = isDanger ? colors.dangerText : colors.text;
   return (
     <Pressable
       onPress={onPress}
@@ -41,16 +44,19 @@ function MenuItem({ icon, label, onPress, isDanger = false }: MenuItemProps) {
 }
 
 /**
- * Overflow menu of the "⋮" button (SC-20): Edit profile, Notifications, Log out. Rendered as an
+ * Overflow menu of the "⋮" button (SC-20): Edit profile, Notifications, Settings, Log out. Rendered as an
  * in-screen popover (not a native Modal) so a confirmation Alert can open right after it closes.
  */
 export function ProfileMenu({
   onClose,
   onEditProfile,
   onNotifications,
+  onSettings,
   onLogout,
 }: ProfileMenuProps) {
+  const { t } = useTranslation(['profile', 'auth']);
   const insets = useSafeAreaInsets();
+  const styles = useStyles();
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -66,7 +72,7 @@ export function ProfileMenu({
         style={styles.backdrop}
         onPress={onClose}
         accessibilityRole="button"
-        accessibilityLabel="Close menu"
+        accessibilityLabel={t('menu.close')}
       />
       <View
         accessibilityRole="menu"
@@ -76,15 +82,16 @@ export function ProfileMenu({
           { top: insets.top + layout.headerHeight - spacing.sm },
         ]}
       >
-        <MenuItem icon="edit-2" label="Edit profile" onPress={onEditProfile} />
-        <MenuItem icon="bell" label="Notifications" onPress={onNotifications} />
-        <MenuItem icon="log-out" label={STRINGS.auth.logout} onPress={onLogout} isDanger />
+        <MenuItem icon="edit-2" label={t('menu.editProfile')} onPress={onEditProfile} />
+        <MenuItem icon="bell" label={t('menu.notifications')} onPress={onNotifications} />
+        <MenuItem icon="settings" label={t('menu.settings')} onPress={onSettings} />
+        <MenuItem icon="log-out" label={t('auth:logout')} onPress={onLogout} isDanger />
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   overlay: { ...StyleSheet.absoluteFill },
   backdrop: { ...StyleSheet.absoluteFill },
   panel: {
@@ -93,9 +100,9 @@ const styles = StyleSheet.create({
     minWidth: 200,
     paddingVertical: spacing.xs,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: t.colors.border,
     borderRadius: radius.card,
-    backgroundColor: colors.background,
+    backgroundColor: t.colors.card,
   },
   item: {
     minHeight: 48,
@@ -104,5 +111,5 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing.lg,
   },
-  pressed: { backgroundColor: colors.backgroundAlt },
-});
+  pressed: { backgroundColor: t.colors.surfaceAlt },
+}));

@@ -16,9 +16,9 @@ import { Button } from '@/components/ui/Button';
 import { FormTextField } from '@/components/ui/FormTextField';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { TextField } from '@/components/ui/TextField';
-import { STRINGS } from '@/constants/strings';
 import { FormError } from '@/features/auth/components/FormError';
-import { colors, layout, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 
 import { useEditProfile } from '../useEditProfile';
 
@@ -41,11 +41,14 @@ export function EditProfileScreen() {
     pickAvatar,
     save,
   } = useEditProfile();
+  const { t } = useTranslation(['profile', 'auth', 'common']);
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
-      <ScreenHeader title="Edit profile" />
+      <ScreenHeader title={t('edit.title')} />
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}
         keyboardShouldPersistTaps="handled"
@@ -55,7 +58,7 @@ export function EditProfileScreen() {
           onPress={() => void pickAvatar()}
           disabled={isSaving}
           accessibilityRole="button"
-          accessibilityLabel="Change profile photo"
+          accessibilityLabel={t('edit.changePhoto')}
           style={styles.avatarButton}
         >
           {avatarUri ? (
@@ -75,12 +78,12 @@ export function EditProfileScreen() {
             <View style={styles.progress} testID="avatar-progress">
               <ActivityIndicator color={colors.white} />
               <AppText variant="caption" color="white" family="bodyMedium">
-                {uploadProgress ?? 0}%
+                {t('edit.uploadProgress', { percent: uploadProgress ?? 0 })}
               </AppText>
             </View>
           ) : null}
           <View style={styles.cameraBadge}>
-            <Feather name="camera" size={16} color={colors.textOnPrimary} />
+            <Feather name="camera" size={16} color={colors.onPrimary} />
           </View>
         </Pressable>
 
@@ -88,8 +91,8 @@ export function EditProfileScreen() {
           <FormTextField
             control={control}
             name="fullName"
-            label={STRINGS.auth.fullName}
-            placeholder="Your full name"
+            label={t('auth:fullName')}
+            placeholder={t('auth:placeholders.fullName')}
             autoCapitalize="words"
             autoComplete="name"
             textContentType="name"
@@ -99,20 +102,20 @@ export function EditProfileScreen() {
           <FormTextField
             control={control}
             name="headline"
-            label="Headline"
-            placeholder="e.g. UX/UI Designer"
+            label={t('edit.headline')}
+            placeholder={t('edit.headlinePlaceholder')}
             returnKeyType="done"
             maxLength={80}
           />
           <TextField
-            label={STRINGS.auth.email}
+            label={t('auth:email')}
             value={user?.email ?? ''}
             editable={false}
-            helperText="Your email can't be changed."
+            helperText={t('edit.emailHelper')}
           />
           <FormError message={formError} />
           <Button
-            title={STRINGS.common.save}
+            title={t('common:actions.save')}
             onPress={() => void save()}
             loading={isSaving}
             disabled={!hasChanges}
@@ -125,8 +128,8 @@ export function EditProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
   content: {
     paddingHorizontal: layout.screenPaddingX,
     paddingVertical: spacing.xl,
@@ -138,7 +141,7 @@ const styles = StyleSheet.create({
     height: AVATAR_SIZE,
     overflow: 'hidden',
     borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: colors.secondaryLight,
+    backgroundColor: t.colors.secondarySoft,
   },
   progress: {
     ...StyleSheet.absoluteFill,
@@ -146,7 +149,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.xxs,
     borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: colors.overlay,
+    backgroundColor: t.colors.overlay,
   },
   cameraBadge: {
     position: 'absolute',
@@ -158,8 +161,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: radius.pill,
     borderWidth: 2,
-    borderColor: colors.background,
-    backgroundColor: colors.primary,
+    borderColor: t.colors.background,
+    backgroundColor: t.colors.primary,
   },
   form: { gap: spacing.lg },
-});
+}));

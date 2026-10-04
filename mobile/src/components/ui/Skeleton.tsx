@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react';
 import {
   AccessibilityInfo,
   Animated,
-  StyleSheet,
   type DimensionValue,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
 
-import { colors, radius } from '@/theme';
+import { radius, useTheme } from '@/theme';
 
 export type SkeletonProps = {
   width?: DimensionValue;
@@ -28,6 +27,7 @@ export function Skeleton({
   borderRadius = radius.card,
   style,
 }: SkeletonProps) {
+  const { colors } = useTheme();
   const [opacity] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
@@ -55,11 +55,7 @@ export function Skeleton({
     <Animated.View
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={[styles.block, { width, height, borderRadius, opacity }, style]}
+      style={[{ width, height, borderRadius, opacity, backgroundColor: colors.skeleton }, style]}
     />
   );
 }
-
-const styles = StyleSheet.create({
-  block: { backgroundColor: colors.surface },
-});

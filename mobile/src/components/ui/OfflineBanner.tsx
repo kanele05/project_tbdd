@@ -1,10 +1,10 @@
 import Feather from '@expo/vector-icons/Feather';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { STRINGS } from '@/constants/strings';
 import { useIsOnline } from '@/hooks/useIsOnline';
-import { colors, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, spacing, useTheme } from '@/theme';
 
 import { AppText } from './AppText';
 
@@ -17,6 +17,9 @@ export type OfflineBannerProps = {
 
 /** Thin bar shown while the device is offline: "You're offline - showing saved data". */
 export function OfflineBanner({ withTopInset = false, visible }: OfflineBannerProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useStyles();
   const isOnline = useIsOnline();
   const insets = useSafeAreaInsets();
   const isVisible = visible ?? !isOnline;
@@ -27,16 +30,17 @@ export function OfflineBanner({ withTopInset = false, visible }: OfflineBannerPr
       style={[styles.container, { paddingTop: (withTopInset ? insets.top : 0) + spacing.xs }]}
       accessibilityRole="alert"
       accessibilityLiveRegion="polite"
+      testID="offline-banner"
     >
-      <Feather name="wifi-off" size={14} color={colors.white} />
-      <AppText variant="caption" color="white" family="bodyMedium">
-        {STRINGS.offline.banner}
+      <Feather name="wifi-off" size={14} color={colors.onBanner} />
+      <AppText variant="caption" color="onBanner" family="bodyMedium">
+        {t('offline.banner')}
       </AppText>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -44,6 +48,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingBottom: spacing.xs,
     paddingHorizontal: spacing.lg,
-    backgroundColor: colors.textSecondary,
+    backgroundColor: t.colors.banner,
   },
-});
+}));

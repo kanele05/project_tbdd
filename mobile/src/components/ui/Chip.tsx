@@ -1,8 +1,8 @@
 import Feather from '@expo/vector-icons/Feather';
 import { memo } from 'react';
-import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors, radius, spacing } from '@/theme';
+import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 import { AppText } from './AppText';
 import type { FeatherIconName } from './icons';
@@ -38,8 +38,10 @@ function ChipBase({
   style,
   testID,
 }: ChipProps) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const isFilled = variant === 'filled' || selected;
-  const textColor = isFilled ? colors.textOnPrimary : colors.primaryText;
+  const textColor = isFilled ? colors.onPrimary : colors.primaryText;
   const slop = size === 'sm' ? 10 : 6;
   return (
     <Pressable
@@ -66,7 +68,7 @@ function ChipBase({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   base: {
     minHeight: 36,
     flexDirection: 'row',
@@ -77,12 +79,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md - 1,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: t.colors.primary,
   },
   small: { minHeight: 28, paddingHorizontal: spacing.sm - 1 },
-  outline: { backgroundColor: colors.background },
-  filled: { backgroundColor: colors.primary },
+  outline: { backgroundColor: t.colors.background },
+  filled: { backgroundColor: t.colors.primary },
   pressed: { opacity: 0.7 },
-});
+}));
 
 export const Chip = memo(ChipBase);

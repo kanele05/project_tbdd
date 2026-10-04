@@ -1,0 +1,25 @@
+{
+  "title": "Cài đặt",
+  "language": {
+    "title": "Ngôn ngữ",
+    "system": "Theo hệ thống",
+    "vi": "Tiếng Việt",
+    "en": "English"
+  },
+  "appearance": {
+    "title": "Giao diện",
+    "system": "Theo hệ thống",
+    "light": "Sáng",
+    "dark": "Tối"
+  },
+  "about": {
+    "title": "Thông tin ứng dụng",
+    "appName": "Ứng dụng",
+    "version": "Phiên bản",
+    "api": "Máy chủ"
+  },
+  "account": {
+    "title": "Tài khoản",
+    "signedInAs": "Đăng nhập với"
+  }
+}

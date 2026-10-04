@@ -1,32 +1,36 @@
-function pluralize(value: number, singular: string, plural: string): string {
-  return `${value} ${value === 1 ? singular : plural}`;
+import { i18n } from '@/i18n';
+
+function safeSeconds(totalSeconds: number): number {
+  return Number.isFinite(totalSeconds) ? Math.max(0, totalSeconds) : 0;
 }
 
 /**
- * Total duration for cards / My Courses: 8700 -> "2 hrs 25 mins", 3600 -> "1 hr", 1500 -> "25 mins".
+ * Total duration for cards / My Courses: 8700 -> "2 hrs 25 mins" (en) / "2 giờ 25 phút" (vi),
+ * 3600 -> "1 hr", 1500 -> "25 mins".
  */
 export function formatDuration(totalSeconds: number): string {
-  const safe = Number.isFinite(totalSeconds) ? Math.max(0, Math.round(totalSeconds)) : 0;
-  const totalMinutes = Math.floor(safe / 60);
+  const totalMinutes = Math.floor(Math.round(safeSeconds(totalSeconds)) / 60);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  if (hours === 0) return pluralize(minutes, 'min', 'mins');
-  if (minutes === 0) return pluralize(hours, 'hr', 'hrs');
-  return `${pluralize(hours, 'hr', 'hrs')} ${pluralize(minutes, 'min', 'mins')}`;
+  if (hours === 0) return i18n.t('common:duration.minute', { count: minutes });
+  const hoursText = i18n.t('common:duration.hour', { count: hours });
+  if (minutes === 0) return hoursText;
+  return `${hoursText} ${i18n.t('common:duration.minute', { count: minutes })}`;
 }
 
-/** Lesson length in the curriculum list: 83 -> "01:23 mins". */
+/** Lesson length in the curriculum list: 83 -> "01:23 mins" (en) / "01:23 phút" (vi). */
 export function formatLessonDuration(totalSeconds: number): string {
-  const safe = Number.isFinite(totalSeconds) ? Math.max(0, Math.round(totalSeconds)) : 0;
+  const safe = Math.round(safeSeconds(totalSeconds));
   const minutes = Math.floor(safe / 60);
   const seconds = safe % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} mins`;
+  const time = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  return i18n.t('common:duration.lesson', { time });
 }
 
 /** Whole hours for the benefits list ("14 hours on-demand video"): 50400 -> "14 hours". */
 export function formatTotalHours(totalSeconds: number): string {
-  const safe = Number.isFinite(totalSeconds) ? Math.max(0, totalSeconds) : 0;
+  const safe = safeSeconds(totalSeconds);
   const hours = Math.round(safe / 3600);
   if (hours < 1) return formatDuration(safe);
-  return pluralize(hours, 'hour', 'hours');
+  return i18n.t('common:duration.hourLong', { count: hours });
 }

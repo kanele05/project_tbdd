@@ -1,6 +1,6 @@
 import type { FieldValues, Path, UseFormSetError } from 'react-hook-form';
 
-import { ERROR_MESSAGES } from '@/constants/strings';
+import { i18n } from '@/i18n';
 import { getErrorMessage, getFieldErrors, toAppError } from '@/lib/appError';
 
 /**
@@ -19,7 +19,7 @@ export function applyAuthError<T extends FieldValues>(
   const appError = toAppError(error);
 
   if (appError.code === 'EMAIL_TAKEN' && fields.includes('email' as Path<T>)) {
-    setError('email' as Path<T>, { type: 'server', message: ERROR_MESSAGES.EMAIL_TAKEN });
+    setError('email' as Path<T>, { type: 'server', message: i18n.t('errors:codes.EMAIL_TAKEN') });
     return null;
   }
 

@@ -7,8 +7,8 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { showToast } from '@/components/ui/Toast';
-import { STRINGS } from '@/constants/strings';
 import { applyAuthError } from '@/features/auth/authErrors';
+import { i18n } from '@/i18n';
 import { getErrorMessage, toAppError } from '@/lib/appError';
 import { useAuthStore } from '@/stores/authStore';
 import type { UpdateProfileRequest, UserDto } from '@/types/api';
@@ -24,16 +24,26 @@ const EXTENSION_TYPES: Record<string, string> = {
   jpeg: 'image/jpeg',
 };
 
-export const AVATAR_TYPE_MESSAGE = 'Please choose a PNG or JPG image.';
-export const AVATAR_SIZE_MESSAGE = 'Image is too large (max 5 MB).';
+/** Messages are read when needed so they follow the language that is active at that moment. */
+export function getAvatarTypeMessage(): string {
+  return i18n.t('profile:edit.avatarType');
+}
 
+export function getAvatarSizeMessage(): string {
+  return i18n.t('profile:edit.avatarSize');
+}
+
+/** Validation messages are lazy (`error: () => ...`): translated when the form is validated. */
 export const editProfileSchema = z.object({
   fullName: z
     .string()
     .trim()
-    .min(2, 'Full name must be at least 2 characters')
-    .max(60, 'Full name is too long'),
-  headline: z.string().trim().max(80, 'Headline must be 80 characters or fewer'),
+    .min(2, { error: () => i18n.t('auth:validation.fullNameMin') })
+    .max(60, { error: () => i18n.t('auth:validation.fullNameMax') }),
+  headline: z
+    .string()
+    .trim()
+    .max(80, { error: () => i18n.t('profile:edit.headlineMax') }),
 });
 
 export type EditProfileValues = z.infer<typeof editProfileSchema>;
@@ -62,8 +72,10 @@ export function resolveImageMimeType(image: PickedImage): string | null {
 /** Client-side check before uploading: png/jpg and <= 5 MB. Returns an error message or `null`. */
 export function validateAvatarImage(image: PickedImage): string | null {
   const mimeType = resolveImageMimeType(image);
-  if (mimeType && !AVATAR_TYPES.includes(mimeType)) return AVATAR_TYPE_MESSAGE;
-  if (image.fileSize !== undefined && image.fileSize > AVATAR_MAX_BYTES) return AVATAR_SIZE_MESSAGE;
+  if (mimeType && !AVATAR_TYPES.includes(mimeType)) return getAvatarTypeMessage();
+  if (image.fileSize !== undefined && image.fileSize > AVATAR_MAX_BYTES) {
+    return getAvatarSizeMessage();
+  }
   return null;
 }
 
@@ -79,9 +91,9 @@ export function toAvatarFile(image: PickedImage): AvatarFile {
 export function getAvatarErrorMessage(error: unknown): string {
   switch (toAppError(error).code) {
     case 'FILE_TOO_LARGE':
-      return AVATAR_SIZE_MESSAGE;
+      return getAvatarSizeMessage();
     case 'UNSUPPORTED_FILE_TYPE':
-      return AVATAR_TYPE_MESSAGE;
+      return getAvatarTypeMessage();
     default:
       return getErrorMessage(error);
   }
@@ -162,7 +174,7 @@ export function useEditProfile() {
       setFormError(null);
       setPendingAvatar(toAvatarFile(image));
     } catch {
-      showToast(STRINGS.errors.generic, { type: 'error' });
+      showToast(i18n.t('errors:generic'), { type: 'error' });
     }
   }, [isSaving]);
 
@@ -200,7 +212,7 @@ export function useEditProfile() {
       }
     }
 
-    if (isChanged) showToast('Profile updated', { type: 'success' });
+    if (isChanged) showToast(i18n.t('profile:edit.updated'), { type: 'success' });
     goBack();
   });
 
