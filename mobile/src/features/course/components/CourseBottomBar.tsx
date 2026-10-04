@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PriceTag } from '@/components/course';
 import { AppText, Button, GlassSurface } from '@/components/ui';
+import { SparklesIcon } from '@/components/ui/SparklesIcon';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { CourseDetail } from '@/types/api';
@@ -14,7 +15,6 @@ import {
   getDiscountPercent,
   type CourseAction,
 } from '../courseAction';
-import { SparklesIcon } from './SparklesIcon';
 
 export type CourseBottomBarProps = {
   course: Pick<CourseDetail, 'enrollment' | 'priceCents' | 'originalPriceCents' | 'isInCart'>;

@@ -14,6 +14,7 @@ import { fontFamily, layout, makeStyles, radius, spacing, typography, useTheme }
 
 import { AppText } from './AppText';
 import type { FeatherIconName } from './icons';
+import { noWebFocusOutline } from './inputStyles';
 
 export type TextFieldProps = Omit<TextInputProps, 'style'> & {
   label?: string;
@@ -136,6 +137,7 @@ const useStyles = makeStyles((t) => ({
   readOnly: { opacity: 0.7 },
   leftIcon: { marginRight: spacing.sm },
   input: {
+    ...noWebFocusOutline,
     flex: 1,
     paddingVertical: spacing.md,
     color: t.colors.text,

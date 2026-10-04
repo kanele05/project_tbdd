@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { CinematicHeader } from '@/components/ui/CinematicHeader';
 import { API_URL, APP_VERSION } from '@/constants/config';
 import { useConfirmLogout } from '@/features/auth/useConfirmLogout';
 import { useTranslation, type LanguagePreference } from '@/i18n';
@@ -43,7 +43,7 @@ export function SettingsScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title={t('title')} />
+      <CinematicHeader title={t('title')} posterIndex={9} />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <SettingsSection title={t('language.title')} isRadioGroup>
           {LANGUAGE_OPTIONS.map((option) => (

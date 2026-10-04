@@ -8,7 +8,7 @@
     "scheme": "elearning",
     "primaryColor": "#00BDD6",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#FFFFFF",
+    "backgroundColor": "#08080C",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.elearning.mobile"
@@ -32,8 +32,8 @@
       "shortName": "E-Learning",
       "description": "Learn online: browse courses, watch video lessons, ask questions and track your progress.",
       "lang": "en",
-      "themeColor": "#00BDD6",
-      "backgroundColor": "#FFFFFF",
+      "themeColor": "#08080C",
+      "backgroundColor": "#08080C",
       "display": "standalone",
       "startUrl": "/"
     },
@@ -42,9 +42,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#00BDD6",
+          "backgroundColor": "#08080C",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 120
+          "imageWidth": 160
         }
       ],
       "expo-secure-store",

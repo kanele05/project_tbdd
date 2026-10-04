@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { AccessibilityInfo, BackHandler, StyleSheet, View } from 'react-native';
 
-import { EmptyState, ErrorState, ScreenHeader, Skeleton, useToast } from '@/components/ui';
+import { CinematicHeader, EmptyState, ErrorState, Skeleton, useToast } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import { getErrorMessage, isAppError } from '@/lib/appError';
 import { layout, makeStyles, spacing } from '@/theme';
@@ -133,7 +133,12 @@ export function CheckoutScreen() {
 
   return (
     <View style={themed.screen}>
-      <ScreenHeader title={t('cart:checkout.title')} showBack={phase.kind === 'form'} />
+      <CinematicHeader
+        title={t('cart:checkout.title')}
+        uri={cart?.items[0]?.course.thumbnailUrl}
+        posterIndex={2}
+        showBack={phase.kind === 'form'}
+      />
       {body}
     </View>
   );

@@ -5,8 +5,8 @@ import { ScrollView, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
+import { CinematicHeader } from '@/components/ui/CinematicHeader';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useToast } from '@/components/ui/Toast';
 import { getAuthErrorMessage } from '@/features/auth/authErrors';
@@ -74,7 +74,7 @@ export function TwoFactorSetupScreen() {
   if (recoveryCodes) {
     return (
       <View style={styles.screen}>
-        <ScreenHeader title={t('security.recovery.title')} showBack={false} />
+        <CinematicHeader title={t('security.recovery.title')} posterIndex={4} showBack={false} />
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <RecoveryCodesView codes={recoveryCodes} onSaved={() => router.back()} />
         </ScrollView>
@@ -84,7 +84,7 @@ export function TwoFactorSetupScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title={t('security.setup.title')} />
+      <CinematicHeader title={t('security.setup.title')} posterIndex={4} />
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"

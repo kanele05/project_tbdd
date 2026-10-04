@@ -32,6 +32,9 @@ jest.mock('expo-localization', () => ({
   useCalendars: jest.fn(),
 }));
 
+// reanimated 4 needs the worklets runtime, which does not exist under Jest: use its JS mock.
+jest.mock('react-native-worklets', () => jest.requireActual('react-native-worklets/src/mock'));
+
 jest.mock('expo-system-ui', () => ({
   setBackgroundColorAsync: jest.fn(() => Promise.resolve()),
   getBackgroundColorAsync: jest.fn(() => Promise.resolve(null)),

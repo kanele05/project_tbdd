@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { lightPalette } from '@/theme';
@@ -24,6 +24,19 @@ describe('Avatar', () => {
   it('renders an image without initials when a uri is given', async () => {
     await render(<Avatar name="Sara Weise" uri="https://example.com/a.png" />);
     expect(screen.queryByText('SW')).not.toBeOnTheScreen();
+  });
+});
+
+describe('Avatar image failure', () => {
+  it('falls back to the initials when the remote image fails to load', async () => {
+    await render(<Avatar name="Sara Weise" uri="https://example.com/broken.png" />);
+    expect(screen.queryByText('SW')).not.toBeOnTheScreen();
+
+    await fireEvent(screen.getByTestId('avatar-image'), 'error', {
+      nativeEvent: { error: 'failed' },
+    });
+
+    expect(screen.getByText('SW')).toBeOnTheScreen();
   });
 });
 

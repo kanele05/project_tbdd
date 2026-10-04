@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppText, Button, IconButton } from '@/components/ui';
+import { AppText, Button, CinematicHeader, GlassIconButton } from '@/components/ui';
 import { useTranslation } from '@/i18n';
 import {
   INITIAL_SEARCH_FILTERS,
@@ -117,31 +117,33 @@ export function SearchFilterScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <View style={styles.headerRow}>
-          <IconButton
-            icon="x"
-            onPress={handleClose}
-            accessibilityLabel={t('common:actions.close')}
-          />
-          <AppText variant="h3" align="center" accessibilityRole="header" style={styles.title}>
-            {t('filter.title')}
-          </AppText>
-          <Pressable
-            onPress={handleReset}
-            disabled={isDefault}
-            hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
-            accessibilityRole="button"
-            accessibilityLabel={t('filter.resetLabel')}
-            accessibilityState={{ disabled: isDefault }}
-            style={styles.reset}
-          >
-            <AppText variant="label" color="primaryText" style={isDefault ? styles.dimmed : null}>
-              {t('filter.reset')}
-            </AppText>
-          </Pressable>
-        </View>
-      </View>
+      <CinematicHeader
+        title={t('filter.title')}
+        posterIndex={1}
+        showBack={false}
+        right={
+          <>
+            <Pressable
+              onPress={handleReset}
+              disabled={isDefault}
+              hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel={t('filter.resetLabel')}
+              accessibilityState={{ disabled: isDefault }}
+              style={styles.reset}
+            >
+              <AppText variant="label" color="white" style={isDefault ? styles.dimmed : null}>
+                {t('filter.reset')}
+              </AppText>
+            </Pressable>
+            <GlassIconButton
+              icon="x"
+              onPress={handleClose}
+              accessibilityLabel={t('common:actions.close')}
+            />
+          </>
+        }
+      />
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -171,15 +173,12 @@ export function SearchFilterScreen() {
 
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },
-  header: { paddingHorizontal: spacing.xs, backgroundColor: t.colors.background },
-  headerRow: { height: layout.headerHeight, flexDirection: 'row', alignItems: 'center' },
-  title: { flex: 1 },
   reset: {
     minWidth: layout.minTouchTarget,
     minHeight: layout.minTouchTarget,
-    alignItems: 'flex-end',
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingRight: spacing.md,
+    paddingHorizontal: spacing.xs,
   },
   dimmed: { opacity: 0.4 },
   content: { padding: layout.screenPaddingX, paddingBottom: spacing.xxl },

@@ -13,8 +13,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/ui/AppText';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
+import { CinematicHeader } from '@/components/ui/CinematicHeader';
 import { FormTextField } from '@/components/ui/FormTextField';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { TextField } from '@/components/ui/TextField';
 import { FormError } from '@/features/auth/components/FormError';
 import { useTranslation } from '@/i18n';
@@ -48,7 +48,12 @@ export function EditProfileScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
-      <ScreenHeader title={t('edit.title')} />
+      <CinematicHeader
+        title={t('edit.title')}
+        uri={avatarUri ?? user?.avatarUrl}
+        posterIndex={7}
+        blur={24}
+      />
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}
         keyboardShouldPersistTaps="handled"

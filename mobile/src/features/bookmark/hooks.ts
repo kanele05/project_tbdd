@@ -9,7 +9,7 @@ import {
 import { useCallback } from 'react';
 
 import { showToast } from '@/components/ui/Toast';
-import { STRINGS } from '@/constants/strings';
+import { tr } from '@/i18n';
 import { AppError, getErrorMessage } from '@/lib/appError';
 import { queryKeys } from '@/lib/queryKeys';
 import type { CourseSummary, MeStatsDto } from '@/types/api';
@@ -113,7 +113,7 @@ export function useToggleBookmark(): UseToggleBookmarkResult {
     onMutate: async ({ courseId, isBookmarked, course }) => {
       // Offline: fail fast (writes are blocked, PLAN.md §10) instead of pausing the mutation.
       if (!onlineManager.isOnline()) {
-        throw new AppError({ status: 0, code: 'OFFLINE', message: STRINGS.errors.offline });
+        throw new AppError({ status: 0, code: 'OFFLINE', message: tr('errors:offline') });
       }
       const willBeBookmarked = !isBookmarked;
       await queryClient.cancelQueries({ predicate: (query) => mayHoldCourses(query.queryKey) });

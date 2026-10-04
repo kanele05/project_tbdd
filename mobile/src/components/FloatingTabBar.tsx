@@ -9,12 +9,12 @@ import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 
 /**
  * Does the floating tab bar overlay the screen content (true Noir look: content scrolls under the
- * frosted bar) or does it take its own row below the content (default for now)?
+ * frosted bar) or does it take its own row below the content?
  *
- * Overlay needs every tab screen to end its scroll content with `useTabBarClearance()` padding.
- * Home / Search / My courses are redesigned in UI-04; once all of them do that, flip this to `true`.
+ * Overlay needs every tab screen to end its scroll content with `useTabBarClearance()` padding;
+ * all four tab screens (Home, Search, My courses, Profile) do, so it is on.
  */
-export const TAB_BAR_OVERLAYS_CONTENT = false;
+export const TAB_BAR_OVERLAYS_CONTENT = true;
 
 /** Height of the pill that holds the tabs. */
 export const FLOATING_TAB_BAR_HEIGHT = layout.tabBarHeight;

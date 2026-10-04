@@ -57,7 +57,7 @@ describe('useAppBootstrap', () => {
     expect(mockHydrate).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the splash until fonts are ready and the session is resolved', async () => {
+  it('keeps the native splash until fonts are ready, then hands over to the intro', async () => {
     setAuth('unauthenticated');
     const { result, rerender } = await renderHook(
       (props: { fontsReady: boolean }) => useAppBootstrap(props.fontsReady),
@@ -68,6 +68,13 @@ describe('useAppBootstrap', () => {
 
     await rerender({ fontsReady: true });
     expect(result.current).toBe(true);
+    expect(hideAsync).toHaveBeenCalled();
+  });
+
+  it('hides the native splash on fonts alone while the session is still loading', async () => {
+    setAuth('loading');
+    const { result } = await renderHook(() => useAppBootstrap(true));
+    expect(result.current).toBe(false);
     expect(hideAsync).toHaveBeenCalled();
   });
 
@@ -101,17 +108,15 @@ describe('useAppBootstrap', () => {
     expect(mockHydratePreferences).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the splash until the saved theme and language are applied', async () => {
+  it('is not ready until the saved theme and language are applied', async () => {
     setAuth('authenticated');
     setPreferencesHydrated(false);
     const { result } = await renderHook(() => useAppBootstrap(true));
     expect(result.current).toBe(false);
-    expect(hideAsync).not.toHaveBeenCalled();
 
     await act(async () => {
       usePreferencesStore.setState({ isHydrated: true });
     });
     expect(result.current).toBe(true);
-    expect(hideAsync).toHaveBeenCalled();
   });
 });

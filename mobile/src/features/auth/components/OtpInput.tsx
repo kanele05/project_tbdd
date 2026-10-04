@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
+import { noWebFocusOutline } from '@/components/ui/inputStyles';
 import { fontFamily, makeStyles, radius, spacing, typography, useTheme } from '@/theme';
 
 import { OTP_LENGTH } from '../schemas';
@@ -126,6 +127,7 @@ const useStyles = makeStyles((t) => ({
   digit: { lineHeight: typography.h2.lineHeight },
   // Covers the whole row (taps, long-press paste) but draws nothing.
   input: {
+    ...noWebFocusOutline,
     position: 'absolute',
     top: 0,
     right: 0,

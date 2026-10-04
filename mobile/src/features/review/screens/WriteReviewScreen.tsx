@@ -2,10 +2,11 @@ import { router } from 'expo-router';
 import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { CinematicHeader } from '@/components/ui/CinematicHeader';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { IconButton } from '@/components/ui/IconButton';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { GlassIconButton } from '@/components/ui/GlassIconButton';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { getCachedCourseImage } from '@/features/course/cachedCourseImage';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing } from '@/theme';
@@ -55,10 +56,14 @@ export function WriteReviewScreen({ courseId }: WriteReviewScreenProps) {
 
   return (
     <KeyboardAvoidingView style={themed.screen} behavior="padding">
-      <ScreenHeader
+      <CinematicHeader
         title={t('write.title')}
+        uri={getCachedCourseImage(courseId)}
+        posterIndex={3}
         showBack={false}
-        right={<IconButton icon="x" onPress={closeModal} accessibilityLabel={t('write.close')} />}
+        right={
+          <GlassIconButton icon="x" onPress={closeModal} accessibilityLabel={t('write.close')} />
+        }
       />
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}

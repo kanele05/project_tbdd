@@ -2,11 +2,11 @@ import Feather from '@expo/vector-icons/Feather';
 import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
+import { SparklesIcon } from '@/components/ui/SparklesIcon';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 
 import { TUTOR_SUGGESTION_KEYS } from '../chatConfig';
-import { SparklesIcon } from './SparklesIcon';
 
 export type TutorEmptyProps = {
   /** Sends a quick question as if the user had typed it. */

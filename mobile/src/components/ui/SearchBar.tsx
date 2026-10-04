@@ -5,6 +5,8 @@ import { Pressable, TextInput, type StyleProp, type ViewStyle } from 'react-nati
 import { useTranslation } from '@/i18n';
 import { fontFamily, makeStyles, radius, spacing, typography, useTheme } from '@/theme';
 
+import { noWebFocusOutline } from './inputStyles';
+
 export type SearchBarProps = {
   value: string;
   onChangeText: (text: string) => void;
@@ -113,6 +115,7 @@ const useStyles = makeStyles((t) => ({
   },
   focused: { borderColor: t.colors.primaryText },
   input: {
+    ...noWebFocusOutline,
     flex: 1,
     alignSelf: 'stretch',
     paddingVertical: 0,

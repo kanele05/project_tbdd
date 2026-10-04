@@ -9,13 +9,15 @@ import { usePreferencesStore } from '@/stores/preferencesStore';
 const MAX_SPLASH_MS = 12_000;
 
 /**
- * SC-01 bootstrap. Keeps the native splash visible until:
- *  1. fonts are loaded (or failed - system fonts are used then),
+ * SC-01 bootstrap. The native splash is hidden as soon as the fonts are loaded (or failed - system
+ * fonts are used then): from there the launch intro overlay (`AppIntro`) covers the screen while the
+ * rest of the bootstrap runs in parallel. `true` is returned (navigator may render, intro may end) when:
+ *  1. fonts are loaded,
  *  2. the saved language / theme choices were read (so the first frame is already in the right
  *     language and palette),
  *  3. the persisted query cache is restored (needed for the offline start),
  *  4. the auth token was read from SecureStore and validated via `GET /auth/me`.
- * Must be called below `PersistQueryClientProvider`. Returns `true` when the navigator can render.
+ * Must be called below `PersistQueryClientProvider`.
  */
 export function useAppBootstrap(fontsReady: boolean): boolean {
   const isRestoring = useIsRestoring();
@@ -42,9 +44,11 @@ export function useAppBootstrap(fontsReady: boolean): boolean {
   const isReady =
     isTimedOut || (fontsReady && arePreferencesReady && !isRestoring && isAuthResolved);
 
+  // The intro overlay takes over from the native splash once fonts exist (it needs Playfair).
+  const shouldHideSplash = fontsReady || isReady;
   useEffect(() => {
-    if (isReady) void SplashScreen.hideAsync();
-  }, [isReady]);
+    if (shouldHideSplash) void SplashScreen.hideAsync();
+  }, [shouldHideSplash]);
 
   return isReady;
 }

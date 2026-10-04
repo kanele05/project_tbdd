@@ -8,13 +8,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   AppText,
   Button,
+  CinematicHeader,
   FormTextField,
-  IconButton,
+  GlassIconButton,
   ProgressBar,
-  ScreenHeader,
   useToast,
 } from '@/components/ui';
 import { FormError } from '@/features/auth/components/FormError';
+import { getCachedCourseImage } from '@/features/course/cachedCourseImage';
 import { useTranslation } from '@/i18n';
 import { getFieldErrors } from '@/lib/appError';
 import { layout, makeStyles, spacing } from '@/theme';
@@ -73,11 +74,13 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
-      <ScreenHeader
+      <CinematicHeader
         title={t('project:submit.title')}
+        uri={getCachedCourseImage(courseId)}
+        posterIndex={5}
         showBack={false}
         right={
-          <IconButton
+          <GlassIconButton
             icon="x"
             onPress={handleClose}
             accessibilityLabel={t('common:actions.close')}

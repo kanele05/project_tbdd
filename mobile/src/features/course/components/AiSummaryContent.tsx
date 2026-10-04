@@ -2,12 +2,12 @@ import { memo, useCallback, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui';
+import { SparklesIcon } from '@/components/ui/SparklesIcon';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { AiCourseSummaryDto } from '@/types/api';
 
 import { BenefitsList } from './BenefitsList';
-import { SparklesIcon } from './SparklesIcon';
 
 export type AiSummaryContentProps = { summary: AiCourseSummaryDto };
 

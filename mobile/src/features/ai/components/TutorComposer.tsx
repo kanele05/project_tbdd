@@ -4,6 +4,7 @@ import { Pressable, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
+import { noWebFocusOutline } from '@/components/ui/inputStyles';
 import { useTranslation } from '@/i18n';
 import { fontFamily, layout, makeStyles, radius, spacing, typography, useTheme } from '@/theme';
 
@@ -142,6 +143,7 @@ const useStyles = makeStyles((t) => ({
   },
   fieldFocused: { borderColor: t.colors.primaryText },
   input: {
+    ...noWebFocusOutline,
     flex: 1,
     maxHeight: 112,
     minHeight: SEND_SIZE - spacing.xs,

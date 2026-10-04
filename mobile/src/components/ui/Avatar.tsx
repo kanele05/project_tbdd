@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useTranslation } from '@/i18n';
@@ -29,7 +29,10 @@ export function getInitials(name?: string): string {
   return (first + last).toUpperCase();
 }
 
-/** Round avatar: cached remote image, or initials on a soft violet circle; optional neon ring. */
+/**
+ * Round avatar: cached remote image, or initials on a soft violet circle (also when the image
+ * fails to load); optional neon ring.
+ */
 function AvatarBase({
   uri,
   name,
@@ -40,6 +43,10 @@ function AvatarBase({
 }: AvatarProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  // A remote photo that fails to load (404, offline, expired URL) falls back to the initials;
+  // a different `uri` later is tried again because only the failed one is remembered.
+  const [failedUri, setFailedUri] = useState<string | null>(null);
+  const hasImage = Boolean(uri) && uri !== failedUri;
   const dimension = {
     width: size,
     height: size,
@@ -54,7 +61,7 @@ function AvatarBase({
       accessibilityRole="image"
       accessibilityLabel={name ? t('a11y.avatarOf', { name }) : undefined}
     >
-      {uri ? (
+      {hasImage && uri ? (
         <Image
           source={{ uri }}
           style={StyleSheet.absoluteFill}
@@ -62,6 +69,8 @@ function AvatarBase({
           cachePolicy="memory-disk"
           transition={150}
           recyclingKey={uri}
+          onError={() => setFailedUri(uri)}
+          testID="avatar-image"
         />
       ) : (
         <AppText

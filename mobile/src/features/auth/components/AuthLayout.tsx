@@ -5,10 +5,13 @@ import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
-import { IconButton } from '@/components/ui/IconButton';
+import { GlassIconButton } from '@/components/ui/GlassIconButton';
+import { GlassSurface } from '@/components/ui/GlassSurface';
 import type { FeatherIconName } from '@/components/ui/icons';
+import { PosterWall } from '@/components/ui/PosterWall';
+import { Wordmark } from '@/components/ui/Wordmark';
 import { useTranslation } from '@/i18n';
-import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
+import { darkPalette, layout, makeStyles, radius, spacing, withAlpha } from '@/theme';
 
 type AuthLayoutProps = {
   title: string;
@@ -17,8 +20,8 @@ type AuthLayoutProps = {
   /** Link row under the form ("Don't have an account? Sign up"). */
   footer?: ReactNode;
   /**
-   * Icon of the step screens (verify email, 2FA, forgot / reset password): replaces the brand mark
-   * with a tinted icon disc and adds a back button.
+   * Icon of the step screens (verify email, 2FA, forgot / reset password): puts the title over the
+   * poster wall (blurred) with an icon disc and adds a back button.
    */
   icon?: FeatherIconName;
   /** Custom back handler (default: previous screen, or Login when there is no history). */
@@ -31,94 +34,154 @@ function goBack(): void {
 }
 
 /**
- * Shared frame of the auth screens: logo tile (or step icon), title, form slot and footer link.
- * The keyboard never covers the inputs: KeyboardAvoidingView (iOS) + scrollable content, and
- * Android uses `softwareKeyboardLayoutMode: "resize"` from app.json.
+ * Shared frame of the auth screens, "cinematic" like a streaming app's sign-in: a tilted wall of
+ * course posters drifting behind a dark scrim, the wordmark on top, a serif tagline (sign in / sign
+ * up) or the step title (OTP, 2FA, forgot / reset password) in white, and the form on a frosted
+ * glass sheet. The keyboard never covers the inputs: KeyboardAvoidingView (iOS) + scrollable
+ * content, and Android uses `softwareKeyboardLayoutMode: "resize"` from app.json.
  */
 export function AuthLayout({ title, subtitle, children, footer, icon, onBack }: AuthLayoutProps) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const { t: tAuth } = useTranslation('auth');
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const isStep = icon !== undefined;
+  const [tagLead, tagTail] = tAuth('tagline').split('\n');
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior="padding">
-      <ScrollView
-        style={styles.flex}
-        contentContainerStyle={[
-          styles.content,
-          {
-            paddingTop: insets.top + (isStep ? spacing.sm : spacing.xxxl),
-            paddingBottom: insets.bottom + spacing.xxl,
-          },
-        ]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {isStep ? (
-          <View style={styles.backRow}>
-            <IconButton
-              icon="chevron-left"
-              onPress={onBack ?? goBack}
-              accessibilityLabel={t('actions.back')}
-              color="textSecondary"
-              testID="auth-back"
-            />
+    <View style={styles.root}>
+      <PosterWall variant={isStep ? 'soft' : 'wall'} testID="auth-poster-wall" />
+      <KeyboardAvoidingView style={styles.flex} behavior="padding">
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={[
+            styles.content,
+            { paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.topRow}>
+            {isStep ? (
+              <GlassIconButton
+                icon="chevron-left"
+                onPress={onBack ?? goBack}
+                accessibilityLabel={t('actions.back')}
+                testID="auth-back"
+              />
+            ) : null}
+            <Wordmark size={32} />
           </View>
-        ) : null}
-        <View style={styles.brand}>
-          {isStep ? (
-            <View style={styles.iconDisc}>
-              <Feather name={icon} size={30} color={colors.primaryText} />
-            </View>
-          ) : (
-            <>
-              <View style={styles.logo}>
-                <Feather name="book-open" size={32} color={colors.onPrimary} />
+
+          <View style={styles.hero}>
+            {isStep ? (
+              <>
+                <View style={styles.iconDisc}>
+                  <Feather name={icon} size={26} color={darkPalette.primary} />
+                </View>
+                <AppText
+                  variant="h1"
+                  color="white"
+                  accessibilityRole="header"
+                  style={styles.onPhoto}
+                >
+                  {title}
+                </AppText>
+                <AppText variant="body" style={[styles.onPhoto, styles.softWhite]}>
+                  {subtitle}
+                </AppText>
+              </>
+            ) : (
+              <>
+                <View accessible accessibilityLabel={tAuth('tagline').replace('\n', ' ')}>
+                  <AppText
+                    variant="hero"
+                    color="white"
+                    style={styles.onPhoto}
+                    importantForAccessibility="no"
+                  >
+                    {tagLead}
+                  </AppText>
+                  <AppText
+                    variant="hero"
+                    family="displayItalic"
+                    style={[styles.onPhoto, styles.neon]}
+                    importantForAccessibility="no"
+                  >
+                    {tagTail}
+                  </AppText>
+                </View>
+                <AppText variant="body" style={[styles.onPhoto, styles.softWhite]}>
+                  {tAuth('taglineSubtitle')}
+                </AppText>
+              </>
+            )}
+          </View>
+
+          <GlassSurface
+            radius={radius.sheet}
+            intensity={60}
+            hasShadow
+            contentStyle={styles.sheet}
+            testID="auth-sheet"
+          >
+            {isStep ? null : (
+              <View style={styles.heading}>
+                <AppText variant="h2" accessibilityRole="header">
+                  {title}
+                </AppText>
+                <AppText variant="body" color="textSecondary">
+                  {subtitle}
+                </AppText>
               </View>
-              <AppText variant="h2" family="displayItalic" align="center">
-                {t('appName')}
-              </AppText>
-            </>
-          )}
-        </View>
-        <View style={styles.heading}>
-          <AppText variant="h1" accessibilityRole="header">
-            {title}
-          </AppText>
-          <AppText variant="body" color="textSecondary">
-            {subtitle}
-          </AppText>
-        </View>
-        <View style={styles.form}>{children}</View>
-        {footer ? <View style={styles.footer}>{footer}</View> : null}
-      </ScrollView>
-    </KeyboardAvoidingView>
+            )}
+            <View style={styles.form}>{children}</View>
+            {footer ? <View style={styles.footer}>{footer}</View> : null}
+          </GlassSurface>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
-const useStyles = makeStyles((t) => ({
-  flex: { flex: 1, backgroundColor: t.colors.background },
-  content: { flexGrow: 1, paddingHorizontal: layout.screenPaddingX },
-  backRow: { marginLeft: -spacing.md, marginBottom: spacing.sm },
-  brand: { alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xxxl },
-  logo: {
-    width: 64,
-    height: 64,
+const useStyles = makeStyles(() => ({
+  root: { flex: 1, backgroundColor: darkPalette.background },
+  flex: { flex: 1 },
+  content: { flexGrow: 1, paddingHorizontal: spacing.md },
+  topRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.lg + 4,
-    backgroundColor: t.colors.primary,
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.sm,
+    minHeight: layout.minTouchTarget,
   },
+  hero: {
+    flexGrow: 1,
+    justifyContent: 'flex-end',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    paddingTop: spacing.xxxl,
+    paddingBottom: spacing.xl,
+  },
+  // White on photography is only legal over the scrim: a soft shadow keeps it readable on top of it.
+  onPhoto: {
+    textShadowColor: 'rgba(0, 0, 0, 0.55)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 14,
+  },
+  softWhite: { color: withAlpha(darkPalette.white, 0.9) },
+  neon: { color: darkPalette.primary },
   iconDisc: {
-    width: 72,
-    height: 72,
+    width: 56,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.pill,
-    backgroundColor: t.colors.primarySoft,
+    borderWidth: 1,
+    borderColor: withAlpha(darkPalette.primary, 0.45),
+    backgroundColor: withAlpha(darkPalette.primary, 0.14),
   },
-  heading: { gap: spacing.xs, marginBottom: spacing.xxl },
+  sheet: { padding: spacing.xl, gap: spacing.lg },
+  heading: { gap: spacing.xs },
   form: { gap: spacing.lg },
   footer: {
     flexDirection: 'row',
@@ -126,6 +189,5 @@ const useStyles = makeStyles((t) => ({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
-    marginTop: spacing.xxl,
   },
 }));

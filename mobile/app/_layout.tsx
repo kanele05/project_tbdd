@@ -3,13 +3,14 @@ import { useFonts } from 'expo-font';
 import { Stack, ThemeProvider as NavigationThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import type { ReactNode } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppFrame } from '@/components/AppFrame';
 import { ErrorBoundary as AppErrorBoundary, ErrorFallback } from '@/components/ErrorBoundary';
+import { AppIntro, getIntroFreezeMs } from '@/components/intro';
 import { ToastProvider } from '@/components/ui/Toast';
 import { useAppBootstrap } from '@/hooks/useAppBootstrap';
 import { persistOptions } from '@/lib/persister';
@@ -32,51 +33,67 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const isLoggedIn = useAuthStore(selectIsLoggedIn);
   const { colors, statusBarStyle } = useTheme();
   const navigationTheme = useNavigationTheme();
-
-  if (!isReady) return null;
+  // The launch intro plays once per app start, in parallel with the bootstrap (SC-01).
+  const [isIntroDone, setIsIntroDone] = useState(false);
+  const finishIntro = useCallback(() => setIsIntroDone(true), []);
+  const intro = isIntroDone ? null : (
+    <AppIntro
+      isActive={fontsReady}
+      isReady={isReady}
+      onFinish={finishIntro}
+      freezeAtMs={getIntroFreezeMs()}
+    />
+  );
 
   return (
-    <NavigationThemeProvider value={navigationTheme}>
-      <AppFrame>
-        <StatusBar style={statusBarStyle} />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.background },
-          }}
-        >
-          <Stack.Screen name="index" />
+    <>
+      {isReady ? (
+        <NavigationThemeProvider value={navigationTheme}>
+          <AppFrame>
+            <StatusBar style={statusBarStyle} />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: colors.background },
+              }}
+            >
+              <Stack.Screen name="index" />
 
-          {/* Logged-out only. Guard flips => Expo Router redirects automatically. */}
-          <Stack.Protected guard={!isLoggedIn}>
-            <Stack.Screen name="(auth)" />
-          </Stack.Protected>
+              {/* Logged-out only. Guard flips => Expo Router redirects automatically. */}
+              <Stack.Protected guard={!isLoggedIn}>
+                <Stack.Screen name="(auth)" />
+              </Stack.Protected>
 
-          {/* Logged-in only. */}
-          <Stack.Protected guard={isLoggedIn}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="search-filter" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="course-list" />
-            <Stack.Screen name="course/[id]/index" />
-            <Stack.Screen name="course/[id]/reviews" />
-            <Stack.Screen name="course/[id]/write-review" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="learn/[courseId]/index" />
-            <Stack.Screen
-              name="learn/[courseId]/submit-project"
-              options={{ presentation: 'modal' }}
-            />
-            <Stack.Screen name="question/[id]" />
-            <Stack.Screen name="teacher/[id]" />
-            <Stack.Screen name="teachers" />
-            <Stack.Screen name="cart" />
-            <Stack.Screen name="checkout" />
-            <Stack.Screen name="notifications" />
-            <Stack.Screen name="profile/edit" />
-            <Stack.Screen name="settings" />
-          </Stack.Protected>
-        </Stack>
-      </AppFrame>
-    </NavigationThemeProvider>
+              {/* Logged-in only. */}
+              <Stack.Protected guard={isLoggedIn}>
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="search-filter" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="course-list" />
+                <Stack.Screen name="course/[id]/index" />
+                <Stack.Screen name="course/[id]/reviews" />
+                <Stack.Screen name="course/[id]/write-review" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="learn/[courseId]/index" />
+                <Stack.Screen name="learn/[courseId]/tutor" />
+                <Stack.Screen name="learn/[courseId]/quiz" />
+                <Stack.Screen
+                  name="learn/[courseId]/submit-project"
+                  options={{ presentation: 'modal' }}
+                />
+                <Stack.Screen name="question/[id]" />
+                <Stack.Screen name="teacher/[id]" />
+                <Stack.Screen name="teachers" />
+                <Stack.Screen name="cart" />
+                <Stack.Screen name="checkout" />
+                <Stack.Screen name="notifications" />
+                <Stack.Screen name="profile/edit" />
+                <Stack.Screen name="settings" />
+              </Stack.Protected>
+            </Stack>
+          </AppFrame>
+        </NavigationThemeProvider>
+      ) : null}
+      {intro}
+    </>
   );
 }
 

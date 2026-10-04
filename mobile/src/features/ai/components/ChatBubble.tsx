@@ -2,11 +2,11 @@ import { memo, useMemo } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
+import { SparklesIcon } from '@/components/ui/SparklesIcon';
 import { useTranslation } from '@/i18n';
 import { fontFamily, makeStyles, radius, spacing, useTheme } from '@/theme';
 
 import { parseTutorText, toPlainText, type TextSegment } from '../tutorText';
-import { SparklesIcon } from './SparklesIcon';
 
 export type ChatBubbleProps = {
   role: 'user' | 'assistant';

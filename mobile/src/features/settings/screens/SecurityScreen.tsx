@@ -1,7 +1,7 @@
 import { ScrollView, View } from 'react-native';
 
+import { CinematicHeader } from '@/components/ui/CinematicHeader';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, radius, spacing } from '@/theme';
@@ -22,7 +22,7 @@ export function SecurityScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title={t('security.title')} />
+      <CinematicHeader title={t('security.title')} posterIndex={4} />
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"

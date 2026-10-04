@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AiCard, AppText, Button, Skeleton } from '@/components/ui';
+import { SparklesIcon } from '@/components/ui/SparklesIcon';
 import { useAiCourseSummary } from '@/features/ai/hooks';
 import { useTranslation } from '@/i18n';
 import { getErrorMessage, toAppError } from '@/lib/appError';
@@ -9,7 +10,6 @@ import { spacing, useTheme } from '@/theme';
 import type { AiCourseSummaryDto } from '@/types/api';
 
 import { AiSummaryContent } from './AiSummaryContent';
-import { SparklesIcon } from './SparklesIcon';
 
 export type CourseAiSummaryProps = {
   courseId: string;
