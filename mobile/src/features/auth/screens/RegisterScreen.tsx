@@ -10,10 +10,13 @@ import { FormTextField } from '@/components/ui/FormTextField';
 import { useTranslation } from '@/i18n';
 
 import { applyAuthError } from '../authErrors';
+import { useAuthFlowStore } from '../authFlowStore';
 import { AuthLayout } from '../components/AuthLayout';
 import { FormError } from '../components/FormError';
+import { TurnstileWidget } from '../components/TurnstileWidget';
 import { useRegister } from '../hooks';
 import { registerSchema, type RegisterFormValues } from '../schemas';
+import { useCaptcha } from '../useCaptcha';
 
 const FIELDS = ['fullName', 'email', 'password', 'confirmPassword'] as const;
 
@@ -22,10 +25,14 @@ function goToLogin(): void {
   else router.replace('/login');
 }
 
-/** SC-03 Register: on success the user is logged in and lands on Home. */
+/**
+ * SC-03 Register: needs a CAPTCHA token; on success the server emails a 6-digit code and the user
+ * continues to "Verify email" (no session is created before the email is confirmed).
+ */
 export function RegisterScreen() {
   const { t } = useTranslation('auth');
   const register = useRegister();
+  const captcha = useCaptcha();
   const [formError, setFormError] = useState<string | null>(null);
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
@@ -38,15 +45,25 @@ export function RegisterScreen() {
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
+    if (!captcha.token) {
+      setFormError(t('captcha.required'));
+      return;
+    }
+    const email = values.email.trim();
     try {
-      await register.mutateAsync({
+      const result = await register.mutateAsync({
         fullName: values.fullName.trim(),
-        email: values.email.trim(),
+        email,
         password: values.password,
+        captchaToken: captcha.token,
       });
-      router.replace('/');
+      useAuthFlowStore.getState().startVerifyEmail(email, result.resendAfter);
+      router.replace('/verify-email');
     } catch (error) {
       setFormError(applyAuthError(error, setError, FIELDS));
+    } finally {
+      // The token is single-use: a failed attempt needs a fresh challenge.
+      captcha.reset();
     }
   });
 
@@ -122,6 +139,11 @@ export function RegisterScreen() {
         textContentType="newPassword"
         returnKeyType="go"
         onSubmitEditing={onSubmit}
+      />
+      <TurnstileWidget
+        onToken={captcha.onToken}
+        onExpire={captcha.onExpire}
+        resetKey={captcha.resetKey}
       />
       <FormError message={formError} />
       <Button

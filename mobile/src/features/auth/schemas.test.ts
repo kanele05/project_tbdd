@@ -1,4 +1,11 @@
-import { loginSchema, registerSchema } from './schemas';
+import {
+  forgotPasswordSchema,
+  formatRecoveryCode,
+  isCompleteRecoveryCode,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from './schemas';
 
 function messagesFor(result: {
   success: boolean;
@@ -75,5 +82,58 @@ describe('registerSchema', () => {
   it('requires the confirmation to match', () => {
     const result = registerSchema.safeParse({ ...valid, confirmPassword: 'different1' });
     expect(messagesFor(result)).toEqual({ confirmPassword: 'Passwords do not match' });
+  });
+});
+
+describe('password length', () => {
+  it('rejects more than 72 characters (bcrypt limit)', () => {
+    const long = `a1${'x'.repeat(71)}`;
+    const result = registerSchema.safeParse({
+      fullName: 'Martha Rosie',
+      email: 'rosie@example.com',
+      password: long,
+      confirmPassword: long,
+    });
+    expect(messagesFor(result).password).toBe('Password must be at most 72 characters');
+  });
+});
+
+describe('forgot / reset password schemas', () => {
+  it('forgot password needs a valid email', () => {
+    expect(forgotPasswordSchema.safeParse({ email: 'a@b.co' }).success).toBe(true);
+    expect(messagesFor(forgotPasswordSchema.safeParse({ email: 'x' })).email).toBe(
+      'Enter a valid email address',
+    );
+  });
+
+  it('reset password needs a 6-digit code, a strong password and a matching confirmation', () => {
+    const valid = { code: '123456', password: 'abc12345', confirmPassword: 'abc12345' };
+    expect(resetPasswordSchema.safeParse(valid).success).toBe(true);
+    expect(messagesFor(resetPasswordSchema.safeParse({ ...valid, code: '12345' })).code).toBe(
+      'Enter the 6-digit code',
+    );
+    expect(
+      messagesFor(resetPasswordSchema.safeParse({ ...valid, confirmPassword: 'other' }))
+        .confirmPassword,
+    ).toBe('Passwords do not match');
+  });
+});
+
+describe('recovery code helpers', () => {
+  it('formats what the user types as XXXXX-XXXXX', () => {
+    expect(formatRecoveryCode('abcde')).toBe('ABCDE');
+    expect(formatRecoveryCode('abcdef')).toBe('ABCDE-F');
+    expect(formatRecoveryCode(' abcde fghjk ')).toBe('ABCDE-FGHJK');
+    expect(formatRecoveryCode('ABCDE-FGHJK-EXTRA')).toBe('ABCDE-FGHJK');
+  });
+
+  it('drops characters the server never generates (0 O 1 I and symbols)', () => {
+    expect(formatRecoveryCode('0O1I-!@#ab')).toBe('AB');
+  });
+
+  it('knows when a code is complete', () => {
+    expect(isCompleteRecoveryCode('ABCDE-FGHJK')).toBe(true);
+    expect(isCompleteRecoveryCode('abcdefghjk')).toBe(true);
+    expect(isCompleteRecoveryCode('ABCDE')).toBe(false);
   });
 });

@@ -21,6 +21,10 @@ export const queryKeys = {
   meStats: () => ['me', 'stats'] as const,
   /** `GET /me/bookmarks` - persisted. */
   meBookmarks: () => ['me', 'bookmarks'] as const,
+  /** `GET /me/security` (2FA status) - NOT persisted (sensitive). */
+  meSecurity: () => ['me', 'security'] as const,
+  /** `GET /me/sessions` (signed-in devices) - NOT persisted (sensitive). */
+  meSessions: () => ['me', 'sessions'] as const,
 
   /* ---- home & catalog ---- */
   /** `GET /home` - persisted. */
@@ -111,6 +115,8 @@ export function isPersistedQueryKey(queryKey: readonly unknown[]): boolean {
   const [root, , sub] = queryKey;
   switch (root) {
     case 'me':
+      // Account security data (2FA status, signed-in devices) never goes to disk.
+      return queryKey[1] !== 'security' && queryKey[1] !== 'sessions';
     case 'home':
     case 'categories':
     case 'tags':

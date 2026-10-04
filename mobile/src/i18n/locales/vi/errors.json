@@ -38,6 +38,26 @@
     "OFFLINE": "Bạn đang ngoại tuyến",
     "AI_RATE_LIMITED": "Trợ lý AI đang quá tải. Vui lòng đợi một lát rồi thử lại.",
     "AI_UNAVAILABLE": "Trợ lý AI hiện chưa khả dụng. Vui lòng thử lại sau.",
-    "AI_BLOCKED": "Trợ lý AI không thể trả lời yêu cầu này. Bạn hãy thử diễn đạt lại câu hỏi nhé."
+    "AI_BLOCKED": "Trợ lý AI không thể trả lời yêu cầu này. Bạn hãy thử diễn đạt lại câu hỏi nhé.",
+    "EMAIL_NOT_VERIFIED": "Vui lòng xác minh email để tiếp tục.",
+    "ACCOUNT_LOCKED": "Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau.",
+    "ACCOUNT_LOCKED_minutes": "Bạn đã nhập sai quá nhiều lần. Thử lại sau {{minutes}} phút.",
+    "CAPTCHA_REQUIRED": "Vui lòng hoàn tất bước xác minh trước.",
+    "CAPTCHA_FAILED": "Xác minh không thành công. Vui lòng thử lại.",
+    "CAPTCHA_UNAVAILABLE": "Bước xác minh tạm thời không khả dụng. Vui lòng thử lại sau.",
+    "INVALID_CODE": "Mã không đúng.",
+    "INVALID_CODE_attemptsLeft": "Mã không đúng. Còn {{attempts}} lần thử.",
+    "CODE_EXPIRED": "Mã đã hết hạn. Hãy yêu cầu mã mới.",
+    "TOO_MANY_ATTEMPTS": "Bạn đã nhập sai quá nhiều lần. Hãy yêu cầu mã mới.",
+    "RESEND_TOO_SOON": "Vui lòng đợi một lát trước khi yêu cầu mã khác.",
+    "RESEND_TOO_SOON_seconds": "Vui lòng đợi {{seconds}} giây trước khi yêu cầu mã khác.",
+    "ALREADY_VERIFIED": "Email này đã được xác minh.",
+    "INVALID_REFRESH_TOKEN": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+    "INVALID_CHALLENGE": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+    "INVALID_PASSWORD": "Mật khẩu hiện tại không đúng.",
+    "TWO_FACTOR_NOT_SETUP": "Hãy bắt đầu thiết lập xác minh hai bước trước.",
+    "TWO_FACTOR_NOT_ENABLED": "Xác minh hai bước chưa được bật.",
+    "TWO_FACTOR_ALREADY_ENABLED": "Xác minh hai bước đã được bật.",
+    "SESSION_NOT_FOUND": "Thiết bị này không còn đăng nhập."
   }
 }

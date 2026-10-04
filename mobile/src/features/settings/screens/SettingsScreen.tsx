@@ -1,4 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
+import { router } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
@@ -10,6 +11,7 @@ import { useLanguage } from '@/i18n/useLanguage';
 import { useAuthStore } from '@/stores/authStore';
 import { layout, makeStyles, spacing, useTheme, type ThemeMode } from '@/theme';
 
+import { NavRow } from '../components/NavRow';
 import { OptionRow } from '../components/OptionRow';
 import { SettingsSection } from '../components/SettingsSection';
 
@@ -75,6 +77,13 @@ export function SettingsScreen() {
 
         <SettingsSection title={t('account.title')}>
           {user ? <InfoRow label={t('account.signedInAs')} value={user.email} /> : null}
+          <NavRow
+            icon="shield"
+            label={t('security.row')}
+            hint={t('security.rowHint')}
+            onPress={() => router.push('/settings/security')}
+            testID="settings-security"
+          />
           <Pressable
             onPress={() => void confirmLogout()}
             accessibilityRole="button"

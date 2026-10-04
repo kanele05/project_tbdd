@@ -21,5 +21,96 @@
   "account": {
     "title": "Account",
     "signedInAs": "Signed in as"
+  },
+  "security": {
+    "row": "Security",
+    "rowHint": "Two-step verification, password, devices",
+    "title": "Security",
+    "loadFailed": "Couldn't load your security settings",
+    "cancel": "Cancel",
+    "twoFactor": {
+      "title": "Two-step verification",
+      "description": "Ask for a code from your authenticator app every time you log in, on top of your password.",
+      "on": "On",
+      "off": "Off",
+      "enable": "Turn on",
+      "disable": "Turn off",
+      "regenerate": "New recovery codes",
+      "recoveryRemaining_one": "{{count}} recovery code left",
+      "recoveryRemaining_other": "{{count}} recovery codes left",
+      "lowRecovery": "You are running low. Generate new recovery codes before you lose access."
+    },
+    "factor": {
+      "code": "Authentication code",
+      "recoveryCode": "Recovery code",
+      "useRecovery": "Use a recovery code instead",
+      "useCode": "Use the authenticator code instead"
+    },
+    "setup": {
+      "title": "Set up two-step verification",
+      "preparing": "Preparing your setup",
+      "loadFailed": "Couldn't start the setup",
+      "step1Title": "1. Scan the QR code",
+      "step1Body": "Open an authenticator app (Google Authenticator, Microsoft Authenticator, Authy...) and scan this code.",
+      "qrLabel": "QR code to scan with your authenticator app",
+      "manual": "Can't scan? Enter this key in the app",
+      "copy": "Copy key",
+      "copied": "Key copied",
+      "step2Title": "2. Enter the 6-digit code",
+      "step2Body": "Type the code the app shows to confirm that it works.",
+      "confirm": "Turn on",
+      "enabled": "Two-step verification is on."
+    },
+    "recovery": {
+      "title": "Save your recovery codes",
+      "warning": "Each code works once and lets you log in if you lose your phone. They are shown only now - store them somewhere safe.",
+      "copy": "Copy all",
+      "share": "Share",
+      "copied": "Recovery codes copied",
+      "copyFailed": "Couldn't copy to the clipboard",
+      "shareTitle": "My recovery codes",
+      "saved": "I've saved these codes"
+    },
+    "disable": {
+      "title": "Turn off two-step verification",
+      "warning": "Your account will only be protected by your password.",
+      "password": "Current password",
+      "confirm": "Turn off",
+      "success": "Two-step verification is off."
+    },
+    "regenerate": {
+      "title": "Get new recovery codes",
+      "warning": "Your old recovery codes stop working as soon as new ones are created.",
+      "confirm": "Create new codes"
+    },
+    "password": {
+      "title": "Password",
+      "description": "Change the password you use to log in. Your other devices will be logged out.",
+      "change": "Change password",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Update password",
+      "sameAsCurrent": "The new password must be different from the current one",
+      "success": "Password updated. Your other devices were logged out."
+    },
+    "devices": {
+      "title": "Devices",
+      "description": "Where you are logged in. Log out of any device you don't recognize.",
+      "thisDevice": "This device",
+      "lastActive": "Last active {{date}}",
+      "signOut": "Log out",
+      "signOutDevice": "Log out {{name}}",
+      "confirmTitle": "Log out this device?",
+      "confirmMessage": "{{name}} will be logged out right away.",
+      "signOutOthers": "Log out all other devices",
+      "confirmOthersTitle": "Log out other devices?",
+      "confirmOthersMessage": "Every device except this one will be logged out.",
+      "revoked": "Device logged out.",
+      "revokedOthers_one": "{{count}} other device logged out.",
+      "revokedOthers_other": "{{count}} other devices logged out.",
+      "noOthers": "You are not logged in anywhere else.",
+      "loadFailed": "Couldn't load your devices."
+    }
   }
 }

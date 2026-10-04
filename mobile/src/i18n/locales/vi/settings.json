@@ -21,5 +21,94 @@
   "account": {
     "title": "Tài khoản",
     "signedInAs": "Đăng nhập với"
+  },
+  "security": {
+    "row": "Bảo mật",
+    "rowHint": "Xác minh hai bước, mật khẩu, thiết bị",
+    "title": "Bảo mật",
+    "loadFailed": "Không tải được cài đặt bảo mật",
+    "cancel": "Hủy",
+    "twoFactor": {
+      "title": "Xác minh hai bước",
+      "description": "Yêu cầu mã từ ứng dụng xác thực mỗi lần đăng nhập, ngoài mật khẩu của bạn.",
+      "on": "Đang bật",
+      "off": "Đang tắt",
+      "enable": "Bật",
+      "disable": "Tắt",
+      "regenerate": "Mã khôi phục mới",
+      "recoveryRemaining_other": "Còn {{count}} mã khôi phục",
+      "lowRecovery": "Bạn sắp hết mã. Hãy tạo mã khôi phục mới trước khi mất quyền truy cập."
+    },
+    "factor": {
+      "code": "Mã xác thực",
+      "recoveryCode": "Mã khôi phục",
+      "useRecovery": "Dùng mã khôi phục",
+      "useCode": "Dùng mã từ ứng dụng xác thực"
+    },
+    "setup": {
+      "title": "Thiết lập xác minh hai bước",
+      "preparing": "Đang chuẩn bị thiết lập",
+      "loadFailed": "Không bắt đầu được thiết lập",
+      "step1Title": "1. Quét mã QR",
+      "step1Body": "Mở ứng dụng xác thực (Google Authenticator, Microsoft Authenticator, Authy...) rồi quét mã này.",
+      "qrLabel": "Mã QR để quét bằng ứng dụng xác thực",
+      "manual": "Không quét được? Nhập khóa này vào ứng dụng",
+      "copy": "Sao chép khóa",
+      "copied": "Đã sao chép khóa",
+      "step2Title": "2. Nhập mã 6 chữ số",
+      "step2Body": "Nhập mã mà ứng dụng hiển thị để xác nhận mọi thứ hoạt động.",
+      "confirm": "Bật",
+      "enabled": "Đã bật xác minh hai bước."
+    },
+    "recovery": {
+      "title": "Lưu mã khôi phục",
+      "warning": "Mỗi mã chỉ dùng một lần và giúp bạn đăng nhập khi mất điện thoại. Các mã chỉ hiện lúc này - hãy cất ở nơi an toàn.",
+      "copy": "Sao chép tất cả",
+      "share": "Chia sẻ",
+      "copied": "Đã sao chép mã khôi phục",
+      "copyFailed": "Không sao chép được vào bộ nhớ tạm",
+      "shareTitle": "Mã khôi phục của tôi",
+      "saved": "Tôi đã lưu các mã này"
+    },
+    "disable": {
+      "title": "Tắt xác minh hai bước",
+      "warning": "Tài khoản của bạn sẽ chỉ được bảo vệ bằng mật khẩu.",
+      "password": "Mật khẩu hiện tại",
+      "confirm": "Tắt",
+      "success": "Đã tắt xác minh hai bước."
+    },
+    "regenerate": {
+      "title": "Tạo mã khôi phục mới",
+      "warning": "Các mã khôi phục cũ sẽ hết hiệu lực ngay khi mã mới được tạo.",
+      "confirm": "Tạo mã mới"
+    },
+    "password": {
+      "title": "Mật khẩu",
+      "description": "Đổi mật khẩu bạn dùng để đăng nhập. Các thiết bị khác sẽ bị đăng xuất.",
+      "change": "Đổi mật khẩu",
+      "current": "Mật khẩu hiện tại",
+      "new": "Mật khẩu mới",
+      "confirm": "Xác nhận mật khẩu mới",
+      "submit": "Cập nhật mật khẩu",
+      "sameAsCurrent": "Mật khẩu mới phải khác mật khẩu hiện tại",
+      "success": "Đã cập nhật mật khẩu. Các thiết bị khác đã bị đăng xuất."
+    },
+    "devices": {
+      "title": "Thiết bị",
+      "description": "Nơi bạn đang đăng nhập. Hãy đăng xuất thiết bị bạn không nhận ra.",
+      "thisDevice": "Thiết bị này",
+      "lastActive": "Hoạt động lần cuối {{date}}",
+      "signOut": "Đăng xuất",
+      "signOutDevice": "Đăng xuất {{name}}",
+      "confirmTitle": "Đăng xuất thiết bị này?",
+      "confirmMessage": "{{name}} sẽ bị đăng xuất ngay lập tức.",
+      "signOutOthers": "Đăng xuất tất cả thiết bị khác",
+      "confirmOthersTitle": "Đăng xuất các thiết bị khác?",
+      "confirmOthersMessage": "Mọi thiết bị trừ thiết bị này sẽ bị đăng xuất.",
+      "revoked": "Đã đăng xuất thiết bị.",
+      "revokedOthers_other": "Đã đăng xuất {{count}} thiết bị khác.",
+      "noOthers": "Bạn không đăng nhập ở nơi nào khác.",
+      "loadFailed": "Không tải được danh sách thiết bị."
+    }
   }
 }

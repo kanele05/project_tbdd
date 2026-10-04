@@ -15,6 +15,26 @@ export const APP_VERSION: string = Constants.expoConfig?.version ?? '0.0.0';
 
 export const API_TIMEOUT_MS = 15_000;
 
+/** Cloudflare's published "always passes" Turnstile site key: fine for dev, useless in production. */
+const TURNSTILE_TEST_SITE_KEY = '1x00000000000000000000AA';
+
+/**
+ * Cloudflare Turnstile site key (`EXPO_PUBLIC_TURNSTILE_SITE_KEY`). Defaults to the test key so the
+ * app works out of the box; a real deployment sets its own key (the server then holds the secret).
+ */
+export const TURNSTILE_SITE_KEY: string =
+  (process.env.EXPO_PUBLIC_TURNSTILE_SITE_KEY ?? '').trim() || TURNSTILE_TEST_SITE_KEY;
+
+/**
+ * Origin the native Turnstile WebView pretends to be served from (`EXPO_PUBLIC_TURNSTILE_BASE_URL`).
+ * Turnstile checks its hostname against the domains of the site key, so in production this must be
+ * a hostname listed there (e.g. the public site `https://elearning.example.com`). Defaults to the
+ * origin of the API; the test key accepts any hostname.
+ */
+export const TURNSTILE_BASE_URL: string =
+  (process.env.EXPO_PUBLIC_TURNSTILE_BASE_URL ?? '').trim() ||
+  API_URL.replace(/^(https?:\/\/[^/]+).*$/, '$1');
+
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 
@@ -53,9 +73,12 @@ export const PROGRESS_SAVE_INTERVAL_MS = 10_000;
 export const LESSON_COMPLETE_RATIO = 0.9; // BR-03
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
-/** Storage keys. The token goes to SecureStore only; everything else to AsyncStorage. */
+/** Storage keys. Tokens go to SecureStore only; everything else to AsyncStorage. */
 export const STORAGE_KEYS = {
+  /** Access token (JWT, 15 min). The key keeps its pre-refresh-token name. */
   authToken: 'elearning.auth.token',
+  /** Refresh token (30 days, single use, rotated on every refresh). */
+  authRefreshToken: 'elearning.auth.refresh-token',
   queryCache: 'elearning.query-cache',
   recentSearches: 'elearning.recent-searches',
   /** `system | light | dark` (AsyncStorage). */

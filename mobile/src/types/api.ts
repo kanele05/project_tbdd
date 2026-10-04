@@ -318,9 +318,6 @@ export type ApiErrorBody = {
   error: { code: ApiErrorCode | (string & {}); message: string; details?: unknown };
 };
 
-export type LoginRequest = { email: string; password: string };
-export type RegisterRequest = { fullName: string; email: string; password: string };
-export type AuthResponse = { token: string; user: UserDto };
 export type UpdateProfileRequest = { fullName?: string; headline?: string };
 
 export type CourseSort = 'popular' | 'rating' | 'newest' | 'price_asc' | 'price_desc';
@@ -522,3 +519,11 @@ export type TwoFactorVerifyRequest =
   | { challengeToken: string; recoveryCode: string; deviceName?: string };
 export type ResetPasswordRequest = { email: string; code: string; newPassword: string };
 export type ChangePasswordRequest = { currentPassword: string; newPassword: string };
+export type ResendVerificationRequest = { email: string; lang?: AiLang };
+export type ForgotPasswordRequest = { email: string; captchaToken: string; lang?: AiLang };
+export type EnableTwoFactorRequest = { code: string };
+/** Exactly one of `code` (TOTP) / `recoveryCode`. */
+export type DisableTwoFactorRequest = { password: string } & (
+  { code: string } | { recoveryCode: string }
+);
+export type RecoveryCodesRequest = { code: string } | { recoveryCode: string };

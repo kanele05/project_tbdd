@@ -38,6 +38,26 @@
     "OFFLINE": "You're offline",
     "AI_RATE_LIMITED": "The AI assistant is busy right now. Please wait a moment and try again.",
     "AI_UNAVAILABLE": "The AI assistant isn't available at the moment. Please try again later.",
-    "AI_BLOCKED": "The AI assistant can't answer this request. Try rephrasing your question."
+    "AI_BLOCKED": "The AI assistant can't answer this request. Try rephrasing your question.",
+    "EMAIL_NOT_VERIFIED": "Please verify your email to continue.",
+    "ACCOUNT_LOCKED": "Too many failed attempts. Please try again later.",
+    "ACCOUNT_LOCKED_minutes": "Too many failed attempts. Try again in {{minutes}} min.",
+    "CAPTCHA_REQUIRED": "Please complete the human check first.",
+    "CAPTCHA_FAILED": "The human check failed. Please try again.",
+    "CAPTCHA_UNAVAILABLE": "Human verification is unavailable right now. Please try again later.",
+    "INVALID_CODE": "That code is incorrect.",
+    "INVALID_CODE_attemptsLeft": "That code is incorrect. Attempts left: {{attempts}}.",
+    "CODE_EXPIRED": "This code has expired. Request a new one.",
+    "TOO_MANY_ATTEMPTS": "Too many incorrect attempts. Request a new code.",
+    "RESEND_TOO_SOON": "Please wait a moment before requesting another code.",
+    "RESEND_TOO_SOON_seconds": "Please wait {{seconds}} s before requesting another code.",
+    "ALREADY_VERIFIED": "This email is already verified.",
+    "INVALID_REFRESH_TOKEN": "Your session has expired. Please log in again.",
+    "INVALID_CHALLENGE": "The sign-in session expired. Please log in again.",
+    "INVALID_PASSWORD": "The current password is incorrect.",
+    "TWO_FACTOR_NOT_SETUP": "Start the two-step verification setup first.",
+    "TWO_FACTOR_NOT_ENABLED": "Two-step verification is not turned on.",
+    "TWO_FACTOR_ALREADY_ENABLED": "Two-step verification is already turned on.",
+    "SESSION_NOT_FOUND": "This device is no longer signed in."
   }
 }

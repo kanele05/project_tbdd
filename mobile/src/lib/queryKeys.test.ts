@@ -7,6 +7,8 @@ describe('queryKeys', () => {
     expect(queryKeys.meCourses()).toEqual(['me', 'courses', 'all']);
     expect(queryKeys.meStats()).toEqual(['me', 'stats']);
     expect(queryKeys.meBookmarks()).toEqual(['me', 'bookmarks']);
+    expect(queryKeys.meSecurity()).toEqual(['me', 'security']);
+    expect(queryKeys.meSessions()).toEqual(['me', 'sessions']);
     expect(queryKeys.hotTags()).toEqual(['tags', 'hot']);
     expect(queryKeys.course('c1')).toEqual(['course', 'c1']);
     expect(queryKeys.courseCurriculum('c1')).toEqual(['course', 'c1', 'curriculum']);
@@ -61,6 +63,9 @@ describe('isPersistedQueryKey (PLAN.md §10 persist column)', () => {
     [queryKeys.courseSubmissions('c1')],
     [queryKeys.notifications()],
     [queryKeys.teachersList()],
+    // Account security data stays in memory even though it sits under the persisted `me` prefix.
+    [queryKeys.meSecurity()],
+    [queryKeys.meSessions()],
   ])('does not persist %j', (key) => {
     expect(isPersistedQueryKey(key)).toBe(false);
   });

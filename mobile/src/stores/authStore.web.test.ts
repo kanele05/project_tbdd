@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 import { STORAGE_KEYS } from '@/constants/config';
 import { authApi } from '@/features/auth/api';
-import { getAccessToken, setAccessToken } from '@/lib/apiClient';
+import { getAccessToken, getRefreshToken, setAuthTokens } from '@/lib/apiClient';
 import { queryClient } from '@/lib/queryClient';
 import type { UserDto } from '@/types/api';
 
@@ -11,7 +11,13 @@ import { useAuthStore } from './authStore';
 /** PLT-01: on the web there is no SecureStore, the session lives in localStorage. */
 
 jest.mock('@/features/auth/api', () => ({
-  authApi: { meForBootstrap: jest.fn(), me: jest.fn(), login: jest.fn(), register: jest.fn() },
+  authApi: {
+    meForBootstrap: jest.fn(),
+    me: jest.fn(),
+    login: jest.fn(),
+    register: jest.fn(),
+    logout: jest.fn(() => Promise.resolve()),
+  },
 }));
 jest.mock('@/lib/persister', () => ({
   clearPersistedCache: jest.fn(() => Promise.resolve()),
@@ -51,7 +57,7 @@ describe('authStore on the web', () => {
         removeItem: (key: string) => void data.delete(key),
       },
     });
-    setAccessToken(null);
+    setAuthTokens(null);
     queryClient.clear();
     useAuthStore.setState({ token: null, user: null, status: 'idle', sessionExpired: false });
   });
@@ -63,18 +69,23 @@ describe('authStore on the web', () => {
     Reflect.deleteProperty(globalThis, 'localStorage');
   });
 
-  it('saves the token in localStorage on login and clears it on logout', async () => {
-    await useAuthStore.getState().login('web.token', USER);
+  it('saves both tokens in localStorage on login and clears them on logout', async () => {
+    await useAuthStore
+      .getState()
+      .login({ accessToken: 'web.token', refreshToken: 'web.refresh', user: USER });
     expect(data.get(STORAGE_KEYS.authToken)).toBe('web.token');
+    expect(data.get(STORAGE_KEYS.authRefreshToken)).toBe('web.refresh');
     expect(getAccessToken()).toBe('web.token');
 
     await useAuthStore.getState().logout();
     expect(data.has(STORAGE_KEYS.authToken)).toBe(false);
+    expect(data.has(STORAGE_KEYS.authRefreshToken)).toBe(false);
     expect(useAuthStore.getState().status).toBe('unauthenticated');
   });
 
   it('restores the session after a page reload', async () => {
     data.set(STORAGE_KEYS.authToken, 'web.token');
+    data.set(STORAGE_KEYS.authRefreshToken, 'web.refresh');
     mockedApi.meForBootstrap.mockResolvedValue(USER);
 
     await useAuthStore.getState().hydrate();
@@ -85,6 +96,7 @@ describe('authStore on the web', () => {
       user: USER,
     });
     expect(getAccessToken()).toBe('web.token');
+    expect(getRefreshToken()).toBe('web.refresh');
   });
 
   it('starts logged out when the browser blocks localStorage', async () => {
@@ -113,7 +125,9 @@ describe('authStore on the web', () => {
       },
     });
 
-    await useAuthStore.getState().login('web.token', USER);
+    await useAuthStore
+      .getState()
+      .login({ accessToken: 'web.token', refreshToken: 'web.refresh', user: USER });
 
     expect(useAuthStore.getState().status).toBe('authenticated');
   });

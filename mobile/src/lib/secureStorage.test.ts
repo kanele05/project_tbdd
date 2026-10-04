@@ -62,15 +62,34 @@ describe('secureStorage', () => {
   });
 
   describe('tokenStorage', () => {
-    it('stores the auth token under the dedicated key', async () => {
-      store.getItemAsync.mockResolvedValue('jwt');
-      await tokenStorage.set('jwt');
-      await expect(tokenStorage.get()).resolves.toBe('jwt');
+    it('stores the access and refresh tokens under their dedicated keys', async () => {
+      store.getItemAsync.mockImplementation(async (key) =>
+        key === STORAGE_KEYS.authToken ? 'access-jwt' : 'refresh-opaque',
+      );
+      await tokenStorage.set({ accessToken: 'access-jwt', refreshToken: 'refresh-opaque' });
+      await expect(tokenStorage.get()).resolves.toEqual({
+        accessToken: 'access-jwt',
+        refreshToken: 'refresh-opaque',
+      });
       await tokenStorage.clear();
 
-      expect(store.setItemAsync).toHaveBeenCalledWith(STORAGE_KEYS.authToken, 'jwt');
-      expect(store.getItemAsync).toHaveBeenCalledWith(STORAGE_KEYS.authToken);
+      expect(store.setItemAsync).toHaveBeenCalledWith(STORAGE_KEYS.authToken, 'access-jwt');
+      expect(store.setItemAsync).toHaveBeenCalledWith(
+        STORAGE_KEYS.authRefreshToken,
+        'refresh-opaque',
+      );
       expect(store.deleteItemAsync).toHaveBeenCalledWith(STORAGE_KEYS.authToken);
+      expect(store.deleteItemAsync).toHaveBeenCalledWith(STORAGE_KEYS.authRefreshToken);
+    });
+
+    it('reports a legacy access-only session as a token pair without refresh token', async () => {
+      store.getItemAsync.mockImplementation(async (key) =>
+        key === STORAGE_KEYS.authToken ? 'legacy-jwt' : null,
+      );
+      await expect(tokenStorage.get()).resolves.toEqual({
+        accessToken: 'legacy-jwt',
+        refreshToken: null,
+      });
     });
   });
 
@@ -95,13 +114,19 @@ describe('secureStorage', () => {
       Reflect.deleteProperty(globalThis, 'localStorage');
     });
 
-    it('keeps the token in localStorage instead of SecureStore', async () => {
-      await tokenStorage.set('jwt');
+    const NO_TOKENS = { accessToken: null, refreshToken: null };
+
+    it('keeps the tokens in localStorage instead of SecureStore', async () => {
+      await tokenStorage.set({ accessToken: 'jwt', refreshToken: 'refresh' });
       expect(data.get(STORAGE_KEYS.authToken)).toBe('jwt');
-      await expect(tokenStorage.get()).resolves.toBe('jwt');
+      expect(data.get(STORAGE_KEYS.authRefreshToken)).toBe('refresh');
+      await expect(tokenStorage.get()).resolves.toEqual({
+        accessToken: 'jwt',
+        refreshToken: 'refresh',
+      });
 
       await tokenStorage.clear();
-      await expect(tokenStorage.get()).resolves.toBeNull();
+      await expect(tokenStorage.get()).resolves.toEqual(NO_TOKENS);
 
       expect(store.isAvailableAsync).not.toHaveBeenCalled();
       expect(store.setItemAsync).not.toHaveBeenCalled();
@@ -122,21 +147,26 @@ describe('secureStorage', () => {
 
     it('behaves as logged out when there is no localStorage at all (static render)', async () => {
       Reflect.deleteProperty(globalThis, 'localStorage');
-      await expect(tokenStorage.get()).resolves.toBeNull();
-      await expect(tokenStorage.set('jwt')).resolves.toBeUndefined();
+      await expect(tokenStorage.get()).resolves.toEqual(NO_TOKENS);
+      await expect(
+        tokenStorage.set({ accessToken: 'jwt', refreshToken: 'refresh' }),
+      ).resolves.toBeUndefined();
       await expect(tokenStorage.clear()).resolves.toBeUndefined();
       expect(store.setItemAsync).not.toHaveBeenCalled();
     });
 
-    it('replaces the stored token when the user logs in again', async () => {
-      await tokenStorage.set('first');
-      await tokenStorage.set('second');
-      await expect(tokenStorage.get()).resolves.toBe('second');
-      expect(data.size).toBe(1);
+    it('replaces the stored tokens when the user logs in again', async () => {
+      await tokenStorage.set({ accessToken: 'first', refreshToken: 'r1' });
+      await tokenStorage.set({ accessToken: 'second', refreshToken: 'r2' });
+      await expect(tokenStorage.get()).resolves.toEqual({
+        accessToken: 'second',
+        refreshToken: 'r2',
+      });
+      expect(data.size).toBe(2);
     });
 
-    it('reads null for a token that was never saved', async () => {
-      await expect(tokenStorage.get()).resolves.toBeNull();
+    it('reads null for tokens that were never saved', async () => {
+      await expect(tokenStorage.get()).resolves.toEqual(NO_TOKENS);
     });
 
     it('swallows errors thrown by getItem and removeItem', async () => {

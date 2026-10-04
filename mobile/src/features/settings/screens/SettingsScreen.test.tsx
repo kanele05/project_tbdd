@@ -10,8 +10,14 @@ import { confirmAction } from '@/utils/confirmAction';
 
 import { SettingsScreen } from './SettingsScreen';
 
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
-  router: { back: jest.fn(), replace: jest.fn(), canGoBack: () => true },
+  router: {
+    back: jest.fn(),
+    replace: jest.fn(),
+    push: (href: string) => mockPush(href),
+    canGoBack: () => true,
+  },
 }));
 jest.mock('@/utils/confirmAction', () => ({ confirmAction: jest.fn() }));
 
@@ -69,6 +75,14 @@ describe('SettingsScreen', () => {
     await waitFor(() => expect(screen.getByTestId('theme-dark')).toBeSelected());
     expect(usePreferencesStore.getState().themeMode).toBe('dark');
     await expect(AsyncStorage.getItem(STORAGE_KEYS.themeMode)).resolves.toBe('dark');
+  });
+
+  it('opens the Security screen from the account section', async () => {
+    await renderWithProviders(<SettingsScreen />);
+
+    await fireEvent.press(screen.getByTestId('settings-security'));
+
+    expect(mockPush).toHaveBeenCalledWith('/settings/security');
   });
 
   it('shows the app version and the signed-in account', async () => {
