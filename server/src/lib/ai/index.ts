@@ -2,6 +2,7 @@ import { env, isProduction, isTest } from '@/config/env';
 import { logger } from '@/lib/logger';
 
 import { GeminiProvider } from './gemini.provider';
+import { withMetrics } from './instrumented';
 import { MockProvider } from './mock.provider';
 import { AiQuota, type AiQuotaBucket } from './quota';
 import type { AiProvider, AiProviderName } from './types';
@@ -34,10 +35,10 @@ export function createAiProvider(): AiProvider {
 
 let provider: AiProvider | undefined;
 
-/** Provider dùng chung của server (tạo khi dùng lần đầu). */
+/** Provider dùng chung của server (tạo khi dùng lần đầu), có đo Prometheus (`ai_requests_total`...). */
 export function getAiProvider(): AiProvider {
   if (!provider) {
-    provider = createAiProvider();
+    provider = withMetrics(createAiProvider());
     logger.info({ ai: { provider: provider.name, model: provider.model } }, 'AI provider ready');
   }
   return provider;

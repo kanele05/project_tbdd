@@ -44,15 +44,15 @@ export const httpRequestsInFlight = new Gauge({
   registers: [metricsRegistry],
 });
 
-/** Dành cho module AI: `aiRequestsTotal.inc({ feature, provider, status })` mỗi lần gọi LLM. */
+/** Mỗi lần gọi model (ghi bởi `lib/ai/instrumented.ts`, bọc provider trong `getAiProvider()`). */
 export const aiRequestsTotal = new Counter({
   name: 'ai_requests_total',
-  help: 'AI feature requests, by feature, provider and status (ok | error | timeout | rate_limited)',
+  help: 'AI model calls by feature, provider and status (ok | rate_limited | blocked | unavailable | timeout | bad_output | aborted | error)',
   labelNames: ['feature', 'provider', 'status'] as const,
   registers: [metricsRegistry],
 });
 
-/** Dành cho module AI: `const end = aiRequestDurationSeconds.startTimer({ feature, provider }); ...; end();` */
+/** Thời gian mỗi lần gọi model (stream: từ chunk đầu tới hết), ghi bởi `lib/ai/instrumented.ts`. */
 export const aiRequestDurationSeconds = new Histogram({
   name: 'ai_request_duration_seconds',
   help: 'AI provider call duration in seconds, by feature and provider',
