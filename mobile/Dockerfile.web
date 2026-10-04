@@ -1,0 +1,68 @@
+# syntax=docker/dockerfile:1.7
+#
+# Bản WEB của app (Expo Router, `web.output = "single"` -> SPA) phục vụ bằng Caddy nhỏ.
+# Build từ thư mục mobile/ (URL API được NHÚNG vào bundle lúc build, không đổi được lúc chạy):
+#   docker build -f Dockerfile.web \
+#     --build-arg EXPO_PUBLIC_API_URL=https://api.example.com/api/v1 -t elearning-web .
+
+ARG NODE_VERSION=24
+
+# ---------------------------------------------------------------------------
+# 1) build: npm ci -> expo export --platform web -> dist/
+# ---------------------------------------------------------------------------
+FROM node:${NODE_VERSION}-bookworm-slim AS build
+WORKDIR /app
+ENV CI=true EXPO_NO_TELEMETRY=1 NODE_OPTIONS=--max-old-space-size=2048
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci
+COPY . .
+# Biến EXPO_PUBLIC_* được Metro thay thẳng vào code khi bundle -> phải có trước bước export.
+ARG EXPO_PUBLIC_API_URL
+ENV EXPO_PUBLIC_API_URL=${EXPO_PUBLIC_API_URL}
+# Site key (công khai) của Cloudflare Turnstile cho form đăng nhập/đăng ký trên web. Có thể để trống khi chưa dùng.
+# Tên biến phải khớp với mã mobile (agent auth); đổi cả ở đây và deploy/docker-compose.yml nếu họ đặt tên khác.
+ARG EXPO_PUBLIC_TURNSTILE_SITE_KEY=""
+ENV EXPO_PUBLIC_TURNSTILE_SITE_KEY=${EXPO_PUBLIC_TURNSTILE_SITE_KEY}
+RUN test -n "${EXPO_PUBLIC_API_URL}" \
+ || { echo "ERROR: pass --build-arg EXPO_PUBLIC_API_URL=https://api.<domain>/api/v1"; exit 1; }
+RUN npx expo export --platform web --output-dir dist
+
+# ---------------------------------------------------------------------------
+# 2) runtime: Caddy chỉ phục vụ file tĩnh, fallback về index.html cho mọi đường dẫn của SPA.
+#    Nghe cổng 8080 (không cần quyền root); HTTPS do Caddy ngoài (deploy/Caddyfile) lo.
+# ---------------------------------------------------------------------------
+FROM caddy:2-alpine AS runtime
+COPY --from=build /app/dist /srv
+
+COPY <<'CADDYFILE' /etc/caddy/Caddyfile
+{
+	admin off
+	auto_https off
+}
+
+:8080 {
+	root * /srv
+
+	# Mặc định luôn kiểm tra lại (index.html + deep link); file có hash trong tên -> cache vĩnh viễn.
+	header Cache-Control "no-cache"
+	@hashed path /_expo/* /assets/*
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+
+	# SPA: đường dẫn không phải file thật (vd /course/123) -> trả index.html để Expo Router xử lý.
+	# File build bị thiếu (/_expo/*, /assets/*) vẫn trả 404 thay vì index.html.
+	@spa {
+		not path /_expo/* /assets/*
+		not file
+	}
+	rewrite @spa /index.html
+
+	file_server
+}
+CADDYFILE
+
+# Caddy không ghi gì ngoài /tmp -> chạy được bằng user không phải root.
+ENV XDG_DATA_HOME=/tmp/caddy-data XDG_CONFIG_HOME=/tmp/caddy-config
+USER 65532:65532
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget -q --spider http://127.0.0.1:8080/ || exit 1

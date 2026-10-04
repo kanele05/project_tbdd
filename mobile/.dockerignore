@@ -1,0 +1,15 @@
+# Không đưa vào build context của Dockerfile.web
+node_modules
+dist
+web-build
+coverage
+.expo
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.log
+Dockerfile.web
+.dockerignore
+README.md

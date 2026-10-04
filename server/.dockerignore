@@ -1,0 +1,20 @@
+# Không đưa vào build context (nhỏ, nhanh, không lộ bí mật)
+node_modules
+dist
+coverage
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+.pgdata
+.pgdata.log
+*.log
+uploads/*
+!uploads/.gitkeep
+src/generated
+tests
+scripts
+Dockerfile
+.dockerignore
+README.md

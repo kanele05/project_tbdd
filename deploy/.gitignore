@@ -1,0 +1,16 @@
+# Bí mật & dữ liệu chỉ nằm trên VPS - không bao giờ commit
+.env
+.env.*
+!.env.example
+
+# Bản sao lưu database (container "backup" ghi vào đây)
+backups/
+
+# Token Bearer cho Prometheus scrape /metrics (chỉ khi bật METRICS_TOKEN)
+prometheus/api-token
+
+# Dấu vết các lần deploy (scripts/deploy.sh dùng để biết khi nào cần restart Prometheus/Loki/Alloy/Grafana)
+.state/
+
+# Site Caddy riêng của từng máy (sao chép từ *.caddy.example)
+caddy/sites/*.caddy

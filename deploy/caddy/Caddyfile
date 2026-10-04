@@ -1,0 +1,78 @@
+# Caddy - reverse proxy + HTTPS tự động (Let's Encrypt) cho E-Learning.
+# Biến lấy từ docker-compose.yml (nguồn: deploy/.env): DOMAIN, ACME_EMAIL, ACME_CA.
+#
+#   api.<DOMAIN>      -> API (Express)
+#   <DOMAIN>, app.<DOMAIN> -> bản web của app
+#   grafana.<DOMAIN>  -> Grafana (có đăng nhập riêng)
+#   status.<DOMAIN>   -> Uptime Kuma (tùy chọn - xem sites/status.caddy.example)
+#
+# KHÔNG public: Prometheus, Loki, Alloy, Postgres, exporters và /metrics của API. Chúng không được proxy ở đây
+# và cũng không có `ports:` trong docker-compose.yml.
+
+{
+	email {$ACME_EMAIL}
+	acme_ca {$ACME_CA}
+}
+
+# --- Đoạn cấu hình dùng chung ------------------------------------------------
+
+# Nén gzip/zstd, giấu header Server và ghi access log dạng JSON ra stderr (Alloy thu về Loki -> Grafana "E-Learning · Logs").
+# Caddy tự che header Authorization/Cookie trong log nên không lộ token.
+(common) {
+	encode zstd gzip
+	header -Server
+	log {
+		format json
+	}
+}
+
+# Header bảo mật cho trang web. API đã có helmet nên không áp đoạn này cho API.
+# Không đặt Content-Security-Policy cho web vì app tải ảnh/video từ nhiều nguồn ngoài (Unsplash, randomuser.me,
+# video mẫu...) và Cloudflare Turnstile; một CSP sai sẽ làm hỏng app, còn lợi ích bảo mật thêm không đáng kể ở đây.
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=15552000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	}
+}
+
+# --- API ----------------------------------------------------------------------
+api.{$DOMAIN} {
+	import common
+
+	# /metrics không bao giờ ra ngoài (API còn phục vụ nó ở cổng nội bộ riêng, Caddy không biết cổng đó).
+	@metrics path /metrics /metrics/*
+	respond @metrics 404
+
+	# Upload tối đa 10 MB (multer) -> chặn sớm ở đây các body lớn hơn ~12 MB.
+	request_body {
+		max_size 12MB
+	}
+
+	reverse_proxy api:4000 {
+		# Đẩy dữ liệu về client ngay (không đệm) để streaming của AI Tutor (SSE) hiện chữ từng đoạn.
+		flush_interval -1
+	}
+}
+
+# --- Web app --------------------------------------------------------------------
+{$DOMAIN}, app.{$DOMAIN} {
+	import common
+	import security_headers
+
+	reverse_proxy web:8080
+}
+
+# --- Grafana --------------------------------------------------------------------
+grafana.{$DOMAIN} {
+	import common
+
+	reverse_proxy grafana:3000
+}
+
+# --- Site tùy chọn (status, mail...) ---------------------------------------------
+# Đặt file *.caddy vào thư mục sites/ để bật; không có file nào thì dòng này không làm gì cả.
+import sites/*.caddy

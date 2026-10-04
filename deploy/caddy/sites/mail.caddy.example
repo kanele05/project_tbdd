@@ -1,0 +1,22 @@
+# Mailpit qua Internet - KHÔNG khuyến nghị, chỉ dùng cho staging khi không tiện SSH tunnel.
+#
+# Vì sao nguy hiểm: Mailpit hiển thị MỌI email hệ thống gửi, gồm mã OTP xác minh và link đặt lại mật khẩu.
+# Ai mở được giao diện này đều chiếm được tài khoản bất kỳ người dùng nào. Cách mặc định an toàn hơn là
+# KHÔNG public (chỉ SSH tunnel tới 127.0.0.1:8025, xem README). Nếu vẫn muốn dùng subdomain:
+#   1. DNS: thêm bản ghi A "mail" -> IP VPS.
+#   2. Sinh hash mật khẩu:  docker compose exec caddy caddy hash-password   (nhập mật khẩu DÀI, ngẫu nhiên)
+#   3. cp caddy/sites/mail.caddy.example caddy/sites/mail.caddy, dán hash vào chỗ PASTE_BCRYPT_HASH_HERE.
+#   4. COMPOSE_PROFILES=mail trong deploy/.env, docker compose up -d, rồi:
+#      docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+# KHÔNG BAO GIỜ bật file này trên production thật (production gửi email qua SMTP thật, không dùng Mailpit).
+
+mail.{$DOMAIN} {
+	import common
+	import security_headers
+
+	basic_auth {
+		admin PASTE_BCRYPT_HASH_HERE
+	}
+
+	reverse_proxy mailpit:8025
+}

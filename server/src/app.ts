@@ -5,6 +5,7 @@ import helmet from 'helmet';
 
 import { env, isProduction, paths } from '@/config/env';
 import { httpLogger } from '@/lib/logger';
+import { metricsMiddleware } from '@/lib/metrics';
 import { errorHandler } from '@/middlewares/errorHandler';
 import { notFound } from '@/middlewares/notFound';
 import { apiRateLimiter } from '@/middlewares/rateLimit';
@@ -24,9 +25,11 @@ export function createApp(): Express {
   const app = express();
 
   app.disable('x-powered-by');
-  // Sau reverse proxy (Render) để rate limit thấy đúng IP client.
+  // Sau reverse proxy 1 tầng (Caddy trong docker-compose / Render) để rate limit thấy đúng IP client.
   if (isProduction) app.set('trust proxy', 1);
 
+  // Đặt đầu tiên để thời gian đo bao gồm toàn bộ middleware phía sau.
+  app.use(metricsMiddleware);
   app.use(httpLogger);
   // CORP cross-origin để ảnh/video từ /static, /uploads tải được từ app và web preview.
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));

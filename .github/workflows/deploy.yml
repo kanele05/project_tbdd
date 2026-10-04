@@ -1,0 +1,211 @@
+name: Deploy
+
+# Triển khai lên VPS DigitalOcean: kiểm thử -> build image (api + web) đẩy lên GHCR -> SSH vào VPS cập nhật.
+# Chạy khi push lên main, khi tạo tag v* (vd. v1.0.0) hoặc bấm "Run workflow" thủ công (chỉ có tác dụng trên main/tag).
+#
+# Cần cấu hình GitHub Secrets (Settings -> Secrets and variables -> Actions) - xem deploy/README.md mục 8:
+#   SSH_HOST            IP (hoặc tên miền) của VPS                                       [bắt buộc]
+#   SSH_USER            user SSH trên VPS (không phải root), có quyền chạy docker       [bắt buộc]
+#   SSH_KEY             private key SSH (toàn bộ nội dung file, gồm dòng BEGIN/END)     [bắt buộc]
+#   DOMAIN              tên miền gốc, vd. example.com (nhúng vào bản web + kiểm tra)    [bắt buộc]
+#   SSH_KNOWN_HOSTS     kết quả của `ssh-keyscan -t ed25519 <SSH_HOST>`                 [khuyến nghị - chống giả mạo máy chủ]
+#   SSH_PORT            cổng SSH, mặc định 22                                           [tùy chọn]
+#   DEPLOY_PATH         thư mục deploy trên VPS, mặc định elearning/deploy (tính từ home) [tùy chọn]
+#   TURNSTILE_SITE_KEY  site key Cloudflare Turnstile, nhúng vào bản web                [tùy chọn cho tới khi bật CAPTCHA]
+# Token đăng nhập GHCR là GITHUB_TOKEN có sẵn của workflow - không cần tạo thêm secret.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+# Mỗi lúc chỉ một lượt deploy; lượt mới đợi lượt cũ xong (không hủy giữa chừng để tránh deploy dở).
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  preflight:
+    # Báo thiếu secret NGAY (trước khi mất 15 phút build) thay vì thất bại ở bước cuối.
+    name: Kiểm tra secret
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      DOMAIN: ${{ secrets.DOMAIN }}
+    steps:
+      - name: Kiểm tra secret bắt buộc
+        run: |
+          missing=0
+          for name in SSH_HOST SSH_USER SSH_KEY DOMAIN; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Thiếu GitHub Secret ${name} (xem deploy/README.md mục 8)"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+  ci:
+    name: Kiểm thử
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    uses: ./.github/workflows/ci.yml
+    with:
+      docker: false # image được build thật ở job bên dưới
+    permissions:
+      contents: read
+
+  build:
+    name: Build & push image ${{ matrix.name }}
+    needs: [preflight, ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name: api
+            context: server
+            file: server/Dockerfile
+          - name: web
+            context: mobile
+            file: mobile/Dockerfile.web
+    steps:
+      - uses: actions/checkout@v7
+
+      # GHCR bắt buộc tên image viết thường.
+      - name: Chuẩn hóa tên chủ sở hữu (chữ thường)
+        run: echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tạo tag + label cho image
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.OWNER }}/elearning-${{ matrix.name }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=sha-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build & push (api)
+        if: matrix.name == 'api'
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+      - name: Build & push (web)
+        if: matrix.name == 'web'
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # URL API + site key được NHÚNG vào bundle web lúc build -> đổi DOMAIN/key thì phải build + deploy lại.
+          build-args: |
+            EXPO_PUBLIC_API_URL=https://api.${{ secrets.DOMAIN }}/api/v1
+            EXPO_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  deploy:
+    name: Deploy lên VPS
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || 'elearning/deploy' }}
+      DOMAIN: ${{ secrets.DOMAIN }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Chuẩn bị SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::Chưa đặt secret SSH_KNOWN_HOSTS - đang tin dấu vân tay máy chủ ở lần kết nối này (kém an toàn hơn)."
+            ssh-keyscan -p "$SSH_PORT" -t ed25519,rsa "$SSH_HOST" > ~/.ssh/known_hosts
+          fi
+          cat > ~/.ssh/config <<EOF
+          Host vps
+            HostName ${SSH_HOST}
+            User ${SSH_USER}
+            Port ${SSH_PORT}
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            ServerAliveInterval 30
+          EOF
+
+      - name: Đồng bộ thư mục deploy/ lên VPS (không đụng .env, backups, chứng chỉ)
+        run: |
+          rsync -az --mkpath --delete \
+            --exclude '/.env' --exclude '/backups/' --exclude '/.state/' \
+            --exclude '/prometheus/api-token' --exclude '/caddy/sites/*.caddy' \
+            deploy/ "vps:${DEPLOY_PATH}/"
+
+      - name: Cập nhật dịch vụ trên VPS
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        # Token đăng nhập GHCR đi qua stdin của ssh (không nằm trong dòng lệnh); đăng xuất ngay khi xong.
+        run: |
+          printf '%s' "$GHCR_TOKEN" | ssh vps \
+            "docker login ghcr.io -u '${GHCR_USER}' --password-stdin >/dev/null && \
+             trap 'docker logout ghcr.io >/dev/null 2>&1' EXIT && \
+             cd '${DEPLOY_PATH}' && bash scripts/deploy.sh"
+
+      - name: Kiểm tra API qua HTTPS
+        run: |
+          url="https://api.${DOMAIN}/api/v1/health"
+          for attempt in $(seq 1 12); do
+            if curl -fsS --max-time 10 "$url"; then
+              echo
+              echo "OK: ${url}"
+              exit 0
+            fi
+            echo "Chưa sẵn sàng (lần ${attempt}/12), thử lại sau 10 giây..."
+            sleep 10
+          done
+          echo "::error::${url} không trả 200 - xem log trên VPS: docker compose logs api caddy"
+          exit 1

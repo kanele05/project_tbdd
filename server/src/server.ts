@@ -1,6 +1,7 @@
 import { createApp } from '@/app';
 import { env } from '@/config/env';
 import { logger } from '@/lib/logger';
+import { startMetricsIfEnabled } from '@/lib/metrics';
 import { disconnectPrisma } from '@/lib/prisma';
 
 const app = createApp();
@@ -11,8 +12,29 @@ const server = app.listen(env.PORT, () => {
   );
 });
 
+/** /metrics chỉ phục vụ trên cổng riêng (METRICS_PORT), không nằm trên cổng API công khai. */
+function startMetrics() {
+  const result = startMetricsIfEnabled({
+    port: env.METRICS_PORT,
+    apiPort: env.PORT,
+    host: env.METRICS_HOST,
+    token: env.METRICS_TOKEN,
+  });
+  if (result.status === 'port-conflict') {
+    logger.warn('METRICS_PORT must differ from PORT - metrics endpoint is disabled');
+    return undefined;
+  }
+  if (result.status === 'disabled') return undefined;
+  result.server.on('error', (err) => logger.error({ err }, 'Metrics server error'));
+  logger.info(`Metrics listening on ${env.METRICS_HOST}:${env.METRICS_PORT} (internal only)`);
+  return result.server;
+}
+
+const metricsServer = startMetrics();
+
 async function shutdown(signal: string): Promise<void> {
   logger.info(`${signal} received, shutting down`);
+  metricsServer?.close();
   server.close(() => {
     void disconnectPrisma().finally(() => process.exit(0));
   });

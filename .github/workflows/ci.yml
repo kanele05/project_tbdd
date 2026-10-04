@@ -1,0 +1,147 @@
+name: CI
+
+# Kiểm thử tự động. Chạy khi:
+#   - mở/cập nhật Pull Request vào develop hoặc main;
+#   - push lên develop;
+#   - được deploy.yml gọi lại (workflow_call) trước khi build image -> nhánh main/tag v* cũng được kiểm thử
+#     mà không phải chạy hai lần (vì vậy KHÔNG có trigger push: main ở đây).
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+  workflow_call:
+    inputs:
+      docker:
+        description: Có build thử image Docker (không push) hay không
+        type: boolean
+        default: true
+
+# Hủy lượt chạy cũ của cùng một PR khi có commit mới (không hủy lượt gọi từ deploy.yml).
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+  server:
+    name: Server (typecheck, lint, test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: server
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: elearning_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d elearning_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Tên database phải chứa "test" (chốt an toàn của tests/globalSetup.ts trước khi TRUNCATE).
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/elearning_test?schema=public
+      JWT_SECRET: ci-test-secret-ci-test-secret-0123456789
+      AI_PROVIDER: mock
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Cài dependency (tự chạy prisma generate)
+        run: npm ci
+
+      - name: Áp migration lên database test
+        run: npx prisma migrate deploy
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Kiểm tra định dạng (Prettier)
+        run: npm run format:check
+
+      - name: Test (unit + integration)
+        run: npm test
+
+  mobile:
+    name: Mobile (typecheck, lint, test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Cài dependency
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test -- --ci
+
+  docker:
+    # Build thử 2 image để lỗi Dockerfile lộ ra ở PR chứ không phải lúc deploy (không push, không cần secret).
+    name: Docker build (${{ matrix.name }})
+    # Chỉ bỏ qua khi deploy.yml truyền docker: false. (Dùng format() vì trong biểu thức GitHub `null` và `false`
+    # đều quy về số 0 nên `inputs.docker != false` sai ở các sự kiện không có input như pull_request.)
+    if: ${{ format('{0}', inputs.docker) != 'false' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            context: server
+            file: server/Dockerfile
+            build-args: ''
+          - name: web
+            context: mobile
+            file: mobile/Dockerfile.web
+            build-args: |
+              EXPO_PUBLIC_API_URL=https://api.example.com/api/v1
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          build-args: ${{ matrix.build-args }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}

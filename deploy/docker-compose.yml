@@ -1,0 +1,371 @@
+# E-Learning - toàn bộ hệ thống trên 1 VPS (Ubuntu 24.04, 2 vCPU / 4 GB RAM).
+# Chạy từ thư mục deploy/:  docker compose up -d      (cần file deploy/.env - xem .env.example và README.md)
+#
+# Chỉ Caddy mở cổng ra Internet (80/443). Mọi service khác chỉ nằm trong mạng Docker "elearning"
+# (Postgres, Prometheus, Loki, /metrics... KHÔNG có `ports:` -> không thể truy cập từ ngoài).
+#
+# Profile tùy chọn (bật bằng COMPOSE_PROFILES trong .env hoặc `--profile`):
+#   mail   -> Mailpit: hộp thư giả bắt email dev/staging (chỉ xem được qua SSH tunnel)
+#   status -> Uptime Kuma: trang theo dõi uptime (cần thêm caddy/sites/status.caddy)
+
+name: elearning
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+networks:
+  # Mạng mặc định của project (mọi service tự tham gia). Cố định dải IP để quy tắc ufw cho
+  # node-exporter (README bước 4) luôn đúng.
+  default:
+    name: elearning
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+volumes:
+  postgres_data:
+  uploads:
+  caddy_data:
+  caddy_config:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  alloy_data:
+  mailpit_data:
+  uptime_kuma_data:
+
+services:
+  # ---------------------------------------------------------------------------
+  # Reverse proxy + HTTPS tự động (Let's Encrypt)
+  # ---------------------------------------------------------------------------
+  caddy:
+    <<: *service-defaults
+    image: caddy:2-alpine
+    container_name: elearning-caddy
+    mem_limit: 128m
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    environment:
+      DOMAIN: "${DOMAIN:?Set DOMAIN in deploy/.env (example: example.com)}"
+      ACME_EMAIL: "${ACME_EMAIL:?Set ACME_EMAIL in deploy/.env}"
+      ACME_CA: "${ACME_CA:-https://acme-v02.api.letsencrypt.org/directory}"
+    volumes:
+      # Mount cả thư mục (không mount từng file) để `git pull` đổi file mà container vẫn thấy bản mới.
+      - ./caddy:/etc/caddy:ro
+      - caddy_data:/data # chứa chứng chỉ - GIỮ LẠI (mất volume này sẽ bị Let's Encrypt giới hạn tần suất cấp lại)
+      - caddy_config:/config
+
+  # ---------------------------------------------------------------------------
+  # Ứng dụng
+  # ---------------------------------------------------------------------------
+  api:
+    <<: *service-defaults
+    image: "ghcr.io/${GHCR_OWNER:-kanele05}/elearning-api:${IMAGE_TAG:-latest}"
+    build:
+      context: ../server
+    container_name: elearning-api
+    init: true
+    stop_grace_period: 15s
+    mem_limit: 512m
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      NODE_OPTIONS: --max-old-space-size=384
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-elearning}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in deploy/.env}@postgres:5432/${POSTGRES_DB:-elearning}?schema=public"
+      JWT_SECRET: "${JWT_SECRET:?Set JWT_SECRET in deploy/.env (openssl rand -hex 32)}"
+      JWT_EXPIRES_IN: "${JWT_EXPIRES_IN:-7d}"
+      ACCESS_TOKEN_TTL: "${ACCESS_TOKEN_TTL:-15m}"
+      REFRESH_TOKEN_TTL: "${REFRESH_TOKEN_TTL:-30d}"
+      CORS_ORIGIN: "https://app.${DOMAIN},https://${DOMAIN}"
+      # URL công khai của API (dùng để tạo link file static/upload). Mặc định https://api.<DOMAIN>.
+      PUBLIC_BASE_URL: "${PUBLIC_BASE_URL:-https://api.${DOMAIN}}"
+      UPLOAD_DIR: uploads
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      # /metrics chạy trên cổng riêng 9464: KHÔNG publish ra host, Caddy không proxy tới -> chỉ Prometheus scrape được.
+      METRICS_PORT: "9464"
+      METRICS_HOST: 0.0.0.0
+      METRICS_TOKEN: "${METRICS_TOKEN:-}"
+      # AI (Gemini). Để trống key -> chế độ mock. Biến để trống = dùng giá trị mặc định trong server/src/config/env.ts.
+      AI_PROVIDER: "${AI_PROVIDER:-}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      GEMINI_MODEL: "${GEMINI_MODEL:-}"
+      AI_TIMEOUT_MS: "${AI_TIMEOUT_MS:-}"
+      AI_CHAT_LIMIT_PER_HOUR: "${AI_CHAT_LIMIT_PER_HOUR:-}"
+      AI_LIMIT_PER_HOUR: "${AI_LIMIT_PER_HOUR:-}"
+      AI_USER_LIMIT_PER_DAY: "${AI_USER_LIMIT_PER_DAY:-}"
+      AI_GLOBAL_LIMIT_PER_DAY: "${AI_GLOBAL_LIMIT_PER_DAY:-}"
+      # Email (OTP xác minh, quên mật khẩu). SMTP_HOST để trống -> API chỉ ghi nội dung thư ra log (không gửi thật).
+      # Staging/dev: bật profile "mail" và đặt SMTP_HOST=mailpit, SMTP_PORT=1025.
+      SMTP_HOST: "${SMTP_HOST:-}"
+      SMTP_PORT: "${SMTP_PORT:-}"
+      SMTP_USER: "${SMTP_USER:-}"
+      SMTP_PASS: "${SMTP_PASS:-}"
+      MAIL_FROM: "${MAIL_FROM:-E-Learning <no-reply@localhost>}"
+      # CAPTCHA + 2FA
+      TURNSTILE_SITE_KEY: "${TURNSTILE_SITE_KEY:-}"
+      TURNSTILE_SECRET_KEY: "${TURNSTILE_SECRET_KEY:-}"
+      TOTP_ENC_KEY: "${TOTP_ENC_KEY:?Set TOTP_ENC_KEY in deploy/.env (openssl rand -base64 32)}"
+    volumes:
+      - uploads:/app/uploads
+
+  web:
+    <<: *service-defaults
+    image: "ghcr.io/${GHCR_OWNER:-kanele05}/elearning-web:${IMAGE_TAG:-latest}"
+    build:
+      context: ../mobile
+      dockerfile: Dockerfile.web
+      args:
+        # URL API được nhúng vào bundle lúc build -> đổi DOMAIN thì phải build lại image web.
+        EXPO_PUBLIC_API_URL: "https://api.${DOMAIN}/api/v1"
+        EXPO_PUBLIC_TURNSTILE_SITE_KEY: "${TURNSTILE_SITE_KEY:-}"
+    container_name: elearning-web
+    mem_limit: 64m
+
+  # ---------------------------------------------------------------------------
+  # Cơ sở dữ liệu (volume riêng, KHÔNG mở cổng ra ngoài)
+  # ---------------------------------------------------------------------------
+  postgres:
+    <<: *service-defaults
+    image: postgres:17-alpine
+    container_name: elearning-postgres
+    mem_limit: 512m
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-elearning}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in deploy/.env}"
+      POSTGRES_DB: "${POSTGRES_DB:-elearning}"
+    # Tinh chỉnh cho container 512 MB (VPS 4 GB chạy chung nhiều service).
+    command:
+      - postgres
+      - -c
+      - shared_buffers=128MB
+      - -c
+      - effective_cache_size=384MB
+      - -c
+      - work_mem=4MB
+      - -c
+      - maintenance_work_mem=64MB
+      - -c
+      - max_connections=60
+      - -c
+      - wal_compression=on
+      - -c
+      - random_page_cost=1.1
+      - -c
+      - log_min_duration_statement=500 # ghi log truy vấn chậm > 500 ms (xem trong Grafana > Loki)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  backup:
+    <<: *service-defaults
+    image: postgres:17-alpine
+    container_name: elearning-backup
+    mem_limit: 128m
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "/scripts/backup.sh"]
+    environment:
+      PGHOST: postgres
+      PGUSER: "${POSTGRES_USER:-elearning}"
+      PGPASSWORD: "${POSTGRES_PASSWORD}"
+      PGDATABASE: "${POSTGRES_DB:-elearning}"
+      BACKUP_KEEP: "${BACKUP_KEEP:-7}"
+      BACKUP_HOUR_UTC: "${BACKUP_HOUR_UTC:-20}" # 20:00 UTC = 03:00 giờ Việt Nam
+    volumes:
+      - ./backup:/scripts:ro
+      - ./backups:/backups # thư mục trên VPS: deploy/backups/ (copy ra ngoài bằng scp)
+
+  # ---------------------------------------------------------------------------
+  # Monitoring: Prometheus (metrics) + Loki/Alloy (log) + Grafana (dashboard)
+  # ---------------------------------------------------------------------------
+  prometheus:
+    <<: *service-defaults
+    image: prom/prometheus:v3.15.0
+    container_name: elearning-prometheus
+    mem_limit: 384m
+    environment:
+      GOMEMLIMIT: 300MiB
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --storage.tsdb.retention.size=2GB
+    extra_hosts:
+      # node-exporter chạy network_mode: host -> Prometheus gọi tới VPS qua tên này.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+      - prometheus_data:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:9090/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  loki:
+    <<: *service-defaults
+    image: grafana/loki:3.7
+    container_name: elearning-loki
+    mem_limit: 384m
+    environment:
+      GOMEMLIMIT: 300MiB
+    command: ["-config.file=/etc/loki/loki.yaml"]
+    volumes:
+      - ./loki:/etc/loki:ro
+      - loki_data:/loki
+
+  alloy:
+    <<: *service-defaults
+    image: grafana/alloy:v1.20.1
+    container_name: elearning-alloy
+    mem_limit: 256m
+    user: root # cần đọc /var/run/docker.sock để lấy log container
+    environment:
+      GOMEMLIMIT: 200MiB
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - --disable-reporting
+      - /etc/alloy/config.alloy
+    depends_on:
+      - loki
+    volumes:
+      - ./alloy:/etc/alloy:ro
+      - alloy_data:/var/lib/alloy/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  grafana:
+    <<: *service-defaults
+    image: grafana/grafana:13.0
+    container_name: elearning-grafana
+    mem_limit: 384m
+    depends_on:
+      - prometheus
+      - loki
+    environment:
+      GOMEMLIMIT: 300MiB
+      GF_SERVER_DOMAIN: "grafana.${DOMAIN}"
+      GF_SERVER_ROOT_URL: "https://grafana.${DOMAIN}/"
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in deploy/.env}"
+      GF_SECURITY_COOKIE_SECURE: "true"
+      GF_SECURITY_DISABLE_GRAVATAR: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_PLUGINS_PREINSTALL_DISABLED: "true" # không tải plugin lúc khởi động (tiết kiệm RAM + thời gian)
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/api.json
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  node-exporter:
+    <<: *service-defaults
+    image: prom/node-exporter:v1.12.1
+    container_name: elearning-node-exporter
+    mem_limit: 64m
+    # network_mode: host để đo đúng network của VPS (không phải của container).
+    # Lắng nghe trên IP cầu nối docker0 (172.17.0.1) chứ không phải 0.0.0.0 -> không lộ ra Internet
+    # kể cả khi quên bật tường lửa. Prometheus truy cập qua host.docker.internal (= host-gateway = 172.17.0.1).
+    network_mode: host
+    pid: host
+    command:
+      - --path.rootfs=/host
+      - --web.listen-address=172.17.0.1:9100
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|run|var/lib/docker/.+)($$|/)
+    volumes:
+      - /:/host:ro,rslave
+
+  cadvisor:
+    <<: *service-defaults
+    image: ghcr.io/google/cadvisor:v0.60.6
+    container_name: elearning-cadvisor
+    mem_limit: 256m
+    environment:
+      GOMEMLIMIT: 200MiB
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=30s
+      - --store_container_labels=false
+      - --whitelisted_container_labels=com.docker.compose.service
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+
+  postgres-exporter:
+    <<: *service-defaults
+    image: prometheuscommunity/postgres-exporter:v0.20.1
+    container_name: elearning-postgres-exporter
+    mem_limit: 64m
+    # postmaster: thêm metric thời điểm khởi động Postgres (dashboard "E-Learning · PostgreSQL" dùng cho uptime).
+    command:
+      - --collector.postmaster
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_URI: "postgres:5432/${POSTGRES_DB:-elearning}?sslmode=disable"
+      DATA_SOURCE_USER: "${POSTGRES_USER:-elearning}"
+      DATA_SOURCE_PASS: "${POSTGRES_PASSWORD}"
+
+  # ---------------------------------------------------------------------------
+  # Tùy chọn (profile)
+  # ---------------------------------------------------------------------------
+  # Hộp thư giả: nhận mọi email API gửi tới mailpit:1025 và KHÔNG gửi ra ngoài.
+  # Giao diện chỉ mở ở 127.0.0.1:8025 của VPS -> xem bằng SSH tunnel (README mục Mailpit), không có đường nào từ Internet.
+  mailpit:
+    <<: *service-defaults
+    profiles: ["mail"]
+    image: axllent/mailpit:v1.31
+    container_name: elearning-mailpit
+    mem_limit: 64m
+    ports:
+      - "127.0.0.1:8025:8025"
+    environment:
+      MP_DATABASE: /data/mailpit.db
+      MP_MAX_MESSAGES: "500"
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+      MP_DISABLE_VERSION_CHECK: "1"
+    volumes:
+      - mailpit_data:/data
+
+  uptime-kuma:
+    <<: *service-defaults
+    profiles: ["status"]
+    image: louislam/uptime-kuma:2
+    container_name: elearning-uptime-kuma
+    mem_limit: 256m
+    volumes:
+      - uptime_kuma_data:/app/data

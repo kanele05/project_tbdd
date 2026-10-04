@@ -1,0 +1,13 @@
+# Uptime Kuma (tùy chọn). Để bật:
+#   1. Thêm bản ghi DNS A cho "status" trỏ về IP VPS.
+#   2. cp caddy/sites/status.caddy.example caddy/sites/status.caddy
+#   3. Thêm COMPOSE_PROFILES=status (hoặc mail,status) vào deploy/.env rồi: docker compose up -d
+#   4. docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+# Lần đầu mở https://status.<DOMAIN> sẽ yêu cầu tạo tài khoản admin - làm NGAY để người lạ không chiếm trước.
+
+status.{$DOMAIN} {
+	import common
+	import security_headers
+
+	reverse_proxy uptime-kuma:3001
+}

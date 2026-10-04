@@ -1,0 +1,52 @@
+# Prometheus - thu thập metrics. Tất cả target nằm trong mạng Docker "elearning" (hoặc host VPS).
+# Sửa file này xong: docker compose restart prometheus   (deploy.sh tự làm khi file thay đổi)
+
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # API: /metrics ở cổng riêng 9464 (không publish ra ngoài, Caddy không proxy tới).
+  - job_name: api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["api:9464"]
+        labels:
+          service: api
+    # Nếu đặt METRICS_TOKEN cho API, bỏ comment 3 dòng dưới và tạo file prometheus/api-token chứa đúng token đó
+    # (file này đã được .gitignore, KHÔNG commit):
+    # authorization:
+    #   type: Bearer
+    #   credentials_file: /etc/prometheus/api-token
+
+  # Host VPS: node-exporter chạy network_mode host, nghe trên 172.17.0.1:9100 (= host-gateway).
+  - job_name: node
+    static_configs:
+      - targets: ["host.docker.internal:9100"]
+
+  # Container (CPU/RAM/network theo từng container).
+  - job_name: cadvisor
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+
+  # Chính hệ thống monitoring (để biết nó còn sống).
+  - job_name: loki
+    static_configs:
+      - targets: ["loki:3100"]
+
+  - job_name: alloy
+    static_configs:
+      - targets: ["alloy:12345"]
+
+  - job_name: grafana
+    static_configs:
+      - targets: ["grafana:3000"]
