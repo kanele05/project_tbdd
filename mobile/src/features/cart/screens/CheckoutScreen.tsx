@@ -1,113 +1,41 @@
-import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { AccessibilityInfo, BackHandler, ScrollView, StyleSheet, Switch, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AccessibilityInfo, BackHandler, StyleSheet, View } from 'react-native';
 
-import {
-  AppText,
-  Button,
-  EmptyState,
-  ErrorState,
-  ScreenHeader,
-  Skeleton,
-  useToast,
-} from '@/components/ui';
-import { STRINGS } from '@/constants/strings';
+import { EmptyState, ErrorState, ScreenHeader, Skeleton, useToast } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { getErrorMessage, isAppError } from '@/lib/appError';
-import { colors, layout, radius, spacing } from '@/theme';
-import type { CartDto, CheckoutResponse, PaymentMethod } from '@/types/api';
-import { formatPrice } from '@/utils/formatPrice';
+import { layout, makeStyles, spacing } from '@/theme';
+import type { CheckoutResponse, PaymentMethod } from '@/types/api';
 
-import { OrderSummaryCard } from '../components/OrderSummaryCard';
-import { PaymentMethodPicker } from '../components/PaymentMethodPicker';
+import { CheckoutForm } from '../components/CheckoutForm';
 import { PaymentFailedView, PaymentSuccessView } from '../components/PaymentResultView';
 import { useCart, useCheckout } from '../hooks';
 
 type Phase = { kind: 'form' } | { kind: 'success'; result: CheckoutResponse } | { kind: 'failed' };
 
 const PAYMENT_FAILED_CODE = 'PAYMENT_FAILED';
-const PAYMENT_SUCCESS_ANNOUNCEMENT = 'Payment successful. Your courses are ready.';
 
 function isPaymentFailure(error: unknown): boolean {
   return isAppError(error) && (error.status === 402 || error.code === PAYMENT_FAILED_CODE);
 }
 
 function CheckoutSkeleton() {
+  const { t } = useTranslation('cart');
   return (
-    <View style={styles.content} testID="checkout-skeleton">
-      <Skeleton height={20} width="40%" />
+    <View
+      style={styles.skeleton}
+      testID="checkout-skeleton"
+      accessible
+      accessibilityLabel={t('checkout.loading')}
+      accessibilityState={{ busy: true }}
+    >
+      <Skeleton height={24} width="40%" />
       <Skeleton height={120} />
-      <Skeleton height={20} width="50%" />
+      <Skeleton height={24} width="50%" />
       <Skeleton height={72} />
       <Skeleton height={72} />
     </View>
-  );
-}
-
-type FormProps = {
-  cart: CartDto;
-  method: PaymentMethod;
-  onChangeMethod: (method: PaymentMethod) => void;
-  simulateFailure: boolean;
-  onChangeSimulateFailure: (value: boolean) => void;
-  isPaying: boolean;
-  onPay: () => void;
-};
-
-function CheckoutForm({
-  cart,
-  method,
-  onChangeMethod,
-  simulateFailure,
-  onChangeSimulateFailure,
-  isPaying,
-  onPay,
-}: FormProps) {
-  const insets = useSafeAreaInsets();
-  return (
-    <>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <AppText variant="title" accessibilityRole="header">
-          Order summary
-        </AppText>
-        <OrderSummaryCard items={cart.items} totalCents={cart.totalCents} />
-        <AppText variant="title" accessibilityRole="header" style={styles.sectionGap}>
-          Payment method
-        </AppText>
-        <PaymentMethodPicker value={method} onChange={onChangeMethod} disabled={isPaying} />
-        <View style={styles.note} accessible accessibilityLabel="Demo payment, no real card needed">
-          <Feather name="info" size={18} color={colors.primary} />
-          <AppText variant="caption" color="textSecondary" style={styles.noteText}>
-            Demo payment — no real card needed
-          </AppText>
-        </View>
-        {__DEV__ ? (
-          <View style={styles.devRow}>
-            <AppText variant="body" style={styles.devLabel}>
-              Simulate payment failure
-            </AppText>
-            <Switch
-              value={simulateFailure}
-              onValueChange={onChangeSimulateFailure}
-              disabled={isPaying}
-              trackColor={{ true: colors.primary, false: colors.border }}
-              thumbColor={colors.white}
-              accessibilityLabel="Simulate payment failure"
-            />
-          </View>
-        ) : null}
-      </ScrollView>
-      <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
-        <Button
-          title={`Pay ${formatPrice(cart.totalCents)}`}
-          fullWidth
-          loading={isPaying}
-          onPress={onPay}
-          testID="pay-button"
-        />
-      </View>
-    </>
   );
 }
 
@@ -116,6 +44,8 @@ function CheckoutForm({
  * success (Start learning / Go to My Courses) or failure (402 -> Try again, cart untouched).
  */
 export function CheckoutScreen() {
+  const { t } = useTranslation(['cart', 'common']);
+  const themed = useStyles();
   const toast = useToast();
   const { data: cart, isError, error, refetch } = useCart();
   const { mutateAsync: payAsync, isPending: isPaying } = useCheckout();
@@ -140,7 +70,7 @@ export function CheckoutScreen() {
   const isSuccess = phase.kind === 'success';
   useEffect(() => {
     if (!isSuccess) return undefined;
-    AccessibilityInfo.announceForAccessibility(PAYMENT_SUCCESS_ANNOUNCEMENT);
+    AccessibilityInfo.announceForAccessibility(t('cart:result.successAnnouncement'));
     // The cart is empty after a successful payment: system Back goes to My Courses, not back to
     // an empty checkout form / cart.
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -148,7 +78,7 @@ export function CheckoutScreen() {
       return true;
     });
     return () => subscription.remove();
-  }, [isSuccess]);
+  }, [isSuccess, t]);
 
   const handleStartLearning = useCallback(() => {
     if (phase.kind !== 'success') return;
@@ -189,8 +119,8 @@ export function CheckoutScreen() {
     body = (
       <EmptyState
         icon="shopping-cart"
-        title="Your cart is empty"
-        actionLabel={STRINGS.common.exploreCourses}
+        title={t('cart:empty.title')}
+        actionLabel={t('common:actions.exploreCourses')}
         onAction={handleExplore}
         style={styles.empty}
       />
@@ -202,41 +132,18 @@ export function CheckoutScreen() {
   }
 
   return (
-    <View style={styles.screen}>
-      <ScreenHeader title="Checkout" showBack={phase.kind === 'form'} />
+    <View style={themed.screen}>
+      <ScreenHeader title={t('cart:checkout.title')} showBack={phase.kind === 'form'} />
       {body}
     </View>
   );
 }
 
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
+}));
+
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  content: { gap: spacing.md, padding: layout.screenPaddingX },
-  sectionGap: { marginTop: spacing.md },
-  note: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    padding: spacing.md,
-    borderRadius: radius.card,
-    backgroundColor: colors.primaryLight,
-  },
-  noteText: { flex: 1 },
-  devRow: {
-    minHeight: layout.minTouchTarget,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  devLabel: { flex: 1 },
-  bar: {
-    paddingTop: spacing.lg,
-    paddingHorizontal: layout.screenPaddingX,
-    borderTopWidth: 1,
-    // Same hairline divider as the SC-09 bottom bar.
-    borderTopColor: colors.surface,
-    backgroundColor: colors.background,
-  },
+  skeleton: { gap: spacing.md, padding: layout.screenPaddingX },
   empty: { flex: 1 },
 });

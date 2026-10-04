@@ -1,8 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { Share } from 'react-native';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { AppError } from '@/lib/appError';
+import { useAuthStore } from '@/stores/authStore';
 import type { CourseDetail } from '@/types/api';
 
 import { CourseDetailScreen } from './CourseDetailScreen';
@@ -10,6 +10,9 @@ import { CourseDetailScreen } from './CourseDetailScreen';
 const mockPush = jest.fn();
 const mockToggleBookmark = jest.fn();
 const mockToggleFollow = jest.fn();
+const mockToggleLike = jest.fn();
+const mockShare = jest.fn();
+const mockAiSummary = jest.fn();
 const mockAddToCart = jest.fn();
 const mockEnroll = jest.fn();
 const mockRefetch = jest.fn();
@@ -17,8 +20,15 @@ let mockDetailState: Record<string, unknown> = {};
 let mockPreviewState: Record<string, unknown> = {};
 
 jest.mock('expo-router', () => ({
-  router: { push: (href: string) => mockPush(href), back: jest.fn(), canGoBack: () => true },
+  router: {
+    push: (href: string) => mockPush(href),
+    back: jest.fn(),
+    replace: jest.fn(),
+    canGoBack: () => true,
+  },
 }));
+
+jest.mock('expo-status-bar', () => ({ StatusBar: () => null }));
 
 jest.mock('expo-video', () => ({
   useVideoPlayer: () => ({ play: jest.fn() }),
@@ -42,6 +52,18 @@ jest.mock('@/features/bookmark/hooks', () => ({
 
 jest.mock('@/features/teacher/hooks', () => ({
   useToggleFollow: () => ({ toggleFollow: mockToggleFollow, isPending: false }),
+}));
+
+jest.mock('@/features/learning/hooks', () => ({
+  useToggleCourseLike: () => ({ mutate: mockToggleLike }),
+}));
+
+jest.mock('../useShareCourse', () => ({
+  useShareCourse: () => mockShare,
+}));
+
+jest.mock('@/features/ai/hooks', () => ({
+  useAiCourseSummary: (courseId: string, isEnabled: boolean) => mockAiSummary(courseId, isEnabled),
 }));
 
 jest.mock('@/features/learning/components/CourseLessonsTab', () => {
@@ -73,6 +95,16 @@ jest.mock('@/features/review/components/CourseReviewsTab', () => {
     }) => <Text>{`REVIEWS TAB ${courseId} write=${String(canWriteReview)}`}</Text>,
   };
 });
+
+const SIGNED_IN_USER = {
+  id: 'u1',
+  email: 'rosie@example.com',
+  fullName: 'Rosie',
+  headline: null,
+  avatarUrl: null,
+  coverUrl: null,
+  role: 'STUDENT',
+} as const;
 
 function makeDetail(overrides: Partial<CourseDetail> = {}): CourseDetail {
   return {
@@ -133,6 +165,8 @@ describe('CourseDetailScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockPreviewState = { data: undefined, isPending: true, error: null, refetch: jest.fn() };
+    mockAiSummary.mockReturnValue({ data: undefined, isError: false, isFetching: false });
+    useAuthStore.setState({ user: SIGNED_IN_USER, status: 'authenticated' });
   });
 
   describe('loading and error states', () => {
@@ -166,17 +200,21 @@ describe('CourseDetailScreen', () => {
   });
 
   describe('content', () => {
-    it('renders title, rating line and the three tabs', async () => {
+    it('renders the hero title, rating, the facts and the three tabs', async () => {
       loaded(makeDetail());
       await renderScreen();
 
-      expect(screen.getByText('Course details')).toBeOnTheScreen();
       expect(
         screen.getByText('UX Foundation: Introduction to User Experience Design'),
       ).toBeOnTheScreen();
+      expect(screen.getByText('Design')).toBeOnTheScreen();
+      expect(screen.getByText('4.5')).toBeOnTheScreen();
+      expect(screen.getByLabelText('12 lessons')).toBeOnTheScreen();
+      expect(screen.getByLabelText('14 hours total length')).toBeOnTheScreen();
+      expect(screen.getByLabelText('10 likes')).toBeOnTheScreen();
       expect(screen.getByRole('tab', { name: 'Overview' })).toBeSelected();
       expect(screen.getByRole('tab', { name: 'Lessons' })).toBeOnTheScreen();
-      expect(screen.getByRole('tab', { name: 'Review' })).toBeOnTheScreen();
+      expect(screen.getByRole('tab', { name: 'Reviews' })).toBeOnTheScreen();
     });
 
     it('lists the teacher, computed video hours and no certificate in Overview', async () => {
@@ -217,7 +255,7 @@ describe('CourseDetailScreen', () => {
       await fireEvent.press(screen.getByRole('tab', { name: 'Lessons' }));
       expect(screen.getByText('LESSONS TAB course-1')).toBeOnTheScreen();
 
-      await fireEvent.press(screen.getByRole('tab', { name: 'Review' }));
+      await fireEvent.press(screen.getByRole('tab', { name: 'Reviews' }));
       expect(screen.getByText('REVIEWS TAB course-1 write=true')).toBeOnTheScreen();
     });
 
@@ -225,7 +263,7 @@ describe('CourseDetailScreen', () => {
       loaded(makeDetail());
       await renderScreen();
 
-      await fireEvent.press(screen.getByRole('tab', { name: 'Review' }));
+      await fireEvent.press(screen.getByRole('tab', { name: 'Reviews' }));
       expect(screen.getByText('REVIEWS TAB course-1 write=false')).toBeOnTheScreen();
     });
   });
@@ -327,17 +365,110 @@ describe('CourseDetailScreen', () => {
       expect(mockToggleFollow).toHaveBeenCalledWith('teacher-1', true);
     });
 
-    it('shares the course from the more menu', async () => {
-      const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+    it('toggles the like with the current state', async () => {
+      loaded(makeDetail({ isLiked: true }));
+      await renderScreen();
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Remove your like' }));
+      expect(mockToggleLike).toHaveBeenCalledWith(true);
+    });
+
+    it('opens the share sheet from the hero', async () => {
       loaded(makeDetail());
       await renderScreen();
 
-      await fireEvent.press(screen.getByRole('button', { name: 'More options' }));
-      await fireEvent.press(screen.getByRole('menuitem', { name: 'Share course' }));
+      await fireEvent.press(screen.getByRole('button', { name: 'Share course' }));
+      expect(mockShare).toHaveBeenCalledTimes(1);
+    });
+  });
 
-      await waitFor(() => expect(shareSpy).toHaveBeenCalledTimes(1));
-      expect(shareSpy.mock.calls[0]?.[0]?.message).toContain('UX Foundation');
-      shareSpy.mockRestore();
+  describe('AI summary (AI-03)', () => {
+    it('asks for the summary only when the user taps the button', async () => {
+      loaded(makeDetail());
+      await renderScreen();
+
+      expect(mockAiSummary).toHaveBeenLastCalledWith('course-1', false);
+      await fireEvent.press(screen.getByRole('button', { name: 'Summarize with AI' }));
+
+      expect(mockAiSummary).toHaveBeenLastCalledWith('course-1', true);
+    });
+
+    it('shows a loading state while the summary is generated', async () => {
+      loaded(makeDetail());
+      mockAiSummary.mockReturnValue({ data: undefined, isError: false, isFetching: true });
+      await renderScreen();
+
+      expect(screen.getByTestId('ai-summary-loading')).toBeOnTheScreen();
+    });
+
+    it('shows the friendly rate-limit message with Retry', async () => {
+      loaded(makeDetail());
+      const refetch = jest.fn();
+      mockAiSummary.mockReturnValue({
+        data: undefined,
+        isError: true,
+        isFetching: false,
+        error: new AppError({
+          status: 429,
+          code: 'AI_RATE_LIMITED',
+          message: 'x',
+          details: { retryAfterSec: 12 },
+        }),
+        refetch,
+      });
+      await renderScreen();
+
+      expect(
+        screen.getByText('The AI assistant is busy right now. Please wait a moment and try again.'),
+      ).toBeOnTheScreen();
+      expect(screen.getByText('Try again in 12 s.')).toBeOnTheScreen();
+      await fireEvent.press(within(screen.getByTestId('ai-summary-error')).getByText('Retry'));
+      expect(refetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders the summary sections with the "Generated by AI" label', async () => {
+      loaded(makeDetail());
+      mockAiSummary.mockReturnValue({
+        data: {
+          courseId: 'course-1',
+          lang: 'en',
+          overview: 'A short overview.',
+          objectives: ['Learn the basics'],
+          sections: [{ title: 'Introduction', summary: 'Meet the course.' }],
+          targetAudience: ['Beginners'],
+          outcomes: ['Ship a project'],
+          model: 'mock-ai-1',
+          generatedAt: '2026-10-04T00:00:00Z',
+        },
+        isError: false,
+        isFetching: false,
+      });
+      await renderScreen();
+
+      expect(screen.getByText('Generated by AI')).toBeOnTheScreen();
+      expect(screen.getByText('A short overview.')).toBeOnTheScreen();
+      expect(screen.getByText('Learn the basics')).toBeOnTheScreen();
+      expect(screen.getByText('1. Introduction')).toBeOnTheScreen();
+      expect(screen.getByText('Beginners')).toBeOnTheScreen();
+      expect(screen.getByText('Ship a project')).toBeOnTheScreen();
+    });
+
+    it('requests the summary from the AI button of the bottom bar', async () => {
+      loaded(makeDetail());
+      await renderScreen();
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Summarize this course with AI' }));
+
+      expect(mockAiSummary).toHaveBeenLastCalledWith('course-1', true);
+    });
+
+    it('hides every AI entry point when the user is signed out', async () => {
+      useAuthStore.setState({ user: null, status: 'unauthenticated' });
+      loaded(makeDetail());
+      await renderScreen();
+
+      expect(screen.queryByTestId('ai-summary-button')).not.toBeOnTheScreen();
+      expect(screen.queryByTestId('course-ai-button')).not.toBeOnTheScreen();
     });
   });
 

@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { Share } from 'react-native';
 
 import { makeCourse } from '@/components/course/courseFixtures';
+import { i18n } from '@/i18n';
 import { AppError } from '@/lib/appError';
 import { useAuthStore } from '@/stores/authStore';
 import type { ReviewDto, TeacherDetail } from '@/types/api';
@@ -41,6 +43,8 @@ jest.mock('@shopify/flash-list', () => {
 const mockPush = jest.fn();
 const mockToggleFollow = jest.fn();
 const mockRefetchTeacher = jest.fn();
+
+jest.mock('expo-status-bar', () => ({ StatusBar: () => null }));
 
 jest.mock('expo-router', () => ({
   router: {
@@ -152,7 +156,6 @@ describe('TeacherProfileScreen', () => {
     loadTeacher();
     await render(<TeacherProfileScreen teacherId="t1" />);
 
-    expect(screen.getByText("Teacher's profile")).toBeOnTheScreen();
     expect(screen.getByText('Sara Weise')).toBeOnTheScreen();
     expect(screen.getByText('Teacher')).toBeOnTheScreen();
     expect(screen.getByText('UI/UX Designer')).toBeOnTheScreen();
@@ -160,6 +163,29 @@ describe('TeacherProfileScreen', () => {
     expect(screen.getByText('I design products people love.')).toBeOnTheScreen();
     expect(screen.getByLabelText('Students: 3,400')).toBeOnTheScreen();
     expect(screen.getByLabelText('Followers: 87')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Rating: 4.5')).toBeOnTheScreen();
+  });
+
+  it('shares the profile from the hero', async () => {
+    const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+    loadTeacher();
+    await render(<TeacherProfileScreen teacherId="t1" />);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Share profile' }));
+
+    expect(shareSpy).toHaveBeenCalledTimes(1);
+    expect(shareSpy.mock.calls[0]?.[0]?.message).toContain('Sara Weise');
+    shareSpy.mockRestore();
+  });
+
+  it('shows the Vietnamese labels after a language change', async () => {
+    await i18n.changeLanguage('vi');
+    loadTeacher();
+    await render(<TeacherProfileScreen teacherId="t1" />);
+
+    expect(screen.getByText('Giảng viên')).toBeOnTheScreen();
+    expect(screen.getByRole('tab', { name: 'Khóa học' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Theo dõi Sara Weise' })).toBeOnTheScreen();
   });
 
   it('follows the teacher from the Overview tab', async () => {
@@ -250,7 +276,7 @@ describe('TeacherProfileScreen', () => {
     };
     await render(<TeacherProfileScreen teacherId="t1" />);
 
-    await fireEvent.press(screen.getByRole('tab', { name: 'Review' }));
+    await fireEvent.press(screen.getByRole('tab', { name: 'Reviews' }));
 
     expect(await screen.findByText('review: Great teacher')).toBeOnTheScreen();
   });

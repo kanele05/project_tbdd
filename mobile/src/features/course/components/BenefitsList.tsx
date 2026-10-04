@@ -1,34 +1,25 @@
 import Feather from '@expo/vector-icons/Feather';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui';
-import { colors, spacing } from '@/theme';
-
-import { getBenefitIcon } from '../courseAction';
+import { spacing, useTheme } from '@/theme';
 
 export type BenefitsListProps = {
   /** Already prepared by `buildBenefits` (video hours first, no certificate). */
   benefits: readonly string[];
 };
 
-function BenefitIconView({ text }: { text: string }) {
-  const icon = getBenefitIcon(text);
-  return icon.family === 'ionicons' ? (
-    <Ionicons name={icon.name} size={24} color={colors.primary} />
-  ) : (
-    <Feather name={icon.name} size={24} color={colors.primary} />
-  );
-}
+const TICK_SIZE = 20;
 
-/** Overview tab "Benefits": a primary icon + text per row. */
+/** "This course includes": an accent tick + text per row (concept B checklist). */
 function BenefitsListBase({ benefits }: BenefitsListProps) {
+  const { colors } = useTheme();
   return (
     <View style={styles.list}>
       {benefits.map((text) => (
         <View key={text} style={styles.row}>
-          <BenefitIconView text={text} />
+          <Feather name="check" size={TICK_SIZE} color={colors.primaryText} style={styles.tick} />
           <AppText variant="body" style={styles.text}>
             {text}
           </AppText>
@@ -39,8 +30,10 @@ function BenefitsListBase({ benefits }: BenefitsListProps) {
 }
 
 const styles = StyleSheet.create({
-  list: { gap: spacing.lg },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  list: { gap: spacing.md },
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  // The tick lines up with the first text line (22 dp pitch).
+  tick: { marginTop: 1 },
   text: { flex: 1 },
 });
 

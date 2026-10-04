@@ -1,1 +1,71 @@
-{}
+{
+  "tabs": {
+    "overview": "Tổng quan",
+    "lessons": "Nội dung",
+    "reviews": "Đánh giá"
+  },
+  "loading": "Đang tải khóa học",
+  "shareMessage": "Xem khóa học \"{{title}}\" của {{teacher}} trên {{app}}",
+  "hero": {
+    "share": "Chia sẻ khóa học",
+    "like": "Thích khóa học này",
+    "unlike": "Bỏ thích",
+    "playPreview": "Phát video giới thiệu khóa học",
+    "previewLabel": "Xem giới thiệu",
+    "tagWithCategory": "{{badge}} · {{category}}"
+  },
+  "stats": {
+    "lessons": "bài học",
+    "duration": "tổng thời lượng",
+    "likes": "lượt thích",
+    "a11y": "{{value}} {{label}}"
+  },
+  "teacher": {
+    "follow": "Theo dõi",
+    "following": "Đang theo dõi",
+    "followA11y": "Theo dõi {{name}}",
+    "unfollowA11y": "Bỏ theo dõi {{name}}",
+    "openProfile": "{{name}}, {{job}}. Mở hồ sơ"
+  },
+  "overview": {
+    "includes": "Khóa học này bao gồm",
+    "videoBenefit": "{{duration}} video xem mọi lúc"
+  },
+  "similar": {
+    "title": "Khóa học tương tự",
+    "failed": "Không tải được các khóa học tương tự."
+  },
+  "bar": {
+    "progress": "Tiến độ của bạn",
+    "progressValue": "Hoàn thành {{percent}}%"
+  },
+  "action": {
+    "CONTINUE": "Tiếp tục học",
+    "ENROLL_FREE": "Đăng ký miễn phí",
+    "GO_TO_CART": "Đến giỏ hàng",
+    "ADD_TO_CART": "Thêm vào giỏ"
+  },
+  "toast": {
+    "addedToCart": "Đã thêm vào giỏ hàng",
+    "viewCart": "Xem giỏ hàng"
+  },
+  "preview": {
+    "close": "Đóng video giới thiệu",
+    "loading": "Đang tải video"
+  },
+  "ai": {
+    "title": "Tóm tắt bằng AI",
+    "subtitle": "Tổng quan, mục tiêu và nội dung từng chương",
+    "generate": "Tóm tắt bằng AI",
+    "askA11y": "Tóm tắt khóa học này bằng AI",
+    "generating": "AI đang đọc khóa học…",
+    "generatedBy": "Tạo bởi AI",
+    "disclaimer": "AI có thể sai sót. Hãy kiểm tra lại những chi tiết quan trọng với bạn.",
+    "objectives": "Mục tiêu học tập",
+    "outline": "Nội dung theo chương",
+    "audience": "Dành cho ai",
+    "outcomes": "Kết quả đạt được",
+    "empty": "Chưa có bản tóm tắt cho khóa học này.",
+    "retryAfter": "Hãy thử lại sau {{seconds}} giây."
+  }
+}

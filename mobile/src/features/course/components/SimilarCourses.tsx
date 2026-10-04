@@ -2,18 +2,23 @@ import { router } from 'expo-router';
 import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { CourseCardHorizontal, CourseCardHorizontalSkeleton } from '@/components/course';
-import { AppText, Button } from '@/components/ui';
+import { CourseCardVertical, CourseCardVerticalSkeleton } from '@/components/course';
+import { AppText, Button, RailList, SectionHeader } from '@/components/ui';
 import { useToggleBookmark } from '@/features/bookmark/hooks';
-import { spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, spacing } from '@/theme';
 import type { CourseSummary } from '@/types/api';
 
 import { useSimilarCourses } from '../hooks';
 
 export type SimilarCoursesProps = { courseId: string };
 
-/** Overview tab "Similar courses": up to 3 horizontal cards stacked vertically (design). */
+const SKELETON_KEYS = ['a', 'b', 'c'] as const;
+const keyOfCourse = (course: CourseSummary): string => course.id;
+
+/** Overview "Similar courses": a rail of up to 3 poster cards (hidden when there are none). */
 export function SimilarCourses({ courseId }: SimilarCoursesProps) {
+  const { t } = useTranslation(['course', 'common']);
   const { data, isPending, isError, refetch } = useSimilarCourses(courseId);
   const { toggleBookmark } = useToggleBookmark();
 
@@ -24,45 +29,59 @@ export function SimilarCourses({ courseId }: SimilarCoursesProps) {
     (course: CourseSummary) => toggleBookmark(course.id, course.isBookmarked, course),
     [toggleBookmark],
   );
+  const renderCourse = useCallback(
+    (course: CourseSummary) => (
+      <CourseCardVertical
+        course={course}
+        onPress={handlePress}
+        onToggleBookmark={handleToggleBookmark}
+      />
+    ),
+    [handlePress, handleToggleBookmark],
+  );
 
-  if (!isPending && !isError && (data?.length ?? 0) === 0) return null;
+  if (isPending) {
+    return (
+      <RailList
+        title={t('course:similar.title')}
+        data={SKELETON_KEYS}
+        keyExtractor={(key) => key}
+        renderItem={() => <CourseCardVerticalSkeleton />}
+      />
+    );
+  }
+  if (isError) {
+    return (
+      <View style={styles.padded}>
+        <SectionHeader title={t('course:similar.title')} />
+        <View style={styles.error}>
+          <AppText variant="body" color="textSecondary" style={styles.errorText}>
+            {t('course:similar.failed')}
+          </AppText>
+          <Button
+            title={t('common:actions.retry')}
+            variant="ghost"
+            size="sm"
+            onPress={() => void refetch()}
+          />
+        </View>
+      </View>
+    );
+  }
+  if (!data || data.length === 0) return null;
 
   return (
-    <View style={styles.section}>
-      <AppText variant="title" accessibilityRole="header">
-        Similar courses
-      </AppText>
-      <View style={styles.list}>
-        {isPending ? (
-          <>
-            <CourseCardHorizontalSkeleton />
-            <CourseCardHorizontalSkeleton />
-          </>
-        ) : null}
-        {isError ? (
-          <View style={styles.error}>
-            <AppText variant="body" color="textSecondary">
-              {"Couldn't load similar courses."}
-            </AppText>
-            <Button title="Retry" variant="ghost" size="sm" onPress={() => void refetch()} />
-          </View>
-        ) : null}
-        {data?.map((course) => (
-          <CourseCardHorizontal
-            key={course.id}
-            course={course}
-            onPress={handlePress}
-            onToggleBookmark={handleToggleBookmark}
-          />
-        ))}
-      </View>
-    </View>
+    <RailList
+      title={t('course:similar.title')}
+      data={data}
+      keyExtractor={keyOfCourse}
+      renderItem={renderCourse}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  // Design: 8 dp under the heading, 16 dp between the cards.
-  section: { gap: spacing.sm },
-  list: { gap: spacing.lg },
+  padded: { paddingHorizontal: layout.screenPaddingX, gap: spacing.sm },
   error: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  errorText: { flex: 1 },
 });

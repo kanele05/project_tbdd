@@ -1,181 +1,97 @@
+import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useCallback, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ErrorState, AppText, RatingInline, SegmentedTabs } from '@/components/ui';
-import { STRINGS } from '@/constants/strings';
-import { useToggleBookmark } from '@/features/bookmark/hooks';
-import { CourseLessonsTab } from '@/features/learning/components/CourseLessonsTab';
-import { CourseReviewsTab } from '@/features/review/components/CourseReviewsTab';
+import { ErrorState, GlassIconButton, ScreenHeader } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { AppError } from '@/lib/appError';
-import { colors, layout, spacing } from '@/theme';
-import type { CourseDetail } from '@/types/api';
+import { layout, makeStyles, spacing } from '@/theme';
 
-import { CourseBottomBar } from '../components/CourseBottomBar';
-import { CourseDetailHeader } from '../components/CourseDetailHeader';
+import { CourseDetailBody } from '../components/CourseDetailBody';
 import { CourseDetailSkeleton } from '../components/CourseDetailSkeleton';
-import { CourseHero } from '../components/CourseHero';
-import { CourseMoreMenu } from '../components/CourseMoreMenu';
-import { CourseOverviewTab } from '../components/CourseOverviewTab';
 import { PreviewPlayerModal } from '../components/PreviewPlayerModal';
 import { useCourseDetail } from '../hooks';
-import { useCourseAction } from '../useCourseAction';
 
 export type CourseDetailScreenProps = { courseId: string };
 
-type CourseTab = 'overview' | 'lessons' | 'review';
-
-const TABS = [
-  { key: 'overview', label: 'Overview' },
-  { key: 'lessons', label: 'Lessons' },
-  { key: 'review', label: 'Review' },
-] as const;
-
-type TabContentProps = {
-  course: CourseDetail;
-  tab: CourseTab;
-  onPlayPreview: (lessonId: string) => void;
-};
-
-function TabContent({ course, tab, onPlayPreview }: TabContentProps) {
-  if (tab === 'lessons') {
-    return <CourseLessonsTab courseId={course.id} onPlayPreview={onPlayPreview} />;
-  }
-  if (tab === 'review') {
-    return <CourseReviewsTab courseId={course.id} canWriteReview={course.enrollment !== null} />;
-  }
-  // Lessons/Review tabs pad themselves; only Overview needs the screen padding.
-  return (
-    <View style={styles.overviewPadding}>
-      <CourseOverviewTab course={course} />
-    </View>
-  );
+function goBack(): void {
+  if (router.canGoBack()) router.back();
+  else router.replace('/');
 }
 
 /**
- * SC-09 Course details: header, hero + preview player, title, OVERVIEW | LESSONS | REVIEW tabs
- * and the fixed bottom bar whose button follows BR-17.
+ * SC-09 Course details (concept B). This screen owns the course query, the four data states
+ * (skeleton / error with Retry / success) and the preview player; the loaded layout lives in
+ * `CourseDetailBody`.
  */
 export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
+  const { t } = useTranslation(['course', 'common', 'errors']);
+  const styles = useStyles();
+  const insets = useSafeAreaInsets();
   const { data: course, isError, error, fetchStatus, refetch } = useCourseDetail(courseId);
-  const { toggleBookmark } = useToggleBookmark();
-  const { perform, isLoading } = useCourseAction(courseId);
-  const [activeTab, setActiveTab] = useState<CourseTab>('overview');
   const [previewLessonId, setPreviewLessonId] = useState<string | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleToggleBookmark = useCallback(() => {
-    if (course) toggleBookmark(course.id, course.isBookmarked);
-  }, [course, toggleBookmark]);
-
-  const handleShare = useCallback(async () => {
-    setIsMenuOpen(false);
-    if (!course) return;
-    try {
-      await Share.share({
-        message: `Check out "${course.title}" by ${course.teacher.fullName} on ${STRINGS.appName}`,
-      });
-    } catch {
-      // The share sheet failed to open or was dismissed: nothing to recover.
-    }
-  }, [course]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     await refetch();
     setIsRefreshing(false);
   }, [refetch]);
-
-  const heroPreviewLessonId = course?.previewLessonId ?? null;
-  const handlePlayHeroPreview = useCallback(() => {
-    if (heroPreviewLessonId) setPreviewLessonId(heroPreviewLessonId);
-  }, [heroPreviewLessonId]);
-
   const handleClosePreview = useCallback(() => setPreviewLessonId(null), []);
-  const handleCloseMenu = useCallback(() => setIsMenuOpen(false), []);
-  const handleOpenMenu = useCallback(() => setIsMenuOpen(true), []);
   const handleRetry = useCallback(() => void refetch(), [refetch]);
 
   const isOfflineWithoutData = !course && fetchStatus === 'paused';
   const failure = isOfflineWithoutData
-    ? new AppError({ status: 0, code: 'OFFLINE', message: STRINGS.errors.offline })
+    ? new AppError({ status: 0, code: 'OFFLINE', message: t('errors:offline') })
     : error;
 
-  return (
-    <View style={styles.screen}>
-      <CourseDetailHeader
-        isBookmarked={course ? course.isBookmarked : null}
-        onToggleBookmark={handleToggleBookmark}
-        onOpenMenu={handleOpenMenu}
+  let body;
+  if (course) {
+    body = (
+      <CourseDetailBody
+        course={course}
+        isRefreshing={isRefreshing}
+        onRefresh={() => void handleRefresh()}
+        onPlayPreview={setPreviewLessonId}
       />
-      {course ? (
-        <>
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={() => void handleRefresh()}
-                colors={[colors.primary]}
-                tintColor={colors.primary}
-              />
-            }
-          >
-            <CourseHero
-              imageUrl={course.bannerUrl ?? course.thumbnailUrl}
-              canPlayPreview={course.previewLessonId !== null}
-              onPlayPreview={handlePlayHeroPreview}
-            />
-            <View style={styles.info}>
-              <AppText variant="title" accessibilityRole="header" style={styles.title}>
-                {course.title}
-              </AppText>
-              <RatingInline
-                rating={course.ratingAvg}
-                count={course.ratingCount}
-                lessonCount={course.lessonCount}
-              />
-            </View>
-            <SegmentedTabs
-              tabs={TABS}
-              value={activeTab}
-              onChange={setActiveTab}
-              style={styles.tabs}
-            />
-            <View style={styles.tabContent}>
-              <TabContent course={course} tab={activeTab} onPlayPreview={setPreviewLessonId} />
-            </View>
-          </ScrollView>
-          <CourseBottomBar course={course} isLoading={isLoading} onAction={perform} />
-        </>
-      ) : isError || isOfflineWithoutData ? (
+    );
+  } else if (isError || isOfflineWithoutData) {
+    body = (
+      <>
+        <ScreenHeader />
         <ErrorState error={failure} onRetry={handleRetry} />
-      ) : (
+      </>
+    );
+  } else {
+    body = (
+      <>
         <ScrollView scrollEnabled={false}>
           <CourseDetailSkeleton />
         </ScrollView>
-      )}
-      <CourseMoreMenu visible={isMenuOpen} onClose={handleCloseMenu} onShare={handleShare} />
+        <View style={[styles.floatingBack, { top: insets.top + spacing.sm }]}>
+          <GlassIconButton
+            icon="chevron-left"
+            accessibilityLabel={t('common:actions.back')}
+            onPress={goBack}
+          />
+        </View>
+      </>
+    );
+  }
+
+  return (
+    <View style={styles.screen}>
+      {/* The hero photo is dark in both themes: light status-bar icons while it is on screen. */}
+      <StatusBar style={course ? 'light' : 'auto'} />
+      {body}
       <PreviewPlayerModal lessonId={previewLessonId} onClose={handleClosePreview} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { paddingBottom: spacing.xxxl },
-  info: {
-    gap: spacing.sm,
-    paddingHorizontal: layout.screenPaddingX,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xxl,
-  },
-  // Design: 16 dp Epilogue with a 26 dp line pitch (the `title` token is 16/24).
-  title: { lineHeight: 26 },
-  tabs: { marginHorizontal: layout.screenPaddingX },
-  // Design: content starts 20 dp under the tab underline (Lessons/Review pad themselves).
-  tabContent: { paddingTop: spacing.xl },
-  // The Overview teacher row sits 28 dp under the tabs: 20 above + 8 here.
-  overviewPadding: { paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.sm },
-});
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
+  floatingBack: { position: 'absolute', left: layout.screenPaddingX },
+}));

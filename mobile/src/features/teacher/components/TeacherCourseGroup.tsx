@@ -4,7 +4,7 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { CourseCardVertical } from '@/components/course/CourseCardVertical';
 import { AppText } from '@/components/ui/AppText';
 import { Badge } from '@/components/ui/Badge';
-import { STRINGS } from '@/constants/strings';
+import { useTranslation } from '@/i18n';
 import { layout, spacing } from '@/theme';
 import type { CourseSummary, TeacherCoursesGroupDto } from '@/types/api';
 
@@ -16,14 +16,12 @@ export type TeacherCourseGroupProps = {
   onViewAll: (categoryId: string) => void;
 };
 
-/** Design: cards are 205 dp wide with a 16 dp gap (wider than the Home carousel's 196). */
-const COURSE_CARD_WIDTH = 205;
 const keyExtractor = (course: CourseSummary): string => course.id;
 const Separator = () => <View style={styles.separator} />;
 
 /**
- * One category block of SC-18 COURSES: "UI/UX Design" + "Top-rated" badge (avg >= 4.5),
- * "View all" link and a horizontally scrolling row of `CourseCardVertical`.
+ * One category block of SC-18 COURSES: serif category name + "Top-rated" badge (avg >= 4.5),
+ * "View all" link and a horizontal rail of poster cards.
  */
 function TeacherCourseGroupBase({
   group,
@@ -31,6 +29,7 @@ function TeacherCourseGroupBase({
   onToggleBookmark,
   onViewAll,
 }: TeacherCourseGroupProps) {
+  const { t } = useTranslation(['teacher', 'common']);
   const categoryId = group.category.id;
   const handleViewAll = useCallback(() => onViewAll(categoryId), [onViewAll, categoryId]);
 
@@ -38,7 +37,6 @@ function TeacherCourseGroupBase({
     ({ item }: { item: CourseSummary }) => (
       <CourseCardVertical
         course={item}
-        width={COURSE_CARD_WIDTH}
         onPress={onPressCourse}
         onToggleBookmark={onToggleBookmark}
       />
@@ -50,19 +48,19 @@ function TeacherCourseGroupBase({
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <AppText variant="h3" accessibilityRole="header" numberOfLines={1} style={styles.title}>
+          <AppText variant="h2" accessibilityRole="header" numberOfLines={1} style={styles.title}>
             {group.category.name}
           </AppText>
-          {group.isTopRated ? <Badge label="Top-rated" shape="pill" tone="primary" /> : null}
+          {group.isTopRated ? <Badge label={t('teacher:topRated')} shape="pill" /> : null}
         </View>
         <Pressable
           onPress={handleViewAll}
           hitSlop={{ top: 16, bottom: 16, left: 12, right: 8 }}
           accessibilityRole="link"
-          accessibilityLabel={`${STRINGS.common.viewAll}, ${group.category.name}`}
+          accessibilityLabel={t('teacher:viewAllIn', { category: group.category.name })}
         >
-          <AppText variant="caption" color="primaryText">
-            {STRINGS.common.viewAll}
+          <AppText variant="caption" color="primaryText" family="bodySemiBold">
+            {t('common:actions.viewAll')}
           </AppText>
         </Pressable>
       </View>
@@ -80,7 +78,7 @@ function TeacherCourseGroupBase({
 }
 
 const styles = StyleSheet.create({
-  container: { gap: spacing.md, paddingTop: spacing.xxxl },
+  container: { gap: spacing.md, paddingTop: layout.sectionGap },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -92,7 +90,7 @@ const styles = StyleSheet.create({
   titleRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   title: { flexShrink: 1 },
   listContent: { paddingHorizontal: layout.screenPaddingX },
-  separator: { width: spacing.lg },
+  separator: { width: layout.railGap },
 });
 
 export const TeacherCourseGroup = memo(TeacherCourseGroupBase);

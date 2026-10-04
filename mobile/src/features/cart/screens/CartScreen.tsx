@@ -1,16 +1,18 @@
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CourseCardHorizontalSkeleton } from '@/components/course';
 import { EmptyState, ErrorState, ScreenHeader, useToast } from '@/components/ui';
-import { STRINGS } from '@/constants/strings';
+import { useTranslation } from '@/i18n';
 import { getErrorMessage } from '@/lib/appError';
-import { colors, layout, spacing } from '@/theme';
+import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { CartItemDto, CourseSummary } from '@/types/api';
+import { confirmAction } from '@/utils/confirmAction';
 
 import { CartItemCard } from '../components/CartItemCard';
-import { CartSummaryBar } from '../components/CartSummaryBar';
+import { CART_SUMMARY_BAR_CLEARANCE, CartSummaryBar } from '../components/CartSummaryBar';
 import { useCart, useRemoveFromCart } from '../hooks';
 
 function keyOf(item: CartItemDto): string {
@@ -18,8 +20,15 @@ function keyOf(item: CartItemDto): string {
 }
 
 function CartSkeleton() {
+  const { t } = useTranslation('cart');
   return (
-    <View style={styles.list} testID="cart-skeleton">
+    <View
+      style={styles.list}
+      testID="cart-skeleton"
+      accessible
+      accessibilityLabel={t('loading')}
+      accessibilityState={{ busy: true }}
+    >
       <CourseCardHorizontalSkeleton />
       <CourseCardHorizontalSkeleton />
       <CourseCardHorizontalSkeleton />
@@ -28,10 +37,14 @@ function CartSkeleton() {
 }
 
 /**
- * SC-12 Cart: course rows (remove with confirmation), total and Checkout. Empty cart -> EmptyState
- * "Your cart is empty" + "Explore courses".
+ * SC-12 Cart: course rows (remove with confirmation), glass total bar and Checkout. Empty cart ->
+ * EmptyState "Your cart is empty" + "Explore courses".
  */
 export function CartScreen() {
+  const { t } = useTranslation(['cart', 'common']);
+  const { colors } = useTheme();
+  const themed = useStyles();
+  const insets = useSafeAreaInsets();
   const toast = useToast();
   const { data: cart, isPending, isError, error, refetch } = useCart();
   const { mutate: removeFromCart, isPending: isRemovePending, variables } = useRemoveFromCart();
@@ -43,18 +56,19 @@ export function CartScreen() {
   }, []);
 
   const handleRemove = useCallback(
-    (course: CourseSummary) => {
-      Alert.alert('Remove from cart?', `"${course.title}" will be removed from your cart.`, [
-        { text: STRINGS.common.cancel, style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () =>
-            removeFromCart(course.id, { onError: (e) => toast.error(getErrorMessage(e)) }),
-        },
-      ]);
+    async (course: CourseSummary) => {
+      const isConfirmed = await confirmAction({
+        title: t('cart:remove.title'),
+        message: t('cart:remove.message', { title: course.title }),
+        confirmLabel: t('cart:remove.confirm'),
+        cancelLabel: t('common:actions.cancel'),
+        isDestructive: true,
+      });
+      if (isConfirmed) {
+        removeFromCart(course.id, { onError: (e) => toast.error(getErrorMessage(e)) });
+      }
     },
-    [removeFromCart, toast],
+    [removeFromCart, t, toast],
   );
 
   const handleRefresh = useCallback(async () => {
@@ -69,7 +83,7 @@ export function CartScreen() {
         course={item.course}
         isRemoving={removingId === item.course.id}
         onPress={handleOpenCourse}
-        onRemove={handleRemove}
+        onRemove={(course) => void handleRemove(course)}
       />
     ),
     [handleOpenCourse, handleRemove, removingId],
@@ -87,13 +101,17 @@ export function CartScreen() {
           data={items}
           keyExtractor={keyOf}
           renderItem={renderItem}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[
+            styles.list,
+            { paddingBottom: CART_SUMMARY_BAR_CLEARANCE + insets.bottom + spacing.xxl },
+          ]}
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={() => void handleRefresh()}
               colors={[colors.primary]}
-              tintColor={colors.primary}
+              tintColor={colors.primaryText}
             />
           }
         />
@@ -109,9 +127,9 @@ export function CartScreen() {
     content = (
       <EmptyState
         icon="shopping-cart"
-        title="Your cart is empty"
-        message="Courses you add to your cart will show up here."
-        actionLabel={STRINGS.common.exploreCourses}
+        title={t('cart:empty.title')}
+        message={t('cart:empty.message')}
+        actionLabel={t('common:actions.exploreCourses')}
         onAction={handleExplore}
         style={styles.empty}
       />
@@ -123,16 +141,18 @@ export function CartScreen() {
   }
 
   return (
-    <View style={styles.screen}>
-      <ScreenHeader title="My cart" />
+    <View style={themed.screen}>
+      <ScreenHeader title={t('cart:title')} />
       {content}
     </View>
   );
 }
 
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
+}));
+
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  // 16 dp between rows, like the Similar courses cards of the design.
-  list: { gap: spacing.lg, padding: layout.screenPaddingX },
+  list: { gap: spacing.md, padding: layout.screenPaddingX },
   empty: { flex: 1 },
 });

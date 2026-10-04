@@ -121,10 +121,14 @@ describe('CartScreen', () => {
     expect(alertSpy).toHaveBeenCalledTimes(1);
     expect(mockRemove).not.toHaveBeenCalled();
     const buttons = alertSpy.mock.calls[0]?.[2] as AlertButton[];
-    buttons.find((button) => button.text === 'Remove')?.onPress?.();
-    expect(mockRemove).toHaveBeenCalledWith(
-      'a',
-      expect.objectContaining({ onError: expect.any(Function) }),
+    await act(async () => {
+      buttons.find((button) => button.text === 'Remove')?.onPress?.();
+    });
+    await waitFor(() =>
+      expect(mockRemove).toHaveBeenCalledWith(
+        'a',
+        expect.objectContaining({ onError: expect.any(Function) }),
+      ),
     );
     alertSpy.mockRestore();
   });
@@ -136,7 +140,9 @@ describe('CartScreen', () => {
 
     await fireEvent.press(screen.getByRole('button', { name: 'Remove UX Foundation from cart' }));
     const buttons = alertSpy.mock.calls[0]?.[2] as AlertButton[];
-    buttons.find((button) => button.text === 'Cancel')?.onPress?.();
+    await act(async () => {
+      buttons.find((button) => button.text === 'Cancel')?.onPress?.();
+    });
 
     expect(mockRemove).not.toHaveBeenCalled();
     alertSpy.mockRestore();

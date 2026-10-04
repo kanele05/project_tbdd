@@ -86,4 +86,11 @@ describe('CourseListScreen', () => {
 
     expect(router.push).toHaveBeenCalledWith('/course/a');
   });
+  it('translates the section title and the result count', async () => {
+    mockParams.mockReturnValue({ section: 'inspires' });
+    await renderWithClient(<CourseListScreen />, { language: 'vi' });
+
+    expect(await screen.findByText('Truyền cảm hứng')).toBeOnTheScreen();
+    expect(await screen.findByText('6 kết quả')).toBeOnTheScreen();
+  });
 });

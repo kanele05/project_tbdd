@@ -1,1 +1,45 @@
-{}
+{
+  "allTitle": "Reviews",
+  "viewAll": "View all",
+  "viewAllA11y": "View all reviews",
+  "writeReview": "Write a review",
+  "editReview": "Edit your review",
+  "filterAll": "All",
+  "headline": {
+    "rated": "{{rating}}/5",
+    "count_one": "{{count}} review",
+    "count_other": "{{count}}+ reviews",
+    "a11y_one": "Rated {{rating}} out of 5, {{count}} review",
+    "a11y_other": "Rated {{rating}} out of 5, {{count}} reviews"
+  },
+  "summary": {
+    "reviews_one": "{{count}} review",
+    "reviews_other": "{{count}} reviews",
+    "a11y_one": "Average rating {{rating}} out of 5, {{count}} review",
+    "a11y_other": "Average rating {{rating}} out of 5, {{count}} reviews",
+    "starRow": "{{star}} stars: {{count}}"
+  },
+  "empty": {
+    "title": "No reviews yet",
+    "message": "Be the first to share what you think about this course.",
+    "ratingTitle": "No {{count}}-star reviews yet",
+    "ratingMessage": "Try another rating to see more reviews."
+  },
+  "loadFailed": "Couldn't load the reviews",
+  "loadMineFailed": "Couldn't load your review",
+  "write": {
+    "title": "Write a review",
+    "yourRating": "Your rating",
+    "yourReview": "Your review",
+    "placeholder": "Share your experience with this course",
+    "submit": "Submit",
+    "saved": "Thanks! Your review was saved.",
+    "close": "Close",
+    "counter": "{{count}}/{{max}}"
+  },
+  "validation": {
+    "rating": "Select a rating from 1 to 5 stars",
+    "contentMin": "Write at least {{min}} characters",
+    "contentMax": "Your review can have at most {{max}} characters"
+  }
+}

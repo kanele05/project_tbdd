@@ -3,44 +3,42 @@ import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { formatNumber } from '@/i18n/format';
+import { spacing, useTheme } from '@/theme';
 import type { ReviewSummaryDto } from '@/types/api';
-
-import { REVIEW_STRINGS } from '../strings';
 
 export type ReviewsHeadlineProps = {
   summary: ReviewSummaryDto;
   onViewAll: () => void;
 };
 
-/** "1233+ reviews" like the design; a single review reads "1 review". */
-export function formatReviewCount(count: number): string {
-  return count === 1 ? '1 review' : `${count}+ reviews`;
-}
-
-/** SC-09 Review tab headline: "☆ 4.5/5 (1233+ reviews)" and the "View all" link. */
+/** SC-09 Review tab headline: gold star, serif "4.5/5", "(1,233+ reviews)" and "View all". */
 function ReviewsHeadlineBase({ summary, onViewAll }: ReviewsHeadlineProps) {
+  const { t } = useTranslation('review');
+  const { colors } = useTheme();
+  const rating = formatNumber(summary.avg, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   return (
     <View style={styles.row}>
       <View
         style={styles.rating}
         accessible
-        accessibilityLabel={`Rated ${summary.avg.toFixed(1)} out of 5, ${formatReviewCount(summary.count)}`}
+        accessibilityLabel={t('headline.a11y', { rating, count: summary.count })}
       >
-        <Ionicons name="star-outline" size={22} color={colors.star} />
-        <AppText variant="h2">{`${summary.avg.toFixed(1)}/5`}</AppText>
-        <AppText variant="caption" color="textSecondary">
-          {`(${formatReviewCount(summary.count)})`}
+        <Ionicons name="star" size={22} color={colors.star} />
+        <AppText variant="h2">{t('headline.rated', { rating })}</AppText>
+        <AppText variant="caption" numberOfLines={1} style={styles.count}>
+          {`(${t('headline.count', { count: summary.count })})`}
         </AppText>
       </View>
       <Pressable
         onPress={onViewAll}
         hitSlop={{ top: 16, bottom: 16, left: 8, right: 8 }}
         accessibilityRole="link"
-        accessibilityLabel={`${REVIEW_STRINGS.viewAll} reviews`}
+        accessibilityLabel={t('viewAllA11y')}
       >
-        <AppText variant="caption" color="primaryText" family="bodyMedium">
-          {REVIEW_STRINGS.viewAll}
+        <AppText variant="caption" color="primaryText" family="bodySemiBold">
+          {t('viewAll')}
         </AppText>
       </Pressable>
     </View>
@@ -54,7 +52,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
   },
-  rating: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1 },
+  rating: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  count: { flexShrink: 1 },
 });
 
 export const ReviewsHeadline = memo(ReviewsHeadlineBase);

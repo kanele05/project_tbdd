@@ -7,11 +7,11 @@ import { IconButton } from '@/components/ui/IconButton';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
-import { colors, layout, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, spacing } from '@/theme';
 
 import { ReviewForm } from '../components/ReviewForm';
 import { useMyReview } from '../hooks';
-import { REVIEW_STRINGS } from '../strings';
 
 export type WriteReviewScreenProps = { courseId: string };
 
@@ -21,10 +21,12 @@ function closeModal(): void {
 }
 
 /**
- * SC-11 Write review (modal, M-15b). Loads the user's existing review first, so the form opens
+ * SC-11 Write review (modal). Loads the user's existing review first, so the form opens
  * pre-filled to edit it (`PUT` creates or updates, BR-08).
  */
 export function WriteReviewScreen({ courseId }: WriteReviewScreenProps) {
+  const { t } = useTranslation('review');
+  const themed = useStyles();
   const insets = useSafeAreaInsets();
   const myReview = useMyReview(courseId);
 
@@ -43,7 +45,7 @@ export function WriteReviewScreen({ courseId }: WriteReviewScreenProps) {
     content = (
       <ErrorState
         error={myReview.error}
-        title={REVIEW_STRINGS.loadMyReviewFailed}
+        title={t('loadMineFailed')}
         onRetry={() => void myReview.refetch()}
       />
     );
@@ -52,13 +54,11 @@ export function WriteReviewScreen({ courseId }: WriteReviewScreenProps) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior="padding">
+    <KeyboardAvoidingView style={themed.screen} behavior="padding">
       <ScreenHeader
-        title={REVIEW_STRINGS.writeTitle}
+        title={t('write.title')}
         showBack={false}
-        right={
-          <IconButton icon="x" onPress={closeModal} accessibilityLabel={REVIEW_STRINGS.closeForm} />
-        }
+        right={<IconButton icon="x" onPress={closeModal} accessibilityLabel={t('write.close')} />}
       />
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}
@@ -71,8 +71,11 @@ export function WriteReviewScreen({ courseId }: WriteReviewScreenProps) {
   );
 }
 
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
+}));
+
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.lg },
   skeleton: { gap: spacing.xl },
 });

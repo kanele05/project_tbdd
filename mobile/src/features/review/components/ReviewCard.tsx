@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui/AppText';
 import { Avatar } from '@/components/ui/Avatar';
 import { StarRating } from '@/components/ui/StarRating';
-import { colors, radius, spacing } from '@/theme';
+import { makeStyles, radius, spacing } from '@/theme';
 import type { ReviewDto } from '@/types/api';
 import { formatRelativeTime } from '@/utils/formatRelativeTime';
 
@@ -14,59 +14,55 @@ export type ReviewCardProps = {
   showCourseTitle?: boolean;
 };
 
-const AVATAR_SIZE = 36;
+const AVATAR_SIZE = 40;
 const STAR_SIZE = 14;
 const MAX_CONTENT_LINES = 3;
 
 /**
- * One review (SC-09 Review tab, SC-10, SC-18 Teacher profile): avatar, name, "A day ago", the
- * stars on the right and the text (max 3 lines) on a `backgroundAlt` card. Sizes read from the
- * design: 12 px name/date/text (20 dp line pitch for the text), 14 dp stars, 4 dp corners.
+ * One review (SC-09 Review tab, SC-10, SC-18 Teacher profile): avatar, name, "A day ago" and the
+ * gold stars on a `surfaceAlt` card with a hairline; the text is clamped to 3 lines.
  */
 function ReviewCardBase({ review, showCourseTitle = false }: ReviewCardProps) {
+  const themed = useStyles();
   const courseTitle = showCourseTitle ? review.course?.title : undefined;
   return (
-    <View style={styles.card} testID={`review-${review.id}`}>
+    <View style={themed.card} testID={`review-${review.id}`}>
       <View style={styles.header}>
         <Avatar uri={review.user.avatarUrl} name={review.user.fullName} size={AVATAR_SIZE} />
         <View style={styles.author}>
-          <AppText variant="caption" family="heading" numberOfLines={1}>
+          <AppText variant="label" numberOfLines={1}>
             {review.user.fullName}
           </AppText>
-          <AppText variant="caption" color="textSecondary">
-            {formatRelativeTime(review.createdAt)}
-          </AppText>
+          <AppText variant="caption">{formatRelativeTime(review.createdAt)}</AppText>
         </View>
         <StarRating value={review.rating} size={STAR_SIZE} />
       </View>
       {courseTitle ? (
-        <AppText variant="caption" color="primaryText" family="bodyMedium" numberOfLines={1}>
+        <AppText variant="caption" color="primaryText" family="bodySemiBold" numberOfLines={1}>
           {courseTitle}
         </AppText>
       ) : null}
-      <AppText
-        variant="caption"
-        color="textPrimary"
-        style={styles.content}
-        numberOfLines={MAX_CONTENT_LINES}
-      >
+      <AppText variant="body" color="textSecondary" numberOfLines={MAX_CONTENT_LINES}>
         {review.content}
       </AppText>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   card: {
-    gap: spacing.lg,
-    padding: spacing.md,
-    borderRadius: radius.badge,
-    backgroundColor: colors.backgroundAlt,
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: t.colors.borderSubtle,
+    backgroundColor: t.colors.surfaceAlt,
   },
-  // The stars hug the top of the card next to the name, like the design.
-  header: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
-  author: { flex: 1, gap: spacing.xs },
-  content: { lineHeight: 20 },
+}));
+
+const styles = StyleSheet.create({
+  header: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  author: { flex: 1, gap: spacing.xxs },
 });
 
 export const ReviewCard = memo(ReviewCardBase);

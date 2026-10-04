@@ -12,13 +12,13 @@ import { useToast } from '@/components/ui/Toast';
 import { applyAuthError } from '@/features/auth/authErrors';
 import { FormError } from '@/features/auth/components/FormError';
 import { isNotEnrolledError } from '@/features/learning/accessGuard';
+import { useTranslation } from '@/i18n';
 import { getErrorMessage } from '@/lib/appError';
 import { spacing } from '@/theme';
 import type { ReviewDto } from '@/types/api';
 
 import { useSaveReview } from '../hooks';
-import { reviewSchema, type ReviewFormValues } from '../schema';
-import { REVIEW_MAX_LENGTH, REVIEW_STRINGS } from '../strings';
+import { REVIEW_MAX_LENGTH, reviewSchema, type ReviewFormValues } from '../schema';
 
 export type ReviewFormProps = {
   courseId: string;
@@ -28,8 +28,9 @@ export type ReviewFormProps = {
 
 const FIELDS = ['rating', 'content'] as const;
 
-/** SC-11 form: 1-5 stars, 10-1000 characters with a live counter, Submit. */
+/** SC-11 form: 1-5 stars, 10-1000 characters with a live counter, Submit (the neon button). */
 export function ReviewForm({ courseId, initialReview }: ReviewFormProps) {
+  const { t } = useTranslation('review');
   const toast = useToast();
   const saveReview = useSaveReview(courseId);
   // Errors are shown inline: a toast can be hidden behind a native modal (iOS).
@@ -52,7 +53,7 @@ export function ReviewForm({ courseId, initialReview }: ReviewFormProps) {
       await saveReview.mutateAsync({ rating: values.rating, content: values.content.trim() });
       // Close the modal first, then toast on the screen underneath.
       router.back();
-      toast.success(REVIEW_STRINGS.saved);
+      toast.success(t('write.saved'));
     } catch (error) {
       if (isNotEnrolledError(error)) {
         router.back();
@@ -66,7 +67,7 @@ export function ReviewForm({ courseId, initialReview }: ReviewFormProps) {
   return (
     <View style={styles.form}>
       <View style={styles.field}>
-        <AppText variant="label">{REVIEW_STRINGS.yourRating}</AppText>
+        <AppText variant="label">{t('write.yourRating')}</AppText>
         <Controller
           control={control}
           name="rating"
@@ -85,22 +86,22 @@ export function ReviewForm({ courseId, initialReview }: ReviewFormProps) {
         <FormTextField
           control={control}
           name="content"
-          label={REVIEW_STRINGS.yourReview}
-          placeholder={REVIEW_STRINGS.reviewPlaceholder}
+          label={t('write.yourReview')}
+          placeholder={t('write.placeholder')}
           multiline
           numberOfLines={6}
           maxLength={REVIEW_MAX_LENGTH}
           textAlignVertical="top"
         />
         <AppText variant="caption" align="right" style={styles.counter}>
-          {`${contentLength}/${REVIEW_MAX_LENGTH}`}
+          {t('write.counter', { count: contentLength, max: REVIEW_MAX_LENGTH })}
         </AppText>
       </View>
 
       <FormError message={formError} />
 
       <Button
-        title={REVIEW_STRINGS.submit}
+        title={t('write.submit')}
         onPress={() => void onSubmit()}
         loading={saveReview.isPending}
         fullWidth

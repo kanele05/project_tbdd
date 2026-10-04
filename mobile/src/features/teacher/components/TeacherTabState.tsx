@@ -1,5 +1,6 @@
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { useTranslation } from '@/i18n';
 
 import { TeacherCoursesSkeleton, TeacherReviewsSkeleton } from './TeacherSkeletons';
 
@@ -11,8 +12,9 @@ export type TeacherTabStateProps = {
   onRetry: () => void;
 };
 
-/** What the Courses / Review tab shows instead of rows: skeleton, error with Retry, or empty. */
+/** What the Courses / Reviews tab shows instead of rows: skeleton, error with Retry, or empty. */
 export function TeacherTabState({ tab, isPending, isError, error, onRetry }: TeacherTabStateProps) {
+  const { t } = useTranslation('teacher');
   if (isError) return <ErrorState error={error} onRetry={onRetry} />;
   if (isPending) {
     return tab === 'courses' ? <TeacherCoursesSkeleton /> : <TeacherReviewsSkeleton />;
@@ -20,14 +22,14 @@ export function TeacherTabState({ tab, isPending, isError, error, onRetry }: Tea
   return tab === 'courses' ? (
     <EmptyState
       icon="book-open"
-      title="No courses yet"
-      message="This teacher has not published any course."
+      title={t('empty.coursesTitle')}
+      message={t('empty.coursesMessage')}
     />
   ) : (
     <EmptyState
       icon="message-square"
-      title="No reviews yet"
-      message="Reviews from learners will appear here."
+      title={t('empty.reviewsTitle')}
+      message={t('empty.reviewsMessage')}
     />
   );
 }

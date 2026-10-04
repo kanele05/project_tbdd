@@ -1,1 +1,49 @@
-{}
+{
+  "title": "Giỏ hàng",
+  "empty": {
+    "title": "Giỏ hàng của bạn đang trống",
+    "message": "Các khóa học bạn thêm vào giỏ sẽ xuất hiện ở đây."
+  },
+  "loading": "Đang tải giỏ hàng",
+  "item": {
+    "open": "{{title}}, giảng viên {{teacher}}. Mở khóa học",
+    "remove": "Xóa {{title}} khỏi giỏ hàng"
+  },
+  "remove": {
+    "title": "Xóa khỏi giỏ hàng?",
+    "message": "\"{{title}}\" sẽ bị xóa khỏi giỏ hàng của bạn.",
+    "confirm": "Xóa"
+  },
+  "summary": {
+    "total_other": "Tổng cộng ({{count}} khóa học)",
+    "a11y_other": "Tổng cộng {{price}} cho {{count}} khóa học",
+    "checkout": "Thanh toán"
+  },
+  "checkout": {
+    "title": "Thanh toán",
+    "loading": "Đang tải trang thanh toán",
+    "orderSummary": "Tóm tắt đơn hàng",
+    "total": "Tổng cộng",
+    "paymentMethod": "Phương thức thanh toán",
+    "demoNote": "Thanh toán thử nghiệm — không cần thẻ thật",
+    "simulateFailure": "Giả lập thanh toán thất bại",
+    "pay": "Thanh toán {{amount}}"
+  },
+  "methods": {
+    "card": { "title": "Thẻ thử nghiệm", "subtitle": "Visa đuôi 4242 (thử nghiệm)" },
+    "ewallet": { "title": "Ví điện tử thử nghiệm", "subtitle": "Số dư ví thử nghiệm" },
+    "a11y": "{{title}}, {{subtitle}}"
+  },
+  "result": {
+    "successTitle": "Thanh toán thành công",
+    "successAnnouncement": "Thanh toán thành công. Các khóa học của bạn đã sẵn sàng.",
+    "successOne": "Bạn đã có quyền truy cập khóa học mới.",
+    "successMany": "Bạn đã có quyền truy cập {{count}} khóa học mới.",
+    "startLearning": "Bắt đầu học",
+    "goToMyCourses": "Đến Khóa học của tôi",
+    "failedTitle": "Thanh toán không thành công",
+    "failedMessage": "Chúng tôi không thể xử lý thanh toán của bạn. Bạn chưa bị trừ tiền và giỏ hàng vẫn giữ nguyên.",
+    "tryAgain": "Thử lại",
+    "backToCart": "Quay lại giỏ hàng"
+  }
+}

@@ -1,1 +1,41 @@
-{}
+{
+  "allTitle": "Đánh giá",
+  "viewAll": "Xem tất cả",
+  "viewAllA11y": "Xem tất cả đánh giá",
+  "writeReview": "Viết đánh giá",
+  "editReview": "Sửa đánh giá của bạn",
+  "filterAll": "Tất cả",
+  "headline": {
+    "rated": "{{rating}}/5",
+    "count_other": "{{count}}+ đánh giá",
+    "a11y_other": "Được đánh giá {{rating}} trên 5, {{count}} đánh giá"
+  },
+  "summary": {
+    "reviews_other": "{{count}} đánh giá",
+    "a11y_other": "Điểm trung bình {{rating}} trên 5, {{count}} đánh giá",
+    "starRow": "{{star}} sao: {{count}}"
+  },
+  "empty": {
+    "title": "Chưa có đánh giá nào",
+    "message": "Hãy là người đầu tiên chia sẻ cảm nhận về khóa học này.",
+    "ratingTitle": "Chưa có đánh giá {{count}} sao",
+    "ratingMessage": "Hãy thử mức sao khác để xem thêm đánh giá."
+  },
+  "loadFailed": "Không tải được các đánh giá",
+  "loadMineFailed": "Không tải được đánh giá của bạn",
+  "write": {
+    "title": "Viết đánh giá",
+    "yourRating": "Đánh giá của bạn",
+    "yourReview": "Nhận xét của bạn",
+    "placeholder": "Chia sẻ trải nghiệm của bạn với khóa học này",
+    "submit": "Gửi",
+    "saved": "Cảm ơn bạn! Đánh giá đã được lưu.",
+    "close": "Đóng",
+    "counter": "{{count}}/{{max}}"
+  },
+  "validation": {
+    "rating": "Hãy chọn từ 1 đến 5 sao",
+    "contentMin": "Hãy viết ít nhất {{min}} ký tự",
+    "contentMax": "Nhận xét tối đa {{max}} ký tự"
+  }
+}

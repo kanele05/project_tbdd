@@ -1,1 +1,51 @@
-{}
+{
+  "title": "My cart",
+  "empty": {
+    "title": "Your cart is empty",
+    "message": "Courses you add to your cart will show up here."
+  },
+  "loading": "Loading your cart",
+  "item": {
+    "open": "{{title}}, by {{teacher}}. Open course",
+    "remove": "Remove {{title}} from cart"
+  },
+  "remove": {
+    "title": "Remove from cart?",
+    "message": "\"{{title}}\" will be removed from your cart.",
+    "confirm": "Remove"
+  },
+  "summary": {
+    "total_one": "Total ({{count}} course)",
+    "total_other": "Total ({{count}} courses)",
+    "a11y_one": "Total {{price}} for {{count}} course",
+    "a11y_other": "Total {{price}} for {{count}} courses",
+    "checkout": "Checkout"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "loading": "Loading checkout",
+    "orderSummary": "Order summary",
+    "total": "Total",
+    "paymentMethod": "Payment method",
+    "demoNote": "Demo payment — no real card needed",
+    "simulateFailure": "Simulate payment failure",
+    "pay": "Pay {{amount}}"
+  },
+  "methods": {
+    "card": { "title": "Mock Card", "subtitle": "Visa ending 4242 (demo)" },
+    "ewallet": { "title": "Mock E-wallet", "subtitle": "Demo wallet balance" },
+    "a11y": "{{title}}, {{subtitle}}"
+  },
+  "result": {
+    "successTitle": "Payment successful",
+    "successAnnouncement": "Payment successful. Your courses are ready.",
+    "successOne": "You now have access to your new course.",
+    "successMany": "You now have access to your {{count}} new courses.",
+    "startLearning": "Start learning",
+    "goToMyCourses": "Go to My Courses",
+    "failedTitle": "Payment failed",
+    "failedMessage": "We could not process your payment. You have not been charged and your cart is unchanged.",
+    "tryAgain": "Try again",
+    "backToCart": "Back to cart"
+  }
+}

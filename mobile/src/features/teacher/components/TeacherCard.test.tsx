@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
+import { i18n } from '@/i18n';
 import type { TeacherSummary } from '@/types/api';
 
 import { TeacherCard } from './TeacherCard';
@@ -42,5 +43,29 @@ describe('TeacherCard', () => {
 
     expect(screen.getByText('CH')).toBeOnTheScreen();
     expect(screen.queryByText('University of London')).not.toBeOnTheScreen();
+  });
+
+  it('describes the card for screen readers, with or without an organization', async () => {
+    const { rerender } = await render(<TeacherCard teacher={TEACHER} onPress={jest.fn()} />);
+    expect(
+      screen.getByRole('button', { name: 'Christian Hayes, University of London, rated 4.5' }),
+    ).toBeOnTheScreen();
+
+    await rerender(
+      <TeacherCard teacher={{ ...TEACHER, organization: null }} onPress={jest.fn()} />,
+    );
+    expect(screen.getByRole('button', { name: 'Christian Hayes, rated 4.5' })).toBeOnTheScreen();
+  });
+
+  it('uses the Vietnamese label and decimal comma after a language change', async () => {
+    await i18n.changeLanguage('vi');
+    await render(<TeacherCard teacher={TEACHER} onPress={jest.fn()} />);
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Christian Hayes, University of London, đánh giá 4,5',
+      }),
+    ).toBeOnTheScreen();
+    expect(screen.getByText('4,5')).toBeOnTheScreen();
   });
 });

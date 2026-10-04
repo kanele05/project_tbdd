@@ -8,23 +8,29 @@ import {
 } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { STRINGS } from '@/constants/strings';
-import { layout, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, spacing, type ColorToken } from '@/theme';
 
 export type ExpandableTextProps = {
   text: string;
   /** Lines shown while collapsed. Default 4 (course / project description). */
   maxLines?: number;
+  /** Paragraph color. Default `textSecondary` (descriptions are the quieter body text). */
+  color?: ColorToken;
 };
 
 /**
- * Paragraph clamped to `maxLines` with a "See more" / "See less" link (design: Overview / Projects).
- * Design: 14/22 Inter in `textPrimary`; the link is a 12 dp primary caption. It is its own
- * `Pressable` under the paragraph (48 dp tall) instead of nested text, so it is easy to hit and
- * TalkBack / VoiceOver can focus it.
+ * Paragraph clamped to `maxLines` with a "See more" / "See less" link (course / project description).
+ * The link is its own `Pressable` under the paragraph (48 dp tall) instead of nested text, so it is
+ * easy to hit and TalkBack / VoiceOver can focus it.
  * A hidden copy of the full text is measured with `onTextLayout` to know whether it overflows.
  */
-export function ExpandableText({ text, maxLines = 4 }: ExpandableTextProps) {
+export function ExpandableText({
+  text,
+  maxLines = 4,
+  color = 'textSecondary',
+}: ExpandableTextProps) {
+  const { t } = useTranslation();
   const [lines, setLines] = useState<readonly string[] | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -43,8 +49,9 @@ export function ExpandableText({ text, maxLines = 4 }: ExpandableTextProps) {
   return (
     <View>
       <AppText
-        variant="body"
-        style={[styles.paragraph, styles.measure]}
+        variant="bodyLarge"
+        color={color}
+        style={styles.measure}
         onTextLayout={handleMeasure}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
@@ -52,11 +59,7 @@ export function ExpandableText({ text, maxLines = 4 }: ExpandableTextProps) {
       >
         {text}
       </AppText>
-      <AppText
-        variant="body"
-        style={styles.paragraph}
-        numberOfLines={isExpanded ? undefined : maxLines}
-      >
+      <AppText variant="bodyLarge" color={color} numberOfLines={isExpanded ? undefined : maxLines}>
         {text}
       </AppText>
       {isTruncatable ? (
@@ -67,7 +70,7 @@ export function ExpandableText({ text, maxLines = 4 }: ExpandableTextProps) {
           style={styles.toggle}
         >
           <AppText variant="caption" color="primaryText">
-            {isExpanded ? STRINGS.common.seeLess : STRINGS.common.seeMore}
+            {isExpanded ? t('actions.seeLess') : t('actions.seeMore')}
           </AppText>
         </Pressable>
       ) : null}
@@ -76,8 +79,6 @@ export function ExpandableText({ text, maxLines = 4 }: ExpandableTextProps) {
 }
 
 const styles = StyleSheet.create({
-  // The design's paragraph pitch is 22 dp (the `body` token is 20).
-  paragraph: { lineHeight: 22 },
   measure: { position: 'absolute', left: 0, right: 0, top: 0, opacity: 0 },
   // 48 dp target; the negative margin keeps the visible gap to the paragraph at ~8 dp.
   toggle: {

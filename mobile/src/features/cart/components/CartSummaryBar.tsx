@@ -1,8 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppText, Button } from '@/components/ui';
-import { colors, spacing } from '@/theme';
+import { AppText, Button, GlassSurface } from '@/components/ui';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, spacing } from '@/theme';
 import { formatPrice } from '@/utils/formatPrice';
 
 export type CartSummaryBarProps = {
@@ -13,46 +14,58 @@ export type CartSummaryBarProps = {
   isBusy?: boolean;
 };
 
-/** Fixed bar at the bottom of the cart: item count + total on the left, Checkout on the right. */
+/** Space the cart list must leave under the bar (bar height without the bottom inset). */
+export const CART_SUMMARY_BAR_CLEARANCE = 100;
+
+/** Glass bar pinned to the bottom of the cart: item count + serif total, and the neon Checkout. */
 export function CartSummaryBar({ itemCount, totalCents, onCheckout, isBusy }: CartSummaryBarProps) {
+  const { t } = useTranslation('cart');
+  const themed = useStyles();
   const insets = useSafeAreaInsets();
+  const total = formatPrice(totalCents);
   return (
-    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
+    <GlassSurface
+      radius={0}
+      isBordered={false}
+      style={themed.bar}
+      contentStyle={[themed.content, { paddingBottom: insets.bottom + spacing.sm }]}
+      testID="cart-summary-bar"
+    >
       <View
+        style={styles.total}
         accessible
-        accessibilityLabel={`Total ${formatPrice(totalCents)} for ${itemCount} ${
-          itemCount === 1 ? 'course' : 'courses'
-        }`}
+        accessibilityLabel={t('summary.a11y', { price: total, count: itemCount })}
       >
-        <AppText variant="caption">{`Total (${itemCount} ${itemCount === 1 ? 'course' : 'courses'})`}</AppText>
-        <AppText variant="h3" family="headingBold">
-          {formatPrice(totalCents)}
-        </AppText>
+        <AppText variant="caption">{t('summary.total', { count: itemCount })}</AppText>
+        <AppText variant="h2">{total}</AppText>
       </View>
       <Button
-        title="Checkout"
+        title={t('summary.checkout')}
         onPress={onCheckout}
         disabled={itemCount === 0 || isBusy}
         rightIcon="arrow-right"
         style={styles.button}
         testID="cart-checkout-button"
       />
-    </View>
+    </GlassSurface>
   );
 }
 
-const styles = StyleSheet.create({
-  bar: {
+const useStyles = makeStyles((t) => ({
+  bar: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  content: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    paddingHorizontal: layout.screenPaddingX,
     borderTopWidth: 1,
-    // Same hairline divider as the SC-09 bottom bar.
-    borderTopColor: colors.surface,
-    backgroundColor: colors.background,
+    borderTopColor: t.colors.border,
   },
-  button: { minWidth: 140 },
+}));
+
+const styles = StyleSheet.create({
+  total: { flexShrink: 1 },
+  button: { minWidth: 156 },
 });

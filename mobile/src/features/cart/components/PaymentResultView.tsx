@@ -2,7 +2,8 @@ import Feather from '@expo/vector-icons/Feather';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText, Button } from '@/components/ui';
-import { colors, layout, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 
 export type PaymentSuccessViewProps = {
   /** How many courses were unlocked by this order. */
@@ -16,28 +17,36 @@ export type PaymentFailedViewProps = {
   onBackToCart: () => void;
 };
 
-/** Result screen of a successful (mock) payment. */
+/** Result screen of a successful (mock) payment: accent check, serif title, two actions. */
 export function PaymentSuccessView({
   courseCount,
   onStartLearning,
   onGoToMyCourses,
 }: PaymentSuccessViewProps) {
+  const { t } = useTranslation('cart');
+  const { colors } = useTheme();
+  const themed = useStyles();
   return (
     <View style={styles.container} testID="payment-success">
-      <View style={[styles.iconWrap, styles.successBg]}>
-        <Feather name="check" size={40} color={colors.success} />
+      <View style={[styles.iconWrap, themed.successBg]}>
+        <Feather name="check" size={40} color={colors.primaryText} />
       </View>
-      <AppText variant="h2" align="center" accessibilityRole="header">
-        Payment successful
+      <AppText variant="h1" align="center" accessibilityRole="header">
+        {t('result.successTitle')}
       </AppText>
-      <AppText variant="body" color="textSecondary" align="center">
+      <AppText variant="bodyLarge" color="textSecondary" align="center">
         {courseCount === 1
-          ? 'You now have access to your new course.'
-          : `You now have access to your ${courseCount} new courses.`}
+          ? t('result.successOne')
+          : t('result.successMany', { count: courseCount })}
       </AppText>
       <View style={styles.actions}>
-        <Button title="Start learning" fullWidth onPress={onStartLearning} />
-        <Button title="Go to My Courses" variant="outline" fullWidth onPress={onGoToMyCourses} />
+        <Button title={t('result.startLearning')} fullWidth onPress={onStartLearning} />
+        <Button
+          title={t('result.goToMyCourses')}
+          variant="outline"
+          fullWidth
+          onPress={onGoToMyCourses}
+        />
       </View>
     </View>
   );
@@ -45,24 +54,32 @@ export function PaymentSuccessView({
 
 /** Result screen of a failed payment (402 `PAYMENT_FAILED`): the cart is untouched. */
 export function PaymentFailedView({ onTryAgain, onBackToCart }: PaymentFailedViewProps) {
+  const { t } = useTranslation('cart');
+  const { colors } = useTheme();
+  const themed = useStyles();
   return (
     <View style={styles.container} testID="payment-failed" accessibilityRole="alert">
-      <View style={[styles.iconWrap, styles.failedBg]}>
-        <Feather name="x" size={40} color={colors.danger} />
+      <View style={[styles.iconWrap, themed.failedBg]}>
+        <Feather name="x" size={40} color={colors.dangerText} />
       </View>
-      <AppText variant="h2" align="center" accessibilityRole="header">
-        Payment failed
+      <AppText variant="h1" align="center" accessibilityRole="header">
+        {t('result.failedTitle')}
       </AppText>
-      <AppText variant="body" color="textSecondary" align="center">
-        We could not process your payment. You have not been charged and your cart is unchanged.
+      <AppText variant="bodyLarge" color="textSecondary" align="center">
+        {t('result.failedMessage')}
       </AppText>
       <View style={styles.actions}>
-        <Button title="Try again" fullWidth onPress={onTryAgain} />
-        <Button title="Back to cart" variant="ghost" fullWidth onPress={onBackToCart} />
+        <Button title={t('result.tryAgain')} fullWidth onPress={onTryAgain} />
+        <Button title={t('result.backToCart')} variant="ghost" fullWidth onPress={onBackToCart} />
       </View>
     </View>
   );
 }
+
+const useStyles = makeStyles((t) => ({
+  successBg: { backgroundColor: t.colors.primarySoft },
+  failedBg: { backgroundColor: t.colors.dangerSoft },
+}));
 
 const styles = StyleSheet.create({
   container: {
@@ -73,14 +90,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: layout.screenPaddingX,
   },
   iconWrap: {
-    width: 88,
-    height: 88,
+    width: 96,
+    height: 96,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
   },
-  successBg: { backgroundColor: colors.primaryLight },
-  failedBg: { backgroundColor: colors.dangerLight },
   actions: { alignSelf: 'stretch', gap: spacing.md, marginTop: spacing.xxl },
 });

@@ -9,7 +9,8 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { flattenPages } from '@/features/learning/pages';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
-import { colors, layout, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { ReviewDto } from '@/types/api';
 
 import { ReviewCard } from '../components/ReviewCard';
@@ -17,7 +18,6 @@ import { ReviewCardSkeleton } from '../components/ReviewCardSkeleton';
 import { ReviewSummary } from '../components/ReviewSummary';
 import { StarFilterChips } from '../components/StarFilterChips';
 import { useCourseReviews, useReviewSummary, type ReviewFilter } from '../hooks';
-import { REVIEW_STRINGS } from '../strings';
 
 export type AllReviewsScreenProps = { courseId: string };
 
@@ -34,10 +34,13 @@ function renderReview({ item }: { item: ReviewDto }) {
 }
 
 /**
- * SC-10 All reviews (M-15b): the rating summary (average + one bar per star), the star filter
+ * SC-10 All reviews: the rating summary (serif average + one gold bar per star), the star filter
  * chips and an infinite list of reviews with pull-to-refresh.
  */
 export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
+  const { t } = useTranslation('review');
+  const { colors } = useTheme();
+  const themed = useStyles();
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<ReviewFilter>('all');
   const reviews = useCourseReviews(courseId, filter);
@@ -61,7 +64,7 @@ export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
     () => (
       <View style={styles.header}>
         <View style={styles.summary}>
-          {summary.data ? <ReviewSummary summary={summary.data} /> : <Skeleton height={96} />}
+          {summary.data ? <ReviewSummary summary={summary.data} /> : <Skeleton height={112} />}
         </View>
         <StarFilterChips value={filter} onChange={setFilter} />
       </View>
@@ -81,24 +84,22 @@ export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
       </View>
     );
   } else if (reviews.isError) {
-    empty = (
-      <ErrorState error={reviews.error} title={REVIEW_STRINGS.loadFailed} onRetry={handleRefresh} />
-    );
+    empty = <ErrorState error={reviews.error} title={t('loadFailed')} onRetry={handleRefresh} />;
   } else if (filter === 'all') {
-    empty = <EmptyState icon="message-square" title={REVIEW_STRINGS.noReviewsTitle} />;
+    empty = <EmptyState icon="message-square" title={t('empty.title')} />;
   } else {
     empty = (
       <EmptyState
         icon="star"
-        title={REVIEW_STRINGS.noReviewsForRating(filter)}
-        message={REVIEW_STRINGS.noReviewsForRatingMessage}
+        title={t('empty.ratingTitle', { count: filter })}
+        message={t('empty.ratingMessage')}
       />
     );
   }
 
   return (
-    <View style={styles.screen}>
-      <ScreenHeader title={REVIEW_STRINGS.allReviewsTitle} />
+    <View style={themed.screen}>
+      <ScreenHeader title={t('allTitle')} />
       <FlashList
         testID="all-reviews-list"
         data={items}
@@ -108,26 +109,28 @@ export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
         ListEmptyComponent={empty}
         ListFooterComponent={
           isFetchingNextPage ? (
-            <ActivityIndicator style={styles.footer} color={colors.primary} />
+            <ActivityIndicator style={styles.footer} color={colors.primaryText} />
           ) : null
         }
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
         refreshing={reviews.isRefetching && !isFetchingNextPage}
         onRefresh={handleRefresh}
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}
+        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
         showsVerticalScrollIndicator={false}
       />
     </View>
   );
 }
 
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
+}));
+
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  content: { paddingBottom: spacing.xxxl },
-  header: { gap: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.lg },
+  header: { gap: spacing.xl, paddingTop: spacing.sm, paddingBottom: spacing.lg },
   summary: { paddingHorizontal: layout.screenPaddingX },
-  item: { paddingHorizontal: layout.screenPaddingX, paddingBottom: spacing.lg },
-  skeletons: { gap: spacing.lg, paddingHorizontal: layout.screenPaddingX },
+  item: { paddingHorizontal: layout.screenPaddingX, paddingBottom: spacing.md },
+  skeletons: { gap: spacing.md, paddingHorizontal: layout.screenPaddingX },
   footer: { paddingVertical: spacing.lg },
 });

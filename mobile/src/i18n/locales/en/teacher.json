@@ -1,1 +1,43 @@
-{}
+{
+  "profileTitle": "Teacher's profile",
+  "topTitle": "Top teachers",
+  "badge": "Teacher",
+  "tabs": {
+    "overview": "Overview",
+    "courses": "Courses",
+    "reviews": "Reviews"
+  },
+  "stats": {
+    "courses": "Courses",
+    "students": "Students",
+    "rating": "Rating",
+    "followers": "Followers",
+    "a11y": "{{label}}: {{value}}"
+  },
+  "follow": "Follow",
+  "following": "Following",
+  "followA11y": "Follow {{name}}",
+  "unfollowA11y": "Following {{name}}, tap to unfollow",
+  "locationA11y": "Location: {{place}}",
+  "share": {
+    "button": "Share profile",
+    "message": "{{name}} - {{job}} on {{app}}"
+  },
+  "topRated": "Top-rated",
+  "viewAllIn": "View all, {{category}}",
+  "overviewEmpty": "This teacher has not written a bio yet.",
+  "empty": {
+    "coursesTitle": "No courses yet",
+    "coursesMessage": "This teacher has not published any course.",
+    "reviewsTitle": "No reviews yet",
+    "reviewsMessage": "Reviews from learners will appear here."
+  },
+  "top": {
+    "emptyTitle": "No teachers yet",
+    "emptyMessage": "Top-rated teachers will show up here."
+  },
+  "card": {
+    "label": "{{name}}, {{organization}}, rated {{rating}}",
+    "labelNoOrg": "{{name}}, rated {{rating}}"
+  }
+}

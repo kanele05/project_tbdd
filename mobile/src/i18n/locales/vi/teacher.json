@@ -1,1 +1,43 @@
-{}
+{
+  "profileTitle": "Hồ sơ giảng viên",
+  "topTitle": "Giảng viên hàng đầu",
+  "badge": "Giảng viên",
+  "tabs": {
+    "overview": "Tổng quan",
+    "courses": "Khóa học",
+    "reviews": "Đánh giá"
+  },
+  "stats": {
+    "courses": "Khóa học",
+    "students": "Học viên",
+    "rating": "Đánh giá",
+    "followers": "Người theo dõi",
+    "a11y": "{{label}}: {{value}}"
+  },
+  "follow": "Theo dõi",
+  "following": "Đang theo dõi",
+  "followA11y": "Theo dõi {{name}}",
+  "unfollowA11y": "Đang theo dõi {{name}}, chạm để bỏ theo dõi",
+  "locationA11y": "Địa điểm: {{place}}",
+  "share": {
+    "button": "Chia sẻ hồ sơ",
+    "message": "{{name}} - {{job}} trên {{app}}"
+  },
+  "topRated": "Xuất sắc",
+  "viewAllIn": "Xem tất cả, {{category}}",
+  "overviewEmpty": "Giảng viên này chưa viết phần giới thiệu.",
+  "empty": {
+    "coursesTitle": "Chưa có khóa học nào",
+    "coursesMessage": "Giảng viên này chưa đăng khóa học nào.",
+    "reviewsTitle": "Chưa có đánh giá nào",
+    "reviewsMessage": "Đánh giá từ học viên sẽ xuất hiện ở đây."
+  },
+  "top": {
+    "emptyTitle": "Chưa có giảng viên nào",
+    "emptyMessage": "Các giảng viên được đánh giá cao sẽ xuất hiện ở đây."
+  },
+  "card": {
+    "label": "{{name}}, {{organization}}, đánh giá {{rating}}",
+    "labelNoOrg": "{{name}}, đánh giá {{rating}}"
+  }
+}

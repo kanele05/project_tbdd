@@ -1,17 +1,18 @@
 import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Share, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorState } from '@/components/ui/ErrorState';
-import { IconButton } from '@/components/ui/IconButton';
+import { GlassIconButton } from '@/components/ui/GlassIconButton';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SegmentedTabs, type SegmentedTab } from '@/components/ui/SegmentedTabs';
-import { STRINGS } from '@/constants/strings';
 import { ReviewCard } from '@/features/review/components/ReviewCard';
+import { useTranslation } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
-import { colors, layout, spacing } from '@/theme';
+import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { CourseSummary } from '@/types/api';
 
 import { TeacherCourseGroup } from '../components/TeacherCourseGroup';
@@ -36,18 +37,20 @@ import {
 
 export type TeacherProfileScreenProps = { teacherId: string };
 
-const TABS: readonly SegmentedTab<TeacherTab>[] = [
-  { key: 'overview', label: 'Overview' },
-  { key: 'courses', label: 'Courses' },
-  { key: 'review', label: 'Review' },
-];
+function goBack(): void {
+  if (router.canGoBack()) router.back();
+  else router.replace('/');
+}
 
 /**
- * SC-18 Teacher profile (FR-20): header with cover/avatar/local time, then OVERVIEW | COURSES |
- * REVIEW tabs. One FlashList serves all tabs (the header scrolls with the content and the Review
- * tab paginates infinitely), so there is no nested vertical scrolling.
+ * SC-18 Teacher profile (FR-20): hero header (cover, avatar, numbers, Follow), then OVERVIEW |
+ * COURSES | REVIEWS tabs. One FlashList serves all tabs (the header scrolls with the content and
+ * the Reviews tab paginates infinitely), so there is no nested vertical scrolling.
  */
 export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
+  const { t } = useTranslation(['teacher', 'common']);
+  const { colors } = useTheme();
+  const themed = useStyles();
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<TeacherTab>('overview');
   const currentUserId = useAuthStore((state) => state.user?.id);
@@ -61,22 +64,28 @@ export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
   const teacher = teacherQuery.data;
   const isFollowed = teacher?.isFollowed ?? false;
 
+  const tabs = useMemo<readonly SegmentedTab<TeacherTab>[]>(
+    () => [
+      { key: 'overview', label: t('teacher:tabs.overview') },
+      { key: 'courses', label: t('teacher:tabs.courses') },
+      { key: 'review', label: t('teacher:tabs.reviews') },
+    ],
+    [t],
+  );
+
   const handleToggleFollow = useCallback(() => {
     if (!isFollowPending) toggleFollow(teacherId, isFollowed);
   }, [isFollowPending, toggleFollow, teacherId, isFollowed]);
 
-  // The design's "more" button: a small menu with Share (no other teacher actions exist).
-  const handleMore = useCallback(() => {
+  const handleShare = useCallback(() => {
     if (!teacher) return;
-    const message = `${teacher.fullName} - ${teacher.jobTitle} on ${STRINGS.appName}`;
-    Alert.alert(teacher.fullName, undefined, [
-      {
-        text: 'Share profile',
-        onPress: () => void Share.share({ message }).catch(() => undefined),
-      },
-      { text: STRINGS.common.cancel, style: 'cancel' },
-    ]);
-  }, [teacher]);
+    const message = t('teacher:share.message', {
+      name: teacher.fullName,
+      job: teacher.jobTitle,
+      app: t('common:appName'),
+    });
+    void Share.share({ message }).catch(() => undefined);
+  }, [teacher, t]);
 
   const handlePressCourse = useCallback((course: CourseSummary) => {
     router.push(`/course/${course.id}`);
@@ -104,13 +113,7 @@ export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
     ({ item }: ListRenderItemInfo<TeacherRow>) => {
       switch (item.kind) {
         case 'overview':
-          return (
-            <TeacherOverviewTab
-              teacher={item.teacher}
-              isOwnProfile={currentUserId === item.teacher.id}
-              onToggleFollow={handleToggleFollow}
-            />
-          );
+          return <TeacherOverviewTab teacher={item.teacher} />;
         case 'group':
           return (
             <TeacherCourseGroup
@@ -128,18 +131,23 @@ export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
           );
       }
     },
-    [currentUserId, handleToggleFollow, handlePressCourse, toggleBookmark, handleViewAll],
+    [handlePressCourse, toggleBookmark, handleViewAll],
   );
 
   const header = useMemo(
     () =>
       teacher ? (
         <View>
-          <TeacherProfileHeader teacher={teacher} />
-          <SegmentedTabs tabs={TABS} value={tab} onChange={setTab} style={styles.tabs} />
+          <TeacherProfileHeader
+            teacher={teacher}
+            isOwnProfile={currentUserId === teacher.id}
+            onToggleFollow={handleToggleFollow}
+            onShare={handleShare}
+          />
+          <SegmentedTabs tabs={tabs} value={tab} onChange={setTab} style={styles.tabs} />
         </View>
       ) : null,
-    [teacher, tab],
+    [teacher, currentUserId, handleToggleFollow, handleShare, tabs, tab],
   );
 
   const tabQuery = tab === 'courses' ? coursesQuery : tab === 'review' ? reviewsQuery : null;
@@ -161,53 +169,65 @@ export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
 
   const footer =
     tab === 'review' && reviewsQuery.isFetchingNextPage ? (
-      <ActivityIndicator color={colors.primary} style={styles.footer} />
+      <ActivityIndicator color={colors.primaryText} style={styles.footer} />
     ) : null;
 
-  return (
-    <View style={styles.screen}>
-      <ScreenHeader
-        title="Teacher's profile"
-        right={
-          teacher ? (
-            <IconButton
-              icon="more-vertical"
-              onPress={handleMore}
-              accessibilityLabel="More options"
-              color="textSecondary"
-            />
-          ) : null
-        }
-      />
-      {teacherQuery.isPending ? (
+  let body;
+  if (teacherQuery.isPending) {
+    body = (
+      <>
         <TeacherProfileSkeleton />
-      ) : teacherQuery.isError || !teacher ? (
+        <View style={[styles.floatingBack, { top: insets.top + spacing.sm }]}>
+          <GlassIconButton
+            icon="chevron-left"
+            accessibilityLabel={t('common:actions.back')}
+            onPress={goBack}
+          />
+        </View>
+      </>
+    );
+  } else if (teacherQuery.isError || !teacher) {
+    body = (
+      <>
+        <ScreenHeader />
         <ErrorState error={teacherQuery.error} onRetry={() => void teacherQuery.refetch()} />
-      ) : (
-        <FlashList
-          data={rows}
-          renderItem={renderRow}
-          keyExtractor={getTeacherRowKey}
-          getItemType={getTeacherRowType}
-          extraData={currentUserId}
-          ListHeaderComponent={header}
-          ListEmptyComponent={emptyState}
-          ListFooterComponent={footer}
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.5}
-          contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxxl }]}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+      </>
+    );
+  } else {
+    body = (
+      <FlashList
+        data={rows}
+        renderItem={renderRow}
+        keyExtractor={getTeacherRowKey}
+        getItemType={getTeacherRowType}
+        extraData={currentUserId}
+        ListHeaderComponent={header}
+        ListEmptyComponent={emptyState}
+        ListFooterComponent={footer}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
+        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxxl }}
+        showsVerticalScrollIndicator={false}
+      />
+    );
+  }
+
+  return (
+    <View style={themed.screen}>
+      {/* The cover photo is dark in both themes: light status-bar icons while it is on screen. */}
+      <StatusBar style={teacher ? 'light' : 'auto'} />
+      {body}
     </View>
   );
 }
 
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
+}));
+
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  // Design: 36 dp between the location line and the tab row.
-  tabs: { marginHorizontal: layout.screenPaddingX, marginTop: spacing.xxxl + spacing.xs },
-  content: { paddingBottom: spacing.xxxl },
+  tabs: { marginHorizontal: layout.screenPaddingX, marginTop: spacing.xl },
   review: { paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.md },
   footer: { paddingVertical: spacing.lg },
+  floatingBack: { position: 'absolute', left: layout.screenPaddingX },
 });

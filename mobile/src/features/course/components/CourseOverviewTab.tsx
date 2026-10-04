@@ -1,56 +1,68 @@
-import { router } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui';
-import { useToggleFollow } from '@/features/teacher/hooks';
-import { spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, spacing } from '@/theme';
 import type { CourseDetail } from '@/types/api';
 
 import { buildBenefits } from '../courseAction';
 import { BenefitsList } from './BenefitsList';
+import { CourseAiSummary } from './CourseAiSummary';
 import { ExpandableText } from './ExpandableText';
 import { SimilarCourses } from './SimilarCourses';
-import { TeacherRow } from './TeacherRow';
 
-export type CourseOverviewTabProps = { course: CourseDetail };
+export type CourseOverviewTabProps = {
+  course: CourseDetail;
+  /** The AI summary exists only for signed-in users. */
+  canUseAi: boolean;
+  isAiRequested: boolean;
+  onRequestAi: () => void;
+  /** Reports the y of the AI block inside this tab so the bottom bar's AI button can scroll to it. */
+  onAiLayout?: (y: number) => void;
+};
 
-/** SC-09 Overview tab: teacher row, description (4 lines + See more), benefits, similar courses. */
-export function CourseOverviewTab({ course }: CourseOverviewTabProps) {
-  const { toggleFollow } = useToggleFollow();
-  const { teacher } = course;
+/**
+ * SC-09 Overview tab: description (4 lines + See more), "This course includes" checklist, the AI
+ * summary block and a rail of similar courses.
+ */
+export function CourseOverviewTab({
+  course,
+  canUseAi,
+  isAiRequested,
+  onRequestAi,
+  onAiLayout,
+}: CourseOverviewTabProps) {
+  const { t } = useTranslation('course');
   const benefits = useMemo(
     () => buildBenefits({ benefits: course.benefits, totalDurationSec: course.totalDurationSec }),
     [course.benefits, course.totalDurationSec],
   );
 
-  const handleOpenTeacher = useCallback(() => router.push(`/teacher/${teacher.id}`), [teacher.id]);
-  const handleToggleFollow = useCallback(
-    () => toggleFollow(teacher.id, teacher.isFollowed),
-    [toggleFollow, teacher.id, teacher.isFollowed],
-  );
-
   return (
     <View style={styles.container}>
-      <View style={styles.teacher}>
-        <TeacherRow
-          teacher={teacher}
-          onOpenTeacher={handleOpenTeacher}
-          onToggleFollow={handleToggleFollow}
-        />
-      </View>
-      <View style={styles.section}>
-        <AppText variant="title" accessibilityRole="header">
-          Description
-        </AppText>
+      <View style={styles.padded}>
         <ExpandableText text={course.description} />
       </View>
       {benefits.length > 0 ? (
-        <View style={styles.section}>
-          <AppText variant="title" accessibilityRole="header">
-            Benefits
+        <View style={[styles.padded, styles.section]}>
+          <AppText variant="h2" accessibilityRole="header">
+            {t('overview.includes')}
           </AppText>
           <BenefitsList benefits={benefits} />
+        </View>
+      ) : null}
+      {canUseAi ? (
+        <View
+          style={styles.padded}
+          onLayout={(event) => onAiLayout?.(event.nativeEvent.layout.y)}
+          testID="course-ai-block"
+        >
+          <CourseAiSummary
+            courseId={course.id}
+            isRequested={isAiRequested}
+            onRequest={onRequestAi}
+          />
         </View>
       ) : null}
       <SimilarCourses courseId={course.id} />
@@ -59,8 +71,7 @@ export function CourseOverviewTab({ course }: CourseOverviewTabProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: spacing.xxl },
-  section: { gap: spacing.sm },
-  // Design: 28 dp from the 36 dp teacher row to "Description" (24 dp between the other sections).
-  teacher: { marginBottom: spacing.xs },
+  container: { gap: layout.sectionGap },
+  padded: { paddingHorizontal: layout.screenPaddingX },
+  section: { gap: spacing.lg },
 });

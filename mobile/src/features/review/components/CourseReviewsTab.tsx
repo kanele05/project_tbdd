@@ -8,10 +8,10 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { flattenPages } from '@/features/learning/pages';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
+import { useTranslation } from '@/i18n';
 import { layout, spacing } from '@/theme';
 
 import { useCourseReviews, useMyReview, useReviewSummary, type ReviewFilter } from '../hooks';
-import { REVIEW_STRINGS } from '../strings';
 import { ReviewCard } from './ReviewCard';
 import { ReviewCardSkeleton } from './ReviewCardSkeleton';
 import { ReviewsHeadline } from './ReviewsHeadline';
@@ -35,10 +35,11 @@ function openWriteReview(courseId: string): void {
 }
 
 /**
- * SC-09 "REVIEW" tab (M-15a): "☆ 4.5/5 (1233+ reviews)" + View all, star filter chips, the
- * first reviews, and "Write a review" for enrolled users (FR-10, FR-11).
+ * SC-09 "Reviews" tab: "★ 4.5/5 (1,233+ reviews)" + View all, star filter chips, the first
+ * reviews, and "Write a review" for enrolled users (FR-10, FR-11).
  */
 export function CourseReviewsTab({ courseId, canWriteReview }: CourseReviewsTabProps) {
+  const { t } = useTranslation('review');
   const [filter, setFilter] = useState<ReviewFilter>('all');
   const summary = useReviewSummary(courseId);
   const reviews = useCourseReviews(courseId, filter);
@@ -66,22 +67,20 @@ export function CourseReviewsTab({ courseId, canWriteReview }: CourseReviewsTabP
       </View>
     );
   } else if (reviews.isError && items.length === 0) {
-    body = (
-      <ErrorState error={reviews.error} title={REVIEW_STRINGS.loadFailed} onRetry={handleRetry} />
-    );
+    body = <ErrorState error={reviews.error} title={t('loadFailed')} onRetry={handleRetry} />;
   } else if (items.length === 0) {
     body =
       filter === 'all' || hasNoReviewsAtAll ? (
         <EmptyState
           icon="message-square"
-          title={REVIEW_STRINGS.noReviewsTitle}
-          message={canWriteReview ? REVIEW_STRINGS.noReviewsMessage : undefined}
+          title={t('empty.title')}
+          message={canWriteReview ? t('empty.message') : undefined}
         />
       ) : (
         <EmptyState
           icon="star"
-          title={REVIEW_STRINGS.noReviewsForRating(filter)}
-          message={REVIEW_STRINGS.noReviewsForRatingMessage}
+          title={t('empty.ratingTitle', { count: filter })}
+          message={t('empty.ratingMessage')}
         />
       );
   } else {
@@ -108,7 +107,7 @@ export function CourseReviewsTab({ courseId, canWriteReview }: CourseReviewsTabP
       {canWriteReview ? (
         <View style={styles.padded}>
           <Button
-            title={myReview.data ? REVIEW_STRINGS.editReview : REVIEW_STRINGS.writeReview}
+            title={myReview.data ? t('editReview') : t('writeReview')}
             variant="outline"
             leftIcon="edit-3"
             fullWidth
@@ -121,8 +120,7 @@ export function CourseReviewsTab({ courseId, canWriteReview }: CourseReviewsTabP
 }
 
 const styles = StyleSheet.create({
-  // The design starts the headline ~28 dp under the tabs (the course screen adds 24 dp).
-  container: { gap: spacing.lg, paddingTop: spacing.xs, paddingBottom: spacing.lg },
+  container: { gap: spacing.lg, paddingBottom: spacing.lg },
   padded: { paddingHorizontal: layout.screenPaddingX },
-  list: { gap: spacing.lg },
+  list: { gap: spacing.md },
 });

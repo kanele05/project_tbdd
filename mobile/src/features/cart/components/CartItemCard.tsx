@@ -4,7 +4,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { PriceTag } from '@/components/course';
 import { AppText, IconButton } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, radius, spacing } from '@/theme';
 import type { CourseSummary } from '@/types/api';
 
 export type CartItemCardProps = {
@@ -16,20 +17,24 @@ export type CartItemCardProps = {
   onRemove: (course: CourseSummary) => void;
 };
 
-/** Same thumbnail as `CourseCardHorizontal` (design: 96 dp). */
-const THUMBNAIL_SIZE = 96;
+const THUMBNAIL_SIZE = 92;
 
 /** One cart row: thumbnail, title, teacher, price (+ struck original) and a remove button. */
 function CartItemCardBase({ course, isRemoving, onPress, onRemove }: CartItemCardProps) {
+  const { t } = useTranslation('cart');
+  const themed = useStyles();
   return (
-    <View style={[styles.card, isRemoving ? styles.removing : null]}>
+    <View style={[themed.card, isRemoving ? styles.removing : null]}>
       <Pressable
         onPress={() => onPress(course)}
         accessibilityRole="button"
-        accessibilityLabel={`${course.title}, by ${course.teacher.fullName}. Open course`}
+        accessibilityLabel={t('item.open', {
+          title: course.title,
+          teacher: course.teacher.fullName,
+        })}
         style={styles.pressable}
       >
-        <View style={styles.imageWrap}>
+        <View style={themed.imageWrap}>
           <Image
             source={{ uri: course.thumbnailUrl }}
             style={StyleSheet.absoluteFill}
@@ -59,36 +64,40 @@ function CartItemCardBase({ course, isRemoving, onPress, onRemove }: CartItemCar
           icon="trash-2"
           size={20}
           color="textMuted"
-          containerSize={32}
+          containerSize={40}
           disabled={isRemoving}
           onPress={() => onRemove(course)}
-          accessibilityLabel={`Remove ${course.title} from cart`}
+          accessibilityLabel={t('item.remove', { title: course.title })}
         />
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   card: {
-    backgroundColor: colors.background,
+    backgroundColor: t.colors.card,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: t.colors.borderSubtle,
     borderRadius: radius.card,
   },
-  removing: { opacity: 0.5 },
-  pressable: { flexDirection: 'row', gap: spacing.md, padding: spacing.md },
   imageWrap: {
     width: THUMBNAIL_SIZE,
     height: THUMBNAIL_SIZE,
     overflow: 'hidden',
     borderRadius: radius.button,
-    backgroundColor: colors.surface,
+    backgroundColor: t.colors.surface,
   },
+}));
+
+const styles = StyleSheet.create({
+  removing: { opacity: 0.5 },
+  pressable: { flexDirection: 'row', gap: spacing.md, padding: spacing.md },
   info: { flex: 1, justifyContent: 'center', gap: spacing.xxs },
-  title: { paddingRight: spacing.xxl },
+  // Leaves room for the remove button in the top-right corner.
+  title: { paddingRight: layout.minTouchTarget - spacing.sm },
   price: { marginTop: spacing.xs },
-  remove: { position: 'absolute', top: spacing.xs, right: spacing.xs },
+  remove: { position: 'absolute', top: 0, right: 0 },
 });
 
 export const CartItemCard = memo(CartItemCardBase);

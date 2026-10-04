@@ -1,46 +1,62 @@
 import { memo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PriceTag } from '@/components/course';
-import { AppText, Button } from '@/components/ui';
-import { colors, spacing } from '@/theme';
+import { AppText, Button, GlassSurface } from '@/components/ui';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { CourseDetail } from '@/types/api';
 
 import {
-  COURSE_ACTION_LABEL,
   getCourseAction,
+  getCourseActionLabel,
   getDiscountPercent,
   type CourseAction,
 } from '../courseAction';
+import { SparklesIcon } from './SparklesIcon';
 
 export type CourseBottomBarProps = {
   course: Pick<CourseDetail, 'enrollment' | 'priceCents' | 'originalPriceCents' | 'isInCart'>;
   /** True while add-to-cart / enroll is in flight: the button shows a spinner. */
   isLoading: boolean;
   onAction: (action: CourseAction) => void;
+  /** Shows the round AI button (signed-in users): jumps to the AI summary. */
+  onAskAi?: () => void;
 };
 
-/** The design's button is 162 x 36 dp, right-aligned to the 20 dp screen padding. */
-const MIN_BUTTON_WIDTH = 162;
+/** The round AI button is a full 48 dp target. */
+const AI_BUTTON_SIZE = layout.minTouchTarget;
+
+/** Space the scroll content must leave under the bar (bar height without the bottom inset). */
+export const COURSE_BOTTOM_BAR_CLEARANCE = 100;
 
 /**
- * Fixed bottom bar of SC-09: price + "x% Disc. ~~$original~~" on the left, the BR-17 action button
- * on the right. Enrolled users see their progress instead of a price.
+ * Glass CTA bar pinned to the bottom of SC-09: stacked price (or the learning progress when
+ * enrolled), the one neon button that follows BR-17 and the round AI button.
  */
-function CourseBottomBarBase({ course, isLoading, onAction }: CourseBottomBarProps) {
+function CourseBottomBarBase({ course, isLoading, onAction, onAskAi }: CourseBottomBarProps) {
+  const { t } = useTranslation('course');
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const action = getCourseAction(course);
   const discountPercent = getDiscountPercent(course);
 
   return (
-    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
+    <GlassSurface
+      radius={0}
+      isBordered={false}
+      style={styles.bar}
+      contentStyle={[styles.content, { paddingBottom: insets.bottom + spacing.sm }]}
+      testID="course-bottom-bar"
+    >
       <View style={styles.price}>
         {course.enrollment ? (
           <>
-            <AppText variant="caption">Your progress</AppText>
-            <AppText variant="h3" family="headingBold">
-              {`${course.enrollment.progressPercent}% complete`}
+            <AppText variant="caption">{t('bar.progress')}</AppText>
+            <AppText variant="h3">
+              {t('bar.progressValue', { percent: course.enrollment.progressPercent })}
             </AppText>
           </>
         ) : (
@@ -53,33 +69,51 @@ function CourseBottomBarBase({ course, isLoading, onAction }: CourseBottomBarPro
         )}
       </View>
       <Button
-        title={COURSE_ACTION_LABEL[action]}
-        size="sm"
+        title={getCourseActionLabel(action)}
         loading={isLoading}
-        leftIcon={action === 'CONTINUE' ? 'play' : 'shopping-cart'}
         onPress={() => onAction(action)}
         style={styles.button}
         testID="course-action-button"
       />
-    </View>
+      {onAskAi ? (
+        <Pressable
+          onPress={onAskAi}
+          accessibilityRole="button"
+          accessibilityLabel={t('ai.askA11y')}
+          style={({ pressed }) => [styles.ai, pressed ? styles.pressed : null]}
+          testID="course-ai-button"
+        >
+          <SparklesIcon size={22} color={colors.primaryText} />
+        </Pressable>
+      ) : null}
+    </GlassSurface>
   );
 }
 
-const styles = StyleSheet.create({
-  bar: {
+const useStyles = makeStyles((t) => ({
+  bar: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  content: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingHorizontal: spacing.xl,
+    gap: spacing.md,
+    paddingTop: spacing.md,
+    paddingHorizontal: layout.screenPaddingX,
     borderTopWidth: 1,
-    // The design's divider is a barely visible hairline (#F6F6F7), not the card `border` color.
-    borderTopColor: colors.surface,
-    backgroundColor: colors.background,
+    borderTopColor: t.colors.border,
   },
   price: { flexShrink: 1 },
-  button: { minWidth: MIN_BUTTON_WIDTH },
-});
+  // Tighter padding: "Đăng ký miễn phí" must stay on one line next to the price.
+  button: { flex: 1, paddingHorizontal: spacing.md },
+  ai: {
+    width: AI_BUTTON_SIZE,
+    height: AI_BUTTON_SIZE,
+    borderRadius: AI_BUTTON_SIZE / 2,
+    borderWidth: 1.5,
+    borderColor: t.colors.primaryText,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pressed: { opacity: 0.7 },
+}));
 
 export const CourseBottomBar = memo(CourseBottomBarBase);

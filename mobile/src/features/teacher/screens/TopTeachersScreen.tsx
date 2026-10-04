@@ -7,7 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { colors, layout, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { TeacherSummary } from '@/types/api';
 
 import { TeacherCard } from '../components/TeacherCard';
@@ -23,15 +24,22 @@ type GridItemProps = { teacher: TeacherSummary; onOpen: (teacherId: string) => v
 const GridItem = memo(function GridItem({ teacher, onOpen }: GridItemProps) {
   const handlePress = useCallback(() => onOpen(teacher.id), [onOpen, teacher.id]);
   return (
-    <View style={styles.cell}>
+    <View style={styles.gridCell}>
       <TeacherCard teacher={teacher} onPress={handlePress} style={styles.card} />
     </View>
   );
 });
 
 function SkeletonGrid() {
+  const { t } = useTranslation('teacher');
   return (
-    <View style={styles.skeletonGrid} testID="top-teachers-skeleton">
+    <View
+      style={styles.skeletonGrid}
+      testID="top-teachers-skeleton"
+      accessible
+      accessibilityLabel={t('topTitle')}
+      accessibilityState={{ busy: true }}
+    >
       {SKELETON_KEYS.map((key) => (
         <View key={key} style={styles.cell}>
           <TeacherCardSkeleton />
@@ -41,8 +49,11 @@ function SkeletonGrid() {
   );
 }
 
-/** SC-19 Top teachers (Could): two-column grid of `TeacherCard`, infinite scroll -> SC-18. */
+/** SC-19 Top teachers: two-column grid of portrait `TeacherCard`s, infinite scroll -> SC-18. */
 export function TopTeachersScreen() {
+  const { t } = useTranslation('teacher');
+  const { colors } = useTheme();
+  const themed = useStyles();
   const insets = useSafeAreaInsets();
   const query = useTeachersInfinite();
   const { data, hasNextPage, isFetchingNextPage, isRefetching, fetchNextPage, refetch } = query;
@@ -82,18 +93,17 @@ export function TopTeachersScreen() {
         onEndReachedThreshold={0.5}
         refreshing={isRefetching && !isFetchingNextPage}
         onRefresh={handleRefresh}
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}
+        contentContainerStyle={{
+          ...styles.content,
+          paddingBottom: insets.bottom + spacing.xxl,
+        }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <EmptyState
-            icon="users"
-            title="No teachers yet"
-            message="Top-rated teachers will show up here."
-          />
+          <EmptyState icon="users" title={t('top.emptyTitle')} message={t('top.emptyMessage')} />
         }
         ListFooterComponent={
           isFetchingNextPage ? (
-            <ActivityIndicator color={colors.primary} style={styles.footer} />
+            <ActivityIndicator color={colors.primaryText} style={styles.footer} />
           ) : null
         }
       />
@@ -101,8 +111,8 @@ export function TopTeachersScreen() {
   }
 
   return (
-    <View style={styles.screen}>
-      <ScreenHeader title="Top teachers" />
+    <View style={themed.screen}>
+      <ScreenHeader title={t('topTitle')} />
       {body}
     </View>
   );
@@ -110,13 +120,15 @@ export function TopTeachersScreen() {
 
 const GAP = spacing.md;
 
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
+}));
+
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
   // Cells carry half the column gap on each side; the list padding makes up the rest of 20 dp.
   content: {
     paddingHorizontal: layout.screenPaddingX - GAP / 2,
     paddingTop: spacing.sm,
-    paddingBottom: spacing.xxl,
   },
   skeletonGrid: {
     flexDirection: 'row',
@@ -124,6 +136,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: layout.screenPaddingX - GAP / 2,
     paddingTop: spacing.sm,
   },
+  // FlashList already gives each of the 2 columns half the width: the cell only adds the gap.
+  gridCell: { padding: GAP / 2 },
   cell: { width: '50%', padding: GAP / 2 },
   card: { width: '100%' },
   footer: { paddingVertical: spacing.lg },

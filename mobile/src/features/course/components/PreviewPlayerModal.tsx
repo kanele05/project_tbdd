@@ -1,10 +1,11 @@
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { ActivityIndicator, Modal, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Modal, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText, Button, IconButton } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { getErrorMessage } from '@/lib/appError';
-import { colors, spacing } from '@/theme';
+import { makeStyles, spacing, useTheme } from '@/theme';
 
 import { usePreviewLesson } from '../hooks';
 
@@ -15,6 +16,7 @@ export type PreviewPlayerModalProps = {
 };
 
 function PreviewVideo({ url }: { url: string }) {
+  const styles = useStyles();
   const player = useVideoPlayer(url, (instance) => {
     instance.play();
   });
@@ -22,6 +24,9 @@ function PreviewVideo({ url }: { url: string }) {
 }
 
 function PreviewBody({ lessonId, onClose }: { lessonId: string; onClose: () => void }) {
+  const { t } = useTranslation(['course', 'common']);
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const { data, isPending, error, refetch } = usePreviewLesson(lessonId);
 
@@ -32,13 +37,17 @@ function PreviewBody({ lessonId, onClose }: { lessonId: string; onClose: () => v
           icon="x"
           color="white"
           onPress={onClose}
-          accessibilityLabel="Close preview"
+          accessibilityLabel={t('course:preview.close')}
           testID="preview-close"
         />
       </View>
       <View style={styles.stage}>
         {isPending ? (
-          <ActivityIndicator size="large" color={colors.white} accessibilityLabel="Loading video" />
+          <ActivityIndicator
+            size="large"
+            color={colors.white}
+            accessibilityLabel={t('course:preview.loading')}
+          />
         ) : null}
         {data ? <PreviewVideo url={data.videoUrl} /> : null}
         {error ? (
@@ -46,7 +55,11 @@ function PreviewBody({ lessonId, onClose }: { lessonId: string; onClose: () => v
             <AppText variant="body" color="white" align="center">
               {getErrorMessage(error)}
             </AppText>
-            <Button title="Retry" variant="outline" onPress={() => void refetch()} />
+            <Button
+              title={t('common:actions.retry')}
+              variant="outline"
+              onPress={() => void refetch()}
+            />
           </View>
         ) : null}
       </View>
@@ -77,12 +90,12 @@ export function PreviewPlayerModal({ lessonId, onClose }: PreviewPlayerModalProp
   );
 }
 
-const styles = StyleSheet.create({
-  // `textPrimary` (#171A1F) is the darkest token: the video backdrop.
-  container: { flex: 1, backgroundColor: colors.textPrimary },
+const useStyles = makeStyles((t) => ({
+  // The `scrim` token (near-black in both themes) is the video backdrop.
+  container: { flex: 1, backgroundColor: t.colors.scrim },
   topBar: { height: 56, justifyContent: 'center', paddingHorizontal: spacing.xs },
   stage: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   video: { width: '100%', aspectRatio: 16 / 9 },
   error: { alignItems: 'center', gap: spacing.lg, paddingHorizontal: spacing.xxl },
   title: { padding: spacing.xl },
-});
+}));

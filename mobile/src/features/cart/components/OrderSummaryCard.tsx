@@ -1,7 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, radius, spacing } from '@/theme';
 import type { CartItemDto } from '@/types/api';
 import { formatPriceOrFree } from '@/utils/formatPrice';
 
@@ -10,24 +11,26 @@ export type OrderSummaryCardProps = {
   totalCents: number;
 };
 
-/** Checkout "Order summary": one line per course and the total. */
+/** Checkout "Order summary": one line per course and the serif total, on a hairline card. */
 export function OrderSummaryCard({ items, totalCents }: OrderSummaryCardProps) {
+  const { t } = useTranslation('cart');
+  const themed = useStyles();
   return (
-    <View style={styles.card}>
+    <View style={themed.card}>
       {items.map(({ course }) => (
         <View key={course.id} style={styles.row}>
           <AppText variant="body" numberOfLines={2} style={styles.title}>
             {course.title}
           </AppText>
-          <AppText variant="body" family="bodyMedium">
+          <AppText variant="body" family="bodySemiBold">
             {formatPriceOrFree(course.priceCents)}
           </AppText>
         </View>
       ))}
-      <View style={styles.divider} />
-      <View style={styles.row}>
-        <AppText variant="title">Total</AppText>
-        <AppText variant="title" color="primaryText" family="headingBold" testID="order-total">
+      <View style={themed.divider} />
+      <View style={[styles.row, styles.totalRow]}>
+        <AppText variant="title">{t('checkout.total')}</AppText>
+        <AppText variant="h2" color="primaryText" testID="order-total">
           {formatPriceOrFree(totalCents)}
         </AppText>
       </View>
@@ -35,21 +38,25 @@ export function OrderSummaryCard({ items, totalCents }: OrderSummaryCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   card: {
     gap: spacing.md,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: t.colors.borderSubtle,
     borderRadius: radius.card,
-    backgroundColor: colors.background,
+    backgroundColor: t.colors.card,
   },
+  divider: { height: 1, backgroundColor: t.colors.border },
+}));
+
+const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: spacing.md,
   },
+  totalRow: { alignItems: 'center' },
   title: { flex: 1 },
-  divider: { height: 1, backgroundColor: colors.border },
 });

@@ -2,7 +2,8 @@ import Feather from '@expo/vector-icons/Feather';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText, type FeatherIconName } from '@/components/ui';
-import { colors, layout, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { PaymentMethod } from '@/types/api';
 
 export type PaymentMethodPickerProps = {
@@ -11,52 +12,49 @@ export type PaymentMethodPickerProps = {
   disabled?: boolean;
 };
 
-type Option = { method: PaymentMethod; title: string; subtitle: string; icon: FeatherIconName };
+type Option = { method: PaymentMethod; key: 'card' | 'ewallet'; icon: FeatherIconName };
 
 const OPTIONS: readonly Option[] = [
-  {
-    method: 'MOCK_CARD',
-    title: 'Mock Card',
-    subtitle: 'Visa ending 4242 (demo)',
-    icon: 'credit-card',
-  },
-  {
-    method: 'MOCK_EWALLET',
-    title: 'Mock E-wallet',
-    subtitle: 'Demo wallet balance',
-    icon: 'smartphone',
-  },
+  { method: 'MOCK_CARD', key: 'card', icon: 'credit-card' },
+  { method: 'MOCK_EWALLET', key: 'ewallet', icon: 'smartphone' },
 ];
 
-/** Radio group: Mock Card / Mock E-wallet. */
+const RADIO_SIZE = 22;
+
+/** Radio group: Mock Card / Mock E-wallet. The chosen row gets an accent hairline + soft tint. */
 export function PaymentMethodPicker({
   value,
   onChange,
   disabled = false,
 }: PaymentMethodPickerProps) {
+  const { t } = useTranslation('cart');
+  const { colors } = useTheme();
+  const themed = useStyles();
   return (
     <View style={styles.group} accessibilityRole="radiogroup">
       {OPTIONS.map((option) => {
         const isSelected = option.method === value;
+        const title = t(`methods.${option.key}.title`);
+        const subtitle = t(`methods.${option.key}.subtitle`);
         return (
           <Pressable
             key={option.method}
             onPress={() => onChange(option.method)}
             disabled={disabled}
             accessibilityRole="radio"
-            accessibilityLabel={`${option.title}, ${option.subtitle}`}
+            accessibilityLabel={t('methods.a11y', { title, subtitle })}
             accessibilityState={{ checked: isSelected, disabled }}
-            style={[styles.option, isSelected ? styles.optionSelected : null]}
+            style={[styles.option, themed.option, isSelected ? themed.optionSelected : null]}
           >
-            <View style={styles.iconWrap}>
-              <Feather name={option.icon} size={20} color={colors.primary} />
+            <View style={themed.iconWrap}>
+              <Feather name={option.icon} size={20} color={colors.primaryText} />
             </View>
             <View style={styles.texts}>
-              <AppText variant="label">{option.title}</AppText>
-              <AppText variant="caption">{option.subtitle}</AppText>
+              <AppText variant="label">{title}</AppText>
+              <AppText variant="caption">{subtitle}</AppText>
             </View>
-            <View style={[styles.radio, isSelected ? styles.radioSelected : null]}>
-              {isSelected ? <View style={styles.radioDot} /> : null}
+            <View style={[styles.radio, themed.radio, isSelected ? themed.radioSelected : null]}>
+              {isSelected ? <View style={themed.radioDot} /> : null}
             </View>
           </Pressable>
         );
@@ -65,7 +63,26 @@ export function PaymentMethodPicker({
   );
 }
 
-const RADIO_SIZE = 20;
+const useStyles = makeStyles((t) => ({
+  option: { borderColor: t.colors.border, backgroundColor: t.colors.card },
+  optionSelected: { borderColor: t.colors.primaryText, backgroundColor: t.colors.primarySoft },
+  iconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: t.colors.primarySoft,
+  },
+  radio: { borderColor: t.colors.border },
+  radioSelected: { borderColor: t.colors.primaryText },
+  radioDot: {
+    width: RADIO_SIZE / 2,
+    height: RADIO_SIZE / 2,
+    borderRadius: RADIO_SIZE / 4,
+    backgroundColor: t.colors.primaryText,
+  },
+}));
 
 const styles = StyleSheet.create({
   group: { gap: spacing.md },
@@ -76,18 +93,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: radius.card,
-    backgroundColor: colors.background,
-  },
-  optionSelected: { borderColor: colors.primary, backgroundColor: colors.primaryLight },
-  iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primaryLight,
   },
   texts: { flex: 1 },
   radio: {
@@ -95,15 +101,7 @@ const styles = StyleSheet.create({
     height: RADIO_SIZE,
     borderRadius: RADIO_SIZE / 2,
     borderWidth: 2,
-    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  radioSelected: { borderColor: colors.primary },
-  radioDot: {
-    width: RADIO_SIZE / 2,
-    height: RADIO_SIZE / 2,
-    borderRadius: RADIO_SIZE / 4,
-    backgroundColor: colors.primary,
   },
 });

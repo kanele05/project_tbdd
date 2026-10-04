@@ -1,14 +1,14 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState, ScreenHeader } from '@/components/ui';
-import { STRINGS } from '@/constants/strings';
 import { CourseResults } from '@/features/search/components/CourseResults';
 import { useCategories, type CoursesInfiniteParams } from '@/features/search/hooks';
 import { openSearchTab } from '@/features/search/navigation';
-import { colors, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, spacing } from '@/theme';
 import type { CourseSection } from '@/types/api';
 
 type CourseListRouteParams = {
@@ -17,14 +17,6 @@ type CourseListRouteParams = {
   teacherId?: string | string[];
   title?: string | string[];
 };
-
-const SECTION_TITLES: Record<CourseSection, string> = {
-  popular: 'Popular courses',
-  recommended: 'Recommended for you',
-  inspires: 'Course that inspires',
-};
-
-const DEFAULT_TITLE = 'All courses';
 
 function firstParam(value: string | string[] | undefined): string | undefined {
   const first = Array.isArray(value) ? value[0] : value;
@@ -40,6 +32,8 @@ function isCourseSection(value: string | undefined): value is CourseSection {
  * a teacher (`teacherId`). Same layout and infinite list as the Search results.
  */
 export function CourseListScreen() {
+  const { t } = useTranslation(['search', 'common']);
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const routeParams = useLocalSearchParams<CourseListRouteParams>();
   const categoryId = firstParam(routeParams.categoryId);
@@ -50,7 +44,7 @@ export function CourseListScreen() {
 
   const { data: categories } = useCategories();
   const categoryName = categories?.find((category) => category.id === categoryId)?.name;
-  const title = customTitle ?? (section ? SECTION_TITLES[section] : categoryName) ?? DEFAULT_TITLE;
+  const title = customTitle ?? (section ? t(`list.${section}`) : categoryName) ?? t('list.all');
 
   const params = useMemo<CoursesInfiniteParams>(() => {
     const next: CoursesInfiniteParams = {};
@@ -69,9 +63,9 @@ export function CourseListScreen() {
         emptyState={
           <EmptyState
             icon="book-open"
-            title="No courses found"
-            message="There are no courses here yet. Try exploring other topics."
-            actionLabel={STRINGS.common.exploreCourses}
+            title={t('empty.title')}
+            message={t('list.emptyMessage')}
+            actionLabel={t('common:actions.exploreCourses')}
             onAction={openSearchTab}
           />
         }
@@ -80,6 +74,6 @@ export function CourseListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-});
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
+}));
