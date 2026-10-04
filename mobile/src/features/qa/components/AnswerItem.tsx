@@ -1,46 +1,46 @@
 import { memo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Avatar } from '@/components/ui/Avatar';
-import { colors, radius, spacing } from '@/theme';
+import { makeStyles, radius, spacing } from '@/theme';
 import type { AnswerDto } from '@/types/api';
 import { formatRelativeTime } from '@/utils/formatRelativeTime';
 
 export type AnswerItemProps = { answer: AnswerDto };
 
-/** One reply of SC-16: avatar, name, time and the text on a `backgroundAlt` block (same type sizes as the review card). */
+/** One reply of SC-16: avatar, name, time and the text on a `surfaceAlt` block. */
 function AnswerItemBase({ answer }: AnswerItemProps) {
+  const styles = useStyles();
   return (
     <View style={styles.item} testID={`answer-${answer.id}`}>
       <View style={styles.header}>
         <Avatar uri={answer.user.avatarUrl} name={answer.user.fullName} size={36} />
         <View style={styles.author}>
-          <AppText variant="caption" family="heading" numberOfLines={1}>
+          <AppText variant="label" numberOfLines={1}>
             {answer.user.fullName}
           </AppText>
-          <AppText variant="caption" color="textSecondary">
-            {formatRelativeTime(answer.createdAt)}
-          </AppText>
+          <AppText variant="caption">{formatRelativeTime(answer.createdAt)}</AppText>
         </View>
       </View>
-      <AppText variant="caption" color="textPrimary" style={styles.content}>
+      <AppText variant="body" color="textSecondary">
         {answer.content}
       </AppText>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   item: {
-    gap: spacing.lg,
-    padding: spacing.md,
-    borderRadius: radius.badge,
-    backgroundColor: colors.backgroundAlt,
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: t.colors.borderSubtle,
+    backgroundColor: t.colors.surfaceAlt,
   },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  author: { flex: 1, gap: spacing.xs },
-  content: { lineHeight: 20 },
-});
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  author: { flex: 1, gap: spacing.xxs },
+}));
 
 export const AnswerItem = memo(AnswerItemBase);

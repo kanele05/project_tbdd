@@ -1,9 +1,9 @@
 import { MAX_UPLOAD_BYTES } from '@/constants/config';
 
 import {
-  COVER_UNSUPPORTED_MESSAGE,
-  FILE_TOO_LARGE_MESSAGE,
-  FILE_UNSUPPORTED_MESSAGE,
+  getCoverUnsupportedMessage,
+  getFileTooLargeMessage,
+  getFileUnsupportedMessage,
   formatFileSize,
   getFileExtension,
   getFileKind,
@@ -45,17 +45,17 @@ describe('validateSubmissionFile', () => {
 
   it('rejects unsupported types', () => {
     expect(validateSubmissionFile({ name: 'virus.exe', size: 1000 })).toBe(
-      FILE_UNSUPPORTED_MESSAGE,
+      getFileUnsupportedMessage(),
     );
     expect(validateSubmissionFile({ name: 'noextension', size: 1000 })).toBe(
-      FILE_UNSUPPORTED_MESSAGE,
+      getFileUnsupportedMessage(),
     );
   });
 
   it('rejects files larger than 10 MB but accepts exactly 10 MB', () => {
     expect(validateSubmissionFile({ name: 'a.zip', size: MAX_UPLOAD_BYTES })).toBeNull();
     expect(validateSubmissionFile({ name: 'a.zip', size: MAX_UPLOAD_BYTES + 1 })).toBe(
-      FILE_TOO_LARGE_MESSAGE,
+      getFileTooLargeMessage(),
     );
   });
 
@@ -69,13 +69,13 @@ describe('validateCoverImage', () => {
   it('accepts png / jpg and rejects other formats', () => {
     expect(validateCoverImage({ name: 'cover.png', size: 10 })).toBeNull();
     expect(validateCoverImage({ name: 'cover.jpeg', size: 10 })).toBeNull();
-    expect(validateCoverImage({ name: 'cover.heic', size: 10 })).toBe(COVER_UNSUPPORTED_MESSAGE);
-    expect(validateCoverImage({ name: 'cover.pdf', size: 10 })).toBe(COVER_UNSUPPORTED_MESSAGE);
+    expect(validateCoverImage({ name: 'cover.heic', size: 10 })).toBe(getCoverUnsupportedMessage());
+    expect(validateCoverImage({ name: 'cover.pdf', size: 10 })).toBe(getCoverUnsupportedMessage());
   });
 
   it('rejects an oversized image', () => {
     expect(validateCoverImage({ name: 'cover.png', size: MAX_UPLOAD_BYTES + 1 })).toBe(
-      FILE_TOO_LARGE_MESSAGE,
+      getFileTooLargeMessage(),
     );
   });
 });
@@ -98,7 +98,7 @@ describe('getFileKind', () => {
     expect(getFileKind('Document 1.txt')).toEqual({ label: '.txt', tone: 'danger' });
     expect(getFileKind('Document 2.pdf')).toEqual({ label: '.pdf', tone: 'primary' });
     expect(getFileKind('code.zip').label).toBe('.zip');
-    expect(getFileKind('mystery').label).toBe('file');
+    expect(getFileKind('mystery').label).toBe('');
   });
 });
 

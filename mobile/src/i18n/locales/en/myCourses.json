@@ -1,1 +1,34 @@
-{}
+{
+  "title": "My Courses",
+  "subtitle_one": "{{count}} course",
+  "subtitle_other": "{{count}} courses",
+  "tabs": {
+    "all": "All",
+    "ongoing": "On going",
+    "completed": "Completed"
+  },
+  "continue": {
+    "title": "Continue learning",
+    "action": "Resume"
+  },
+  "percentComplete": "{{percent}}% Complete",
+  "cardLabel": "{{title}}, {{duration}}, {{percent}}% complete",
+  "bannerTitle": "Courses that boost your career!",
+  "bannerAction": "Check Now",
+  "loadFailed": "Couldn't load your courses",
+  "empty": {
+    "all": {
+      "title": "You haven't started any course yet",
+      "message": "Find a course you like and start learning today."
+    },
+    "ongoing": {
+      "title": "No course in progress",
+      "message": "Courses you are learning will show up here."
+    },
+    "completed": {
+      "title": "No completed course yet",
+      "message": "Finish all the lessons of a course and it will show up here."
+    }
+  },
+  "explore": "Explore courses"
+}

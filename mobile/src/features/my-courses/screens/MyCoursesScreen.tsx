@@ -1,22 +1,26 @@
 import { FlashList } from '@shopify/flash-list';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useTabBarClearance } from '@/components/FloatingTabBar';
+import { AppText } from '@/components/ui/AppText';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { startPendingProgressSync } from '@/features/learning/progressSync';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
-import { colors, layout, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, spacing } from '@/theme';
 import type { MyCourseItem, MyCoursesStatus } from '@/types/api';
 
 import { CareerBanner } from '../components/CareerBanner';
+import { ContinueCard } from '../components/ContinueCard';
 import { CourseProgressCard } from '../components/CourseProgressCard';
 import { CourseProgressCardSkeleton } from '../components/CourseProgressCardSkeleton';
 import { useMyCourses } from '../hooks';
-import { MY_COURSES_STRINGS, MY_COURSES_TABS, parseTabParam } from '../strings';
+import { MY_COURSES_TAB_KEYS, parseTabParam } from '../tabs';
 
 function keyExtractor(item: MyCourseItem): string {
   return item.course.id;
@@ -27,11 +31,16 @@ function openSearchTab(): void {
 }
 
 /**
- * SC-14 My Courses (M-19): promo banner, ALL | ON GOING | COMPLETED tabs and one progress card
- * per enrolled course. Refetches every time the screen gets focus so a lesson finished a moment
- * ago shows the new percentage. Accepts `?tab=ongoing|completed` (the Profile stats link here).
+ * SC-14 My Courses (M-19), concept B: a big serif title, the course you studied last as a
+ * "Continue learning" poster, the All | On going | Completed tabs and one progress card per course,
+ * ending with the career banner. Refetches every time the screen gets focus so a lesson finished a
+ * moment ago shows the new percentage. Accepts `?tab=ongoing|completed` (Profile stats link here).
  */
 export function MyCoursesScreen() {
+  const { t } = useTranslation('myCourses');
+  const styles = useStyles();
+  const insets = useSafeAreaInsets();
+  const clearance = useTabBarClearance();
   const params = useLocalSearchParams<{ tab?: string }>();
   const paramTab = parseTabParam(params.tab);
   const [tab, setTab] = useState<MyCoursesStatus>(paramTab ?? 'all');
@@ -87,17 +96,47 @@ export function MyCoursesScreen() {
         <CourseProgressCard item={item} onPress={handleOpenCourse} />
       </View>
     ),
-    [handleOpenCourse],
+    [handleOpenCourse, styles],
   );
 
+  const items = courses.data;
+  // The latest unfinished course is promoted to the poster, so it is not repeated in the list.
+  const continueItem = useMemo(
+    () => (tab === 'completed' ? undefined : items?.find((item) => item.progressPercent < 100)),
+    [items, tab],
+  );
+  const listItems = useMemo(
+    () => (continueItem ? (items ?? []).filter((item) => item !== continueItem) : (items ?? [])),
+    [continueItem, items],
+  );
+
+  const tabs = useMemo(
+    () => MY_COURSES_TAB_KEYS.map((key) => ({ key, label: t(`tabs.${key}`) })),
+    [t],
+  );
   const header = useMemo(
     () => (
-      <View style={styles.header}>
-        <CareerBanner onPress={openSearchTab} />
-        <SegmentedTabs tabs={MY_COURSES_TABS} value={tab} onChange={handleTabChange} />
+      <View style={[styles.header, { paddingTop: insets.top + spacing.lg }]}>
+        <View style={styles.titleBlock}>
+          <AppText variant="h1" accessibilityRole="header">
+            {t('title')}
+          </AppText>
+          {items ? (
+            <AppText variant="caption">{t('subtitle', { count: items.length })}</AppText>
+          ) : null}
+        </View>
+        {continueItem ? (
+          <View style={styles.section}>
+            <AppText variant="h2" accessibilityRole="header">
+              {t('continue.title')}
+            </AppText>
+            <ContinueCard item={continueItem} onPress={handleOpenCourse} />
+          </View>
+        ) : null}
+        <SegmentedTabs tabs={tabs} value={tab} onChange={handleTabChange} />
       </View>
     ),
-    [handleTabChange, tab],
+    [continueItem, handleOpenCourse, handleTabChange, insets.top, items, styles, t, tab, tabs],
   );
 
   const { refetch } = courses;
@@ -113,7 +152,7 @@ export function MyCoursesScreen() {
     }
   }, [refetch]);
 
-  let empty;
+  let empty = null;
   if (isOfflineWithoutData(courses)) {
     empty = <ErrorState error={OFFLINE_QUERY_ERROR} onRetry={handleRetry} />;
   } else if (courses.isPending) {
@@ -125,21 +164,14 @@ export function MyCoursesScreen() {
       </View>
     );
   } else if (courses.isError) {
-    empty = (
-      <ErrorState
-        error={courses.error}
-        title={MY_COURSES_STRINGS.loadFailed}
-        onRetry={handleRetry}
-      />
-    );
-  } else {
-    const copy = MY_COURSES_STRINGS.empty[tab];
+    empty = <ErrorState error={courses.error} title={t('loadFailed')} onRetry={handleRetry} />;
+  } else if (!continueItem) {
     empty = (
       <EmptyState
         icon="book-open"
-        title={copy.title}
-        message={copy.message}
-        actionLabel={MY_COURSES_STRINGS.explore}
+        title={t(`empty.${tab}.title`)}
+        message={t(`empty.${tab}.message`)}
+        actionLabel={t('explore')}
         onAction={openSearchTab}
       />
     );
@@ -147,32 +179,39 @@ export function MyCoursesScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title={MY_COURSES_STRINGS.title} showBack={false} />
       <FlashList
         testID="my-courses-list"
-        data={courses.data ?? []}
+        data={listItems}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
+        ListFooterComponent={
+          items && items.length > 0 ? (
+            <View style={styles.footer}>
+              <CareerBanner onPress={openSearchTab} />
+            </View>
+          ) : null
+        }
         refreshing={isPulling}
         onRefresh={handlePull}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={{ paddingBottom: clearance + spacing.xxxl }}
         showsVerticalScrollIndicator={false}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  content: { paddingBottom: spacing.xxl },
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
   header: {
-    gap: spacing.xxl,
+    gap: layout.sectionGap - spacing.sm,
     paddingHorizontal: layout.screenPaddingX,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.lg,
   },
+  titleBlock: { gap: spacing.xs },
+  section: { gap: spacing.md },
   item: { paddingHorizontal: layout.screenPaddingX, paddingBottom: spacing.md },
   skeletons: { gap: spacing.md, paddingHorizontal: layout.screenPaddingX },
-});
+  footer: { paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.lg },
+}));

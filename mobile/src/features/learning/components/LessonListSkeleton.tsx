@@ -1,14 +1,21 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useTranslation } from '@/i18n';
 import { spacing } from '@/theme';
 
 const ROWS = [0, 1, 2] as const;
 
 /** Loading placeholder of the curriculum: a chapter title and three lesson rows. */
 export function LessonListSkeleton() {
+  const { t } = useTranslation('learning');
   return (
-    <View style={styles.container} accessibilityLabel="Loading lessons" accessible>
+    <View
+      style={styles.container}
+      accessibilityLabel={t('loadingLessons')}
+      accessibilityState={{ busy: true }}
+      accessible
+    >
       <Skeleton width="55%" height={20} />
       {ROWS.map((row) => (
         <View key={row} style={styles.row}>

@@ -1,14 +1,16 @@
 import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useCallback, useMemo, type ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
+import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { colors, layout, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { NotificationDto } from '@/types/api';
 
 import { NotificationItem, NotificationSkeleton } from '../components/NotificationItem';
@@ -23,6 +25,9 @@ const keyExtractor = (item: NotificationDto): string => item.id;
  * the Home badge drops at once) and opens its target; "Mark all as read" clears the list.
  */
 export function NotificationsScreen() {
+  const { t } = useTranslation('notification');
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const query = useNotificationsInfinite();
   const { mutate: markRead } = useMarkRead();
@@ -65,7 +70,7 @@ export function NotificationsScreen() {
       </View>
     );
   } else if (query.isError && items.length === 0) {
-    body = <ErrorState error={query.error} onRetry={handleRefresh} />;
+    body = <ErrorState error={query.error} title={t('loadFailed')} onRetry={handleRefresh} />;
   } else {
     body = (
       <FlashList
@@ -79,15 +84,11 @@ export function NotificationsScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <EmptyState
-            icon="bell"
-            title="No notifications yet"
-            message="Updates about your orders, answers and courses will appear here."
-          />
+          <EmptyState icon="bell" title={t('emptyTitle')} message={t('emptyMessage')} />
         }
         ListFooterComponent={
           isFetchingNextPage ? (
-            <ActivityIndicator color={colors.primary} style={styles.footer} />
+            <ActivityIndicator color={colors.primaryText} style={styles.footer} />
           ) : null
         }
       />
@@ -96,25 +97,19 @@ export function NotificationsScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader title="Notifications" />
+      <ScreenHeader title={t('title')} />
       {query.isPending ? null : (
         <View style={styles.toolbar}>
           <AppText variant="caption" accessibilityLiveRegion="polite">
-            {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+            {unreadCount > 0 ? t('unreadCount', { count: unreadCount }) : t('allCaughtUp')}
           </AppText>
-          <Pressable
+          <Button
+            title={t('markAllRead')}
+            variant="ghost"
+            size="sm"
             onPress={handleMarkAll}
             disabled={unreadCount === 0}
-            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
-            accessibilityRole="button"
-            accessibilityLabel="Mark all as read"
-            accessibilityState={{ disabled: unreadCount === 0 }}
-            style={unreadCount === 0 ? styles.disabled : null}
-          >
-            <AppText variant="label" color="primaryText">
-              Mark all as read
-            </AppText>
-          </Pressable>
+          />
         </View>
       )}
       {body}
@@ -122,8 +117,8 @@ export function NotificationsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -131,8 +126,7 @@ const styles = StyleSheet.create({
     minHeight: layout.minTouchTarget,
     paddingHorizontal: layout.screenPaddingX,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: t.colors.border,
   },
-  disabled: { opacity: 0.4 },
   footer: { paddingVertical: spacing.lg },
-});
+}));

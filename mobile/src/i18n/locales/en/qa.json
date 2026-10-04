@@ -1,1 +1,21 @@
-{}
+{
+  "questionPlaceholder": "Write a Q&A...",
+  "replyPlaceholder": "Write a reply...",
+  "send": "Send",
+  "noQuestionsTitle": "No questions yet",
+  "noQuestionsMessage": "Ask the first question about this course.",
+  "noAnswersTitle": "No replies yet",
+  "noAnswersMessage": "Be the first to reply.",
+  "loadFailed": "Couldn't load the questions",
+  "loadQuestionFailed": "Couldn't load this question",
+  "loadAnswersFailed": "Couldn't load the replies",
+  "questionTitle": "Question",
+  "likeAction": "Like, {{count}}",
+  "unlikeAction": "Remove like, {{count}}",
+  "comments_one": "{{count}} Comment",
+  "comments_other": "{{count}} Comments",
+  "repliesTitle_one": "{{count}} reply",
+  "repliesTitle_other": "{{count}} replies",
+  "openDiscussion": "{{comments}}, open the discussion",
+  "insertEmoji": "Insert {{emoji}}"
+}

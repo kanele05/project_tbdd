@@ -6,12 +6,12 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { useToast } from '@/components/ui/Toast';
 import { useCourseDetail } from '@/features/course/hooks';
+import { useTranslation } from '@/i18n';
 import { layout, spacing } from '@/theme';
 import type { CurriculumLesson, CurriculumSection } from '@/types/api';
 
 import { useCurriculum } from '../hooks';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '../queryStatus';
-import { LEARNING_STRINGS } from '../strings';
 import { CurriculumList } from './CurriculumList';
 import { LessonListSkeleton } from './LessonListSkeleton';
 
@@ -32,6 +32,7 @@ function hasLockedLesson(sections: readonly CurriculumSection[]): boolean {
  * - enrolled → the Learning screen at that lesson.
  */
 export function CourseLessonsTab({ courseId, onPlayPreview }: CourseLessonsTabProps) {
+  const { t } = useTranslation('learning');
   const toast = useToast();
   const curriculum = useCurriculum(courseId);
   const course = useCourseDetail(courseId);
@@ -45,7 +46,7 @@ export function CourseLessonsTab({ courseId, onPlayPreview }: CourseLessonsTabPr
   const handleLessonPress = useCallback(
     (lesson: CurriculumLesson) => {
       if (lesson.status === 'LOCKED') {
-        toast.info(LEARNING_STRINGS.lockedLesson);
+        toast.info(t('lockedLesson'));
         return;
       }
       if (isEnrolled) {
@@ -54,7 +55,7 @@ export function CourseLessonsTab({ courseId, onPlayPreview }: CourseLessonsTabPr
       }
       onPlayPreview?.(lesson.id);
     },
-    [courseId, isEnrolled, onPlayPreview, toast],
+    [courseId, isEnrolled, onPlayPreview, t, toast],
   );
 
   if (isOfflineWithoutData(curriculum)) {
@@ -76,7 +77,7 @@ export function CourseLessonsTab({ courseId, onPlayPreview }: CourseLessonsTabPr
       <View style={styles.container}>
         <ErrorState
           error={curriculum.error}
-          title={LEARNING_STRINGS.loadLessonsFailed}
+          title={t('loadLessonsFailed')}
           onRetry={() => void curriculum.refetch()}
         />
       </View>
@@ -87,8 +88,8 @@ export function CourseLessonsTab({ courseId, onPlayPreview }: CourseLessonsTabPr
       <View style={styles.container}>
         <EmptyState
           icon="play-circle"
-          title={LEARNING_STRINGS.noLessonsTitle}
-          message={LEARNING_STRINGS.noLessonsMessage}
+          title={t('noLessonsTitle')}
+          message={t('noLessonsMessage')}
         />
       </View>
     );

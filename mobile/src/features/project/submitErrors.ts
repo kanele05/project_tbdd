@@ -1,5 +1,5 @@
-import { ERROR_MESSAGES } from '@/constants/strings';
-import { getErrorMessage, isAppError } from '@/lib/appError';
+import { i18n } from '@/i18n';
+import { getErrorMessage, getErrorMessageForCode, isAppError } from '@/lib/appError';
 
 /**
  * Friendly message for a failed `POST /courses/:id/submissions`: 413 (too large), 415 (wrong type)
@@ -7,10 +7,12 @@ import { getErrorMessage, isAppError } from '@/lib/appError';
  */
 export function getSubmitErrorMessage(error: unknown): string {
   if (isAppError(error)) {
-    if (error.status === 413) return ERROR_MESSAGES.FILE_TOO_LARGE ?? getErrorMessage(error);
-    if (error.status === 415) return ERROR_MESSAGES.UNSUPPORTED_FILE_TYPE ?? getErrorMessage(error);
-    if (error.status === 403)
-      return 'You need to enroll in this course before submitting a project.';
+    if (error.status === 413)
+      return getErrorMessageForCode('FILE_TOO_LARGE') ?? getErrorMessage(error);
+    if (error.status === 415) {
+      return getErrorMessageForCode('UNSUPPORTED_FILE_TYPE') ?? getErrorMessage(error);
+    }
+    if (error.status === 403) return i18n.t('project:submit.notEnrolled');
   }
   return getErrorMessage(error);
 }

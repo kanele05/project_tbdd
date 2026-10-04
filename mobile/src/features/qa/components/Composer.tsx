@@ -1,14 +1,15 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
 import { Avatar } from '@/components/ui/Avatar';
+import { useTranslation } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
-import { colors, fontFamily, layout, radius, spacing, typography } from '@/theme';
+import { fontFamily, layout, makeStyles, radius, spacing, typography, useTheme } from '@/theme';
 
-import { QA_MAX_LENGTH, QA_STRINGS, QUICK_EMOJIS } from '../strings';
+import { QA_MAX_LENGTH, QUICK_EMOJIS } from '../config';
 
 export type ComposerProps = {
   placeholder: string;
@@ -19,15 +20,22 @@ export type ComposerProps = {
   onSubmit: (content: string) => Promise<unknown>;
 };
 
+const AVATAR_SIZE = 40;
+const SEND_SIZE = 40;
+
 /**
  * Bottom composer of SC-15 Q&A and SC-16: the user's avatar, a row of quick emoji (tap to insert),
- * the input and a send button. BR-09: 1-1000 characters.
+ * a pill input and a round neon send button. BR-09: 1-1000 characters.
  */
 export function Composer({ placeholder, onSubmit }: ComposerProps) {
+  const { t } = useTranslation('qa');
+  const { colors, isDark } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((state) => state.user);
   const [text, setText] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const canSend = text.trim().length > 0 && !isSending;
 
   const insertEmoji = (emoji: string) => {
@@ -52,7 +60,7 @@ export function Composer({ placeholder, onSubmit }: ComposerProps) {
 
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom + spacing.md }]}>
-      <Avatar uri={user?.avatarUrl} name={user?.fullName} size={AVATAR_SIZE} />
+      <Avatar uri={user?.avatarUrl} name={user?.fullName} size={AVATAR_SIZE} hasRing />
       <View style={styles.main}>
         <View style={styles.emojis}>
           {QUICK_EMOJIS.map((emoji) => (
@@ -60,34 +68,38 @@ export function Composer({ placeholder, onSubmit }: ComposerProps) {
               key={emoji}
               onPress={() => insertEmoji(emoji)}
               accessibilityRole="button"
-              accessibilityLabel={`Insert ${emoji}`}
+              accessibilityLabel={t('insertEmoji', { emoji })}
               style={styles.emojiButton}
             >
               <AppText variant="body">{emoji}</AppText>
             </Pressable>
           ))}
         </View>
-        <View style={styles.inputWrap}>
+        <View style={[styles.inputWrap, isFocused ? styles.inputFocused : null]}>
           <TextInput
             value={text}
             onChangeText={setText}
             placeholder={placeholder}
-            placeholderTextColor={colors.textSecondary}
+            placeholderTextColor={colors.placeholder}
+            keyboardAppearance={isDark ? 'dark' : 'light'}
             accessibilityLabel={placeholder}
             multiline
+            numberOfLines={1}
             maxLength={QA_MAX_LENGTH}
             style={styles.input}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
           />
           <Pressable
             onPress={() => void send()}
             disabled={!canSend}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
             accessibilityRole="button"
-            accessibilityLabel={QA_STRINGS.send}
+            accessibilityLabel={t('send')}
             accessibilityState={{ disabled: !canSend, busy: isSending }}
-            style={styles.send}
+            style={[styles.send, canSend ? styles.sendActive : styles.sendIdle]}
           >
-            <Feather name="send" size={18} color={canSend ? colors.primary : colors.iconMuted} />
+            <Feather name="send" size={18} color={canSend ? colors.onPrimary : colors.textMuted} />
           </Pressable>
         </View>
       </View>
@@ -95,23 +107,19 @@ export function Composer({ placeholder, onSubmit }: ComposerProps) {
   );
 }
 
-// Measured from the design: 44 dp avatar, 16 dp gap, 20 dp above the emoji row, 8 dp between the
-// emoji and the 32 dp input (4 dp corners, 12 px text), a faint `surface` line on top.
-const AVATAR_SIZE = 44;
-
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: spacing.lg,
+    gap: spacing.md,
     paddingHorizontal: layout.screenPaddingX,
-    paddingTop: spacing.xl,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.surface,
-    backgroundColor: colors.background,
+    borderTopColor: t.colors.border,
+    backgroundColor: t.colors.background,
   },
-  main: { flex: 1, gap: spacing.sm },
-  // Row of 7 quick emojis next to the avatar: 48 dp tall and ~36 dp wide each (48 dp wide would
+  main: { flex: 1, gap: spacing.xs },
+  // Seven quick emoji next to the avatar: 48 dp tall and ~36 dp wide each (48 dp wide would
   // overflow a 360 dp phone); `flexWrap` keeps every emoji reachable on narrow screens.
   emojis: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
   emojiButton: {
@@ -121,20 +129,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   inputWrap: {
-    minHeight: 32,
+    minHeight: layout.minTouchTarget,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: spacing.sm,
-    borderRadius: radius.badge,
-    backgroundColor: colors.surface,
+    gap: spacing.sm,
+    paddingLeft: spacing.lg,
+    paddingRight: spacing.sm,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: t.colors.border,
+    backgroundColor: t.colors.surface,
   },
+  inputFocused: { borderColor: t.colors.primaryText },
   input: {
     flex: 1,
     maxHeight: 120,
-    paddingVertical: spacing.xs + spacing.xxs,
-    color: colors.textPrimary,
+    paddingVertical: spacing.sm,
+    color: t.colors.text,
     fontFamily: fontFamily.body,
-    fontSize: typography.caption.fontSize,
+    fontSize: typography.body.fontSize,
+    lineHeight: typography.body.lineHeight,
   },
-  send: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-});
+  send: {
+    width: SEND_SIZE,
+    height: SEND_SIZE,
+    borderRadius: SEND_SIZE / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sendActive: { backgroundColor: t.colors.primary },
+  sendIdle: { backgroundColor: t.colors.border },
+}));

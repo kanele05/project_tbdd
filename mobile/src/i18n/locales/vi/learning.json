@@ -1,1 +1,30 @@
-{}
+{
+  "tabs": {
+    "lessons": "Bài học",
+    "projects": "Dự án",
+    "qa": "Hỏi đáp"
+  },
+  "lockedLesson": "Hãy ghi danh để mở khóa bài học này",
+  "noLessonsTitle": "Chưa có bài học nào",
+  "noLessonsMessage": "Giảng viên chưa đăng bài học nào cho khóa học này.",
+  "loadLessonsFailed": "Không tải được danh sách bài học",
+  "loadingLessons": "Đang tải danh sách bài học",
+  "loadingVideo": "Đang tải video",
+  "videoUnavailableOffline": "Hãy kết nối mạng để xem bài học này.",
+  "videoLoadFailed": "Không tải được video này",
+  "likes_other": "{{count}} lượt thích",
+  "shares_other": "{{count}} lượt chia sẻ",
+  "likeCourse": "Thích khóa học này",
+  "unlikeCourse": "Bỏ thích",
+  "shareCourse": "Chia sẻ khóa học này",
+  "moreActions": "Chia sẻ khóa học",
+  "shareMessage": "Xem khóa học \"{{title}}\" trên {{app}}",
+  "lessonNumber": "Bài {{number}}",
+  "preview": "xem thử",
+  "status": {
+    "completed": "đã hoàn thành",
+    "inProgress": "đang học",
+    "unlocked": "đã mở khóa",
+    "locked": "đã khóa"
+  }
+}

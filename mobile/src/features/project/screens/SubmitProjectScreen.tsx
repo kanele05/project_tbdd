@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -15,8 +15,9 @@ import {
   useToast,
 } from '@/components/ui';
 import { FormError } from '@/features/auth/components/FormError';
+import { useTranslation } from '@/i18n';
 import { getFieldErrors } from '@/lib/appError';
-import { colors, layout, spacing } from '@/theme';
+import { layout, makeStyles, spacing } from '@/theme';
 
 import { FilePickerField } from '../components/FilePickerField';
 import { useSubmitProject } from '../hooks';
@@ -26,15 +27,13 @@ import { useSubmissionFiles } from '../useSubmissionFiles';
 
 export type SubmitProjectScreenProps = { courseId: string };
 
-const FILE_HINT = 'PNG, JPG, PDF or ZIP - up to 10 MB';
-const COVER_HINT = 'Optional. PNG or JPG - up to 10 MB';
-const FILE_REQUIRED_MESSAGE = 'Choose a file to upload';
-
 /**
  * SC-17 Submit project (modal): Title (required), Description, project file (png/jpg/pdf/zip up to
  * 10 MB, checked on the device), optional cover image, Submit with upload progress.
  */
 export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
+  const { t } = useTranslation(['project', 'common']);
+  const styles = useStyles();
   const toast = useToast();
   const insets = useSafeAreaInsets();
   const { submit, isPending, progress } = useSubmitProject(courseId);
@@ -50,7 +49,7 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     if (!file) {
-      setFileError(FILE_REQUIRED_MESSAGE);
+      setFileError(t('project:submit.fileRequired'));
       return;
     }
     try {
@@ -60,7 +59,7 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
         file,
         image: cover,
       });
-      toast.success('Project submitted');
+      toast.success(t('project:submit.success'));
       router.back();
     } catch (error) {
       const fieldErrors = getFieldErrors(error);
@@ -75,9 +74,15 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
       <ScreenHeader
-        title="Submit project"
+        title={t('project:submit.title')}
         showBack={false}
-        right={<IconButton icon="x" onPress={handleClose} accessibilityLabel="Close" />}
+        right={
+          <IconButton
+            icon="x"
+            onPress={handleClose}
+            accessibilityLabel={t('common:actions.close')}
+          />
+        }
       />
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}
@@ -86,8 +91,8 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
         <FormTextField
           control={control}
           name="title"
-          label="Title"
-          placeholder="Name your project"
+          label={t('project:submit.titleLabel')}
+          placeholder={t('project:submit.titlePlaceholder')}
           maxLength={100}
           returnKeyType="next"
           editable={!isPending}
@@ -95,8 +100,8 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
         <FormTextField
           control={control}
           name="description"
-          label="Description (optional)"
-          placeholder="Tell others about your project"
+          label={t('project:submit.descriptionLabel')}
+          placeholder={t('project:submit.descriptionPlaceholder')}
           multiline
           numberOfLines={4}
           maxLength={1000}
@@ -104,8 +109,8 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
           editable={!isPending}
         />
         <FilePickerField
-          label="Project file"
-          hint={FILE_HINT}
+          label={t('project:submit.fileLabel')}
+          hint={t('project:submit.fileHint')}
           file={files.file}
           error={files.fileError}
           onPick={() => void files.pickFile()}
@@ -114,8 +119,8 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
           testID="project-file-field"
         />
         <FilePickerField
-          label="Cover image"
-          hint={COVER_HINT}
+          label={t('project:submit.coverLabel')}
+          hint={t('project:submit.coverHint')}
           file={files.cover}
           error={files.coverError}
           showPreview
@@ -127,12 +132,14 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
         <FormError message={formError} />
         {isPending ? (
           <View style={styles.progress} accessibilityLiveRegion="polite">
-            <AppText variant="caption" color="textSecondary">{`Uploading... ${progress}%`}</AppText>
+            <AppText variant="caption" color="textSecondary">
+              {t('project:submit.uploading', { percent: progress })}
+            </AppText>
             <ProgressBar percent={progress} />
           </View>
         ) : null}
         <Button
-          title="Submit"
+          title={t('project:submit.action')}
           fullWidth
           loading={isPending}
           onPress={() => void onSubmit()}
@@ -143,8 +150,8 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
   content: { gap: spacing.lg, padding: layout.screenPaddingX },
   progress: { gap: spacing.xs },
-});
+}));

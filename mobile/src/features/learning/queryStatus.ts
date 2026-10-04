@@ -1,6 +1,6 @@
 import type { FetchStatus } from '@tanstack/react-query';
 
-import { STRINGS } from '@/constants/strings';
+import { i18n } from '@/i18n';
 import { AppError } from '@/lib/appError';
 
 /**
@@ -10,7 +10,8 @@ import { AppError } from '@/lib/appError';
 export const OFFLINE_QUERY_ERROR = new AppError({
   status: 0,
   code: 'NETWORK_ERROR',
-  message: STRINGS.errors.network,
+  // Screens show the localized message mapped to the NETWORK_ERROR code; this is only a fallback.
+  message: i18n.t('errors:network'),
 });
 
 /**

@@ -1,6 +1,7 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
+import { i18n } from '@/i18n';
 import type { ResourceDto } from '@/types/api';
 
 import { sanitizeFileName } from './fileUtils';
@@ -26,7 +27,7 @@ export async function downloadResource(
 /** Opens the system share / "open with" sheet for a local file (`expo-sharing`). */
 export async function openDownloadedFile(uri: string, mimeType: string): Promise<void> {
   if (!(await Sharing.isAvailableAsync())) {
-    throw new Error('Opening files is not supported on this device.');
+    throw new Error(i18n.t('project:openUnsupported'));
   }
-  await Sharing.shareAsync(uri, { mimeType, dialogTitle: 'Open resource' });
+  await Sharing.shareAsync(uri, { mimeType, dialogTitle: i18n.t('project:openResource') });
 }

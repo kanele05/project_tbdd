@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react-native';
 
-import { colors } from '@/theme';
+import { lightPalette } from '@/theme';
 import type { CurriculumSection } from '@/types/api';
 
 import { CurriculumList } from './CurriculumList';
@@ -91,15 +91,15 @@ describe('CurriculumList', () => {
     expect(within(locked).getByText('62:05 mins')).toBeOnTheScreen();
   });
 
-  it('highlights the IN_PROGRESS lesson with the primaryLight fill and primary border', async () => {
+  it('highlights the IN_PROGRESS lesson with the primarySoft fill and accent border', async () => {
     await render(<CurriculumList sections={SECTIONS} onLessonPress={jest.fn()} />);
 
     expect(screen.getByTestId('lesson-row-lesson-2')).toHaveStyle({
-      backgroundColor: colors.primaryLight,
-      borderColor: colors.primary,
+      backgroundColor: lightPalette.primarySoft,
+      borderColor: lightPalette.primaryText,
     });
     expect(screen.getByTestId('lesson-row-lesson-1')).not.toHaveStyle({
-      backgroundColor: colors.primaryLight,
+      backgroundColor: lightPalette.primarySoft,
     });
   });
 
@@ -109,10 +109,10 @@ describe('CurriculumList', () => {
     );
 
     expect(screen.getByTestId('lesson-row-lesson-1')).toHaveStyle({
-      backgroundColor: colors.primaryLight,
+      backgroundColor: lightPalette.primarySoft,
     });
     expect(screen.getByTestId('lesson-row-lesson-2')).not.toHaveStyle({
-      backgroundColor: colors.primaryLight,
+      backgroundColor: lightPalette.primarySoft,
     });
   });
 

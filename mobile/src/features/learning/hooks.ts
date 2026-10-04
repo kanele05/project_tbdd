@@ -4,7 +4,7 @@ import { Share } from 'react-native';
 
 import { useToast } from '@/components/ui/Toast';
 import { STALE_TIME } from '@/constants/config';
-import { STRINGS } from '@/constants/strings';
+import { i18n } from '@/i18n';
 import { getErrorMessage } from '@/lib/appError';
 import { queryKeys } from '@/lib/queryKeys';
 import type { CourseDetail, CurriculumSection, LikeResponse, ShareResponse } from '@/types/api';
@@ -146,7 +146,9 @@ export function useShareCourse(courseId: string, title: string | undefined) {
   const share = async () => {
     if (!title) return;
     try {
-      const result = await Share.share({ message: `Check out "${title}" on ${STRINGS.appName}` });
+      const result = await Share.share({
+        message: i18n.t('learning:shareMessage', { title, app: i18n.t('common:appName') }),
+      });
       if (result.action === Share.sharedAction) countShare.mutate();
     } catch (error) {
       if (__DEV__) console.warn('Share failed', error);

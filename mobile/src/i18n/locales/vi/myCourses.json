@@ -1,1 +1,33 @@
-{}
+{
+  "title": "Khóa học của tôi",
+  "subtitle_other": "{{count}} khóa học",
+  "tabs": {
+    "all": "Tất cả",
+    "ongoing": "Đang học",
+    "completed": "Hoàn thành"
+  },
+  "continue": {
+    "title": "Tiếp tục học",
+    "action": "Học tiếp"
+  },
+  "percentComplete": "Hoàn thành {{percent}}%",
+  "cardLabel": "{{title}}, {{duration}}, hoàn thành {{percent}}%",
+  "bannerTitle": "Khóa học giúp bạn thăng tiến sự nghiệp!",
+  "bannerAction": "Khám phá ngay",
+  "loadFailed": "Không tải được các khóa học của bạn",
+  "empty": {
+    "all": {
+      "title": "Bạn chưa bắt đầu khóa học nào",
+      "message": "Tìm một khóa học bạn thích và bắt đầu học ngay hôm nay."
+    },
+    "ongoing": {
+      "title": "Chưa có khóa học nào đang học",
+      "message": "Các khóa học bạn đang học sẽ xuất hiện ở đây."
+    },
+    "completed": {
+      "title": "Chưa có khóa học nào hoàn thành",
+      "message": "Hoàn thành tất cả bài học của một khóa và nó sẽ xuất hiện ở đây."
+    }
+  },
+  "explore": "Khám phá khóa học"
+}

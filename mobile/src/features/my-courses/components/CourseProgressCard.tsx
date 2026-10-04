@@ -1,10 +1,12 @@
+import Feather from '@expo/vector-icons/Feather';
 import { Image } from 'expo-image';
 import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { colors, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { MyCourseItem } from '@/types/api';
 import { formatDuration } from '@/utils/formatDuration';
 
@@ -17,18 +19,21 @@ export type CourseProgressCardProps = {
 const THUMBNAIL_SIZE = 96;
 
 /**
- * SC-14 row: thumbnail, title, total duration ("2 hrs 25 mins"), "30% Complete" and a progress
- * bar (primary on `primaryTrack`). Measured from the design: 14 px Inter title, 12 px muted
- * lines, a 4 dp bar, a 122 dp card with a barely visible (`surface`) border.
+ * My Courses row (concept B list row): a hairline card with a 96 dp thumbnail, the title, the total
+ * duration and "30% Complete" in the accent color above a neon progress bar. A finished course
+ * shows a check instead of the bar's emptiness.
  */
 function CourseProgressCardBase({ item, onPress }: CourseProgressCardProps) {
+  const { t } = useTranslation('myCourses');
+  const { colors } = useTheme();
+  const styles = useStyles();
   const percent = Math.round(item.progressPercent);
   const duration = formatDuration(item.totalDurationSec);
   return (
     <Pressable
       onPress={() => onPress(item)}
       accessibilityRole="button"
-      accessibilityLabel={`${item.course.title}, ${duration}, ${percent}% complete`}
+      accessibilityLabel={t('cardLabel', { title: item.course.title, duration, percent })}
       testID={`my-course-${item.course.id}`}
       style={({ pressed }) => [styles.card, pressed ? styles.pressed : null]}
     >
@@ -44,43 +49,47 @@ function CourseProgressCardBase({ item, onPress }: CourseProgressCardProps) {
         />
       </View>
       <View style={styles.info}>
-        <AppText variant="label" numberOfLines={2}>
+        <AppText variant="cardTitle" numberOfLines={2}>
           {item.course.title}
         </AppText>
-        <AppText variant="caption" style={styles.duration}>
-          {duration}
-        </AppText>
-        <AppText variant="caption" style={styles.complete}>
-          {`${percent}% Complete`}
-        </AppText>
-        <ProgressBar percent={percent} height={4} style={styles.bar} />
+        <AppText variant="caption">{duration}</AppText>
+        <View style={styles.progressRow}>
+          {percent >= 100 ? <Feather name="check-circle" size={16} color={colors.success} /> : null}
+          <AppText variant="caption" color="primaryText" family="bodySemiBold">
+            {t('percentComplete', { percent })}
+          </AppText>
+        </View>
+        <ProgressBar percent={percent} height={4} />
       </View>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   card: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.md,
     padding: spacing.md,
-    borderRadius: radius.badge,
+    borderRadius: radius.card,
     borderWidth: 1,
-    borderColor: colors.surface,
-    backgroundColor: colors.background,
+    borderColor: t.colors.borderSubtle,
+    backgroundColor: t.colors.card,
   },
-  pressed: { opacity: 0.85 },
+  pressed: { backgroundColor: t.colors.surfaceAlt },
   imageWrap: {
     width: THUMBNAIL_SIZE,
     height: THUMBNAIL_SIZE,
     overflow: 'hidden',
     borderRadius: radius.button,
-    backgroundColor: colors.surface,
+    backgroundColor: t.colors.surface,
   },
-  info: { flex: 1 },
-  duration: { marginTop: spacing.xs },
-  complete: { marginTop: spacing.xl },
-  bar: { marginTop: spacing.sm },
-});
+  info: { flex: 1, gap: spacing.xs, justifyContent: 'center' },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.xs,
+  },
+}));
 
 export const CourseProgressCard = memo(CourseProgressCardBase);

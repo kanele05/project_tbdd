@@ -1,15 +1,14 @@
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Avatar } from '@/components/ui/Avatar';
-import { colors, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { QuestionDto } from '@/types/api';
 import { formatRelativeTime } from '@/utils/formatRelativeTime';
-
-import { QA_STRINGS } from '../strings';
 
 export type QuestionCardProps = {
   question: QuestionDto;
@@ -23,18 +22,22 @@ export type QuestionCardProps = {
   onOpen?: (question: QuestionDto) => void;
 };
 
-const AVATAR_SIZE = 36;
+const AVATAR_SIZE = 40;
 const LIST_MAX_LINES = 4;
+const ACTION_HIT_SLOP = { top: 12, bottom: 12, left: 8, right: 8 } as const;
 
-/** SC-15 / SC-16 question: avatar, name, "A day ago", text, ♡ likes and 💬 "{n} Comment". */
+/** SC-15 / SC-16 question: avatar, name, "A day ago", text, ♡ likes and 💬 "{n} Comments". */
 function QuestionCardBase({ question, variant = 'list', onToggleLike, onOpen }: QuestionCardProps) {
+  const { t } = useTranslation('qa');
+  const { colors } = useTheme();
+  const styles = useStyles();
   const isList = variant === 'list';
-  const comments = QA_STRINGS.comments(question.answerCount);
+  const comments = t('comments', { count: question.answerCount });
 
   const commentContent = (
     <>
-      <Feather name="message-circle" size={20} color={colors.textPrimary} />
-      <AppText variant="caption" color="textPrimary">
+      <Feather name="message-circle" size={20} color={colors.textMuted} />
+      <AppText variant="label" color="textSecondary">
         {comments}
       </AppText>
     </>
@@ -45,28 +48,23 @@ function QuestionCardBase({ question, variant = 'list', onToggleLike, onOpen }: 
       <View style={styles.header}>
         <Avatar uri={question.user.avatarUrl} name={question.user.fullName} size={AVATAR_SIZE} />
         <View style={styles.author}>
-          <AppText variant="caption" family="heading" numberOfLines={1}>
+          <AppText variant="label" numberOfLines={1}>
             {question.user.fullName}
           </AppText>
-          <AppText variant="caption" color="textSecondary">
-            {formatRelativeTime(question.createdAt)}
-          </AppText>
+          <AppText variant="caption">{formatRelativeTime(question.createdAt)}</AppText>
         </View>
       </View>
-      <AppText
-        variant="caption"
-        color="textPrimary"
-        style={styles.content}
-        numberOfLines={isList ? LIST_MAX_LINES : undefined}
-      >
+      <AppText variant="body" numberOfLines={isList ? LIST_MAX_LINES : undefined}>
         {question.content}
       </AppText>
       <View style={styles.actions}>
         <Pressable
           onPress={() => onToggleLike(question)}
-          hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+          hitSlop={ACTION_HIT_SLOP}
           accessibilityRole="button"
-          accessibilityLabel={`${question.isLiked ? QA_STRINGS.unlike : QA_STRINGS.like}, ${question.likeCount}`}
+          accessibilityLabel={t(question.isLiked ? 'unlikeAction' : 'likeAction', {
+            count: question.likeCount,
+          })}
           accessibilityState={{ selected: question.isLiked }}
           style={styles.action}
           testID={`question-like-${question.id}`}
@@ -74,18 +72,18 @@ function QuestionCardBase({ question, variant = 'list', onToggleLike, onOpen }: 
           <Ionicons
             name={question.isLiked ? 'heart' : 'heart-outline'}
             size={20}
-            color={question.isLiked ? colors.danger : colors.textPrimary}
+            color={question.isLiked ? colors.danger : colors.textMuted}
           />
-          <AppText variant="caption" color="textPrimary">
+          <AppText variant="label" color="textSecondary">
             {question.likeCount}
           </AppText>
         </Pressable>
         {isList && onOpen ? (
           <Pressable
             onPress={() => onOpen(question)}
-            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
+            hitSlop={ACTION_HIT_SLOP}
             accessibilityRole="button"
-            accessibilityLabel={`${comments}, open the discussion`}
+            accessibilityLabel={t('openDiscussion', { comments })}
             style={styles.action}
             testID={`question-comments-${question.id}`}
           >
@@ -101,22 +99,19 @@ function QuestionCardBase({ question, variant = 'list', onToggleLike, onOpen }: 
   );
 }
 
-const styles = StyleSheet.create({
-  // Measured from the design: 12 dp padding, 36 dp avatar, 12 px text on a 20 dp line pitch,
-  // a barely visible `surface` border and 4 dp corners.
+const useStyles = makeStyles((t) => ({
   card: {
     gap: spacing.md,
-    padding: spacing.md,
-    borderRadius: radius.badge,
+    padding: spacing.lg,
+    borderRadius: radius.card,
     borderWidth: 1,
-    borderColor: colors.surface,
-    backgroundColor: colors.background,
+    borderColor: t.colors.borderSubtle,
+    backgroundColor: t.colors.card,
   },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs },
-  author: { flex: 1, gap: spacing.xs },
-  content: { lineHeight: 20 },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: spacing.xxl, minHeight: 20 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  author: { flex: 1, gap: spacing.xxs },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: spacing.xxl, minHeight: 24 },
   action: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-});
+}));
 
 export const QuestionCard = memo(QuestionCardBase);

@@ -1,5 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
+import { i18n } from '@/i18n';
 import { AppError } from '@/lib/appError';
 import type { NotificationDto } from '@/types/api';
 
@@ -120,6 +121,18 @@ describe('NotificationsScreen', () => {
 
     expect(screen.getByText('No notifications yet')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Mark all as read' })).toBeDisabled();
+  });
+
+  it('speaks Vietnamese when the language is switched', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('vi');
+    });
+    setQuery([notification({ id: 'n1', title: 'Order paid', isRead: false })], 1);
+    await render(<NotificationsScreen />);
+
+    expect(screen.getByText('Thông báo')).toBeOnTheScreen();
+    expect(screen.getByText('1 chưa đọc')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Đánh dấu tất cả đã đọc' })).toBeOnTheScreen();
   });
 
   it('renders items with a dot only for unread ones', async () => {

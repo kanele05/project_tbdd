@@ -1,3 +1,4 @@
+import enAi from './locales/en/ai.json';
 import enAuth from './locales/en/auth.json';
 import enCart from './locales/en/cart.json';
 import enCommon from './locales/en/common.json';
@@ -14,6 +15,7 @@ import enReview from './locales/en/review.json';
 import enSearch from './locales/en/search.json';
 import enSettings from './locales/en/settings.json';
 import enTeacher from './locales/en/teacher.json';
+import viAi from './locales/vi/ai.json';
 import viAuth from './locales/vi/auth.json';
 import viCart from './locales/vi/cart.json';
 import viCommon from './locales/vi/common.json';
@@ -53,6 +55,7 @@ export const NAMESPACES = [
   'notification',
   'myCourses',
   'settings',
+  'ai',
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];
@@ -77,6 +80,7 @@ export const resources = {
     notification: enNotification,
     myCourses: enMyCourses,
     settings: enSettings,
+    ai: enAi,
   },
   vi: {
     common: viCommon,
@@ -95,5 +99,6 @@ export const resources = {
     notification: viNotification,
     myCourses: viMyCourses,
     settings: viSettings,
+    ai: viAi,
   },
 } as const;

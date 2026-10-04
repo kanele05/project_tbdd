@@ -1,12 +1,11 @@
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { memo } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, spacing } from '@/theme';
-
-import { LEARNING_STRINGS } from '../strings';
+import { useTranslation } from '@/i18n';
+import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 export type CourseInfoProps = {
   title: string;
@@ -17,7 +16,10 @@ export type CourseInfoProps = {
   onShare: () => void;
 };
 
-/** Under the video: the course title and "♡ 231 Like · 16 Share" (like is red when liked). */
+/**
+ * Under the video: the course title in serif and two outlined pills, "♡ 231 Likes" and
+ * "Share 16" (the heart turns red when liked). Each pill is 40 dp tall with a 48 dp touch target.
+ */
 function CourseInfoBase({
   title,
   likeCount,
@@ -26,56 +28,68 @@ function CourseInfoBase({
   onToggleLike,
   onShare,
 }: CourseInfoProps) {
+  const { t } = useTranslation('learning');
+  const { colors } = useTheme();
+  const styles = useStyles();
+  const likeLabel = t('likes', { count: likeCount });
+  const shareLabel = t('shares', { count: shareCount });
   return (
     <View style={styles.container}>
-      <AppText variant="title" numberOfLines={2} style={styles.title}>
+      <AppText variant="h2" numberOfLines={3} accessibilityRole="header">
         {title}
       </AppText>
       <View style={styles.row}>
         <Pressable
           onPress={onToggleLike}
-          hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+          hitSlop={{ top: 4, bottom: 4 }}
           accessibilityRole="button"
-          accessibilityLabel={`${isLiked ? LEARNING_STRINGS.unlikeCourse : LEARNING_STRINGS.likeCourse}, ${likeCount}`}
+          accessibilityLabel={`${isLiked ? t('unlikeCourse') : t('likeCourse')}, ${likeCount}`}
           accessibilityState={{ selected: isLiked }}
-          style={styles.action}
+          style={({ pressed }) => [
+            styles.pill,
+            isLiked ? styles.pillLiked : null,
+            pressed ? styles.pressed : null,
+          ]}
           testID="course-like"
         >
           <Ionicons
             name={isLiked ? 'heart' : 'heart-outline'}
-            size={24}
+            size={20}
             color={isLiked ? colors.danger : colors.textMuted}
           />
-          <AppText variant="caption" color="textPrimary">
-            {`${likeCount} ${LEARNING_STRINGS.like}`}
-          </AppText>
+          <AppText variant="label">{likeLabel}</AppText>
         </Pressable>
-        <View style={styles.dot} />
         <Pressable
           onPress={onShare}
-          hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+          hitSlop={{ top: 4, bottom: 4 }}
           accessibilityRole="button"
-          accessibilityLabel={`${LEARNING_STRINGS.shareCourse}, ${shareCount}`}
-          style={styles.action}
+          accessibilityLabel={`${t('shareCourse')}, ${shareCount}`}
+          style={({ pressed }) => [styles.pill, pressed ? styles.pressed : null]}
           testID="course-share"
         >
-          <Feather name="share-2" size={24} color={colors.textMuted} />
-          <AppText variant="caption" color="textPrimary">
-            {`${shareCount} ${LEARNING_STRINGS.share}`}
-          </AppText>
+          <Feather name="share-2" size={20} color={colors.textMuted} />
+          <AppText variant="label">{shareLabel}</AppText>
         </Pressable>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { gap: spacing.xs },
-  // Design: 16 px Epilogue with a 27 dp line pitch.
-  title: { lineHeight: 27 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 32 },
-  action: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.border },
-});
+const useStyles = makeStyles((t) => ({
+  container: { gap: spacing.md },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  pill: {
+    minHeight: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: t.colors.border,
+  },
+  pillLiked: { borderColor: t.colors.danger, backgroundColor: t.colors.dangerSoft },
+  pressed: { opacity: 0.7 },
+}));
 
 export const CourseInfo = memo(CourseInfoBase);

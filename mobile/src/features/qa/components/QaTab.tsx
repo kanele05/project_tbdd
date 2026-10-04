@@ -1,18 +1,18 @@
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useCallback, useMemo, useRef, type ReactElement } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { useCourseAccessGuard } from '@/features/learning/accessGuard';
 import { flattenPages } from '@/features/learning/pages';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
-import { colors, layout, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { QuestionDto } from '@/types/api';
 
 import { useCourseQuestions, useCreateQuestion, useToggleQuestionLike } from '../hooks';
-import { QA_STRINGS } from '../strings';
 import { Composer } from './Composer';
 import { QuestionCard } from './QuestionCard';
 import { QuestionCardSkeleton } from './QuestionCardSkeleton';
@@ -36,6 +36,9 @@ function openQuestion(question: QuestionDto): void {
  * bottom. Needs an enrollment: a 403 sends the user back to the course (BR-09).
  */
 export function QaTab({ courseId, header }: QaTabProps) {
+  const { t } = useTranslation('qa');
+  const { colors } = useTheme();
+  const styles = useStyles();
   const listRef = useRef<FlashListRef<QuestionDto>>(null);
   const questions = useCourseQuestions(courseId);
   const createQuestion = useCreateQuestion(courseId);
@@ -68,7 +71,7 @@ export function QaTab({ courseId, header }: QaTabProps) {
         <QuestionCard question={item} onToggleLike={handleToggleLike} onOpen={openQuestion} />
       </View>
     ),
-    [handleToggleLike],
+    [handleToggleLike, styles],
   );
 
   let empty;
@@ -82,15 +85,13 @@ export function QaTab({ courseId, header }: QaTabProps) {
       </View>
     );
   } else if (questions.isError) {
-    empty = (
-      <ErrorState error={questions.error} title={QA_STRINGS.loadFailed} onRetry={handleRetry} />
-    );
+    empty = <ErrorState error={questions.error} title={t('loadFailed')} onRetry={handleRetry} />;
   } else {
     empty = (
       <EmptyState
         icon="message-circle"
-        title={QA_STRINGS.noQuestionsTitle}
-        message={QA_STRINGS.noQuestionsMessage}
+        title={t('noQuestionsTitle')}
+        message={t('noQuestionsMessage')}
       />
     );
   }
@@ -107,7 +108,7 @@ export function QaTab({ courseId, header }: QaTabProps) {
         ListEmptyComponent={empty}
         ListFooterComponent={
           isFetchingNextPage ? (
-            <ActivityIndicator style={styles.footer} color={colors.primary} />
+            <ActivityIndicator style={styles.footer} color={colors.primaryText} />
           ) : null
         }
         onEndReached={handleEndReached}
@@ -116,17 +117,17 @@ export function QaTab({ courseId, header }: QaTabProps) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       />
-      <Composer placeholder={QA_STRINGS.questionPlaceholder} onSubmit={handleSubmit} />
+      <Composer placeholder={t('questionPlaceholder')} onSubmit={handleSubmit} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+const useStyles = makeStyles((t) => ({
+  container: { flex: 1, backgroundColor: t.colors.background },
   content: { paddingBottom: spacing.lg },
   // The first card sits 24 dp under the tabs (header 8 + item 16), the others 16 dp apart.
   header: { paddingBottom: spacing.sm },
   item: { paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.lg },
   skeletons: { gap: spacing.lg, paddingTop: spacing.lg, paddingHorizontal: layout.screenPaddingX },
   footer: { paddingVertical: spacing.lg },
-});
+}));

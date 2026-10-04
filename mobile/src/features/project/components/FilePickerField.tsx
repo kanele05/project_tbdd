@@ -1,10 +1,11 @@
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { AppText, IconButton } from '@/components/ui';
-import { colors, layout, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 
 import type { PickedFile } from '../api';
 import { formatFileSize } from '../fileUtils';
@@ -38,6 +39,9 @@ export function FilePickerField({
   disabled = false,
   testID,
 }: FilePickerFieldProps) {
+  const { t } = useTranslation('project');
+  const { colors } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.container}>
       <AppText variant="label">{label}</AppText>
@@ -52,7 +56,7 @@ export function FilePickerField({
             />
           ) : (
             <View style={styles.fileIcon}>
-              <Feather name="file" size={20} color={colors.primary} />
+              <Feather name="file" size={20} color={colors.primaryText} />
             </View>
           )}
           <View style={styles.fileTexts}>
@@ -69,7 +73,7 @@ export function FilePickerField({
             color="textSecondary"
             onPress={onClear}
             disabled={disabled}
-            accessibilityLabel={`Remove ${file.name}`}
+            accessibilityLabel={t('submit.removeFile', { name: file.name })}
           />
         </View>
       ) : (
@@ -77,13 +81,13 @@ export function FilePickerField({
           onPress={onPick}
           disabled={disabled}
           accessibilityRole="button"
-          accessibilityLabel={`Choose ${label.toLowerCase()}`}
+          accessibilityLabel={t('submit.chooseLabel', { label: label.toLowerCase() })}
           style={({ pressed }) => [styles.empty, pressed ? styles.pressed : null]}
           testID={testID}
         >
-          <Ionicons name="cloud-upload-outline" size={28} color={colors.primary} />
-          <AppText variant="body" color="primaryText" family="bodyMedium">
-            Choose file
+          <Ionicons name="cloud-upload-outline" size={28} color={colors.primaryText} />
+          <AppText variant="label" color="primaryText">
+            {t('submit.chooseFile')}
           </AppText>
         </Pressable>
       )}
@@ -98,21 +102,21 @@ export function FilePickerField({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: { gap: spacing.sm },
   empty: {
-    minHeight: layout.minTouchTarget + spacing.md,
+    minHeight: layout.minTouchTarget + spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: colors.primary,
+    borderColor: t.colors.primaryText,
     borderRadius: radius.card,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: t.colors.primarySoft,
   },
-  pressed: { backgroundColor: colors.primaryTrack },
+  pressed: { backgroundColor: t.colors.primaryTrack },
   selected: {
     minHeight: layout.minTouchTarget + spacing.md,
     flexDirection: 'row',
@@ -121,18 +125,18 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.md,
     paddingRight: spacing.xs,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: t.colors.border,
     borderRadius: radius.card,
-    backgroundColor: colors.background,
+    backgroundColor: t.colors.card,
   },
-  thumb: { width: 48, height: 48, borderRadius: radius.button, backgroundColor: colors.surface },
+  thumb: { width: 48, height: 48, borderRadius: radius.button, backgroundColor: t.colors.surface },
   fileIcon: {
     width: 40,
     height: 40,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primaryLight,
+    backgroundColor: t.colors.primarySoft,
   },
   fileTexts: { flex: 1 },
-});
+}));

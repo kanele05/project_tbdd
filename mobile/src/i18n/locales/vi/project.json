@@ -1,1 +1,48 @@
-{}
+{
+  "uploadTitle": "Nộp dự án của bạn",
+  "uploadHere": "Nộp dự án của bạn tại đây",
+  "studentProjects_other": "{{count}} dự án của học viên",
+  "studentProjectsFailed": "Không tải được dự án của học viên.",
+  "noProjects": "Chưa có dự án nào. Hãy là người đầu tiên chia sẻ dự án của bạn!",
+  "projectCard": "{{title}}, của {{author}}",
+  "projectDescription": "Mô tả dự án",
+  "resources": "Tài liệu ({{count}})",
+  "noResources": "Dự án này chưa có tài liệu.",
+  "downloading": "Đang tải xuống...",
+  "downloadingPercent": "Đang tải xuống {{percent}}%",
+  "downloadingName": "Đang tải xuống {{name}}",
+  "download": "Tải xuống {{name}}, {{size}}",
+  "downloadFailed": "Không tải được tệp này. Hãy kiểm tra kết nối mạng và thử lại.",
+  "openUnsupported": "Thiết bị này không hỗ trợ mở tệp.",
+  "openResource": "Mở tài liệu",
+  "fileFallback": "tệp",
+  "submit": {
+    "title": "Nộp dự án",
+    "titleLabel": "Tiêu đề",
+    "titlePlaceholder": "Đặt tên cho dự án của bạn",
+    "descriptionLabel": "Mô tả (không bắt buộc)",
+    "descriptionPlaceholder": "Giới thiệu về dự án của bạn",
+    "fileLabel": "Tệp dự án",
+    "fileHint": "PNG, JPG, PDF hoặc ZIP - tối đa 10 MB",
+    "coverLabel": "Ảnh bìa",
+    "coverHint": "Không bắt buộc. PNG hoặc JPG - tối đa 10 MB",
+    "chooseFile": "Chọn tệp",
+    "chooseLabel": "Chọn {{label}}",
+    "removeFile": "Xóa {{name}}",
+    "fileRequired": "Hãy chọn một tệp để tải lên",
+    "uploading": "Đang tải lên... {{percent}}%",
+    "action": "Nộp bài",
+    "success": "Đã nộp dự án",
+    "notEnrolled": "Bạn cần ghi danh khóa học này trước khi nộp dự án."
+  },
+  "validation": {
+    "titleRequired": "Vui lòng nhập tiêu đề",
+    "titleMax": "Tiêu đề tối đa 100 ký tự",
+    "descriptionMax": "Mô tả tối đa 1000 ký tự"
+  },
+  "file": {
+    "tooLarge": "Tệp này quá lớn. Dung lượng tối đa là 10 MB.",
+    "unsupported": "Loại tệp không được hỗ trợ. Hãy chọn tệp PNG, JPG, PDF hoặc ZIP.",
+    "coverUnsupported": "Ảnh bìa phải là PNG hoặc JPG."
+  }
+}

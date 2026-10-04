@@ -1,28 +1,28 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BookmarkButton } from '@/components/course/BookmarkButton';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { IconButton } from '@/components/ui/IconButton';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
+import { SegmentedTabs, type SegmentedTab } from '@/components/ui/SegmentedTabs';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { LessonAiPanel } from '@/features/ai/components/LessonAiPanel';
 import { useToggleBookmark } from '@/features/bookmark/hooks';
 import { useCourseDetail } from '@/features/course/hooks';
 import { ProjectsTab } from '@/features/project/components/ProjectsTab';
 import { QaTab } from '@/features/qa/components/QaTab';
-import { getErrorMessage } from '@/lib/appError';
-import { colors, layout, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { layout, makeStyles, spacing } from '@/theme';
 import type { CurriculumLesson } from '@/types/api';
 
 import { useCourseAccessGuard } from '../accessGuard';
 import { CourseInfo } from '../components/CourseInfo';
 import { CurriculumList } from '../components/CurriculumList';
 import { LessonListSkeleton } from '../components/LessonListSkeleton';
-import { LessonPlayer } from '../components/LessonPlayer';
-import { PlayerPlaceholder } from '../components/PlayerPlaceholder';
+import { PlayerSlot } from '../components/PlayerSlot';
 import {
   useActiveLesson,
   useCurriculum,
@@ -31,26 +31,21 @@ import {
   useToggleCourseLike,
 } from '../hooks';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '../queryStatus';
-import { LEARNING_STRINGS } from '../strings';
 import { getShortCourseTitle } from '../videoUtils';
 
 export type LearningScreenProps = { courseId: string };
 
 type LearningTab = 'lessons' | 'projects' | 'qa';
 
-const TABS = [
-  { key: 'lessons', label: LEARNING_STRINGS.lessonTabs.lessons },
-  { key: 'projects', label: LEARNING_STRINGS.lessonTabs.projects },
-  { key: 'qa', label: LEARNING_STRINGS.lessonTabs.qa },
-] as const satisfies readonly { key: LearningTab; label: string }[];
-
 /**
  * SC-15 Learning (M-20): the video of the current lesson (resume + progress saving), the course
- * title with like/share, and the LESSONS | PROJECTS | Q&A tabs. The lesson is the `lessonId`
- * param, else the enrollment's last lesson, else the first one. A 403 `NOT_ENROLLED` sends the
- * user back to the course details with a message.
+ * title with like/share, and the Lessons | Projects | Q&A tabs. The lesson is the `lessonId`
+ * param, else the enrollment's last lesson, else the first one. The Lessons tab opens with the AI
+ * panel (ask the tutor, summarize, quiz). A 403 `NOT_ENROLLED` sends the user back to the course.
  */
 export function LearningScreen({ courseId }: LearningScreenProps) {
+  const { t } = useTranslation(['learning', 'ai']);
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const { lessonId: paramLessonId } = useLocalSearchParams<{ lessonId?: string }>();
   const course = useCourseDetail(courseId);
@@ -73,6 +68,9 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
     if (courseData) toggleLike(courseData.isLiked);
   }, [courseData, toggleLike]);
   const handleShare = useCallback(() => void share(), [share]);
+  const handleAskTutor = useCallback(() => {
+    router.push({ pathname: '/learn/[courseId]/tutor', params: { courseId } });
+  }, [courseId]);
 
   const handleLessonPress = useCallback(
     (pressed: CurriculumLesson) => {
@@ -97,6 +95,14 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
     }
   }, [activeLessonId, refetchCourse, refetchCurriculum, refetchLesson]);
 
+  const tabs = useMemo<SegmentedTab<LearningTab>[]>(
+    () => [
+      { key: 'lessons', label: t('learning:tabs.lessons') },
+      { key: 'projects', label: t('learning:tabs.projects') },
+      { key: 'qa', label: t('learning:tabs.qa') },
+    ],
+    [t],
+  );
   const header = useMemo(
     () => (
       <View style={styles.headerBlock}>
@@ -111,50 +117,15 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
           />
         ) : (
           <View style={styles.infoSkeleton}>
-            <Skeleton width="85%" height={20} />
-            <Skeleton width="40%" height={16} />
+            <Skeleton width="85%" height={26} />
+            <Skeleton width="40%" height={20} />
           </View>
         )}
-        <SegmentedTabs tabs={TABS} value={tab} onChange={setTab} />
+        <SegmentedTabs tabs={tabs} value={tab} onChange={setTab} />
       </View>
     ),
-    [courseData, handleShare, handleToggleLike, tab],
+    [courseData, handleShare, handleToggleLike, styles, tab, tabs],
   );
-
-  let player;
-  if (lesson.isSuccess && !lesson.isFetching) {
-    player = (
-      <LessonPlayer
-        key={lesson.data.id}
-        lesson={lesson.data}
-        courseId={courseId}
-        onEnded={handleEnded}
-      />
-    );
-  } else if (
-    isOfflineWithoutData(lesson) ||
-    (activeLessonId === null && isOfflineWithoutData(course))
-  ) {
-    player = (
-      <PlayerPlaceholder
-        message={LEARNING_STRINGS.videoUnavailableOffline}
-        onRetry={handleRetryLesson}
-      />
-    );
-  } else if (lesson.isError) {
-    player = (
-      <PlayerPlaceholder message={getErrorMessage(lesson.error)} onRetry={handleRetryLesson} />
-    );
-  } else if (activeLessonId === null && (course.isError || curriculum.isError)) {
-    player = (
-      <PlayerPlaceholder
-        message={getErrorMessage(course.error ?? curriculum.error)}
-        onRetry={handleRetryLesson}
-      />
-    );
-  } else {
-    player = <PlayerPlaceholder />;
-  }
 
   let lessons;
   if (isOfflineWithoutData(curriculum)) {
@@ -165,7 +136,7 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
     lessons = (
       <ErrorState
         error={curriculum.error}
-        title={LEARNING_STRINGS.loadLessonsFailed}
+        title={t('learning:loadLessonsFailed')}
         onRetry={() => void refetchCurriculum()}
       />
     );
@@ -185,20 +156,31 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
         title={courseData ? getShortCourseTitle(courseData.title) : undefined}
         right={
           <View style={styles.headerActions}>
+            <IconButton
+              icon="message-circle"
+              onPress={handleAskTutor}
+              accessibilityLabel={t('ai:panel.ask')}
+              color="primaryText"
+              testID="header-ask-tutor"
+            />
             <BookmarkButton
               isBookmarked={courseData?.isBookmarked ?? false}
               onPress={courseData ? handleToggleBookmark : undefined}
             />
-            <IconButton
-              icon="more-vertical"
-              onPress={handleShare}
-              accessibilityLabel={LEARNING_STRINGS.moreActions}
-              color="textPrimary"
-            />
           </View>
         }
       />
-      <View style={styles.player}>{player}</View>
+      <View style={styles.player}>
+        <PlayerSlot
+          courseId={courseId}
+          activeLessonId={activeLessonId}
+          lesson={lesson}
+          course={course}
+          curriculum={curriculum}
+          onEnded={handleEnded}
+          onRetry={handleRetryLesson}
+        />
+      </View>
       {tab === 'qa' ? (
         <QaTab courseId={courseId} header={header} />
       ) : (
@@ -209,7 +191,18 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
         >
           {header}
           <View style={styles.tabContent}>
-            {tab === 'lessons' ? lessons : <ProjectsTab courseId={courseId} />}
+            {tab === 'lessons' ? (
+              <>
+                <LessonAiPanel
+                  courseId={courseId}
+                  lessonId={activeLessonId}
+                  lessonTitle={lesson.data?.title}
+                />
+                {lessons}
+              </>
+            ) : (
+              <ProjectsTab courseId={courseId} />
+            )}
           </View>
         </ScrollView>
       )}
@@ -217,18 +210,18 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+const useStyles = makeStyles((t) => ({
+  screen: { flex: 1, backgroundColor: t.colors.background },
   flex: { flex: 1 },
-  // Design draws the video 3:2 (375 x 250); we keep 16:9 because the lesson videos are 16:9 (a 3:2
-  // box would letterbox them) and the lesson list keeps ~40 dp more room on small phones.
-  player: { aspectRatio: 16 / 9, backgroundColor: colors.textPrimary },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  // 16:9: the lesson videos are 16:9 (a 3:2 box would letterbox them) and the lesson list keeps
+  // more room on small phones. Always dark, like a cinema screen, also in light mode.
+  player: { aspectRatio: 16 / 9, backgroundColor: t.colors.scrim },
+  headerActions: { flexDirection: 'row', alignItems: 'center' },
   headerBlock: {
-    gap: spacing.md,
+    gap: spacing.lg,
     paddingHorizontal: layout.screenPaddingX,
     paddingTop: spacing.xl,
   },
   infoSkeleton: { gap: spacing.md },
-  tabContent: { paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.xl },
-});
+  tabContent: { gap: spacing.xl, paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.xl },
+}));

@@ -1,1 +1,10 @@
-{}
+{
+  "title": "Thông báo",
+  "markAllRead": "Đánh dấu tất cả đã đọc",
+  "unreadCount": "{{count}} chưa đọc",
+  "allCaughtUp": "Bạn đã xem hết thông báo",
+  "unread": "Chưa đọc",
+  "emptyTitle": "Chưa có thông báo nào",
+  "emptyMessage": "Cập nhật về đơn hàng, câu trả lời và khóa học của bạn sẽ xuất hiện ở đây.",
+  "loadFailed": "Không tải được thông báo"
+}

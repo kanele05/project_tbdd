@@ -1,1 +1,49 @@
-{}
+{
+  "uploadTitle": "Upload your project",
+  "uploadHere": "Upload your project here",
+  "studentProjects_one": "{{count}} Student Project",
+  "studentProjects_other": "{{count}} Student Projects",
+  "studentProjectsFailed": "Couldn't load student projects.",
+  "noProjects": "No projects yet. Be the first to share yours!",
+  "projectCard": "{{title}}, by {{author}}",
+  "projectDescription": "Project Description",
+  "resources": "Resources ({{count}})",
+  "noResources": "No resources for this project.",
+  "downloading": "Downloading...",
+  "downloadingPercent": "Downloading {{percent}}%",
+  "downloadingName": "Downloading {{name}}",
+  "download": "Download {{name}}, {{size}}",
+  "downloadFailed": "Couldn't download this file. Check your connection and try again.",
+  "openUnsupported": "Opening files is not supported on this device.",
+  "openResource": "Open resource",
+  "fileFallback": "file",
+  "submit": {
+    "title": "Submit project",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Name your project",
+    "descriptionLabel": "Description (optional)",
+    "descriptionPlaceholder": "Tell others about your project",
+    "fileLabel": "Project file",
+    "fileHint": "PNG, JPG, PDF or ZIP - up to 10 MB",
+    "coverLabel": "Cover image",
+    "coverHint": "Optional. PNG or JPG - up to 10 MB",
+    "chooseFile": "Choose file",
+    "chooseLabel": "Choose {{label}}",
+    "removeFile": "Remove {{name}}",
+    "fileRequired": "Choose a file to upload",
+    "uploading": "Uploading... {{percent}}%",
+    "action": "Submit",
+    "success": "Project submitted",
+    "notEnrolled": "You need to enroll in this course before submitting a project."
+  },
+  "validation": {
+    "titleRequired": "Title is required",
+    "titleMax": "Title must be at most 100 characters",
+    "descriptionMax": "Description must be at most 1000 characters"
+  },
+  "file": {
+    "tooLarge": "This file is too large. The maximum size is 10 MB.",
+    "unsupported": "Unsupported file type. Choose a PNG, JPG, PDF or ZIP file.",
+    "coverUnsupported": "The cover image must be a PNG or JPG."
+  }
+}

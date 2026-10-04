@@ -1,1 +1,10 @@
-{}
+{
+  "title": "Notifications",
+  "markAllRead": "Mark all as read",
+  "unreadCount": "{{count}} unread",
+  "allCaughtUp": "All caught up",
+  "unread": "Unread",
+  "emptyTitle": "No notifications yet",
+  "emptyMessage": "Updates about your orders, answers and courses will appear here.",
+  "loadFailed": "Couldn't load your notifications"
+}

@@ -9,6 +9,7 @@ import { useCallback, useRef, useState } from 'react';
 
 import { useToast } from '@/components/ui/Toast';
 import { STALE_TIME } from '@/constants/config';
+import { i18n } from '@/i18n';
 import { queryKeys } from '@/lib/queryKeys';
 import type { ProjectSubmissionDto, ResourceDto } from '@/types/api';
 
@@ -89,7 +90,7 @@ export function useResourceDownload() {
         );
         await openDownloadedFile(uri, resource.mimeType);
       } catch {
-        toast.error("Couldn't download this file. Check your connection and try again.");
+        toast.error(i18n.t('project:downloadFailed'));
       } finally {
         isBusyRef.current = false;
         setDownloading(null);

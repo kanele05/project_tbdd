@@ -1,19 +1,16 @@
 import type { FeatherIconName } from '@/components/ui/icons';
-import { colors } from '@/theme';
+import type { PaletteToken } from '@/theme';
 import type { NotificationDto } from '@/types/api';
 
-type IconStyle = { icon: FeatherIconName; color: string; background: string };
+/** Icon glyph + palette tokens (resolved with the active theme, so it follows dark mode). */
+type IconStyle = { icon: FeatherIconName; color: PaletteToken; background: PaletteToken };
 
 /** Icon tile per notification type (PLAN.md §7.3 SC-22). */
 export const NOTIFICATION_ICON: Record<NotificationDto['type'], IconStyle> = {
-  ORDER_PAID: { icon: 'shopping-cart', color: colors.primary, background: colors.primaryLight },
-  NEW_ANSWER: {
-    icon: 'message-circle',
-    color: colors.secondary,
-    background: colors.secondaryLight,
-  },
-  COURSE_COMPLETED: { icon: 'award', color: colors.orange, background: colors.surface },
-  SYSTEM: { icon: 'bell', color: colors.textSecondary, background: colors.surface },
+  ORDER_PAID: { icon: 'shopping-cart', color: 'primaryText', background: 'primarySoft' },
+  NEW_ANSWER: { icon: 'message-circle', color: 'secondaryText', background: 'secondarySoft' },
+  COURSE_COMPLETED: { icon: 'award', color: 'goldText', background: 'surface' },
+  SYSTEM: { icon: 'bell', color: 'textSecondary', background: 'surface' },
 };
 
 /**

@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 
 import { AppText, Button, Skeleton } from '@/components/ui';
+import { useTranslation } from '@/i18n';
 import { layout, spacing } from '@/theme';
 import type { ProjectSubmissionDto } from '@/types/api';
 
@@ -35,6 +36,7 @@ export function StudentProjectsSection({
   isError,
   onRetry,
 }: StudentProjectsSectionProps) {
+  const { t } = useTranslation(['project', 'common']);
   const renderItem = useCallback(
     ({ item }: { item: ProjectSubmissionDto }) => <ProjectCard submission={item} />,
     [],
@@ -44,23 +46,23 @@ export function StudentProjectsSection({
   if (isLoading) {
     body = (
       <View style={styles.skeletons}>
-        <Skeleton width={PROJECT_CARD_WIDTH} height={PROJECT_CARD_HEIGHT} />
-        <Skeleton width={PROJECT_CARD_WIDTH} height={PROJECT_CARD_HEIGHT} />
+        <Skeleton width={PROJECT_CARD_WIDTH} height={PROJECT_CARD_HEIGHT} borderRadius={16} />
+        <Skeleton width={PROJECT_CARD_WIDTH} height={PROJECT_CARD_HEIGHT} borderRadius={16} />
       </View>
     );
   } else if (isError) {
     body = (
       <View style={styles.row}>
         <AppText variant="body" color="textSecondary" style={styles.flex}>
-          {"Couldn't load student projects."}
+          {t('studentProjectsFailed')}
         </AppText>
-        <Button title="Retry" variant="ghost" size="sm" onPress={onRetry} />
+        <Button title={t('common:actions.retry')} variant="ghost" size="sm" onPress={onRetry} />
       </View>
     );
   } else if (!submissions || submissions.length === 0) {
     body = (
       <AppText variant="body" color="textSecondary">
-        No projects yet. Be the first to share yours!
+        {t('noProjects')}
       </AppText>
     );
   } else {
@@ -72,7 +74,7 @@ export function StudentProjectsSection({
         renderItem={renderItem}
         ItemSeparatorComponent={Separator}
         showsHorizontalScrollIndicator={false}
-        // Let the cards bleed to the screen edges like the design (the tab has 20 dp padding).
+        // Let the cards bleed to the screen edges (the tab has 20 dp padding).
         style={styles.list}
         contentContainerStyle={styles.listContent}
       />
@@ -81,8 +83,8 @@ export function StudentProjectsSection({
 
   return (
     <View style={styles.section}>
-      <AppText variant="title" accessibilityRole="header">
-        {`${count} Student Projects`}
+      <AppText variant="h3" accessibilityRole="header">
+        {t('studentProjects', { count })}
       </AppText>
       {body}
     </View>
@@ -93,8 +95,8 @@ const styles = StyleSheet.create({
   section: { gap: spacing.md },
   list: { marginHorizontal: -layout.screenPaddingX },
   listContent: { paddingHorizontal: layout.screenPaddingX },
-  separator: { width: spacing.sm },
-  skeletons: { flexDirection: 'row', gap: spacing.sm },
+  separator: { width: layout.railGap },
+  skeletons: { flexDirection: 'row', gap: layout.railGap },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   flex: { flex: 1 },
 });

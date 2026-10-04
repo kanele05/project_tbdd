@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { MAX_UPLOAD_BYTES } from '@/constants/config';
+import { i18n } from '@/i18n';
 import { AppError } from '@/lib/appError';
 
 import { SubmitProjectScreen } from './SubmitProjectScreen';
@@ -62,6 +63,21 @@ describe('SubmitProjectScreen', () => {
 
     expect(await screen.findByText('Title is required')).toBeOnTheScreen();
     expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
+  it('shows the form and its validation messages in Vietnamese', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('vi');
+    });
+    await renderScreen();
+
+    expect(screen.getAllByText('Nộp dự án').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('Tiêu đề')).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Nộp bài' }));
+
+    expect(await screen.findByText('Vui lòng nhập tiêu đề')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Chọn tệp dự án' })).toBeOnTheScreen();
   });
 
   it('requires a project file', async () => {

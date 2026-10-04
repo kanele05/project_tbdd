@@ -1,5 +1,6 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
+import { i18n } from '@/i18n';
 import type { QuestionDto } from '@/types/api';
 
 import { Composer } from './Composer';
@@ -28,7 +29,18 @@ describe('QuestionCard', () => {
     expect(screen.getByText('A day ago')).toBeOnTheScreen();
     expect(screen.getByText('How do I start the first project?')).toBeOnTheScreen();
     expect(screen.getByText('23')).toBeOnTheScreen();
-    expect(screen.getByText('5 Comment')).toBeOnTheScreen();
+    expect(screen.getByText('5 Comments')).toBeOnTheScreen();
+  });
+
+  it('speaks Vietnamese: comment count, relative time and the like label', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('vi');
+    });
+    await render(<QuestionCard question={makeQuestion()} onToggleLike={jest.fn()} />);
+
+    expect(screen.getByText('5 bình luận')).toBeOnTheScreen();
+    expect(screen.getByText('Một ngày trước')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Thích, 23' })).toBeOnTheScreen();
   });
 
   it('toggles the like and shows the liked state', async () => {

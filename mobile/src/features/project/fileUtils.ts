@@ -1,4 +1,5 @@
 import { MAX_UPLOAD_BYTES } from '@/constants/config';
+import { i18n } from '@/i18n';
 
 /** File types the server accepts for a project submission (CLAUDE.md §8: png, jpg, pdf, zip). */
 export const SUBMISSION_FILE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'pdf', 'zip'] as const;
@@ -24,10 +25,10 @@ const MIME_BY_EXTENSION: Record<string, string> = {
   txt: 'text/plain',
 };
 
-export const FILE_TOO_LARGE_MESSAGE = 'This file is too large. The maximum size is 10 MB.';
-export const FILE_UNSUPPORTED_MESSAGE =
-  'Unsupported file type. Choose a PNG, JPG, PDF or ZIP file.';
-export const COVER_UNSUPPORTED_MESSAGE = 'The cover image must be a PNG or JPG.';
+/** Translated when asked (not at import time), so they follow the current language. */
+export const getFileTooLargeMessage = (): string => i18n.t('project:file.tooLarge');
+export const getFileUnsupportedMessage = (): string => i18n.t('project:file.unsupported');
+export const getCoverUnsupportedMessage = (): string => i18n.t('project:file.coverUnsupported');
 
 /** Lower-case extension without the dot: "Report.PDF" -> "pdf"; "" when there is none. */
 export function getFileExtension(name: string): string {
@@ -58,9 +59,9 @@ export type CandidateFile = { name: string; size?: number | null };
 export function validateSubmissionFile(file: CandidateFile): string | null {
   const extension = getFileExtension(file.name);
   if (!(SUBMISSION_FILE_EXTENSIONS as readonly string[]).includes(extension)) {
-    return FILE_UNSUPPORTED_MESSAGE;
+    return getFileUnsupportedMessage();
   }
-  if (file.size != null && file.size > MAX_UPLOAD_BYTES) return FILE_TOO_LARGE_MESSAGE;
+  if (file.size != null && file.size > MAX_UPLOAD_BYTES) return getFileTooLargeMessage();
   return null;
 }
 
@@ -68,13 +69,13 @@ export function validateSubmissionFile(file: CandidateFile): string | null {
 export function validateCoverImage(file: CandidateFile): string | null {
   const extension = getFileExtension(file.name);
   if (!(COVER_IMAGE_EXTENSIONS as readonly string[]).includes(extension)) {
-    return COVER_UNSUPPORTED_MESSAGE;
+    return getCoverUnsupportedMessage();
   }
-  if (file.size != null && file.size > MAX_UPLOAD_BYTES) return FILE_TOO_LARGE_MESSAGE;
+  if (file.size != null && file.size > MAX_UPLOAD_BYTES) return getFileTooLargeMessage();
   return null;
 }
 
-/** Colors / label of the document icon of a resource row, by file type. */
+/** Colors / label of the document icon of a resource row, by file type (`''` when unknown). */
 export function getFileKind(name: string): {
   label: string;
   tone: 'danger' | 'primary' | 'orange' | 'blue' | 'textMuted';
@@ -92,7 +93,7 @@ export function getFileKind(name: string): {
     case 'jpeg':
       return { label: `.${extension}`, tone: 'blue' };
     default:
-      return { label: extension ? `.${extension}` : 'file', tone: 'textMuted' };
+      return { label: extension ? `.${extension}` : '', tone: 'textMuted' };
   }
 }
 

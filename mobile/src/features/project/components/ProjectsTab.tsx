@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText, ErrorState, Skeleton } from '@/components/ui';
 import { ExpandableText } from '@/features/course/components/ExpandableText';
+import { useTranslation } from '@/i18n';
 import { spacing } from '@/theme';
 import type { ResourceDto } from '@/types/api';
 
@@ -34,6 +35,7 @@ function ProjectsSkeleton() {
  * and downloadable resources. The parent screen provides the horizontal padding and the scrolling.
  */
 export function ProjectsTab({ courseId }: ProjectsTabProps) {
+  const { t } = useTranslation('project');
   const project = useCourseProject(courseId);
   const submissions = useLatestSubmissions(courseId);
   const { download, downloading } = useResourceDownload();
@@ -54,18 +56,18 @@ export function ProjectsTab({ courseId }: ProjectsTabProps) {
     projectBody = (
       <>
         <View style={styles.section}>
-          <AppText variant="title" accessibilityRole="header">
-            Project Description
+          <AppText variant="h3" accessibilityRole="header">
+            {t('projectDescription')}
           </AppText>
           <ExpandableText text={data.description} />
         </View>
         <View style={styles.section}>
-          <AppText variant="title" accessibilityRole="header">
-            {`Resources (${data.resources.length})`}
+          <AppText variant="h3" accessibilityRole="header">
+            {t('resources', { count: data.resources.length })}
           </AppText>
           {data.resources.length === 0 ? (
             <AppText variant="body" color="textSecondary">
-              No resources for this project.
+              {t('noResources')}
             </AppText>
           ) : (
             data.resources.map((resource) => (
@@ -91,8 +93,8 @@ export function ProjectsTab({ courseId }: ProjectsTabProps) {
   return (
     <View style={styles.container}>
       <View style={styles.section}>
-        <AppText variant="title" accessibilityRole="header">
-          Upload your project
+        <AppText variant="h3" accessibilityRole="header">
+          {t('uploadTitle')}
         </AppText>
         <UploadBox onPress={handleUpload} />
       </View>

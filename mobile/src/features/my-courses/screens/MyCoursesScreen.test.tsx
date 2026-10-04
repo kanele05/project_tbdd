@@ -1,5 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
+import { i18n } from '@/i18n';
 import { AppError } from '@/lib/appError';
 import type { MyCourseItem } from '@/types/api';
 
@@ -101,6 +102,46 @@ describe('MyCoursesScreen', () => {
     expect(screen.getByText('30% Complete')).toBeOnTheScreen();
     expect(screen.getByText('100% Complete')).toBeOnTheScreen();
     expect(screen.getAllByRole('progressbar')).toHaveLength(2);
+  });
+
+  it('promotes the latest unfinished course to the Continue learning poster, once', async () => {
+    await render(<MyCoursesScreen />);
+
+    expect(screen.getByText('Continue learning')).toBeOnTheScreen();
+    expect(screen.getAllByTestId('my-course-course-1')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: /UX Foundation.*Resume/ })).toBeOnTheScreen();
+  });
+
+  it('has no poster on the Completed tab and lists every course there', async () => {
+    mockParams = { tab: 'completed' };
+    setResult({ data: [ITEMS[0] as MyCourseItem] });
+
+    await render(<MyCoursesScreen />);
+
+    expect(screen.queryByText('Continue learning')).not.toBeOnTheScreen();
+    expect(screen.getByTestId('my-course-course-1')).toBeOnTheScreen();
+  });
+
+  it('shows only the poster (no empty state) when the single course is unfinished', async () => {
+    setResult({ data: [ITEMS[0] as MyCourseItem] });
+
+    await render(<MyCoursesScreen />);
+
+    expect(screen.getByText('Continue learning')).toBeOnTheScreen();
+    expect(screen.queryByText("You haven't started any course yet")).not.toBeOnTheScreen();
+  });
+
+  it('speaks Vietnamese when the language is switched', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('vi');
+    });
+
+    await render(<MyCoursesScreen />);
+
+    expect(screen.getByText('Khóa học của tôi')).toBeOnTheScreen();
+    expect(screen.getByRole('tab', { name: 'Đang học' })).toBeOnTheScreen();
+    expect(screen.getByText('Hoàn thành 30%')).toBeOnTheScreen();
+    expect(screen.getByText('2 giờ 25 phút')).toBeOnTheScreen();
   });
 
   it('shows the promo banner and sends "Check Now" to the Search tab', async () => {

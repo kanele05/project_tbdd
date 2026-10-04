@@ -1,1 +1,32 @@
-{}
+{
+  "tabs": {
+    "lessons": "Lessons",
+    "projects": "Projects",
+    "qa": "Q&A"
+  },
+  "lockedLesson": "Enroll to unlock this lesson",
+  "noLessonsTitle": "No lessons yet",
+  "noLessonsMessage": "The teacher has not published any lesson for this course yet.",
+  "loadLessonsFailed": "Couldn't load the lessons",
+  "loadingLessons": "Loading lessons",
+  "loadingVideo": "Loading video",
+  "videoUnavailableOffline": "Connect to the internet to watch this lesson.",
+  "videoLoadFailed": "Couldn't load this video",
+  "likes_one": "{{count}} Like",
+  "likes_other": "{{count}} Likes",
+  "shares_one": "{{count}} Share",
+  "shares_other": "{{count}} Shares",
+  "likeCourse": "Like this course",
+  "unlikeCourse": "Remove your like",
+  "shareCourse": "Share this course",
+  "moreActions": "Share course",
+  "shareMessage": "Check out \"{{title}}\" on {{app}}",
+  "lessonNumber": "Lesson {{number}}",
+  "preview": "preview",
+  "status": {
+    "completed": "completed",
+    "inProgress": "in progress",
+    "unlocked": "unlocked",
+    "locked": "locked"
+  }
+}

@@ -1,9 +1,9 @@
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { STRINGS } from '@/constants/strings';
-import { colors, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, spacing, useTheme } from '@/theme';
 
 export type PlayerPlaceholderProps = {
   /** `loading` spinner, or a `message` (offline / error) with an optional Retry. */
@@ -13,6 +13,9 @@ export type PlayerPlaceholderProps = {
 
 /** Dark box in the video slot while the lesson loads, or when it cannot be played. */
 export function PlayerPlaceholder({ message, onRetry }: PlayerPlaceholderProps) {
+  const { t } = useTranslation(['learning', 'common']);
+  const { colors } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.container} testID="player-placeholder">
       {message ? (
@@ -22,7 +25,7 @@ export function PlayerPlaceholder({ message, onRetry }: PlayerPlaceholderProps) 
           </AppText>
           {onRetry ? (
             <Button
-              title={STRINGS.common.retry}
+              title={t('common:actions.retry')}
               variant="outline"
               size="sm"
               leftIcon="refresh-cw"
@@ -31,19 +34,20 @@ export function PlayerPlaceholder({ message, onRetry }: PlayerPlaceholderProps) 
           ) : null}
         </>
       ) : (
-        <ActivityIndicator color={colors.white} accessibilityLabel="Loading video" />
+        <ActivityIndicator color={colors.white} accessibilityLabel={t('loadingVideo')} />
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+/** The video slot is always dark (like a cinema screen), in light mode too. */
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.md,
     padding: spacing.lg,
-    backgroundColor: colors.textPrimary,
+    backgroundColor: t.colors.scrim,
   },
-});
+}));

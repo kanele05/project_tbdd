@@ -7,6 +7,7 @@ import type { CourseDetail, CurriculumSection, LessonDetail } from '@/types/api'
 import { LearningScreen } from './LearningScreen';
 
 const mockReplace = jest.fn();
+const mockPush = jest.fn();
 const mockToggleLike = jest.fn();
 const mockShare = jest.fn();
 const mockToggleBookmark = jest.fn();
@@ -20,6 +21,7 @@ let mockOnEnded: ((nextLessonId: string | null) => void) | undefined;
 jest.mock('expo-router', () => ({
   router: {
     replace: (...args: unknown[]) => mockReplace(...args),
+    push: (...args: unknown[]) => mockPush(...args),
     back: jest.fn(),
     canGoBack: () => true,
   },
@@ -250,8 +252,8 @@ describe('LearningScreen', () => {
     expect(
       screen.getByText('UX Foundation: Introduction to User Experience Design'),
     ).toBeOnTheScreen();
-    expect(screen.getByText('231 Like')).toBeOnTheScreen();
-    expect(screen.getByText('16 Share')).toBeOnTheScreen();
+    expect(screen.getByText('231 Likes')).toBeOnTheScreen();
+    expect(screen.getByText('16 Shares')).toBeOnTheScreen();
   });
 
   it('highlights the playing lesson in the Lessons tab and switches lesson on press', async () => {
@@ -313,6 +315,41 @@ describe('LearningScreen', () => {
 
     await fireEvent.press(screen.getByRole('tab', { name: 'Q&A' }));
     expect(screen.getByText('qa course-1')).toBeOnTheScreen();
+  });
+
+  it('opens the AI panel with the Lessons tab only, naming the lesson that plays', async () => {
+    await renderScreen();
+
+    expect(screen.getByTestId('lesson-ai-panel')).toBeOnTheScreen();
+    expect(screen.getByText('Currently: lesson-2')).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole('tab', { name: 'Projects' }));
+    expect(screen.queryByTestId('lesson-ai-panel')).not.toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Q&A' }));
+    expect(screen.queryByTestId('lesson-ai-panel')).not.toBeOnTheScreen();
+  });
+
+  it('opens the quiz of the lesson that is playing', async () => {
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('open-quiz'));
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/learn/[courseId]/quiz',
+      params: { courseId: 'course-1', lessonId: 'lesson-2' },
+    });
+  });
+
+  it('reaches the AI Tutor from the header on every tab', async () => {
+    await renderScreen();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Q&A' }));
+
+    await fireEvent.press(screen.getByTestId('header-ask-tutor'));
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/learn/[courseId]/tutor',
+      params: { courseId: 'course-1' },
+    });
   });
 
   it('goes back to the course details with a message when the lesson answers 403', async () => {

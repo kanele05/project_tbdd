@@ -4,23 +4,30 @@ import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { ProjectSubmissionDto } from '@/types/api';
 
 export type ProjectCardProps = { submission: ProjectSubmissionDto };
 
-export const PROJECT_CARD_WIDTH = 154;
-const IMAGE_HEIGHT = 68;
-/** Card height in the design with a one-line author: 1 + 12 + 68 + 12 + 20 + 4 + 20 + 12 + 1. */
-export const PROJECT_CARD_HEIGHT = 150;
+export const PROJECT_CARD_WIDTH = 164;
+const IMAGE_HEIGHT = 84;
+/** Card height with a one-line title and author: 1 + 12 + 84 + 12 + 21 + 4 + 19 + 12 + 1. */
+export const PROJECT_CARD_HEIGHT = 166;
 
 /** A student project in the horizontal list: cover image, title, author. */
 function ProjectCardBase({ submission }: ProjectCardProps) {
+  const { t } = useTranslation('project');
+  const { colors } = useTheme();
+  const styles = useStyles();
   return (
     <View
       style={styles.card}
       accessible
-      accessibilityLabel={`${submission.title}, by ${submission.user.fullName}`}
+      accessibilityLabel={t('projectCard', {
+        title: submission.title,
+        author: submission.user.fullName,
+      })}
     >
       <View style={styles.imageWrap}>
         {submission.imageUrl ? (
@@ -37,36 +44,37 @@ function ProjectCardBase({ submission }: ProjectCardProps) {
           <Feather name="image" size={24} color={colors.iconMuted} />
         )}
       </View>
-      <AppText variant="body" numberOfLines={1} style={styles.title}>
-        {submission.title}
-      </AppText>
-      <AppText variant="caption" numberOfLines={1} style={styles.author}>
-        {submission.user.fullName}
-      </AppText>
+      <View style={styles.texts}>
+        <AppText variant="cardTitle" numberOfLines={1}>
+          {submission.title}
+        </AppText>
+        <AppText variant="caption" numberOfLines={1}>
+          {submission.user.fullName}
+        </AppText>
+      </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   card: {
     width: PROJECT_CARD_WIDTH,
     padding: spacing.md,
+    gap: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: t.colors.borderSubtle,
     borderRadius: radius.card,
-    backgroundColor: colors.background,
+    backgroundColor: t.colors.card,
   },
   imageWrap: {
     height: IMAGE_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    borderRadius: radius.badge,
-    backgroundColor: colors.surface,
+    borderRadius: radius.button,
+    backgroundColor: t.colors.surface,
   },
-  title: { marginTop: spacing.md, marginBottom: spacing.xs },
-  // Design: the author line has a 20 dp pitch (the `caption` token is 16).
-  author: { lineHeight: 20 },
-});
+  texts: { gap: spacing.xs },
+}));
 
 export const ProjectCard = memo(ProjectCardBase);

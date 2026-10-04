@@ -1,15 +1,14 @@
 import { useEventListener } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { STRINGS } from '@/constants/strings';
-import { colors, spacing } from '@/theme';
+import { useTranslation } from '@/i18n';
+import { makeStyles, spacing } from '@/theme';
 import type { LessonDetail } from '@/types/api';
 
-import { LEARNING_STRINGS } from '../strings';
 import { useLessonProgress } from '../useLessonProgress';
 import { getResumePosition, resolveVideoUrl, seekPlayer } from '../videoUtils';
 
@@ -28,6 +27,8 @@ export type LessonPlayerProps = {
  * - feeds the tracker with the 1 s `timeUpdate`, the position when paused, and `playToEnd`.
  */
 export function LessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
+  const { t } = useTranslation(['learning', 'common']);
+  const styles = useStyles();
   const [startPositionSec] = useState(() => getResumePosition(lesson));
   const [hasError, setHasError] = useState(false);
   const isReadyRef = useRef(false);
@@ -82,10 +83,10 @@ export function LessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
       {hasError ? (
         <View style={styles.overlay}>
           <AppText variant="body" color="white" align="center">
-            {LEARNING_STRINGS.videoLoadFailed}
+            {t('videoLoadFailed')}
           </AppText>
           <Button
-            title={STRINGS.common.retry}
+            title={t('common:actions.retry')}
             variant="outline"
             size="sm"
             onPress={() => {
@@ -101,15 +102,20 @@ export function LessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.textPrimary },
+/** The video slot is always dark, in light mode too. */
+const useStyles = makeStyles((t) => ({
+  container: { flex: 1, backgroundColor: t.colors.scrim },
   video: { flex: 1 },
   overlay: {
-    ...StyleSheet.absoluteFill,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.md,
     padding: spacing.lg,
-    backgroundColor: colors.textPrimary,
+    backgroundColor: t.colors.scrim,
   },
-});
+}));

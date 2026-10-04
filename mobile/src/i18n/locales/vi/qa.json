@@ -1,1 +1,19 @@
-{}
+{
+  "questionPlaceholder": "Đặt câu hỏi cho khóa học...",
+  "replyPlaceholder": "Viết câu trả lời...",
+  "send": "Gửi",
+  "noQuestionsTitle": "Chưa có câu hỏi nào",
+  "noQuestionsMessage": "Hãy đặt câu hỏi đầu tiên về khóa học này.",
+  "noAnswersTitle": "Chưa có câu trả lời nào",
+  "noAnswersMessage": "Hãy là người đầu tiên trả lời.",
+  "loadFailed": "Không tải được các câu hỏi",
+  "loadQuestionFailed": "Không tải được câu hỏi này",
+  "loadAnswersFailed": "Không tải được các câu trả lời",
+  "questionTitle": "Câu hỏi",
+  "likeAction": "Thích, {{count}}",
+  "unlikeAction": "Bỏ thích, {{count}}",
+  "comments_other": "{{count}} bình luận",
+  "repliesTitle_other": "{{count}} câu trả lời",
+  "openDiscussion": "{{comments}}, mở cuộc thảo luận",
+  "insertEmoji": "Chèn {{emoji}}"
+}
