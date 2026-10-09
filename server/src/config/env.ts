@@ -83,6 +83,13 @@ const envSchema = z.object({
   ),
 
   // --- CAPTCHA Cloudflare Turnstile (AUTH-05). Site key công khai dành cho client (web/mobile); server chỉ cần secret ---
+  CAPTCHA_PROVIDER: z.preprocess(
+    emptyToUndefined,
+    z.enum(['turnstile', 'recaptcha_v2']).default('turnstile'),
+  ),
+  RECAPTCHA_SITE_KEY: z.preprocess(emptyToUndefined, z.string().trim().min(1).optional()),
+  RECAPTCHA_SECRET_KEY: z.preprocess(emptyToUndefined, z.string().trim().min(1).optional()),
+  CAPTCHA_ALLOWED_HOSTNAMES: z.preprocess(emptyToUndefined, z.string().optional()),
   TURNSTILE_SITE_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
   TURNSTILE_SECRET_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
 
@@ -101,11 +108,38 @@ const envSchema = z.object({
 
 /** Khóa DEV (32 byte toàn số 0) trong .env.example - không bao giờ được dùng ở production. */
 const DEV_TOTP_ENC_KEY = Buffer.alloc(32).toString('base64');
+const RECAPTCHA_TEST_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+const RECAPTCHA_TEST_SECRET_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe';
+const HOSTNAME_PATTERN =
+  /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/;
 
 /** Các biến bắt buộc/an toàn riêng cho production (dev/test được bỏ qua). */
 function productionIssues(data: z.infer<typeof envSchema>): string[] {
   if (data.NODE_ENV !== 'production') return [];
   const issues: string[] = [];
+  if (data.CAPTCHA_PROVIDER === 'recaptcha_v2') {
+    if (!data.RECAPTCHA_SITE_KEY) issues.push('RECAPTCHA_SITE_KEY is required in production');
+    else if (data.RECAPTCHA_SITE_KEY.trim() === RECAPTCHA_TEST_SITE_KEY) {
+      issues.push('RECAPTCHA_SITE_KEY must not be the Google test key');
+    }
+    if (!data.RECAPTCHA_SECRET_KEY) issues.push('RECAPTCHA_SECRET_KEY is required in production');
+    else if (data.RECAPTCHA_SECRET_KEY.trim() === RECAPTCHA_TEST_SECRET_KEY) {
+      issues.push('RECAPTCHA_SECRET_KEY must not be the Google test key');
+    }
+    const configuredHostnames = (data.CAPTCHA_ALLOWED_HOSTNAMES ?? '')
+      .split(',')
+      .map((hostname) => hostname.trim().toLowerCase().replace(/\.$/, ''))
+      .filter(Boolean);
+    const hostnames = configuredHostnames.filter((hostname) => HOSTNAME_PATTERN.test(hostname));
+    if (hostnames.length === 0) {
+      issues.push('CAPTCHA_ALLOWED_HOSTNAMES is required in production for reCAPTCHA v2');
+    }
+    if (hostnames.length !== configuredHostnames.length) {
+      issues.push(
+        'CAPTCHA_ALLOWED_HOSTNAMES must contain valid hostnames without URLs, wildcards, paths or ports',
+      );
+    }
+  }
   if (!data.TOTP_ENC_KEY) issues.push('TOTP_ENC_KEY is required in production');
   else if (data.TOTP_ENC_KEY === DEV_TOTP_ENC_KEY) {
     issues.push('TOTP_ENC_KEY must not be the dev key from .env.example - generate your own');

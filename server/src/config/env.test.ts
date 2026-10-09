@@ -15,6 +15,10 @@ const BASE_ENV: Record<string, string> = {
   SMTP_USER: '',
   SMTP_PASS: '',
   MAIL_FROM: '',
+  CAPTCHA_PROVIDER: '',
+  RECAPTCHA_SITE_KEY: '',
+  RECAPTCHA_SECRET_KEY: '',
+  CAPTCHA_ALLOWED_HOSTNAMES: '',
   TURNSTILE_SITE_KEY: '',
   TURNSTILE_SECRET_KEY: '',
   TOTP_ENC_KEY: '',
@@ -90,6 +94,39 @@ describe('env: SMTP', () => {
 });
 
 describe('env: Turnstile and TOTP', () => {
+  it('defaults the CAPTCHA provider to Turnstile and treats empty reCAPTCHA settings as absent', () => {
+    const env = loadEnv();
+    expect(env.CAPTCHA_PROVIDER).toBe('turnstile');
+    expect(env.RECAPTCHA_SITE_KEY).toBeUndefined();
+    expect(env.RECAPTCHA_SECRET_KEY).toBeUndefined();
+    expect(env.CAPTCHA_ALLOWED_HOSTNAMES).toBeUndefined();
+  });
+
+  it('accepts reCAPTCHA v2 configuration outside production', () => {
+    expect(
+      loadEnv({
+        CAPTCHA_PROVIDER: 'recaptcha_v2',
+        RECAPTCHA_SITE_KEY: 'site-key',
+        RECAPTCHA_SECRET_KEY: 'secret-key',
+        CAPTCHA_ALLOWED_HOSTNAMES: 'example.com, localhost',
+      }),
+    ).toMatchObject({
+      CAPTCHA_PROVIDER: 'recaptcha_v2',
+      RECAPTCHA_SITE_KEY: 'site-key',
+      RECAPTCHA_SECRET_KEY: 'secret-key',
+      CAPTCHA_ALLOWED_HOSTNAMES: 'example.com, localhost',
+    });
+  });
+
+  it('trims whitespace around reCAPTCHA keys', () => {
+    expect(
+      loadEnv({
+        RECAPTCHA_SITE_KEY: ' site-key ',
+        RECAPTCHA_SECRET_KEY: ' secret-key ',
+      }),
+    ).toMatchObject({ RECAPTCHA_SITE_KEY: 'site-key', RECAPTCHA_SECRET_KEY: 'secret-key' });
+  });
+
   it('treats empty Turnstile keys as not configured', () => {
     const env = loadEnv();
     expect(env.TURNSTILE_SITE_KEY).toBeUndefined();
@@ -126,4 +163,52 @@ describe('env: production guard', () => {
       'production',
     );
   });
+
+  it('requires reCAPTCHA v2 keys and allowed hostnames when selected in production', () => {
+    expect(() => loadEnv({ NODE_ENV: 'production', CAPTCHA_PROVIDER: 'recaptcha_v2' })).toThrow(
+      /RECAPTCHA_SITE_KEY is required.*RECAPTCHA_SECRET_KEY is required.*CAPTCHA_ALLOWED_HOSTNAMES/s,
+    );
+  });
+
+  it('rejects Google test keys in production', () => {
+    expect(() =>
+      loadEnv({
+        NODE_ENV: 'production',
+        CAPTCHA_PROVIDER: 'recaptcha_v2',
+        RECAPTCHA_SITE_KEY: '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
+        RECAPTCHA_SECRET_KEY: '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
+        CAPTCHA_ALLOWED_HOSTNAMES: 'example.com',
+        TOTP_ENC_KEY: VALID_KEY,
+      }),
+    ).toThrow(/Google test key/);
+  });
+
+  it('accepts comma-separated hostnames after case and trailing-dot normalization', () => {
+    expect(
+      loadEnv({
+        NODE_ENV: 'production',
+        CAPTCHA_PROVIDER: 'recaptcha_v2',
+        RECAPTCHA_SITE_KEY: 'real-site-key',
+        RECAPTCHA_SECRET_KEY: 'real-secret-key',
+        CAPTCHA_ALLOWED_HOSTNAMES: ' Example.com., api.example.com ',
+        TOTP_ENC_KEY: VALID_KEY,
+      }).NODE_ENV,
+    ).toBe('production');
+  });
+
+  it.each(['https://example.com', '*.example.com', 'example.com/path', 'example.com:443'])(
+    'rejects invalid production CAPTCHA hostname entries: %s',
+    (hostname) => {
+      expect(() =>
+        loadEnv({
+          NODE_ENV: 'production',
+          CAPTCHA_PROVIDER: 'recaptcha_v2',
+          RECAPTCHA_SITE_KEY: 'real-site-key',
+          RECAPTCHA_SECRET_KEY: 'real-secret-key',
+          CAPTCHA_ALLOWED_HOSTNAMES: hostname,
+          TOTP_ENC_KEY: VALID_KEY,
+        }),
+      ).toThrow(/CAPTCHA_ALLOWED_HOSTNAMES must contain valid hostnames/);
+    },
+  );
 });

@@ -30,7 +30,7 @@ jest.mock('@/lib/prisma', () => ({
   },
   Prisma: jest.requireActual('@/generated/prisma/client').Prisma,
 }));
-jest.mock('@/lib/turnstile', () => ({
+jest.mock('@/lib/captcha', () => ({
   assertCaptcha: (...args: unknown[]) => mockAssertCaptcha(...args),
 }));
 jest.mock('@/lib/mailer', () => ({ queueMail: (...args: unknown[]) => mockQueueMail(...args) }));
@@ -128,7 +128,12 @@ beforeEach(() => {
 });
 
 describe('authService.register', () => {
-  const input = { fullName: 'Martha Rosie', email: 'martha@example.com', password: 'Learn2026' };
+  const input = {
+    fullName: 'Martha Rosie',
+    email: 'martha@example.com',
+    password: 'Learn2026',
+    role: 'STUDENT' as const,
+  };
 
   it('creates an unverified STUDENT, emails the OTP and does NOT return a token', async () => {
     mockDb.findUnique.mockResolvedValue(null);
@@ -159,6 +164,22 @@ describe('authService.register', () => {
     expect(mail.to).toBe('martha@example.com');
     expect(mail.text).toContain('123456');
     expect(mockRecordAuthEvent).toHaveBeenCalledWith({ userId: 'user-1', type: 'REGISTER', ctx });
+  });
+
+  it('creates a teacher profile atomically when registering as TEACHER', async () => {
+    mockDb.findUnique.mockResolvedValue(null);
+    mockDb.create.mockResolvedValue({ ...publicUser, role: 'TEACHER' });
+
+    await authService.register({ ...input, role: 'TEACHER' }, ctx);
+
+    expect(mockDb.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          role: 'TEACHER',
+          teacherProfile: { create: { jobTitle: '', bio: '' } },
+        }),
+      }),
+    );
   });
 
   it('writes the verification mail in the request language', async () => {

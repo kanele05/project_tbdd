@@ -6,6 +6,7 @@
  * Luồng đăng nhập: POST /auth/login -> (CAPTCHA sau 3 lần sai) -> [2FA: POST /auth/2fa/verify] -> token.
  */
 import { ApiError } from '@/lib/ApiError';
+import { assertCaptcha } from '@/lib/captcha';
 import { maskIp } from '@/lib/device';
 import { CHALLENGE_TOKEN_TTL_SEC, signChallengeToken, verifyChallengeToken } from '@/lib/jwt';
 import { logger } from '@/lib/logger';
@@ -15,7 +16,6 @@ import { toUserDto, userDtoSelect } from '@/lib/mappers';
 import { notify } from '@/lib/notify';
 import { hashPassword, verifyPassword } from '@/lib/password';
 import { Prisma, prisma } from '@/lib/prisma';
-import { assertCaptcha } from '@/lib/turnstile';
 import type { ClientContext } from '@/types/auth';
 import type {
   AuthSessionDto,
@@ -116,7 +116,15 @@ export async function register(
   let user: UserDto;
   try {
     const created = await prisma.user.create({
-      data: { email: input.email, fullName: input.fullName, passwordHash, role: 'STUDENT' },
+      data: {
+        email: input.email,
+        fullName: input.fullName,
+        passwordHash,
+        role: input.role,
+        ...(input.role === 'TEACHER'
+          ? { teacherProfile: { create: { jobTitle: '', bio: '' } } }
+          : {}),
+      },
       select: userDtoSelect,
     });
     user = toUserDto(created);

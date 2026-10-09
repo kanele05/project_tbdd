@@ -4,6 +4,7 @@
     "noEmit": false,
     "rootDir": "src",
     "outDir": "dist",
+    "rewriteRelativeImportExtensions": true,
     "sourceMap": false,
     "types": ["node"]
   },

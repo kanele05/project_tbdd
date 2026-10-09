@@ -4,6 +4,7 @@
  */
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET ??= 'test-secret-test-secret-test-secret-32chars';
+process.env.CAPTCHA_PROVIDER = 'turnstile';
 // CAPTCHA: test dùng secret test của Cloudflare; việc gọi siteverify được mock trong từng test (không gọi mạng).
 process.env.TURNSTILE_SECRET_KEY ??= '1x0000000000000000000000000000000AA';
 // Mailer test không bao giờ gửi SMTP thật dù máy dev có cấu hình.

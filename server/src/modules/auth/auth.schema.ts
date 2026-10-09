@@ -74,6 +74,7 @@ export const registerBody = z.object({
     .max(60, 'Full name must be at most 60 characters'),
   email,
   password: newPassword,
+  role: z.enum(['STUDENT', 'TEACHER']).default('STUDENT'),
   captchaToken,
   lang,
 });

@@ -24,7 +24,7 @@ jest.mock('@/lib/prisma', () => ({
     },
   },
 }));
-jest.mock('@/lib/turnstile', () => ({
+jest.mock('@/lib/captcha', () => ({
   assertCaptcha: (...args: unknown[]) => mockAssertCaptcha(...args),
 }));
 jest.mock('@/lib/mailer', () => ({ queueMail: (...args: unknown[]) => mockQueueMail(...args) }));

@@ -66,9 +66,11 @@ COPY --from=build --chown=node:node /app/src ./src
 COPY --chown=node:node package.json prisma.config.ts tsconfig.json ./
 COPY --chown=node:node prisma ./prisma
 COPY --chown=node:node static ./static
+COPY --chown=node:node scripts/updateCoursePreviews.ts ./scripts/updateCoursePreviews.ts
 COPY --chown=node:node --chmod=0755 docker-entrypoint.sh ./docker-entrypoint.sh
 
 USER node
+RUN node -e "require('./dist/generated/prisma/client.js')"
 EXPOSE 4000
 VOLUME ["/app/uploads"]
 

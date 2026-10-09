@@ -14,7 +14,8 @@ uploads/*
 !uploads/.gitkeep
 src/generated
 tests
-scripts
+scripts/*
+!scripts/updateCoursePreviews.ts
 Dockerfile
 .dockerignore
 README.md

@@ -1,0 +1,3771 @@
+{
+  "version": 2,
+  "fps": 30,
+  "width": 1920,
+  "height": 1080,
+  "defaultSceneDurationSec": 5,
+  "license": "Original procedural graphics, animation, text and generated music authored for this project; no stock footage or third-party audio.",
+  "courses": [
+    {
+      "slug": "ux-foundation",
+      "title": "UX Foundation",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Turn everyday friction into a flow people understand.",
+      "topics": [
+        "What is user experience?",
+        "The UX design process",
+        "Meet your users",
+        "Interviews and observation",
+        "Personas and journeys",
+        "Sketching solutions",
+        "Wireframing key flows",
+        "Building a clickable prototype",
+        "Usability testing",
+        "Presenting your case study"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Find the moment a task becomes frustrating.", "Then design the clearer path."],
+          "visual": "friction-point-to-clear-path"
+        },
+        {
+          "title": "What is user experience?",
+          "durationSec": 6,
+          "lines": [
+            "Map a goal from first tap to finish.",
+            "Mark confusion, waiting and confidence."
+          ],
+          "visual": "task-flow-map"
+        },
+        {
+          "title": "The UX design process",
+          "durationSec": 6,
+          "lines": [
+            "Research → define → sketch → prototype → test.",
+            "Let evidence send you back a step."
+          ],
+          "visual": "iterative-process-loop"
+        },
+        {
+          "title": "Meet your users",
+          "durationSec": 6,
+          "lines": [
+            "Watch a learner search for a lesson.",
+            "Capture their goal, context and workaround."
+          ],
+          "visual": "user-observation-board"
+        },
+        {
+          "title": "Interviews and observation",
+          "durationSec": 6,
+          "lines": [
+            "Ask what happened last time, not what they prefer.",
+            "Pair a quote with what you observed."
+          ],
+          "visual": "interview-quote-and-observation"
+        },
+        {
+          "title": "Personas and journeys",
+          "durationSec": 6,
+          "lines": [
+            "Connect needs, actions and pain points.",
+            "Highlight the step with the highest friction."
+          ],
+          "visual": "persona-journey-map"
+        },
+        {
+          "title": "Sketching solutions",
+          "durationSec": 6,
+          "lines": [
+            "Make three rough alternatives in minutes.",
+            "Compare them against the user's task."
+          ],
+          "visual": "sketch-variant-board"
+        },
+        {
+          "title": "Wireframing key flows",
+          "durationSec": 6,
+          "lines": [
+            "Lay out the search-to-enrolment screens.",
+            "Show decisions, back paths and feedback."
+          ],
+          "visual": "wireframe-flow"
+        },
+        {
+          "title": "Building a clickable prototype",
+          "durationSec": 6,
+          "lines": [
+            "Link the primary path and one recovery path.",
+            "Keep interactions clear enough to test."
+          ],
+          "visual": "clickable-prototype-map"
+        },
+        {
+          "title": "Usability testing",
+          "durationSec": 6,
+          "lines": [
+            "Give a task; let the learner think aloud.",
+            "Record completion, hesitation and misclicks."
+          ],
+          "visual": "usability-test-session"
+        },
+        {
+          "title": "Presenting your case study",
+          "durationSec": 6,
+          "lines": [
+            "Show the problem, evidence, iterations and result.",
+            "Separate what changed from what you learned."
+          ],
+          "visual": "case-study-storyboard"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Take one confusing flow from sketch to tested prototype.",
+            "Start with UX Foundation."
+          ],
+          "visual": "course-path-cta"
+        }
+      ]
+    },
+    {
+      "slug": "website-design",
+      "title": "Website Design",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Build a page whose structure makes the next step obvious.",
+      "topics": [
+        "How websites are structured",
+        "Grids and layout",
+        "Choosing colour and type",
+        "Navigation and headers",
+        "Hero sections that work",
+        "Cards, lists and forms",
+        "Designing for mobile",
+        "Imagery and icons",
+        "Handing off to developers"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A good page guides attention before it asks for a click."],
+          "visual": "page-focus-opening"
+        },
+        {
+          "title": "How websites are structured",
+          "durationSec": 6,
+          "lines": [
+            "Arrange header, content and footer by purpose.",
+            "Give each section one clear job."
+          ],
+          "visual": "site-sitemap-to-page"
+        },
+        {
+          "title": "Grids and layout",
+          "durationSec": 6,
+          "lines": [
+            "Set columns, gutters and a readable max width.",
+            "Align sections to a shared grid."
+          ],
+          "visual": "responsive-grid-build"
+        },
+        {
+          "title": "Choosing colour and type",
+          "durationSec": 6,
+          "lines": [
+            "Pair a restrained palette with a clear type scale.",
+            "Check contrast at body-text size."
+          ],
+          "visual": "palette-and-type-specimen"
+        },
+        {
+          "title": "Navigation and headers",
+          "durationSec": 6,
+          "lines": [
+            "Group links by visitor intent.",
+            "Keep the current location and primary action visible."
+          ],
+          "visual": "navigation-wireframe"
+        },
+        {
+          "title": "Hero sections that work",
+          "durationSec": 6,
+          "lines": [
+            "Lead with audience, value and one action.",
+            "Make supporting imagery reinforce the message."
+          ],
+          "visual": "hero-layout-variants"
+        },
+        {
+          "title": "Cards, lists and forms",
+          "durationSec": 6,
+          "lines": [
+            "Choose cards for comparison, lists for scanning.",
+            "Label fields and show validation beside input."
+          ],
+          "visual": "component-layout-board"
+        },
+        {
+          "title": "Designing for mobile",
+          "durationSec": 6,
+          "lines": [
+            "Stack content by priority, not by shrink-to-fit.",
+            "Keep touch actions comfortable and reachable."
+          ],
+          "visual": "desktop-to-mobile-reflow"
+        },
+        {
+          "title": "Imagery and icons",
+          "durationSec": 6,
+          "lines": [
+            "Use image crops that preserve the subject.",
+            "Keep icon style, scale and meaning consistent."
+          ],
+          "visual": "asset-crop-and-icon-board"
+        },
+        {
+          "title": "Handing off to developers",
+          "durationSec": 6,
+          "lines": [
+            "Name components, states and spacing tokens.",
+            "Attach responsive behavior and asset specs."
+          ],
+          "visual": "design-handoff-inspector"
+        },
+        {
+          "title": "Mini project: local business landing page",
+          "durationSec": 6,
+          "lines": [
+            "Design the desktop and phone hero, services and contact form.",
+            "Check hierarchy at both widths."
+          ],
+          "visual": "landing-page-review"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Take a site from grid to developer-ready handoff.",
+            "Start with Website Design."
+          ],
+          "visual": "course-path-cta"
+        }
+      ]
+    },
+    {
+      "slug": "ux-research-for-beginners",
+      "title": "UX Research For Beginners",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Replace guesses with questions that reveal what people actually do.",
+      "topics": [
+        "Research vs. opinions",
+        "Choosing the right method",
+        "Writing research questions",
+        "Recruiting participants",
+        "Running interviews",
+        "Taking useful notes",
+        "Finding patterns",
+        "Personas and journey maps",
+        "Usability testing basics",
+        "Sharing your findings"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A confident opinion is still a guess.", "Follow the evidence."],
+          "visual": "opinion-to-evidence"
+        },
+        {
+          "title": "Research vs. opinions",
+          "durationSec": 6,
+          "lines": [
+            "Separate observed behavior from interpretation.",
+            "Attach each claim to a source."
+          ],
+          "visual": "evidence-board"
+        },
+        {
+          "title": "Choosing the right method",
+          "durationSec": 6,
+          "lines": [
+            "Use interviews for motivations, tests for task friction.",
+            "Match method to the decision at hand."
+          ],
+          "visual": "method-selection-matrix"
+        },
+        {
+          "title": "Writing research questions",
+          "durationSec": 6,
+          "lines": [
+            "Ask how people complete a real task.",
+            "Avoid wording that suggests the answer."
+          ],
+          "visual": "question-card-rewrite"
+        },
+        {
+          "title": "Recruiting participants",
+          "durationSec": 6,
+          "lines": [
+            "Screen for relevant experience, not ideal opinions.",
+            "Track consent and participant mix."
+          ],
+          "visual": "participant-screening-board"
+        },
+        {
+          "title": "Running interviews",
+          "durationSec": 6,
+          "lines": [
+            "Start broad, then probe a specific recent example.",
+            "Leave room for silence and follow-up."
+          ],
+          "visual": "interview-conversation-map"
+        },
+        {
+          "title": "Taking useful notes",
+          "durationSec": 6,
+          "lines": [
+            "Capture action, quote and context separately.",
+            "Mark assumptions for later review."
+          ],
+          "visual": "research-note-coding"
+        },
+        {
+          "title": "Finding patterns",
+          "durationSec": 6,
+          "lines": [
+            "Cluster repeated needs across participants.",
+            "Keep outliers visible until explained."
+          ],
+          "visual": "affinity-cluster-board"
+        },
+        {
+          "title": "Personas and journey maps",
+          "durationSec": 6,
+          "lines": [
+            "Base persona needs on repeated evidence.",
+            "Map emotion and friction along the task."
+          ],
+          "visual": "persona-journey-evidence"
+        },
+        {
+          "title": "Usability testing basics",
+          "durationSec": 6,
+          "lines": [
+            "Give a neutral task and observe completion.",
+            "Log where participants hesitate or recover."
+          ],
+          "visual": "test-task-observation"
+        },
+        {
+          "title": "Sharing your findings",
+          "durationSec": 6,
+          "lines": [
+            "Show a finding, evidence and product implication.",
+            "Make the next decision easy to discuss."
+          ],
+          "visual": "insight-to-decision-slide"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Plan a small study and turn observations into a journey map.",
+            "Start with UX Research For Beginners."
+          ],
+          "visual": "course-path-cta"
+        }
+      ]
+    },
+    {
+      "slug": "digital-portrait",
+      "title": "Digital Portrait",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Build a likeness from measured shapes, light and deliberate strokes.",
+      "topics": [
+        "Tools and canvas setup",
+        "Reference photos",
+        "Face proportions",
+        "Blocking in shapes",
+        "Light and shadow",
+        "Skin tones",
+        "Eyes, nose and mouth",
+        "Hair and clothing",
+        "Background and mood",
+        "Final touches and export"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Start with structure; let detail arrive later."],
+          "visual": "portrait-silhouette-reveal"
+        },
+        {
+          "title": "Tools and canvas setup",
+          "durationSec": 6,
+          "lines": [
+            "Set canvas size, layers and brush pressure.",
+            "Keep sketch, color and detail on separate layers."
+          ],
+          "visual": "digital-canvas-layer-stack"
+        },
+        {
+          "title": "Reference photos",
+          "durationSec": 6,
+          "lines": [
+            "Choose a clear angle and a readable light source.",
+            "Crop to face and shoulders before sketching."
+          ],
+          "visual": "reference-crop-board"
+        },
+        {
+          "title": "Face proportions",
+          "durationSec": 6,
+          "lines": [
+            "Mark centerline, eye line and chin.",
+            "Compare feature spacing before adding detail."
+          ],
+          "visual": "face-proportion-guides"
+        },
+        {
+          "title": "Blocking in shapes",
+          "durationSec": 6,
+          "lines": [
+            "Place large light and dark masses first.",
+            "Keep the silhouette readable at thumbnail size."
+          ],
+          "visual": "portrait-block-in-strokes"
+        },
+        {
+          "title": "Light and shadow",
+          "durationSec": 6,
+          "lines": [
+            "Choose one key light and group the shadow side.",
+            "Use edge softness to turn the form."
+          ],
+          "visual": "light-shadow-value-map"
+        },
+        {
+          "title": "Skin tones",
+          "durationSec": 6,
+          "lines": [
+            "Build warm and cool shifts from the light source.",
+            "Sample neighboring hues instead of one flat fill."
+          ],
+          "visual": "skin-tone-mixing-board"
+        },
+        {
+          "title": "Eyes, nose and mouth",
+          "durationSec": 6,
+          "lines": [
+            "Place features within the measured planes.",
+            "Use small value changes before hard outlines."
+          ],
+          "visual": "feature-study-triptych"
+        },
+        {
+          "title": "Hair and clothing",
+          "durationSec": 6,
+          "lines": [
+            "Paint hair as grouped locks, not single strands.",
+            "Use fabric folds to describe form and weight."
+          ],
+          "visual": "hair-and-fabric-brushwork"
+        },
+        {
+          "title": "Background and mood",
+          "durationSec": 6,
+          "lines": [
+            "Choose a background hue that supports skin values.",
+            "Keep contrast near the face."
+          ],
+          "visual": "portrait-background-color-tests"
+        },
+        {
+          "title": "Final touches and export",
+          "durationSec": 6,
+          "lines": [
+            "Sharpen focal features and soften secondary edges.",
+            "Check color profile, dimensions and export format."
+          ],
+          "visual": "portrait-final-pass-export"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Move from reference and block-in to a finished portrait.",
+            "Start with Digital Portrait."
+          ],
+          "visual": "course-artwork-cta"
+        }
+      ]
+    },
+    {
+      "slug": "workspace-decor",
+      "title": "Workspace Decor",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Make a small workspace work harder with layout, light and useful storage.",
+      "topics": [
+        "What makes a good workspace?",
+        "Measuring and layout",
+        "Choosing a colour palette",
+        "Natural and artificial light",
+        "Ergonomics for your desk",
+        "Storage and cables",
+        "Plants and textures",
+        "Art and personal items",
+        "Small budget makeovers",
+        "Keeping it tidy"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Less clutter starts with a layout that fits the work."],
+          "visual": "desk-before-to-after"
+        },
+        {
+          "title": "What makes a good workspace?",
+          "durationSec": 6,
+          "lines": [
+            "List the tasks, tools and comfort needs first.",
+            "Design around how the desk is used."
+          ],
+          "visual": "workspace-needs-board"
+        },
+        {
+          "title": "Measuring and layout",
+          "durationSec": 6,
+          "lines": [
+            "Measure desk, chair and walking clearance.",
+            "Test monitor, keyboard and storage zones on a plan."
+          ],
+          "visual": "scaled-desk-layout"
+        },
+        {
+          "title": "Choosing a colour palette",
+          "durationSec": 6,
+          "lines": [
+            "Choose one anchor, two supporting tones and a neutral.",
+            "Preview swatches beside existing furniture."
+          ],
+          "visual": "room-palette-swatch-board"
+        },
+        {
+          "title": "Natural and artificial light",
+          "durationSec": 6,
+          "lines": [
+            "Place the screen to reduce window glare.",
+            "Layer ambient and focused task lighting."
+          ],
+          "visual": "light-direction-desk-plan"
+        },
+        {
+          "title": "Ergonomics for your desk",
+          "durationSec": 6,
+          "lines": [
+            "Set screen height and comfortable elbow reach.",
+            "Leave space for movement and posture changes."
+          ],
+          "visual": "ergonomic-side-profile"
+        },
+        {
+          "title": "Storage and cables",
+          "durationSec": 6,
+          "lines": [
+            "Group daily tools within reach; archive the rest.",
+            "Route cables along desk edges and power points."
+          ],
+          "visual": "storage-and-cable-map"
+        },
+        {
+          "title": "Plants and textures",
+          "durationSec": 6,
+          "lines": [
+            "Combine one tactile surface with a low-care plant.",
+            "Keep the work zone clear of visual noise."
+          ],
+          "visual": "texture-and-plant-material-board"
+        },
+        {
+          "title": "Art and personal items",
+          "durationSec": 6,
+          "lines": [
+            "Choose a few objects with personal meaning.",
+            "Balance their scale against the wall and desk."
+          ],
+          "visual": "personal-object-composition"
+        },
+        {
+          "title": "Small budget makeovers",
+          "durationSec": 6,
+          "lines": [
+            "Reuse containers, adjust lighting and move the desk.",
+            "Prioritize changes with the largest daily benefit."
+          ],
+          "visual": "budget-priority-board"
+        },
+        {
+          "title": "Keeping it tidy",
+          "durationSec": 6,
+          "lines": [
+            "Give recurring items a return place.",
+            "Reset the surface with a short end-of-day routine."
+          ],
+          "visual": "desk-reset-sequence"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Plan a measured, comfortable desk refresh on a small budget.",
+            "Start with Workspace Decor."
+          ],
+          "visual": "course-desk-cta"
+        }
+      ]
+    },
+    {
+      "slug": "packaging-design",
+      "title": "Packaging Design",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Turn a flat dieline into a package that protects and tells a story.",
+      "topics": [
+        "Why packaging matters",
+        "Materials and printing",
+        "Reading a dieline",
+        "Brand and audience",
+        "Layout and hierarchy",
+        "Illustration and pattern",
+        "Typography for labels",
+        "3D mock-ups",
+        "Preparing print files",
+        "Unboxing experience",
+        "Portfolio presentation"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["One package must survive shipping and earn a second look."],
+          "visual": "folded-carton-reveal"
+        },
+        {
+          "title": "Why packaging matters",
+          "durationSec": 6,
+          "lines": [
+            "Balance protection, shelf recognition and opening.",
+            "Tie each design choice to a product need."
+          ],
+          "visual": "package-purpose-triangle"
+        },
+        {
+          "title": "Materials and printing",
+          "durationSec": 6,
+          "lines": [
+            "Compare board weight, finish and print limits.",
+            "Match material to product and production method."
+          ],
+          "visual": "material-print-swatch-board"
+        },
+        {
+          "title": "Reading a dieline",
+          "durationSec": 6,
+          "lines": [
+            "Separate cut paths from fold lines and bleed.",
+            "Check panel order before placing artwork."
+          ],
+          "visual": "annotated-carton-dieline"
+        },
+        {
+          "title": "Brand and audience",
+          "durationSec": 6,
+          "lines": [
+            "Choose a clear audience and one brand signal.",
+            "Keep claims factual and readable."
+          ],
+          "visual": "brand-audience-board"
+        },
+        {
+          "title": "Layout and hierarchy",
+          "durationSec": 6,
+          "lines": [
+            "Place product name, variant and required details.",
+            "Make the front panel scan in seconds."
+          ],
+          "visual": "package-panel-hierarchy"
+        },
+        {
+          "title": "Illustration and pattern",
+          "durationSec": 6,
+          "lines": [
+            "Build a repeat tile that aligns across folds.",
+            "Test illustration scale on the actual panel."
+          ],
+          "visual": "seamless-pattern-on-carton"
+        },
+        {
+          "title": "Typography for labels",
+          "durationSec": 6,
+          "lines": [
+            "Set a readable product name and supporting facts.",
+            "Check small print at final physical size."
+          ],
+          "visual": "label-type-scale-proof"
+        },
+        {
+          "title": "3D mock-ups",
+          "durationSec": 6,
+          "lines": [
+            "Fold the dieline into a volume mock-up.",
+            "Inspect edges, seams and front-panel balance."
+          ],
+          "visual": "carton-fold-animation"
+        },
+        {
+          "title": "Preparing print files",
+          "durationSec": 6,
+          "lines": [
+            "Package linked assets, bleed and color settings.",
+            "Review overprint and cut-line separation."
+          ],
+          "visual": "preflight-print-inspector"
+        },
+        {
+          "title": "Portfolio presentation",
+          "durationSec": 6,
+          "lines": [
+            "Show flat art, folded mock-up and key decisions.",
+            "Include the unboxing sequence and final file."
+          ],
+          "visual": "packaging-case-study-board"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Develop a dieline into a print-ready package presentation.",
+            "Start with Packaging Design."
+          ],
+          "visual": "package-portfolio-cta"
+        }
+      ]
+    },
+    {
+      "slug": "design-basics",
+      "title": "Design Basics",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Use a few clear principles to make visual decisions with purpose.",
+      "topics": [
+        "What is design?",
+        "Balance and alignment",
+        "Contrast and emphasis",
+        "Repetition and rhythm",
+        "Colour basics",
+        "Shapes and space",
+        "Critiquing everyday objects",
+        "Your first poster",
+        "Next steps"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A small layout change can make a message easier to see."],
+          "visual": "poster-before-after"
+        },
+        {
+          "title": "What is design?",
+          "durationSec": 6,
+          "lines": [
+            "Connect a purpose, an audience and a visual choice.",
+            "Judge the result by what it helps people do."
+          ],
+          "visual": "purpose-audience-form-map"
+        },
+        {
+          "title": "Balance and alignment",
+          "durationSec": 6,
+          "lines": [
+            "Align edges and distribute visual weight.",
+            "Use a grid to expose accidental drift."
+          ],
+          "visual": "alignment-grid-overlay"
+        },
+        {
+          "title": "Contrast and emphasis",
+          "durationSec": 6,
+          "lines": [
+            "Give the main message the strongest contrast.",
+            "Reduce competing elements around it."
+          ],
+          "visual": "hierarchy-contrast-study"
+        },
+        {
+          "title": "Repetition and rhythm",
+          "durationSec": 6,
+          "lines": [
+            "Repeat type, shape or spacing to create continuity.",
+            "Vary one element to create a beat."
+          ],
+          "visual": "repetition-rhythm-board"
+        },
+        {
+          "title": "Colour basics",
+          "durationSec": 6,
+          "lines": [
+            "Compare hue, value and saturation separately.",
+            "Test combinations against the intended mood."
+          ],
+          "visual": "color-value-wheel"
+        },
+        {
+          "title": "Shapes and space",
+          "durationSec": 6,
+          "lines": [
+            "Use negative space to separate related elements.",
+            "Let shape direct attention through the layout."
+          ],
+          "visual": "shape-negative-space-study"
+        },
+        {
+          "title": "Critiquing everyday objects",
+          "durationSec": 6,
+          "lines": [
+            "Name what works, where it fails and why.",
+            "Support each critique with a visible detail."
+          ],
+          "visual": "object-critique-annotation"
+        },
+        {
+          "title": "Your first poster",
+          "durationSec": 6,
+          "lines": [
+            "Set one headline, one supporting detail and one image.",
+            "Test the read from a distance."
+          ],
+          "visual": "poster-composition-build"
+        },
+        {
+          "title": "Next steps",
+          "durationSec": 6,
+          "lines": [
+            "Choose one principle to practice in a daily object.",
+            "Keep a before-and-after comparison."
+          ],
+          "visual": "practice-sketchbook"
+        },
+        {
+          "title": "Mini project: poster critique",
+          "durationSec": 6,
+          "lines": [
+            "Redesign a crowded event poster with hierarchy and spacing.",
+            "Explain three intentional changes."
+          ],
+          "visual": "poster-redesign-review"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Learn to see balance, contrast and rhythm in everyday design.",
+            "Start with Design Basics."
+          ],
+          "visual": "design-principles-cta"
+        }
+      ]
+    },
+    {
+      "slug": "digital-sketching",
+      "title": "Digital Sketching",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Capture an idea quickly, then refine only what matters.",
+      "topics": [
+        "Your sketching setup",
+        "Lines and shapes",
+        "Layers and undo",
+        "Quick thumbnails",
+        "Objects in perspective",
+        "Adding shading",
+        "Sketching from photos",
+        "Clean-up and colour",
+        "Building a sketchbook"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A rough drawing is a tool for thinking, not a final test."],
+          "visual": "rough-to-refined-sketch"
+        },
+        {
+          "title": "Your sketching setup",
+          "durationSec": 6,
+          "lines": [
+            "Set canvas, brush and pressure before the study.",
+            "Keep the interface out of the drawing area."
+          ],
+          "visual": "tablet-canvas-setup"
+        },
+        {
+          "title": "Lines and shapes",
+          "durationSec": 6,
+          "lines": [
+            "Build an object from straight lines and simple forms.",
+            "Vary pressure to separate structure from detail."
+          ],
+          "visual": "line-shape-study"
+        },
+        {
+          "title": "Layers and undo",
+          "durationSec": 6,
+          "lines": [
+            "Separate construction, clean lines and color.",
+            "Use undo to compare alternatives, not hide every mark."
+          ],
+          "visual": "layer-stack-demonstration"
+        },
+        {
+          "title": "Quick thumbnails",
+          "durationSec": 6,
+          "lines": [
+            "Draw six small compositions before choosing one.",
+            "Compare silhouette and focal point."
+          ],
+          "visual": "six-thumbnail-sheet"
+        },
+        {
+          "title": "Objects in perspective",
+          "durationSec": 6,
+          "lines": [
+            "Set horizon and vanishing points for a desk object.",
+            "Check edges against the perspective guides."
+          ],
+          "visual": "perspective-construction"
+        },
+        {
+          "title": "Adding shading",
+          "durationSec": 6,
+          "lines": [
+            "Group light, midtone and shadow.",
+            "Keep the cast shadow aligned with the light."
+          ],
+          "visual": "three-value-shading-study"
+        },
+        {
+          "title": "Sketching from photos",
+          "durationSec": 6,
+          "lines": [
+            "Reduce the reference to large angles and shapes.",
+            "Check proportions before surface detail."
+          ],
+          "visual": "photo-to-sketch-overlay"
+        },
+        {
+          "title": "Clean-up and colour",
+          "durationSec": 6,
+          "lines": [
+            "Clarify the strongest edges and remove construction noise.",
+            "Add a limited palette after the form reads."
+          ],
+          "visual": "cleanup-color-pass"
+        },
+        {
+          "title": "Building a sketchbook",
+          "durationSec": 6,
+          "lines": [
+            "Date each study and note the question it explores.",
+            "Keep experiments beside the better revision."
+          ],
+          "visual": "sketchbook-page-turn"
+        },
+        {
+          "title": "Mini project: object sketch page",
+          "durationSec": 6,
+          "lines": [
+            "Fill one page with three angles of a desk lamp.",
+            "Use thumbnails, perspective and a three-value finish."
+          ],
+          "visual": "lamp-sketch-sequence"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Go from fast thumbnails to a clean sketchbook study.",
+            "Start with Digital Sketching."
+          ],
+          "visual": "sketchbook-cta"
+        }
+      ]
+    },
+    {
+      "slug": "web-design",
+      "title": "Web Design",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Design, build and test a responsive page from one clear brief.",
+      "topics": [
+        "Design for the web",
+        "HTML and CSS in five minutes",
+        "Responsive thinking",
+        "Flexbox and grid basics",
+        "Mobile-first layouts",
+        "Images and media",
+        "From design to code",
+        "Testing on devices",
+        "Performance and accessibility",
+        "Publishing your page"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["One page. Multiple screens. A clear path through both."],
+          "visual": "responsive-page-morph"
+        },
+        {
+          "title": "Design for the web",
+          "durationSec": 6,
+          "lines": [
+            "Start from audience, content and primary action.",
+            "Sketch structure before choosing decoration."
+          ],
+          "visual": "web-brief-to-wireframe"
+        },
+        {
+          "title": "HTML and CSS in five minutes",
+          "durationSec": 6,
+          "lines": [
+            "HTML names the content; CSS controls its presentation.",
+            "Inspect a heading, link and layout rule."
+          ],
+          "visual": "html-css-side-by-side"
+        },
+        {
+          "title": "Responsive thinking",
+          "durationSec": 6,
+          "lines": [
+            "Let content determine when the layout changes.",
+            "Check reading order as columns collapse."
+          ],
+          "visual": "breakpoint-reflow"
+        },
+        {
+          "title": "Flexbox and grid basics",
+          "durationSec": 6,
+          "lines": [
+            "Use grid for page tracks and flex for a row.",
+            "Adjust gaps before adding fixed widths."
+          ],
+          "visual": "grid-flex-layout-demo"
+        },
+        {
+          "title": "Mobile-first layouts",
+          "durationSec": 6,
+          "lines": [
+            "Build the narrow content flow first.",
+            "Add columns only when the content has room."
+          ],
+          "visual": "mobile-first-expansion"
+        },
+        {
+          "title": "Images and media",
+          "durationSec": 6,
+          "lines": [
+            "Set aspect ratio and object fit intentionally.",
+            "Provide meaningful alternative text."
+          ],
+          "visual": "media-crop-and-alt-text"
+        },
+        {
+          "title": "From design to code",
+          "durationSec": 6,
+          "lines": [
+            "Translate spacing and type styles into reusable tokens.",
+            "Keep components aligned with the design file."
+          ],
+          "visual": "design-to-code-inspector"
+        },
+        {
+          "title": "Testing on devices",
+          "durationSec": 6,
+          "lines": [
+            "Check keyboard, touch and narrow viewport behavior.",
+            "Test the actual page, not only the canvas."
+          ],
+          "visual": "device-test-matrix"
+        },
+        {
+          "title": "Performance and accessibility",
+          "durationSec": 6,
+          "lines": [
+            "Use semantic landmarks and visible focus states.",
+            "Resize images and remove unnecessary work."
+          ],
+          "visual": "accessibility-performance-audit"
+        },
+        {
+          "title": "Publishing your page",
+          "durationSec": 6,
+          "lines": [
+            "Check links, metadata and production build output.",
+            "Publish the page and verify the live route."
+          ],
+          "visual": "build-to-published-page"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Build and publish a responsive page, then check it on devices.",
+            "Start with Web Design."
+          ],
+          "visual": "responsive-site-cta"
+        }
+      ]
+    },
+    {
+      "slug": "product-design",
+      "title": "Product Design",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Move from a real user problem to a testable product direction.",
+      "topics": [
+        "What is product design?",
+        "Understanding users",
+        "Defining the problem",
+        "Brainstorming methods",
+        "Sketching concepts",
+        "Paper and digital prototypes",
+        "Testing with users",
+        "Design reviews",
+        "Working with engineers",
+        "Launching and learning"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A product idea gets stronger when the problem is specific."],
+          "visual": "problem-signal-opening"
+        },
+        {
+          "title": "What is product design?",
+          "durationSec": 6,
+          "lines": [
+            "Balance user value, business needs and feasibility.",
+            "Track the decision from evidence to delivery."
+          ],
+          "visual": "product-design-triangle"
+        },
+        {
+          "title": "Understanding users",
+          "durationSec": 6,
+          "lines": [
+            "Observe the current workaround and its context.",
+            "Record needs without inventing a solution."
+          ],
+          "visual": "user-context-observation"
+        },
+        {
+          "title": "Defining the problem",
+          "durationSec": 6,
+          "lines": [
+            "Write who needs what and why.",
+            "Check the statement against research evidence."
+          ],
+          "visual": "problem-statement-board"
+        },
+        {
+          "title": "Brainstorming methods",
+          "durationSec": 6,
+          "lines": [
+            "Generate divergent options before judging them.",
+            "Group ideas by the need they address."
+          ],
+          "visual": "idea-cluster-map"
+        },
+        {
+          "title": "Sketching concepts",
+          "durationSec": 6,
+          "lines": [
+            "Draw alternative flows with the core task visible.",
+            "Label assumptions that need a test."
+          ],
+          "visual": "concept-sketch-comparison"
+        },
+        {
+          "title": "Paper and digital prototypes",
+          "durationSec": 6,
+          "lines": [
+            "Choose fidelity to match the question.",
+            "Prototype only the steps needed to learn."
+          ],
+          "visual": "paper-to-digital-prototype"
+        },
+        {
+          "title": "Testing with users",
+          "durationSec": 6,
+          "lines": [
+            "Give a realistic task and observe attempts.",
+            "Revise the flow where people get stuck."
+          ],
+          "visual": "prototype-test-loop"
+        },
+        {
+          "title": "Design reviews",
+          "durationSec": 6,
+          "lines": [
+            "Ask for feedback against goals and constraints.",
+            "Record decisions, owners and unresolved questions."
+          ],
+          "visual": "design-critique-board"
+        },
+        {
+          "title": "Working with engineers",
+          "durationSec": 6,
+          "lines": [
+            "Share states, edge cases and interaction intent.",
+            "Review implementation against the user flow."
+          ],
+          "visual": "design-engineering-handoff"
+        },
+        {
+          "title": "Launching and learning",
+          "durationSec": 6,
+          "lines": [
+            "Define a signal that matches the product goal.",
+            "Use launch feedback to plan the next iteration."
+          ],
+          "visual": "launch-learning-feedback-loop"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Practice the path from problem framing through launch learning.",
+            "Start with Product Design."
+          ],
+          "visual": "product-journey-cta"
+        }
+      ]
+    },
+    {
+      "slug": "palettes-for-your-app",
+      "title": "Palettes for Your App",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Build color tokens that stay clear across light, dark and accessible states.",
+      "topics": [
+        "How colour works",
+        "Hue, saturation and value",
+        "Colour and emotion",
+        "Primary and secondary colours",
+        "Neutrals and greys",
+        "Semantic colours",
+        "Contrast ratios",
+        "Colour blindness",
+        "Dark mode palettes",
+        "Documenting your palette"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A palette is a system of roles, not a row of swatches."],
+          "visual": "swatches-to-ui-tokens"
+        },
+        {
+          "title": "How colour works",
+          "durationSec": 6,
+          "lines": [
+            "Separate hue, lightness and saturation.",
+            "Compare how surrounding colors change perception."
+          ],
+          "visual": "color-dimension-wheel"
+        },
+        {
+          "title": "Hue, saturation and value",
+          "durationSec": 6,
+          "lines": ["Adjust one dimension at a time.", "Build a ramp with readable steps."],
+          "visual": "hsv-control-panel"
+        },
+        {
+          "title": "Colour and emotion",
+          "durationSec": 6,
+          "lines": [
+            "Compare candidate colors in the actual interface.",
+            "Use context and audience, not stereotypes."
+          ],
+          "visual": "mood-board-color-context"
+        },
+        {
+          "title": "Primary and secondary colours",
+          "durationSec": 6,
+          "lines": [
+            "Give actions a primary role and accents a supporting role.",
+            "Keep emphasis consistent across screens."
+          ],
+          "visual": "action-color-role-map"
+        },
+        {
+          "title": "Neutrals and greys",
+          "durationSec": 6,
+          "lines": [
+            "Create surfaces and borders from a neutral ramp.",
+            "Check text hierarchy on each surface."
+          ],
+          "visual": "neutral-surface-stack"
+        },
+        {
+          "title": "Semantic colours",
+          "durationSec": 6,
+          "lines": [
+            "Name success, warning and danger by meaning.",
+            "Pair color with iconography and text."
+          ],
+          "visual": "semantic-token-mapping"
+        },
+        {
+          "title": "Contrast ratios",
+          "durationSec": 6,
+          "lines": [
+            "Measure foreground against its actual background.",
+            "Adjust the token until small text is legible."
+          ],
+          "visual": "contrast-checker-readout"
+        },
+        {
+          "title": "Colour blindness",
+          "durationSec": 6,
+          "lines": [
+            "Preview common color-vision simulations.",
+            "Keep status distinguishable without hue alone."
+          ],
+          "visual": "color-vision-simulation"
+        },
+        {
+          "title": "Dark mode palettes",
+          "durationSec": 6,
+          "lines": [
+            "Reassign surface and text roles for dark backgrounds.",
+            "Avoid simply inverting every color."
+          ],
+          "visual": "light-dark-token-pair"
+        },
+        {
+          "title": "Documenting your palette",
+          "durationSec": 6,
+          "lines": [
+            "Record token name, role and contrast result.",
+            "Show examples in both themes."
+          ],
+          "visual": "palette-specimen-document"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Create and document a usable light and dark app palette.",
+            "Start with Palettes for Your App."
+          ],
+          "visual": "theme-token-cta"
+        }
+      ]
+    },
+    {
+      "slug": "mobile-ui-design",
+      "title": "Mobile UI Design",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Make every mobile interaction readable, reachable and recoverable.",
+      "topics": [
+        "Mobile design principles",
+        "iOS and Android guidelines",
+        "Touch targets and spacing",
+        "Navigation patterns",
+        "Lists and cards",
+        "Forms and inputs",
+        "Empty and error states",
+        "Icons and imagery",
+        "Micro-interactions",
+        "Design systems",
+        "Handing off screens"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Small screens reward clear priorities and forgiving controls."],
+          "visual": "mobile-screen-priority"
+        },
+        {
+          "title": "Mobile design principles",
+          "durationSec": 6,
+          "lines": [
+            "Prioritize one task per screen.",
+            "Keep content readable as the device and text size change."
+          ],
+          "visual": "mobile-hierarchy-wireframe"
+        },
+        {
+          "title": "iOS and Android guidelines",
+          "durationSec": 6,
+          "lines": [
+            "Compare platform conventions before choosing a pattern.",
+            "Preserve expected navigation and system behavior."
+          ],
+          "visual": "platform-pattern-comparison"
+        },
+        {
+          "title": "Touch targets and spacing",
+          "durationSec": 6,
+          "lines": [
+            "Give controls comfortable hit areas.",
+            "Use spacing to prevent accidental taps."
+          ],
+          "visual": "touch-target-measurement"
+        },
+        {
+          "title": "Navigation patterns",
+          "durationSec": 6,
+          "lines": [
+            "Choose tabs for peer destinations, stacks for depth.",
+            "Keep back behavior predictable."
+          ],
+          "visual": "navigation-map"
+        },
+        {
+          "title": "Lists and cards",
+          "durationSec": 6,
+          "lines": [
+            "Put the decision-making detail in the scan path.",
+            "Use a list when comparison matters."
+          ],
+          "visual": "list-card-density-study"
+        },
+        {
+          "title": "Forms and inputs",
+          "durationSec": 6,
+          "lines": [
+            "Use labels that remain visible while typing.",
+            "Show field-level errors and preserve entered values."
+          ],
+          "visual": "mobile-form-states"
+        },
+        {
+          "title": "Empty and error states",
+          "durationSec": 6,
+          "lines": [
+            "Explain what happened and offer a recovery action.",
+            "Make empty states point to a useful next step."
+          ],
+          "visual": "empty-error-recovery-boards"
+        },
+        {
+          "title": "Icons and imagery",
+          "durationSec": 6,
+          "lines": [
+            "Use familiar symbols with accessible labels.",
+            "Crop imagery without hiding useful context."
+          ],
+          "visual": "icon-image-audit"
+        },
+        {
+          "title": "Design systems",
+          "durationSec": 6,
+          "lines": [
+            "Define semantic tokens and reusable screen patterns.",
+            "Document light, dark and interaction states."
+          ],
+          "visual": "mobile-system-token-board"
+        },
+        {
+          "title": "Handing off screens",
+          "durationSec": 6,
+          "lines": [
+            "Annotate gestures, loading and failure behavior.",
+            "Include safe-area and keyboard layouts."
+          ],
+          "visual": "annotated-screen-handoff"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Turn mobile principles into a documented set of app screens.",
+            "Start with Mobile UI Design."
+          ],
+          "visual": "mobile-screens-cta"
+        }
+      ]
+    },
+    {
+      "slug": "creative-art-design",
+      "title": "Creative Art Design",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Explore materials and color, then compose a finished mixed-media piece.",
+      "topics": [
+        "Finding inspiration",
+        "Materials and tools",
+        "Colour experiments",
+        "Watercolour washes",
+        "Texture and collage",
+        "Line and shape",
+        "Mixed media",
+        "Planning a piece",
+        "Composition",
+        "Finishing and framing"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Collect a starting point; let the materials change the idea."],
+          "visual": "inspiration-to-artwork"
+        },
+        {
+          "title": "Finding inspiration",
+          "durationSec": 6,
+          "lines": [
+            "Collect forms, colors and textures from observation.",
+            "Choose one prompt to develop further."
+          ],
+          "visual": "reference-moodboard"
+        },
+        {
+          "title": "Materials and tools",
+          "durationSec": 6,
+          "lines": [
+            "Test paper, brush and pigment behavior separately.",
+            "Choose tools for the mark you want."
+          ],
+          "visual": "material-test-strip"
+        },
+        {
+          "title": "Colour experiments",
+          "durationSec": 6,
+          "lines": [
+            "Mix warm and cool versions of one hue.",
+            "Record the ratio beside each swatch."
+          ],
+          "visual": "color-mixing-grid"
+        },
+        {
+          "title": "Watercolour washes",
+          "durationSec": 6,
+          "lines": [
+            "Try wet-on-wet and wet-on-dry on scrap paper.",
+            "Let transparent layers dry before glazing."
+          ],
+          "visual": "watercolor-wash-sequence"
+        },
+        {
+          "title": "Texture and collage",
+          "durationSec": 6,
+          "lines": [
+            "Layer torn edges, paper grain and painted marks.",
+            "Keep one area quiet for visual rest."
+          ],
+          "visual": "collage-texture-board"
+        },
+        {
+          "title": "Line and shape",
+          "durationSec": 6,
+          "lines": [
+            "Contrast a confident contour with a simple silhouette.",
+            "Repeat a shape to establish rhythm."
+          ],
+          "visual": "line-shape-composition"
+        },
+        {
+          "title": "Mixed media",
+          "durationSec": 6,
+          "lines": [
+            "Combine drawn, painted and pasted elements.",
+            "Test adhesion and layering order first."
+          ],
+          "visual": "mixed-media-process"
+        },
+        {
+          "title": "Planning a piece",
+          "durationSec": 6,
+          "lines": [
+            "Choose subject, format and a limited palette.",
+            "Make two thumbnail compositions before starting."
+          ],
+          "visual": "artwork-thumbnail-plans"
+        },
+        {
+          "title": "Composition",
+          "durationSec": 6,
+          "lines": [
+            "Place the focal shape off-center and balance its weight.",
+            "Check negative space around the edges."
+          ],
+          "visual": "composition-overlay"
+        },
+        {
+          "title": "Finishing and framing",
+          "durationSec": 6,
+          "lines": [
+            "Let layers dry, trim edges and choose a mat.",
+            "Protect the surface with suitable framing."
+          ],
+          "visual": "artwork-finish-frame"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Develop material tests into a composed finished artwork.",
+            "Start with Creative Art Design."
+          ],
+          "visual": "finished-art-cta"
+        }
+      ]
+    },
+    {
+      "slug": "typography-in-ui-design",
+      "title": "Typography in UI Design",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Build a type system that stays readable from heading to helper text.",
+      "topics": [
+        "Anatomy of type",
+        "Serif, sans and beyond",
+        "Choosing typefaces",
+        "Type scale",
+        "Line height and spacing",
+        "Alignment and grids",
+        "Pairing fonts",
+        "Readability on mobile",
+        "Accessibility and dynamic type",
+        "A typography audit"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Typography sets hierarchy before a user reads every word."],
+          "visual": "type-hierarchy-reveal"
+        },
+        {
+          "title": "Anatomy of type",
+          "durationSec": 6,
+          "lines": [
+            "Compare x-height, counter, stem and aperture.",
+            "Notice how shapes affect recognition at small sizes."
+          ],
+          "visual": "letterform-anatomy"
+        },
+        {
+          "title": "Serif, sans and beyond",
+          "durationSec": 6,
+          "lines": [
+            "Compare text texture across serif and sans families.",
+            "Choose for context, tone and reading size."
+          ],
+          "visual": "type-category-specimens"
+        },
+        {
+          "title": "Choosing typefaces",
+          "durationSec": 6,
+          "lines": [
+            "Test glyph coverage, weights and licensing.",
+            "Preview real interface labels before committing."
+          ],
+          "visual": "font-selection-specimen"
+        },
+        {
+          "title": "Type scale",
+          "durationSec": 6,
+          "lines": [
+            "Set roles from display heading to caption.",
+            "Keep size jumps consistent and purposeful."
+          ],
+          "visual": "type-scale-ladder"
+        },
+        {
+          "title": "Line height and spacing",
+          "durationSec": 6,
+          "lines": [
+            "Adjust leading for paragraph width and size.",
+            "Check that related labels stay visually grouped."
+          ],
+          "visual": "leading-spacing-grid"
+        },
+        {
+          "title": "Alignment and grids",
+          "durationSec": 6,
+          "lines": [
+            "Align text blocks to shared columns.",
+            "Use consistent edges to strengthen scanning."
+          ],
+          "visual": "type-alignment-overlay"
+        },
+        {
+          "title": "Pairing fonts",
+          "durationSec": 6,
+          "lines": [
+            "Give each family a clear role.",
+            "Compare contrast without sacrificing cohesion."
+          ],
+          "visual": "font-pairing-comparison"
+        },
+        {
+          "title": "Readability on mobile",
+          "durationSec": 6,
+          "lines": [
+            "Test line length and size on a narrow screen.",
+            "Keep labels legible at normal viewing distance."
+          ],
+          "visual": "phone-reading-measure"
+        },
+        {
+          "title": "Accessibility and dynamic type",
+          "durationSec": 6,
+          "lines": [
+            "Scale text without clipping controls or headings.",
+            "Preserve contrast and hierarchy at larger settings."
+          ],
+          "visual": "dynamic-type-size-steps"
+        },
+        {
+          "title": "A typography audit",
+          "durationSec": 6,
+          "lines": [
+            "Inspect every text role, weight and line height.",
+            "Record fixes by screen and severity."
+          ],
+          "visual": "type-audit-markup"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Build a readable type scale and check it on mobile.",
+            "Start with Typography in UI Design."
+          ],
+          "visual": "type-system-cta"
+        }
+      ]
+    },
+    {
+      "slug": "mobile-app-design",
+      "title": "Mobile App Design",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Take an app idea through flows, screens, prototype and user feedback.",
+      "topics": [
+        "Finding an app idea",
+        "Writing the brief",
+        "User stories and flows",
+        "Wireframes",
+        "Visual style",
+        "Key screens",
+        "Onboarding and empty states",
+        "Clickable prototype",
+        "Testing with users",
+        "Iterating on feedback"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A useful app starts with one real need and a clear user."],
+          "visual": "app-idea-to-flow"
+        },
+        {
+          "title": "Finding an app idea",
+          "durationSec": 6,
+          "lines": [
+            "Notice a recurring task people struggle to finish.",
+            "Check who has the need and when it occurs."
+          ],
+          "visual": "problem-opportunity-map"
+        },
+        {
+          "title": "Writing the brief",
+          "durationSec": 6,
+          "lines": [
+            "State audience, problem, outcome and constraints.",
+            "Keep features out until the need is clear."
+          ],
+          "visual": "product-brief-card"
+        },
+        {
+          "title": "User stories and flows",
+          "durationSec": 6,
+          "lines": [
+            "Connect a user goal to actions and decision points.",
+            "Include a path for errors and returning back."
+          ],
+          "visual": "user-flow-diagram"
+        },
+        {
+          "title": "Wireframes",
+          "durationSec": 6,
+          "lines": [
+            "Place navigation, content and actions by priority.",
+            "Keep the first pass low fidelity."
+          ],
+          "visual": "app-wireframe-board"
+        },
+        {
+          "title": "Visual style",
+          "durationSec": 6,
+          "lines": [
+            "Set color, type, shape and imagery roles.",
+            "Use a sample screen to test the direction."
+          ],
+          "visual": "mobile-style-board"
+        },
+        {
+          "title": "Key screens",
+          "durationSec": 6,
+          "lines": [
+            "Design the screens needed to complete the core task.",
+            "Keep shared navigation and actions consistent."
+          ],
+          "visual": "screen-flow-montage"
+        },
+        {
+          "title": "Onboarding and empty states",
+          "durationSec": 6,
+          "lines": [
+            "Explain only what helps a first useful action.",
+            "Give an empty screen a clear next step."
+          ],
+          "visual": "onboarding-empty-state-pair"
+        },
+        {
+          "title": "Clickable prototype",
+          "durationSec": 6,
+          "lines": [
+            "Link the main flow and a recoverable error state.",
+            "Check every hotspot before a user test."
+          ],
+          "visual": "prototype-hotspot-map"
+        },
+        {
+          "title": "Testing with users",
+          "durationSec": 6,
+          "lines": [
+            "Ask participants to complete a realistic task.",
+            "Observe behavior before explaining the design."
+          ],
+          "visual": "prototype-usability-session"
+        },
+        {
+          "title": "Iterating on feedback",
+          "durationSec": 6,
+          "lines": [
+            "Sort findings by impact and evidence.",
+            "Change the flow, then retest the risky step."
+          ],
+          "visual": "feedback-iteration-loop"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Build a mobile prototype and improve it from user feedback.",
+            "Start with Mobile App Design."
+          ],
+          "visual": "app-prototype-cta"
+        }
+      ]
+    },
+    {
+      "slug": "digital-poster",
+      "title": "Digital Poster",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Make one poster message readable at a glance, in print and on screen.",
+      "topics": [
+        "What makes a poster work?",
+        "Sizes and formats",
+        "Layout and hierarchy",
+        "Working with images",
+        "Type on posters",
+        "Colour and contrast",
+        "Adding effects",
+        "Print-ready files",
+        "Social media versions"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A poster gets seconds to earn attention and communicate."],
+          "visual": "poster-at-distance"
+        },
+        {
+          "title": "What makes a poster work?",
+          "durationSec": 6,
+          "lines": [
+            "Lead with event, audience and one key detail.",
+            "Remove anything that competes with the message."
+          ],
+          "visual": "poster-message-audit"
+        },
+        {
+          "title": "Sizes and formats",
+          "durationSec": 6,
+          "lines": [
+            "Set a print size and a social crop separately.",
+            "Keep critical text inside safe margins."
+          ],
+          "visual": "format-size-comparison"
+        },
+        {
+          "title": "Layout and hierarchy",
+          "durationSec": 6,
+          "lines": [
+            "Order headline, date, place and call to action.",
+            "Check the read from headline to detail."
+          ],
+          "visual": "poster-hierarchy-grid"
+        },
+        {
+          "title": "Working with images",
+          "durationSec": 6,
+          "lines": [
+            "Choose a crop that supports the subject.",
+            "Keep text clear of busy image areas."
+          ],
+          "visual": "image-crop-tests"
+        },
+        {
+          "title": "Type on posters",
+          "durationSec": 6,
+          "lines": [
+            "Use scale and weight to separate information.",
+            "Keep supporting text legible at viewing distance."
+          ],
+          "visual": "poster-type-specimen"
+        },
+        {
+          "title": "Colour and contrast",
+          "durationSec": 6,
+          "lines": [
+            "Test foreground and background contrast.",
+            "Limit accents to direct attention."
+          ],
+          "visual": "contrast-palette-tests"
+        },
+        {
+          "title": "Adding effects",
+          "durationSec": 6,
+          "lines": [
+            "Use texture or shadow only when it improves emphasis.",
+            "Compare the effect against a clean version."
+          ],
+          "visual": "effect-layer-comparison"
+        },
+        {
+          "title": "Print-ready files",
+          "durationSec": 6,
+          "lines": [
+            "Check dimensions, bleed, resolution and color mode.",
+            "Inspect a proof before final export."
+          ],
+          "visual": "print-preflight-panel"
+        },
+        {
+          "title": "Social media versions",
+          "durationSec": 6,
+          "lines": [
+            "Recompose for a square and a vertical frame.",
+            "Preserve message order instead of shrinking the poster."
+          ],
+          "visual": "social-format-reflow"
+        },
+        {
+          "title": "Mini project: event poster",
+          "durationSec": 6,
+          "lines": [
+            "Create a readable event poster and two social crops.",
+            "Keep date, venue and message consistent."
+          ],
+          "visual": "poster-campaign-board"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Design a poster set for print and social formats.",
+            "Start with Digital Poster."
+          ],
+          "visual": "poster-set-cta"
+        }
+      ]
+    },
+    {
+      "slug": "patterns-design",
+      "title": "Patterns Design",
+      "category": "design",
+      "durationSec": 68,
+      "hook": "Turn a small motif into a seamless repeat for products and screens.",
+      "topics": [
+        "What is a pattern?",
+        "Motifs and repeats",
+        "Colour in patterns",
+        "Half-drop and brick repeats",
+        "Seamless tiles",
+        "Organic patterns",
+        "Patterns on products",
+        "Patterns in UI",
+        "Building a pattern collection"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A repeat can feel simple, rhythmic or organic by design."],
+          "visual": "motif-to-repeat"
+        },
+        {
+          "title": "What is a pattern?",
+          "durationSec": 6,
+          "lines": [
+            "Start with a motif and a repeat rule.",
+            "Check rhythm across the tile boundary."
+          ],
+          "visual": "pattern-unit-grid"
+        },
+        {
+          "title": "Motifs and repeats",
+          "durationSec": 6,
+          "lines": [
+            "Draw a motif with edges that can tile cleanly.",
+            "Compare spacing before adding detail."
+          ],
+          "visual": "motif-repeat-builder"
+        },
+        {
+          "title": "Colour in patterns",
+          "durationSec": 6,
+          "lines": [
+            "Limit the palette to define foreground and ground.",
+            "Preview contrast at the intended scale."
+          ],
+          "visual": "pattern-colorway-board"
+        },
+        {
+          "title": "Half-drop and brick repeats",
+          "durationSec": 6,
+          "lines": [
+            "Offset alternating rows by half a motif.",
+            "Compare the half-drop and straight brick rhythm."
+          ],
+          "visual": "repeat-offset-animation"
+        },
+        {
+          "title": "Seamless tiles",
+          "durationSec": 6,
+          "lines": [
+            "Move edge elements across opposite tile borders.",
+            "Repeat the tile in every direction to inspect seams."
+          ],
+          "visual": "seamless-edge-test"
+        },
+        {
+          "title": "Organic patterns",
+          "durationSec": 6,
+          "lines": [
+            "Vary angle and spacing without losing flow.",
+            "Avoid accidental tangencies between shapes."
+          ],
+          "visual": "organic-motif-field"
+        },
+        {
+          "title": "Patterns on products",
+          "durationSec": 6,
+          "lines": [
+            "Wrap the repeat over a curved product surface.",
+            "Check scale at real viewing distance."
+          ],
+          "visual": "pattern-product-mockup"
+        },
+        {
+          "title": "Patterns in UI",
+          "durationSec": 6,
+          "lines": [
+            "Use texture behind content only when contrast holds.",
+            "Keep controls and text visually dominant."
+          ],
+          "visual": "pattern-ui-surface-test"
+        },
+        {
+          "title": "Building a pattern collection",
+          "durationSec": 6,
+          "lines": [
+            "Create coordinated hero, secondary and texture repeats.",
+            "Document scale and color variants."
+          ],
+          "visual": "pattern-collection-board"
+        },
+        {
+          "title": "Mini project: repeat collection",
+          "durationSec": 6,
+          "lines": [
+            "Make one seamless tile and two coordinated colorways.",
+            "Test the repeat on a product mock-up."
+          ],
+          "visual": "repeat-collection-mockup"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Build seamless patterns and test them on real surfaces.",
+            "Start with Patterns Design."
+          ],
+          "visual": "pattern-collection-cta"
+        }
+      ]
+    },
+    {
+      "slug": "php-in-one-click",
+      "title": "PHP in One Click",
+      "category": "code",
+      "durationSec": 72,
+      "hook": "Build a small PHP guestbook from request to stored entry.",
+      "topics": [
+        "Hello, World!",
+        "Variables and types",
+        "Conditions and loops",
+        "Functions",
+        "Forms and requests",
+        "Sessions and cookies",
+        "Working with files",
+        "Connecting to MySQL",
+        "Reading and writing data",
+        "Security basics",
+        "Planning the guestbook",
+        "Building and testing"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A form submits. PHP validates. A guestbook entry appears."],
+          "visual": "php-request-to-response"
+        },
+        {
+          "title": "Hello, World!",
+          "durationSec": 6,
+          "lines": [
+            "<?php echo 'Hello, World!'; ?>",
+            "Run the file and inspect the browser response."
+          ],
+          "visual": "php-terminal-editor"
+        },
+        {
+          "title": "Variables and types",
+          "durationSec": 6,
+          "lines": ["$name = 'Ada'; $count = 3;", "Format the string and integer for display."],
+          "visual": "php-variable-type-panel"
+        },
+        {
+          "title": "Conditions and loops",
+          "durationSec": 6,
+          "lines": [
+            "if ($count > 0) {",
+            "    foreach ($entries as $entry) { echo htmlspecialchars($entry); } }"
+          ],
+          "visual": "php-control-flow"
+        },
+        {
+          "title": "Functions",
+          "durationSec": 6,
+          "lines": [
+            "function label(string $name): string { return trim($name); }",
+            "Pass input and use the returned value."
+          ],
+          "visual": "php-function-call-map"
+        },
+        {
+          "title": "Forms and requests",
+          "durationSec": 7,
+          "lines": [
+            "$name = trim($_POST['name'] ?? '');",
+            "Validate the field and escape it in HTML output."
+          ],
+          "visual": "php-form-request-flow"
+        },
+        {
+          "title": "Sessions and cookies",
+          "durationSec": 6,
+          "lines": [
+            "session_start(); $_SESSION['user_id'] = $id;",
+            "Keep server session data separate from cookie input."
+          ],
+          "visual": "php-session-cookie-lifecycle"
+        },
+        {
+          "title": "Working with files",
+          "durationSec": 6,
+          "lines": [
+            "$text = file_get_contents($path);",
+            "Check the result before writing to a destination."
+          ],
+          "visual": "php-file-read-write"
+        },
+        {
+          "title": "Connecting to MySQL",
+          "durationSec": 7,
+          "lines": [
+            "$pdo = new PDO($dsn, $user, $password);",
+            "Use prepare() and execute() for submitted values."
+          ],
+          "visual": "php-mysql-connection"
+        },
+        {
+          "title": "Security basics",
+          "durationSec": 7,
+          "lines": [
+            "echo htmlspecialchars($name, ENT_QUOTES, 'UTF-8');",
+            "Hash passwords; never log secrets."
+          ],
+          "visual": "php-security-review"
+        },
+        {
+          "title": "Building and testing",
+          "durationSec": 7,
+          "lines": [
+            "INSERT a guestbook entry with a prepared statement.",
+            "Test blank input, special characters and database failure."
+          ],
+          "visual": "php-guestbook-test-matrix"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Follow the guestbook from form handling through database tests.",
+            "Start with PHP in One Click."
+          ],
+          "visual": "php-project-cta"
+        }
+      ]
+    },
+    {
+      "slug": "python-introduction",
+      "title": "Python Introduction",
+      "category": "code",
+      "durationSec": 72,
+      "hook": "Write a Python file organiser that handles real files and errors.",
+      "topics": [
+        "Installing Python",
+        "Variables and types",
+        "Input and output",
+        "Conditions",
+        "Loops",
+        "Functions",
+        "Lists and dictionaries",
+        "Reading and writing files",
+        "Handling errors",
+        "File organiser project"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A folder full of downloads. A script sorts it safely."],
+          "visual": "python-folder-to-organized-files"
+        },
+        {
+          "title": "Installing Python",
+          "durationSec": 6,
+          "lines": [
+            "python --version  ·  python organizer.py",
+            "Run the interpreter, then the project script."
+          ],
+          "visual": "python-terminal-and-editor"
+        },
+        {
+          "title": "Variables and types",
+          "durationSec": 6,
+          "lines": [
+            "filename = 'notes.txt'  ·  size_bytes = 128",
+            "Inspect str, int and bool values."
+          ],
+          "visual": "python-variable-inspector"
+        },
+        {
+          "title": "Input and output",
+          "durationSec": 6,
+          "lines": ["folder = input('Folder: ')", "print(f'Organized {count} files')"],
+          "visual": "python-input-output-console"
+        },
+        {
+          "title": "Conditions",
+          "durationSec": 6,
+          "lines": [
+            "if path.suffix.lower() == '.pdf': category = 'documents'",
+            "Send unknown extensions to 'other'."
+          ],
+          "visual": "python-branch-flow"
+        },
+        {
+          "title": "Loops",
+          "durationSec": 6,
+          "lines": ["for path in folder.iterdir():", "    if path.is_file(): organize(path)"],
+          "visual": "python-loop-file-list"
+        },
+        {
+          "title": "Functions",
+          "durationSec": 6,
+          "lines": [
+            "def category_for(path):",
+            "    return categories.get(path.suffix.lower(), 'other')"
+          ],
+          "visual": "python-function-call-graph"
+        },
+        {
+          "title": "Lists and dictionaries",
+          "durationSec": 6,
+          "lines": [
+            "files = list(folder.iterdir())  ·  counts = {}",
+            "counts[category] = counts.get(category, 0) + 1"
+          ],
+          "visual": "python-list-dictionary-view"
+        },
+        {
+          "title": "Reading and writing files",
+          "durationSec": 6,
+          "lines": [
+            "with summary_path.open('w') as report:",
+            "    report.write(f'{name}: {category}\\n')"
+          ],
+          "visual": "python-pathlib-file-workflow"
+        },
+        {
+          "title": "Handling errors",
+          "durationSec": 7,
+          "lines": [
+            "try:",
+            "    path.rename(destination)",
+            "except OSError as error:",
+            "    print(f'Could not move: {error}')"
+          ],
+          "visual": "python-exception-debugger"
+        },
+        {
+          "title": "File organiser project",
+          "durationSec": 9,
+          "lines": [
+            "Plan moves by extension before changing files.",
+            "Use shutil.move; test duplicates, empty folders and permission errors."
+          ],
+          "visual": "python-file-organizer-project-demo"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Build a careful file organiser from variables to error handling.",
+            "Start with Python Introduction."
+          ],
+          "visual": "python-project-cta"
+        }
+      ]
+    },
+    {
+      "slug": "javascript-for-beginners",
+      "title": "JavaScript for Beginners",
+      "category": "code",
+      "durationSec": 72,
+      "hook": "Make a browser to-do list respond, validate and remember.",
+      "topics": [
+        "Variables and data types",
+        "Functions",
+        "Arrays and objects",
+        "The DOM",
+        "Events",
+        "Forms and validation",
+        "Timers and promises",
+        "Fetching data",
+        "Async and await",
+        "Building the to-do app",
+        "Saving to local storage"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Type a task. Click add. See the browser update."],
+          "visual": "browser-todo-live-demo"
+        },
+        {
+          "title": "Variables and data types",
+          "durationSec": 6,
+          "lines": [
+            "const taskText = 'Read'; const done = false;",
+            "Track task text, completion and list count."
+          ],
+          "visual": "javascript-variable-console"
+        },
+        {
+          "title": "Functions",
+          "durationSec": 6,
+          "lines": [
+            "function addTask(task) { tasks.push(task); }",
+            "Keep task updates in named, testable functions."
+          ],
+          "visual": "javascript-function-flow"
+        },
+        {
+          "title": "Arrays and objects",
+          "durationSec": 6,
+          "lines": [
+            "const tasks = [{ text: 'Read', done: false }];",
+            "Filter completed objects to build a view."
+          ],
+          "visual": "javascript-data-structure-view"
+        },
+        {
+          "title": "The DOM",
+          "durationSec": 6,
+          "lines": [
+            "const list = document.querySelector('#tasks');",
+            "Create a list item and set its textContent."
+          ],
+          "visual": "javascript-dom-inspector"
+        },
+        {
+          "title": "Events",
+          "durationSec": 6,
+          "lines": [
+            "form.addEventListener('submit', handleSubmit);",
+            "Prevent reload, then render the changed list."
+          ],
+          "visual": "javascript-event-flow"
+        },
+        {
+          "title": "Forms and validation",
+          "durationSec": 6,
+          "lines": [
+            "if (!taskText.trim()) showError('Enter a task');",
+            "Keep the message beside the input."
+          ],
+          "visual": "javascript-form-validation"
+        },
+        {
+          "title": "Timers and promises",
+          "durationSec": 6,
+          "lines": [
+            "const wait = ms => new Promise(resolve => setTimeout(resolve, ms));",
+            "Handle a resolved or rejected promise."
+          ],
+          "visual": "javascript-promise-timeline"
+        },
+        {
+          "title": "Async and await",
+          "durationSec": 6,
+          "lines": [
+            "async function loadTasks() {",
+            "  const response = await fetch('/api/tasks');",
+            "  return response.json();",
+            "}"
+          ],
+          "visual": "javascript-async-sequence"
+        },
+        {
+          "title": "Building the to-do app",
+          "durationSec": 7,
+          "lines": [
+            "Add, complete and remove tasks in the DOM.",
+            "Keep the array, rendered list and saved state in sync."
+          ],
+          "visual": "javascript-todo-browser-build"
+        },
+        {
+          "title": "Saving to local storage",
+          "durationSec": 9,
+          "lines": [
+            "localStorage.setItem('tasks', JSON.stringify(tasks));",
+            "const savedTasks = JSON.parse(localStorage.getItem('tasks') ?? '[]');",
+            "Restore tasks after reload; handle invalid stored data."
+          ],
+          "visual": "javascript-local-storage-reload"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Build a working browser to-do app and preserve tasks on reload.",
+            "Start with JavaScript for Beginners."
+          ],
+          "visual": "javascript-project-cta"
+        }
+      ]
+    },
+    {
+      "slug": "sql-essentials",
+      "title": "SQL Essentials",
+      "category": "code",
+      "durationSec": 77,
+      "hook": "Ask a database a question, join the records and explain the result.",
+      "topics": [
+        "What is a database?",
+        "Your first SELECT",
+        "Filtering and sorting",
+        "Joins",
+        "Grouping and aggregates",
+        "Subqueries",
+        "INSERT, UPDATE and DELETE",
+        "Designing tables"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Learners, courses and enrollments—find one answer with SQL."],
+          "visual": "relational-tables-hook"
+        },
+        {
+          "title": "What is a database?",
+          "durationSec": 6,
+          "lines": [
+            "CREATE TABLE enrollments (learner_id INT, course_id INT);",
+            "Relate each row to learner and course tables."
+          ],
+          "visual": "table-relationship-map"
+        },
+        {
+          "title": "Your first SELECT",
+          "durationSec": 7,
+          "lines": [
+            "SELECT name, course_id FROM enrollments;",
+            "Read the returned columns and rows."
+          ],
+          "visual": "sql-query-editor-results"
+        },
+        {
+          "title": "Filtering and sorting",
+          "durationSec": 7,
+          "lines": [
+            "SELECT name FROM learners WHERE active = TRUE ORDER BY name;",
+            "Limit results and verify the filter."
+          ],
+          "visual": "sql-filter-sort-results"
+        },
+        {
+          "title": "Joins",
+          "durationSec": 7,
+          "lines": [
+            "SELECT l.name, e.course_id FROM learners l",
+            "JOIN enrollments e ON e.learner_id = l.id;"
+          ],
+          "visual": "sql-join-table-animation"
+        },
+        {
+          "title": "Grouping and aggregates",
+          "durationSec": 7,
+          "lines": [
+            "SELECT course_id, COUNT(*) FROM enrollments",
+            "GROUP BY course_id HAVING COUNT(*) > 1;"
+          ],
+          "visual": "sql-group-aggregate-chart"
+        },
+        {
+          "title": "Subqueries",
+          "durationSec": 7,
+          "lines": [
+            "SELECT name FROM learners WHERE id IN (",
+            "  SELECT learner_id FROM enrollments);"
+          ],
+          "visual": "sql-subquery-nesting"
+        },
+        {
+          "title": "INSERT, UPDATE and DELETE",
+          "durationSec": 7,
+          "lines": [
+            "INSERT INTO enrollments VALUES (7, 3);",
+            "UPDATE enrollments SET course_id = 4 WHERE learner_id = 7;",
+            "DELETE FROM enrollments WHERE learner_id = 7;"
+          ],
+          "visual": "sql-write-transaction-steps"
+        },
+        {
+          "title": "Designing tables",
+          "durationSec": 7,
+          "lines": [
+            "Choose primary keys and required fields.",
+            "Split repeated course data into related tables."
+          ],
+          "visual": "sql-schema-relationship-designer"
+        },
+        {
+          "title": "Mini project: enrollment report",
+          "durationSec": 7,
+          "lines": [
+            "Join learners and courses; count enrollments per course.",
+            "Sort totals and verify a sample by hand."
+          ],
+          "visual": "sql-report-query-and-rows"
+        },
+        {
+          "title": "Mini project: safe data change",
+          "durationSec": 7,
+          "lines": [
+            "Update one enrollment inside a transaction.",
+            "Verify the target row before committing."
+          ],
+          "visual": "sql-transaction-review"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Practice SELECT, joins, grouped reports and safe changes.",
+            "Start with SQL Essentials."
+          ],
+          "visual": "sql-query-project-cta"
+        }
+      ]
+    },
+    {
+      "slug": "java-fundamentals",
+      "title": "Java Fundamentals",
+      "category": "code",
+      "durationSec": 72,
+      "hook": "Build a small library program with classes, collections and file handling.",
+      "topics": [
+        "Setting up Java",
+        "Types and variables",
+        "Control flow",
+        "Methods",
+        "Classes and objects",
+        "Inheritance",
+        "Interfaces",
+        "Collections",
+        "Exceptions",
+        "Reading files",
+        "Library project"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Create a book. Add it to a shelf. Find it by title."],
+          "visual": "java-library-console"
+        },
+        {
+          "title": "Setting up Java",
+          "durationSec": 6,
+          "lines": [
+            "public class Main {",
+            "  public static void main(String[] args) {",
+            "    System.out.println(\"Hello, library\");",
+            "  }",
+            "}"
+          ],
+          "visual": "java-compile-run-flow"
+        },
+        {
+          "title": "Types and variables",
+          "durationSec": 6,
+          "lines": ["String title = \"Dune\"; int pages = 412;", "boolean available = true;"],
+          "visual": "java-type-variable-inspector"
+        },
+        {
+          "title": "Control flow",
+          "durationSec": 6,
+          "lines": [
+            "Check availability before borrowing a book.",
+            "Loop through a shelf to print available titles."
+          ],
+          "visual": "java-branch-loop-flow"
+        },
+        {
+          "title": "Methods",
+          "durationSec": 6,
+          "lines": [
+            "Add borrowBook and returnBook methods.",
+            "Pass the book and return a clear result."
+          ],
+          "visual": "java-method-call-stack"
+        },
+        {
+          "title": "Classes and objects",
+          "durationSec": 6,
+          "lines": [
+            "Model Book fields and behavior in a class.",
+            "Create objects with distinct title and status."
+          ],
+          "visual": "java-class-object-diagram"
+        },
+        {
+          "title": "Inheritance",
+          "durationSec": 6,
+          "lines": [
+            "Share common media fields in a base type.",
+            "Keep specialized behavior explicit in subclasses."
+          ],
+          "visual": "java-inheritance-tree"
+        },
+        {
+          "title": "Interfaces",
+          "durationSec": 6,
+          "lines": [
+            "Define a searchable contract for catalog items.",
+            "Implement the contract without depending on one class."
+          ],
+          "visual": "java-interface-implementation-map"
+        },
+        {
+          "title": "Exceptions",
+          "durationSec": 6,
+          "lines": [
+            "Handle a missing book without crashing the menu.",
+            "Catch a specific failure and explain recovery."
+          ],
+          "visual": "java-exception-path"
+        },
+        {
+          "title": "Reading files",
+          "durationSec": 6,
+          "lines": [
+            "Load a small catalog from a text file.",
+            "Handle missing paths and malformed rows."
+          ],
+          "visual": "java-file-reader-output"
+        },
+        {
+          "title": "Library project",
+          "durationSec": 10,
+          "lines": [
+            "List, search and borrow a book from a collection.",
+            "Test duplicate titles, missing books and file loading."
+          ],
+          "visual": "java-library-project-demo"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Build a Java library program and test its edge cases.",
+            "Start with Java Fundamentals."
+          ],
+          "visual": "java-project-cta"
+        }
+      ]
+    },
+    {
+      "slug": "project-management-essentials",
+      "title": "Project Management Essentials",
+      "category": "business",
+      "durationSec": 68,
+      "hook": "Turn a broad goal into milestones, owners and a visible delivery plan.",
+      "topics": [
+        "What is a project?",
+        "Defining scope and goals",
+        "Stakeholders",
+        "Breaking down work",
+        "Estimating time and cost",
+        "Scheduling",
+        "Managing risks",
+        "Tracking progress",
+        "Communication and meetings",
+        "Closing and lessons learned"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A deadline is easier to meet when work and risks are visible."],
+          "visual": "kanban-milestone-opening"
+        },
+        {
+          "title": "What is a project?",
+          "durationSec": 6,
+          "lines": [
+            "Set a temporary outcome, start and finish.",
+            "Separate project work from ongoing operations."
+          ],
+          "visual": "project-lifecycle-board"
+        },
+        {
+          "title": "Defining scope and goals",
+          "durationSec": 6,
+          "lines": [
+            "Write a measurable outcome and explicit exclusions.",
+            "Use acceptance criteria to bound the work."
+          ],
+          "visual": "scope-goal-charter"
+        },
+        {
+          "title": "Stakeholders",
+          "durationSec": 6,
+          "lines": [
+            "Map who decides, contributes and needs updates.",
+            "Plan engagement around their influence and needs."
+          ],
+          "visual": "stakeholder-influence-map"
+        },
+        {
+          "title": "Breaking down work",
+          "durationSec": 6,
+          "lines": [
+            "Split a launch into deliverables and work packages.",
+            "Make each task small enough to estimate."
+          ],
+          "visual": "work-breakdown-tree"
+        },
+        {
+          "title": "Estimating time and cost",
+          "durationSec": 6,
+          "lines": [
+            "Estimate effort with assumptions and ranges.",
+            "Record dependencies that can change the estimate."
+          ],
+          "visual": "estimate-range-board"
+        },
+        {
+          "title": "Scheduling",
+          "durationSec": 6,
+          "lines": [
+            "Sequence tasks by dependency and duration.",
+            "Mark milestones and the critical path."
+          ],
+          "visual": "milestone-gantt-kanban"
+        },
+        {
+          "title": "Managing risks",
+          "durationSec": 6,
+          "lines": [
+            "Score likelihood and impact for each risk.",
+            "Assign an owner and a response action."
+          ],
+          "visual": "risk-heatmap-register"
+        },
+        {
+          "title": "Tracking progress",
+          "durationSec": 6,
+          "lines": [
+            "Compare completed work with the milestone plan.",
+            "Surface blockers before they shift the date."
+          ],
+          "visual": "kanban-progress-burndown"
+        },
+        {
+          "title": "Communication and meetings",
+          "durationSec": 6,
+          "lines": [
+            "Set an update cadence for each stakeholder group.",
+            "End meetings with owners and next actions."
+          ],
+          "visual": "meeting-decision-log"
+        },
+        {
+          "title": "Closing and lessons learned",
+          "durationSec": 6,
+          "lines": [
+            "Confirm acceptance, handoff and open risks.",
+            "Record one practice to repeat and one to change."
+          ],
+          "visual": "project-closeout-review"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Practice scope, milestones, Kanban tracking and risk response.",
+            "Start with Project Management Essentials."
+          ],
+          "visual": "milestone-plan-cta"
+        }
+      ]
+    },
+    {
+      "slug": "digital-marketing-101",
+      "title": "Digital Marketing 101",
+      "category": "business",
+      "durationSec": 68,
+      "hook": "Connect audience, message, channel and measurable campaign results.",
+      "topics": [
+        "Marketing in the digital age",
+        "Know your audience",
+        "Positioning and message",
+        "Search and content",
+        "Social media",
+        "Email marketing",
+        "Planning a campaign",
+        "Key metrics and analytics",
+        "Testing and improving"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Reach the right audience with a message you can measure."],
+          "visual": "audience-channel-signal"
+        },
+        {
+          "title": "Marketing in the digital age",
+          "durationSec": 6,
+          "lines": [
+            "Map discovery, consideration and action channels.",
+            "Choose a channel for the audience's actual behavior."
+          ],
+          "visual": "digital-channel-map"
+        },
+        {
+          "title": "Know your audience",
+          "durationSec": 6,
+          "lines": [
+            "Group needs, context and barriers from evidence.",
+            "Avoid treating a demographic as a complete persona."
+          ],
+          "visual": "audience-segment-board"
+        },
+        {
+          "title": "Positioning and message",
+          "durationSec": 6,
+          "lines": [
+            "State who it serves and what problem it solves.",
+            "Make the proof point support the promise."
+          ],
+          "visual": "positioning-message-canvas"
+        },
+        {
+          "title": "Search and content",
+          "durationSec": 6,
+          "lines": [
+            "Match one useful page to a search intent.",
+            "Organize a content cluster around the audience question."
+          ],
+          "visual": "search-intent-content-map"
+        },
+        {
+          "title": "Social media",
+          "durationSec": 6,
+          "lines": [
+            "Adapt the same idea to the platform format.",
+            "Track saves, replies or clicks against the goal."
+          ],
+          "visual": "social-post-variant-board"
+        },
+        {
+          "title": "Email marketing",
+          "durationSec": 6,
+          "lines": [
+            "Write a subject, useful body and one clear action.",
+            "Segment recipients and respect consent."
+          ],
+          "visual": "email-funnel-layout"
+        },
+        {
+          "title": "Planning a campaign",
+          "durationSec": 6,
+          "lines": [
+            "Set objective, audience, offer, channels and dates.",
+            "Assign each asset and owner on a calendar."
+          ],
+          "visual": "campaign-calendar-board"
+        },
+        {
+          "title": "Key metrics and analytics",
+          "durationSec": 6,
+          "lines": [
+            "Compare reach, click-through and conversion by stage.",
+            "Use a consistent denominator and date range."
+          ],
+          "visual": "campaign-metrics-dashboard"
+        },
+        {
+          "title": "Testing and improving",
+          "durationSec": 6,
+          "lines": [
+            "Change one message element at a time.",
+            "Compare the result before scaling the better variant."
+          ],
+          "visual": "ab-test-results-chart"
+        },
+        {
+          "title": "Mini project: campaign report",
+          "durationSec": 6,
+          "lines": [
+            "Plan a small campaign and define its success metric.",
+            "Present channel results with one next experiment."
+          ],
+          "visual": "campaign-report-story"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Plan a measurable campaign and learn from its results.",
+            "Start with Digital Marketing 101."
+          ],
+          "visual": "campaign-cta"
+        }
+      ]
+    },
+    {
+      "slug": "creative-writing-workshop",
+      "title": "Creative Writing Workshop",
+      "category": "writing",
+      "durationSec": 68,
+      "hook": "Find a story idea, give it a point of view and revise the draft.",
+      "topics": [
+        "Finding ideas",
+        "Building a writing habit",
+        "Point of view",
+        "Characters",
+        "Scenes and dialogue",
+        "Plot and structure",
+        "Revising your draft",
+        "Giving and receiving feedback",
+        "Sharing your work"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["One choice changes the scene. Follow the consequence."],
+          "visual": "story-opening-draft"
+        },
+        {
+          "title": "Finding ideas",
+          "durationSec": 6,
+          "lines": [
+            "Turn a remembered detail into a story question.",
+            "List what the character wants and what blocks them."
+          ],
+          "visual": "idea-to-premise-cards"
+        },
+        {
+          "title": "Building a writing habit",
+          "durationSec": 6,
+          "lines": [
+            "Set a small repeatable writing window.",
+            "Track pages or minutes without judging the draft."
+          ],
+          "visual": "writing-routine-calendar"
+        },
+        {
+          "title": "Point of view",
+          "durationSec": 6,
+          "lines": [
+            "Rewrite one moment in first and third person.",
+            "Notice what each narrator can know."
+          ],
+          "visual": "point-of-view-parallel-draft"
+        },
+        {
+          "title": "Characters",
+          "durationSec": 6,
+          "lines": [
+            "Give the character a want, fear and contradiction.",
+            "Let a decision reveal those traits."
+          ],
+          "visual": "character-motivation-map"
+        },
+        {
+          "title": "Scenes and dialogue",
+          "durationSec": 6,
+          "lines": [
+            "Give the scene a goal and a shift.",
+            "Use dialogue to create tension, not repeat exposition."
+          ],
+          "visual": "scene-dialogue-draft"
+        },
+        {
+          "title": "Plot and structure",
+          "durationSec": 6,
+          "lines": [
+            "Arrange setup, turning point and consequence.",
+            "Check that each scene changes the situation."
+          ],
+          "visual": "plot-beat-board"
+        },
+        {
+          "title": "Revising your draft",
+          "durationSec": 6,
+          "lines": [
+            "Read for structure before polishing sentences.",
+            "Cut lines that do not change image, action or meaning."
+          ],
+          "visual": "tracked-revision-page"
+        },
+        {
+          "title": "Giving and receiving feedback",
+          "durationSec": 6,
+          "lines": [
+            "Ask what readers expected at a specific moment.",
+            "Separate their reaction from the fix you choose."
+          ],
+          "visual": "peer-feedback-annotation"
+        },
+        {
+          "title": "Sharing your work",
+          "durationSec": 6,
+          "lines": [
+            "Prepare a clean draft and a short author note.",
+            "Choose a format that suits the readers."
+          ],
+          "visual": "story-share-layout"
+        },
+        {
+          "title": "Mini project: revise a short scene",
+          "durationSec": 6,
+          "lines": [
+            "Draft a one-page scene, gather feedback and revise it.",
+            "Keep the original beside the new version."
+          ],
+          "visual": "before-after-story-draft"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Take a story from premise through feedback and revision.",
+            "Start with Creative Writing Workshop."
+          ],
+          "visual": "writing-workshop-cta"
+        }
+      ]
+    },
+    {
+      "slug": "copywriting-that-sells",
+      "title": "Copywriting That Sells",
+      "category": "writing",
+      "durationSec": 68,
+      "hook": "Write clearer product copy that gives readers a credible next step.",
+      "topics": [
+        "What is copywriting?",
+        "Know your reader",
+        "Voice and tone",
+        "Headlines that work",
+        "Product pages",
+        "Emails and calls to action",
+        "Editing and shortening",
+        "Testing headlines"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Make the value clear. Make the next action easy to choose."],
+          "visual": "weak-to-clear-copy"
+        },
+        {
+          "title": "What is copywriting?",
+          "durationSec": 6,
+          "lines": [
+            "Connect audience need, product benefit and evidence.",
+            "Avoid claims the product cannot support."
+          ],
+          "visual": "copy-purpose-canvas"
+        },
+        {
+          "title": "Know your reader",
+          "durationSec": 6,
+          "lines": [
+            "List the reader's task, concern and decision point.",
+            "Use their language without inventing testimonials."
+          ],
+          "visual": "reader-objection-map"
+        },
+        {
+          "title": "Voice and tone",
+          "durationSec": 6,
+          "lines": [
+            "Set traits and examples for a consistent voice.",
+            "Adjust tone for welcome, error and purchase moments."
+          ],
+          "visual": "voice-tone-spectrum"
+        },
+        {
+          "title": "Headlines that work",
+          "durationSec": 6,
+          "lines": [
+            "Lead with a concrete outcome, not a vague superlative.",
+            "Keep the promise visible in the supporting copy."
+          ],
+          "visual": "headline-variant-board"
+        },
+        {
+          "title": "Product pages",
+          "durationSec": 6,
+          "lines": [
+            "Order benefit, proof, detail and decision support.",
+            "Answer the reader's key objection near the action."
+          ],
+          "visual": "product-page-wireframe-copy"
+        },
+        {
+          "title": "Emails and calls to action",
+          "durationSec": 6,
+          "lines": [
+            "Give the email one purpose and one primary CTA.",
+            "Make button text describe the next step."
+          ],
+          "visual": "email-cta-layout"
+        },
+        {
+          "title": "Editing and shortening",
+          "durationSec": 6,
+          "lines": [
+            "Remove repeated claims and filler phrases.",
+            "Keep the useful detail that supports a decision."
+          ],
+          "visual": "copy-edit-markup"
+        },
+        {
+          "title": "Testing headlines",
+          "durationSec": 6,
+          "lines": [
+            "Compare two truthful headline variants.",
+            "Define the audience and metric before the test."
+          ],
+          "visual": "headline-ab-test-chart"
+        },
+        {
+          "title": "Mini project: rewrite a landing page",
+          "durationSec": 6,
+          "lines": [
+            "Rewrite the hero, proof point and product CTA.",
+            "Explain each change against a reader need."
+          ],
+          "visual": "landing-copy-before-after"
+        },
+        {
+          "title": "Mini project: message test",
+          "durationSec": 6,
+          "lines": [
+            "Draft two headline options for one audience segment.",
+            "Set a fair test and avoid claiming results in advance."
+          ],
+          "visual": "copy-experiment-plan"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Practice reader-focused headlines, product pages and testing.",
+            "Start with Copywriting That Sells."
+          ],
+          "visual": "copywriting-cta"
+        }
+      ]
+    },
+    {
+      "slug": "filmmaking-basics",
+      "title": "Filmmaking Basics",
+      "category": "movie",
+      "durationSec": 68,
+      "hook": "Plan a short film with a shootable story, clear shots and usable sound.",
+      "topics": [
+        "Story and idea",
+        "Scripts and storyboards",
+        "Planning the shoot",
+        "Framing and camera moves",
+        "Lighting basics",
+        "Recording sound",
+        "Reviewing footage",
+        "Editing basics",
+        "Sharing your film"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Three scenes. One idea. A shot list you can actually film."],
+          "visual": "shot-sequence-opening"
+        },
+        {
+          "title": "Story and idea",
+          "durationSec": 6,
+          "lines": [
+            "Give the character a goal and an obstacle.",
+            "Show the change in a short visual beat."
+          ],
+          "visual": "story-beat-board"
+        },
+        {
+          "title": "Scripts and storyboards",
+          "durationSec": 6,
+          "lines": [
+            "Break action into frames and camera notes.",
+            "Check continuity from one panel to the next."
+          ],
+          "visual": "storyboard-panels"
+        },
+        {
+          "title": "Planning the shoot",
+          "durationSec": 6,
+          "lines": [
+            "List location, props, cast and available light.",
+            "Group shots to reduce setup changes."
+          ],
+          "visual": "shooting-schedule-board"
+        },
+        {
+          "title": "Framing and camera moves",
+          "durationSec": 6,
+          "lines": [
+            "Choose wide, medium and close shots by story need.",
+            "Use a move only when it reveals information."
+          ],
+          "visual": "shot-size-and-move-diagram"
+        },
+        {
+          "title": "Lighting basics",
+          "durationSec": 6,
+          "lines": [
+            "Place key light, fill and background separately.",
+            "Watch shadow direction and exposure."
+          ],
+          "visual": "three-point-lighting-plan"
+        },
+        {
+          "title": "Recording sound",
+          "durationSec": 6,
+          "lines": [
+            "Move the microphone near the speaker.",
+            "Record room tone and listen for clipping."
+          ],
+          "visual": "audio-level-and-mic-setup"
+        },
+        {
+          "title": "Reviewing footage",
+          "durationSec": 6,
+          "lines": [
+            "Label takes and mark usable moments.",
+            "Check focus, sound and continuity before leaving."
+          ],
+          "visual": "footage-selects-board"
+        },
+        {
+          "title": "Editing basics",
+          "durationSec": 6,
+          "lines": [
+            "Assemble shots to preserve action and screen direction.",
+            "Trim pauses while keeping the scene understandable."
+          ],
+          "visual": "rough-cut-timeline"
+        },
+        {
+          "title": "Sharing your film",
+          "durationSec": 6,
+          "lines": [
+            "Export a review copy with clear title and credits.",
+            "Check playback and sound on the target platform."
+          ],
+          "visual": "film-export-review"
+        },
+        {
+          "title": "Mini project: three-scene short",
+          "durationSec": 6,
+          "lines": [
+            "Shoot an opening, turning point and ending.",
+            "Pair the cut with a storyboard and sound check."
+          ],
+          "visual": "three-scene-film-board"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Plan, shoot and assemble a concise three-scene film.",
+            "Start with Filmmaking Basics."
+          ],
+          "visual": "short-film-cta"
+        }
+      ]
+    },
+    {
+      "slug": "video-editing-essentials",
+      "title": "Video Editing Essentials",
+      "category": "movie",
+      "durationSec": 68,
+      "hook": "Shape raw clips into a tight sequence, then export for its destination.",
+      "topics": [
+        "Editing workflow",
+        "Organising footage",
+        "The timeline",
+        "Cutting and rhythm",
+        "Music and sound",
+        "Titles and transitions",
+        "Colour correction",
+        "Exporting your video"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["A good edit is a sequence of deliberate choices."],
+          "visual": "raw-clips-to-cut"
+        },
+        {
+          "title": "Editing workflow",
+          "durationSec": 6,
+          "lines": [
+            "Import, select, assemble, refine and export.",
+            "Keep source media separate from project files."
+          ],
+          "visual": "edit-workflow-map"
+        },
+        {
+          "title": "Organising footage",
+          "durationSec": 6,
+          "lines": [
+            "Sort clips by scene and label useful takes.",
+            "Keep a backup before relinking media."
+          ],
+          "visual": "footage-bin-organization"
+        },
+        {
+          "title": "The timeline",
+          "durationSec": 6,
+          "lines": [
+            "Place picture and audio on labeled tracks.",
+            "Use markers to map beats and missing shots."
+          ],
+          "visual": "multitrack-timeline"
+        },
+        {
+          "title": "Cutting and rhythm",
+          "durationSec": 6,
+          "lines": [
+            "Trim to action and preserve a clear sequence.",
+            "Compare pacing with and without each pause."
+          ],
+          "visual": "cut-rhythm-waveform"
+        },
+        {
+          "title": "Music and sound",
+          "durationSec": 6,
+          "lines": [
+            "Balance dialogue, music and room tone.",
+            "Avoid clipping and respect audio rights."
+          ],
+          "visual": "audio-mix-levels"
+        },
+        {
+          "title": "Titles and transitions",
+          "durationSec": 6,
+          "lines": [
+            "Use titles to clarify context, not repeat everything.",
+            "Keep transitions consistent with the scene."
+          ],
+          "visual": "title-transition-track"
+        },
+        {
+          "title": "Colour correction",
+          "durationSec": 6,
+          "lines": [
+            "Balance exposure and white balance between shots.",
+            "Match skin and neutral tones before a look."
+          ],
+          "visual": "shot-match-color-scopes"
+        },
+        {
+          "title": "Exporting your video",
+          "durationSec": 6,
+          "lines": [
+            "Set frame size, frame rate and codec for delivery.",
+            "Review the exported file from start to finish."
+          ],
+          "visual": "export-settings-review"
+        },
+        {
+          "title": "Mini project: 60-second highlight",
+          "durationSec": 6,
+          "lines": [
+            "Build a beginning, middle and end from practice clips.",
+            "Use music, titles and a clean final export."
+          ],
+          "visual": "highlight-cut-review"
+        },
+        {
+          "title": "Mini project: export quality check",
+          "durationSec": 6,
+          "lines": [
+            "Check audio peaks, title safe area and playback.",
+            "Compare the delivered file with the timeline."
+          ],
+          "visual": "delivery-quality-check"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Practice a full edit from organized clips to final export.",
+            "Start with Video Editing Essentials."
+          ],
+          "visual": "editing-cta"
+        }
+      ]
+    },
+    {
+      "slug": "english-conversation",
+      "title": "English Conversation",
+      "category": "language",
+      "durationSec": 68,
+      "hook": "Practice useful English greetings, questions and everyday replies.",
+      "topics": [
+        "Greetings and introductions",
+        "Talking about yourself",
+        "Asking questions",
+        "Small talk at work",
+        "Meetings and calls",
+        "Travel and directions",
+        "Pronunciation tips",
+        "Common idioms",
+        "Listening practice"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": [
+            "Hello, I'm Alex. Nice to meet you.",
+            "Start a conversation one phrase at a time."
+          ],
+          "visual": "english-greeting-dialogue"
+        },
+        {
+          "title": "Greetings and introductions",
+          "durationSec": 6,
+          "lines": [
+            "Practice: “Hi, I'm Sam. What's your name?”",
+            "Respond and ask one natural follow-up."
+          ],
+          "visual": "english-introduction-cards"
+        },
+        {
+          "title": "Talking about yourself",
+          "durationSec": 6,
+          "lines": [
+            "Give a short answer about work, study or interests.",
+            "Add one detail to keep the exchange moving."
+          ],
+          "visual": "personal-introduction-prompt"
+        },
+        {
+          "title": "Asking questions",
+          "durationSec": 6,
+          "lines": [
+            "Use who, what, where and how to invite detail.",
+            "Practice rising and falling question intonation."
+          ],
+          "visual": "question-word-speech-cards"
+        },
+        {
+          "title": "Small talk at work",
+          "durationSec": 6,
+          "lines": [
+            "Try a brief opening about the day or shared task.",
+            "Listen and respond before changing topic."
+          ],
+          "visual": "workplace-smalltalk-dialogue"
+        },
+        {
+          "title": "Meetings and calls",
+          "durationSec": 6,
+          "lines": [
+            "Use “Could you clarify that?” to check meaning.",
+            "Summarize the next action before ending the call."
+          ],
+          "visual": "meeting-call-turn-taking"
+        },
+        {
+          "title": "Travel and directions",
+          "durationSec": 6,
+          "lines": ["Ask “How do I get to the station?”", "Confirm the route and key landmark."],
+          "visual": "travel-direction-dialogue-map"
+        },
+        {
+          "title": "Pronunciation tips",
+          "durationSec": 6,
+          "lines": [
+            "Notice word stress in a short useful phrase.",
+            "Repeat slowly, then at conversation speed."
+          ],
+          "visual": "english-stress-waveform"
+        },
+        {
+          "title": "Common idioms",
+          "durationSec": 6,
+          "lines": [
+            "Learn “a piece of cake” in its context.",
+            "Choose a plain alternative when clarity matters."
+          ],
+          "visual": "idiom-context-cards"
+        },
+        {
+          "title": "Listening practice",
+          "durationSec": 6,
+          "lines": [
+            "Listen for the main point and one supporting detail.",
+            "Replay and compare what you heard."
+          ],
+          "visual": "listening-waveform-transcript"
+        },
+        {
+          "title": "Mini project: two-minute introduction",
+          "durationSec": 6,
+          "lines": [
+            "Record a short self-introduction with one follow-up question.",
+            "Review clarity, pace and pronunciation."
+          ],
+          "visual": "spoken-intro-recording"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Practice real conversation turns for work, travel and everyday life.",
+            "Start with English Conversation."
+          ],
+          "visual": "english-speaking-cta"
+        }
+      ]
+    },
+    {
+      "slug": "spanish-for-travelers",
+      "title": "Spanish for Travelers",
+      "category": "language",
+      "durationSec": 68,
+      "hook": "Use practical Spanish phrases for airports, cafés and getting around.",
+      "topics": [
+        "Greetings and politeness",
+        "Numbers and money",
+        "Pronunciation",
+        "At the airport and hotel",
+        "Ordering food",
+        "Getting around",
+        "Shopping and markets",
+        "Emergencies and health",
+        "Making friends"
+      ],
+      "scenes": [
+        {
+          "title": "Hook",
+          "durationSec": 4,
+          "lines": ["Hola. ¿Me puede ayudar? Start with a useful phrase."],
+          "visual": "spanish-travel-greeting"
+        },
+        {
+          "title": "Greetings and politeness",
+          "durationSec": 6,
+          "lines": [
+            "Practice “Buenos días” and “por favor.”",
+            "Use “gracias” to close the exchange."
+          ],
+          "visual": "spanish-polite-phrase-cards"
+        },
+        {
+          "title": "Numbers and money",
+          "durationSec": 6,
+          "lines": [
+            "Recognize prices and say a small number aloud.",
+            "Confirm the amount before paying."
+          ],
+          "visual": "spanish-number-price-cards"
+        },
+        {
+          "title": "Pronunciation",
+          "durationSec": 6,
+          "lines": [
+            "Practice clear vowels in “gracias” and “hotel.”",
+            "Repeat a phrase at natural pace."
+          ],
+          "visual": "spanish-pronunciation-mouth-guide"
+        },
+        {
+          "title": "At the airport and hotel",
+          "durationSec": 6,
+          "lines": [
+            "Ask “¿Dónde está la puerta?” at the airport.",
+            "Use your reservation name at hotel check-in."
+          ],
+          "visual": "airport-hotel-dialogue-map"
+        },
+        {
+          "title": "Ordering food",
+          "durationSec": 6,
+          "lines": ["Say “Quisiera agua, por favor.”", "Ask what a dish contains before ordering."],
+          "visual": "cafe-ordering-dialogue"
+        },
+        {
+          "title": "Getting around",
+          "durationSec": 6,
+          "lines": [
+            "Ask “¿Cómo llego al centro?”",
+            "Follow directions using one landmark at a time."
+          ],
+          "visual": "city-route-phrase-map"
+        },
+        {
+          "title": "Shopping and markets",
+          "durationSec": 6,
+          "lines": [
+            "Ask “¿Cuánto cuesta?” and understand the reply.",
+            "Confirm quantity and price before buying."
+          ],
+          "visual": "market-price-dialogue"
+        },
+        {
+          "title": "Emergencies and health",
+          "durationSec": 6,
+          "lines": [
+            "Practice “Necesito ayuda” and “llame a un médico.”",
+            "State the location and immediate need clearly."
+          ],
+          "visual": "help-health-phrase-card"
+        },
+        {
+          "title": "Making friends",
+          "durationSec": 6,
+          "lines": [
+            "Introduce yourself and ask about a local interest.",
+            "Use a simple follow-up to continue the exchange."
+          ],
+          "visual": "travel-friend-conversation"
+        },
+        {
+          "title": "Mini project: market conversation",
+          "durationSec": 6,
+          "lines": [
+            "Practice greeting, asking a price and confirming a purchase.",
+            "Switch roles and repeat without reading."
+          ],
+          "visual": "market-roleplay-cards"
+        },
+        {
+          "title": "Explore the course",
+          "durationSec": 4,
+          "lines": [
+            "Build practical phrases for a Spanish-speaking trip.",
+            "Start with Spanish for Travelers."
+          ],
+          "visual": "spanish-travel-cta"
+        }
+      ]
+    }
+  ]
+}

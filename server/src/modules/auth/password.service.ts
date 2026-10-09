@@ -4,11 +4,11 @@
  *  - Đặt lại / đổi mật khẩu thành công -> thu hồi phiên (đặt lại: mọi phiên; đổi: mọi phiên TRỪ phiên hiện tại).
  */
 import { ApiError } from '@/lib/ApiError';
+import { assertCaptcha } from '@/lib/captcha';
 import { queueMail } from '@/lib/mailer';
 import { passwordChangedMail, resetPasswordMail } from '@/lib/mailTemplates';
 import { hashPassword, verifyPassword } from '@/lib/password';
 import { prisma } from '@/lib/prisma';
-import { assertCaptcha } from '@/lib/turnstile';
 import type { ClientContext } from '@/types/auth';
 import type { SentCodeDto } from '@/types/dto';
 

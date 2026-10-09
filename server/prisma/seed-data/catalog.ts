@@ -7,6 +7,7 @@ import path from 'node:path';
 
 import { courseId, COURSES, type CourseSeed } from './courses';
 import { CURRICULUM } from './curriculum';
+import { getExternalCoursePreview } from './externalCoursePreviews';
 import { buildLessonContent } from './lessonContent';
 import { PHOTO, staticUrl, unsplash, VIDEOS } from './media';
 import { tagId } from './tags';
@@ -115,6 +116,7 @@ export function buildCatalog(now: number): Catalog {
         number += 1;
         const video = VIDEOS[(courseIndex + number) % VIDEOS.length];
         if (!video) throw new Error('Danh sách VIDEOS rỗng');
+        const preview = number <= 2 ? getExternalCoursePreview(seed.slug) : undefined;
         const lessonId = `les_${id.slice(4)}_${String(number).padStart(2, '0')}`;
         const lesson: LessonRow = {
           id: lessonId,
@@ -123,8 +125,8 @@ export function buildCatalog(now: number): Catalog {
           title,
           order: lessonIndex + 1,
           number,
-          durationSec: video.durationSec,
-          videoUrl: video.url,
+          durationSec: preview?.durationSec ?? video.durationSec,
+          videoUrl: preview?.url ?? video.url,
           isPreview: number <= 2, // 2 bài đầu xem thử (PLAN §11)
           content: buildLessonContent({
             lessonId,

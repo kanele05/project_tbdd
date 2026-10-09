@@ -75,6 +75,45 @@ describe('POST /auth/register', () => {
     expect(await prisma.authEvent.count({ where: { userId: stored.id, type: 'REGISTER' } })).toBe(
       1,
     );
+    expect(await prisma.teacherProfile.count({ where: { userId: stored.id } })).toBe(0);
+  });
+
+  it('registers a TEACHER and creates its profile in the same request', async () => {
+    const res = await api
+      .post(`${API}/auth/register`)
+      .send({ ...validRegister, email: 'teacher@example.com', role: 'TEACHER' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.user.role).toBe('TEACHER');
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: 'teacher@example.com' } });
+    expect(user.role).toBe('TEACHER');
+    expect(await prisma.teacherProfile.findUnique({ where: { userId: user.id } })).toMatchObject({
+      jobTitle: '',
+      bio: '',
+    });
+  });
+
+  it('accepts an explicit STUDENT role without creating a teacher profile', async () => {
+    const res = await api
+      .post(`${API}/auth/register`)
+      .send({ ...validRegister, email: 'explicit-student@example.com', role: 'STUDENT' });
+
+    expect(res.status).toBe(201);
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { email: 'explicit-student@example.com' },
+    });
+    expect(user.role).toBe('STUDENT');
+    expect(await prisma.teacherProfile.count({ where: { userId: user.id } })).toBe(0);
+  });
+
+  it.each(['ADMIN', 'UNKNOWN'])('rejects role %s without creating an account', async (role) => {
+    const res = await api
+      .post(`${API}/auth/register`)
+      .send({ ...validRegister, role, email: `${role.toLowerCase()}@example.com` });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect(await prisma.user.count()).toBe(0);
   });
 
   it('writes the email in Vietnamese for lang=vi or Accept-Language: vi', async () => {
@@ -201,6 +240,24 @@ describe('POST /auth/verify-email', () => {
     // Lần đầu xác minh không phải "thiết bị mới": không có thông báo / email cảnh báo.
     expect(await prisma.notification.count({ where: { userId: user.id } })).toBe(0);
     expect(mailbox.to(email)).toHaveLength(1);
+  });
+
+  it('keeps TEACHER role in the verified session and user DTO', async () => {
+    const email = 'verified-teacher@example.com';
+    await api
+      .post(`${API}/auth/register`)
+      .send({ ...validRegister, email, role: 'TEACHER' })
+      .expect(201);
+    const code = otpFrom(mailbox.lastTo(email));
+
+    const verify = await api.post(`${API}/auth/verify-email`).send({ email, code });
+
+    expect(verify.status).toBe(200);
+    expect(verify.body.data.user.role).toBe('TEACHER');
+    const me = await api.get(`${API}/auth/me`).set(bearer(verify.body.data.accessToken));
+    expect(me.body.data.role).toBe('TEACHER');
+    const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    expect(await prisma.teacherProfile.count({ where: { userId: user.id } })).toBe(1);
   });
 
   it('rejects a wrong code with 400 INVALID_CODE and says how many attempts are left', async () => {
