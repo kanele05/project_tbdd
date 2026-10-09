@@ -48,3 +48,20 @@ SubProjects.tar
 
 # Ghi chú/kết quả kiểm thử thô (nguồn viết báo cáo W7) — nội bộ
 notes/
+
+# Cache biên dịch Node / thư mục tạm của Jest
+node-compile-cache/
+**/node-compile-cache/
+.tmp-jest/
+**/.tmp-jest/
+**/.tmp-captcha-jest/
+
+# Video trailer preview sinh bằng server/scripts/course-previews (110 MB) - không lưu trong Git
+server/static/previews/
+
+# Tài liệu/skill nội bộ của AI agent - chỉ nằm trên máy
+AGENTS.md
+.agents/
+deploy/AWS_CLOUD.md
+deploy/GOOGLE_CLOUD.md
+deploy/ORACLE_CLOUD.md
