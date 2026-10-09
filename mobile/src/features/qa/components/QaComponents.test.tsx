@@ -55,6 +55,17 @@ describe('QuestionCard', () => {
     expect(onToggleLike).toHaveBeenCalledWith(question);
   });
 
+  it('gives the ~23 dp tall like and comment rows a touch target of at least 48 dp', async () => {
+    await render(
+      <QuestionCard question={makeQuestion()} onToggleLike={jest.fn()} onOpen={jest.fn()} />,
+    );
+
+    for (const id of ['question-like-question-1', 'question-comments-question-1']) {
+      const { top, bottom } = screen.getByTestId(id).props.hitSlop;
+      expect(23 + top + bottom).toBeGreaterThanOrEqual(48);
+    }
+  });
+
   it('opens the discussion from the comment button', async () => {
     const onOpen = jest.fn();
     const question = makeQuestion();

@@ -11,8 +11,8 @@ import { useTranslation } from '@/i18n';
 import { applyAuthError } from '../authErrors';
 import { useAuthFlowStore } from '../authFlowStore';
 import { AuthLayout } from '../components/AuthLayout';
+import { CaptchaWidget } from '../components/CaptchaWidget';
 import { FormError } from '../components/FormError';
-import { TurnstileWidget } from '../components/TurnstileWidget';
 import { useForgotPassword } from '../hooks';
 import { goToLogin } from '../navigation';
 import { forgotPasswordSchema, type ForgotPasswordFormValues } from '../schemas';
@@ -76,9 +76,10 @@ export function ForgotPasswordScreen() {
         returnKeyType="go"
         onSubmitEditing={onSubmit}
       />
-      <TurnstileWidget
+      <CaptchaWidget
         onToken={captcha.onToken}
         onExpire={captcha.onExpire}
+        onError={captcha.onError}
         resetKey={captcha.resetKey}
       />
       <FormError message={formError} />

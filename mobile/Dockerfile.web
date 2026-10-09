@@ -23,8 +23,21 @@ ENV EXPO_PUBLIC_API_URL=${EXPO_PUBLIC_API_URL}
 # Tên biến phải khớp với mã mobile (agent auth); đổi cả ở đây và deploy/docker-compose.yml nếu họ đặt tên khác.
 ARG EXPO_PUBLIC_TURNSTILE_SITE_KEY=""
 ENV EXPO_PUBLIC_TURNSTILE_SITE_KEY=${EXPO_PUBLIC_TURNSTILE_SITE_KEY}
+ARG EXPO_PUBLIC_CAPTCHA_PROVIDER=turnstile
+ARG EXPO_PUBLIC_RECAPTCHA_SITE_KEY=""
+ARG EXPO_PUBLIC_RECAPTCHA_BASE_URL=""
+ENV EXPO_PUBLIC_CAPTCHA_PROVIDER=${EXPO_PUBLIC_CAPTCHA_PROVIDER}
+ENV EXPO_PUBLIC_RECAPTCHA_SITE_KEY=${EXPO_PUBLIC_RECAPTCHA_SITE_KEY}
+ENV EXPO_PUBLIC_RECAPTCHA_BASE_URL=${EXPO_PUBLIC_RECAPTCHA_BASE_URL}
 RUN test -n "${EXPO_PUBLIC_API_URL}" \
  || { echo "ERROR: pass --build-arg EXPO_PUBLIC_API_URL=https://api.<domain>/api/v1"; exit 1; }
+RUN case "${EXPO_PUBLIC_CAPTCHA_PROVIDER}" in \
+    turnstile) ;; \
+    recaptcha_v2) test -n "${EXPO_PUBLIC_RECAPTCHA_SITE_KEY}" \
+      && test "${EXPO_PUBLIC_RECAPTCHA_SITE_KEY}" != "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" \
+      || { echo "ERROR: reCAPTCHA production build requires a real v2 Checkbox site key"; exit 1; } ;; \
+    *) echo "ERROR: invalid CAPTCHA provider"; exit 1 ;; \
+    esac
 RUN npx expo export --platform web --output-dir dist
 
 # ---------------------------------------------------------------------------

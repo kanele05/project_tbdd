@@ -1,9 +1,10 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { AppError } from '@/lib/appError';
 import { queryKeys } from '@/lib/queryKeys';
+import { createTestQueryClient } from '@/test/queryWrapper';
 import type { AiQuizDto } from '@/types/api';
 
 import { LessonQuizScreen } from './LessonQuizScreen';
@@ -48,7 +49,7 @@ function setMutation(overrides: Record<string, unknown> = {}) {
 }
 
 async function renderScreen(lessonId: string | null = 'lesson-1', queryClient?: QueryClient) {
-  const client = queryClient ?? new QueryClient();
+  const client = queryClient ?? createTestQueryClient();
   return render(
     <QueryClientProvider client={client}>
       <ToastProvider>
@@ -81,7 +82,7 @@ describe('LessonQuizScreen', () => {
 
   it('reuses a quiz already in the cache instead of asking the AI again', async () => {
     setMutation({ data: undefined });
-    const client = new QueryClient();
+    const client = createTestQueryClient();
     client.setQueryData(queryKeys.aiLessonQuiz('lesson-1', 'en'), QUIZ);
 
     await renderScreen('lesson-1', client);

@@ -1,4 +1,5 @@
-import { ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CinematicHeader } from '@/components/ui/CinematicHeader';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -18,15 +19,18 @@ import { useSecurityOverview } from '../hooks';
 export function SecurityScreen() {
   const { t } = useTranslation('settings');
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
   const overview = useSecurityOverview();
 
   return (
-    <View style={styles.screen}>
+    // Padding on both platforms like every other form: the password fields sit mid-screen.
+    <KeyboardAvoidingView style={styles.screen} behavior="padding" testID="security-screen">
       <CinematicHeader title={t('security.title')} posterIndex={4} />
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxxl }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        testID="security-scroll"
       >
         {overview.isPending ? (
           <Skeleton width="100%" height={168} borderRadius={radius.card} />
@@ -42,7 +46,7 @@ export function SecurityScreen() {
         <ChangePasswordCard />
         <DevicesCard />
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

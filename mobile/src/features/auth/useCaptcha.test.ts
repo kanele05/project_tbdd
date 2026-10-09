@@ -24,4 +24,13 @@ describe('useCaptcha', () => {
     expect(result.current.token).toBeNull();
     expect(result.current.resetKey).toBe(keyBefore + 1);
   });
+
+  it('drops the current token when the security check reports an error', async () => {
+    const { result } = await renderHook(() => useCaptcha());
+    await act(async () => result.current.onToken('tok'));
+
+    await act(async () => result.current.onError());
+
+    expect(result.current.token).toBeNull();
+  });
 });

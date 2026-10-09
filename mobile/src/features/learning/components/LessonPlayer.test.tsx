@@ -13,6 +13,7 @@ import { LessonPlayer } from './LessonPlayer';
 type Handler = (payload?: never) => void;
 
 const mockHandlers: Record<string, Handler> = {};
+let mockYouTubeProps: Record<string, unknown> | undefined;
 const mockPlayer = {
   currentTime: 0,
   timeUpdateEventInterval: 0,
@@ -37,6 +38,15 @@ jest.mock('expo-video', () => ({
     return player;
   },
   VideoView: () => null,
+}));
+
+jest.mock('@/features/media/YouTubePlayer', () => ({
+  YouTubePlayer: (props: Record<string, unknown>) => {
+    mockYouTubeProps = props;
+    const { createElement } = jest.requireActual('react') as typeof import('react');
+    const { View } = jest.requireActual('react-native') as typeof import('react-native');
+    return createElement(View, { testID: 'youtube-lesson-player' });
+  },
 }));
 
 jest.mock('../api', () => ({ learningApi: { saveProgress: jest.fn() } }));
@@ -85,6 +95,7 @@ describe('LessonPlayer', () => {
     jest.useFakeTimers();
     jest.clearAllMocks();
     for (const key of Object.keys(mockHandlers)) delete mockHandlers[key];
+    mockYouTubeProps = undefined;
     mockPlayer.currentTime = 0;
     mockSave.mockResolvedValue({
       lessonProgress: { positionSec: 0, isCompleted: false },
@@ -117,6 +128,30 @@ describe('LessonPlayer', () => {
     expect(mockPlayer.currentTime).toBe(40);
     expect(mockPlayer.timeUpdateEventInterval).toBe(1);
     expect(mockPlayer.play).toHaveBeenCalled();
+  });
+
+  it('routes YouTube lessons outside expo-video and saves clip-relative pause progress', async () => {
+    await renderPlayer(
+      <LessonPlayer
+        lesson={{
+          ...LESSON,
+          videoUrl: 'https://www.youtube.com/watch?v=AbCdEf12345&start=10&end=70',
+        }}
+        courseId="course-1"
+      />,
+    );
+
+    expect(mockYouTubeProps?.source).toBe(
+      'https://www.youtube.com/watch?v=AbCdEf12345&start=10&end=70',
+    );
+    expect(mockYouTubeProps?.initialPositionSec).toBe(40);
+    expect(typeof mockYouTubeProps?.onRetry).toBe('function');
+    expect(mockPlayer.play).not.toHaveBeenCalled();
+    const onPaused = mockYouTubeProps?.onPaused as (positionSec: number) => void;
+    await act(async () => {
+      onPaused(13);
+    });
+    expect(mockSave).toHaveBeenCalledWith('lesson-1', { positionSec: 13 });
   });
 
   it('starts at 0 when the lesson was completed and left near the end', async () => {

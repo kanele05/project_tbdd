@@ -107,6 +107,11 @@ export type TeacherDetail = TeacherSummary & {
   coverUrl: string | null;
   location: string | null;
   timezone: string | null;
+  /**
+   * Current time in `timezone` as "09:30 AM" (BR-16), computed by the server. Optional: the app
+   * formats the time itself from `timezone` (works offline), so older payloads/fixtures omit it.
+   */
+  localTime?: string | null;
   isFollowed: boolean;
   stats: { courseCount: number; studentCount: number; followerCount: number };
 };
@@ -511,6 +516,7 @@ export type RegisterRequestV2 = {
   email: string;
   password: string;
   captchaToken: string;
+  role: 'STUDENT' | 'TEACHER';
   lang?: AiLang;
 };
 export type VerifyEmailRequest = { email: string; code: string; deviceName?: string };

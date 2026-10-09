@@ -6,7 +6,7 @@ import { TURNSTILE_BASE_URL, TURNSTILE_SITE_KEY } from '@/constants/config';
 import { useTranslation } from '@/i18n';
 import { useTheme } from '@/theme';
 
-import { CaptchaFrame, type CaptchaStatus } from './CaptchaFrame';
+import { CaptchaFrame, CaptchaGate, type CaptchaStatus } from './CaptchaFrame';
 import { buildTurnstileHtml, parseTurnstileMessage, type TurnstileWidgetProps } from './turnstile';
 
 /** Hosts the page may load: the widget's own origin and Cloudflare (script + challenge frames). */
@@ -17,14 +17,15 @@ const ALLOWED_URL = /^(about:|https:\/\/([\w-]+\.)*cloudflare\.com(\/|$))/;
  * passes the token back with `postMessage`. `baseUrl` makes Turnstile see a real hostname (it has
  * to be one of the site key's domains, see `EXPO_PUBLIC_TURNSTILE_BASE_URL`).
  */
-export function TurnstileWidget({
-  onToken,
-  onExpire,
-  onError,
-  resetKey = 0,
-}: TurnstileWidgetProps) {
-  const { t } = useTranslation('auth');
+export function TurnstileWidget(props: TurnstileWidgetProps) {
   const { isDark } = useTheme();
+  return <TurnstileChallenge key={`${props.resetKey ?? 0}-${isDark}`} {...props} />;
+}
+
+function TurnstileChallenge({ onToken, onExpire, onError }: TurnstileWidgetProps) {
+  const { isDark } = useTheme();
+  const { t } = useTranslation('auth');
+  const [hasStarted, setHasStarted] = useState(false);
   const [status, setStatus] = useState<CaptchaStatus>('loading');
   const [attempt, setAttempt] = useState(0);
   const callbacks = useRef({ onToken, onExpire, onError });
@@ -39,6 +40,7 @@ export function TurnstileWidget({
 
   const fail = useCallback(() => {
     setStatus('error');
+    callbacks.current.onExpire?.();
     callbacks.current.onError?.();
   }, []);
 
@@ -55,6 +57,7 @@ export function TurnstileWidget({
           callbacks.current.onToken(message.token);
           break;
         case 'expired':
+          setHasStarted(false);
           callbacks.current.onExpire?.();
           break;
         case 'error':
@@ -70,11 +73,12 @@ export function TurnstileWidget({
     setAttempt((value) => value + 1);
   }, []);
 
+  if (!hasStarted) return <CaptchaGate onVerify={() => setHasStarted(true)} />;
+
   return (
     <CaptchaFrame status={status} onRetry={retry}>
       <WebView
-        // A new key = a new page = a new challenge (retry, theme switch, token already used).
-        key={`${attempt}-${resetKey}-${isDark ? 'dark' : 'light'}`}
+        key={`${attempt}-${isDark ? 'dark' : 'light'}`}
         source={{ html, baseUrl: TURNSTILE_BASE_URL }}
         originWhitelist={['*']}
         onMessage={handleMessage}

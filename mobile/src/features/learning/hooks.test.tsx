@@ -1,9 +1,10 @@
-import { QueryClient, QueryClientProvider, onlineManager } from '@tanstack/react-query';
+import { QueryClientProvider, onlineManager } from '@tanstack/react-query';
 import { act, renderHook, screen, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { queryKeys } from '@/lib/queryKeys';
+import { createTestQueryClient } from '@/test/queryWrapper';
 import type { CourseDetail } from '@/types/api';
 
 import { learningApi } from './api';
@@ -12,9 +13,7 @@ import { getFirstLessonId, useToggleCourseLike } from './hooks';
 const COURSE = { id: 'course-1', isLiked: false, likeCount: 10, shareCount: 2 } as CourseDetail;
 
 function setup() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: Infinity } },
-  });
+  const queryClient = createTestQueryClient();
   queryClient.setQueryData(queryKeys.course('course-1'), COURSE);
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>

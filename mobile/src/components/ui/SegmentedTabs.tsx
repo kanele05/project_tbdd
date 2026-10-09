@@ -45,7 +45,8 @@ export function SegmentedTabs<K extends string>({
               uppercase={isUppercase}
               color={isActive ? 'text' : 'textMuted'}
               family={isActive ? 'bodyBold' : 'bodySemiBold'}
-              numberOfLines={1}
+              align="center"
+              numberOfLines={2}
             >
               {tab.label}
             </AppText>

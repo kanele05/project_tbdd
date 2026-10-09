@@ -121,6 +121,7 @@ export function ResetPasswordScreen() {
         name="password"
         label={t('resetPassword.newPassword')}
         placeholder={t('placeholders.newPassword')}
+        helperText={t('hints.newPassword')}
         secureTextEntry
         autoCapitalize="none"
         autoComplete="new-password"

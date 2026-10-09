@@ -26,6 +26,7 @@ describe('authApi', () => {
       email: 'a@b.co',
       password: 'secret123',
       captchaToken: 'tok',
+      role: 'STUDENT' as const,
       lang: 'en' as const,
     };
     await authApi.login(login);

@@ -42,7 +42,7 @@ function CourseStatsBase({ lessonCount, totalDurationSec, likeCount }: CourseSta
           >
             {stat.value}
           </AppText>
-          <AppText variant="caption" numberOfLines={1} align="center">
+          <AppText variant="caption" numberOfLines={2} align="center">
             {stat.label}
           </AppText>
         </View>

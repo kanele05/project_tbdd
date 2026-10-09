@@ -1,3 +1,4 @@
+import { AI_REQUEST_TIMEOUT_MS } from '@/constants/config';
 import { api } from '@/lib/apiClient';
 import type {
   AiChatMessageDto,
@@ -18,19 +19,34 @@ import type {
 export const aiApi = {
   /** `GET /courses/:id/ai/summary` - any signed-in user. */
   courseSummary: (courseId: string, lang: AiLang) =>
-    api.get<AiCourseSummaryDto>(`/courses/${courseId}/ai/summary`, { lang }),
+    api.get<AiCourseSummaryDto>(
+      `/courses/${courseId}/ai/summary`,
+      { lang },
+      { timeout: AI_REQUEST_TIMEOUT_MS },
+    ),
 
   /** `GET /lessons/:id/ai/summary` - enrolled, or a preview lesson (403 `NOT_ENROLLED`). */
   lessonSummary: (lessonId: string, lang: AiLang) =>
-    api.get<AiLessonSummaryDto>(`/lessons/${lessonId}/ai/summary`, { lang }),
+    api.get<AiLessonSummaryDto>(
+      `/lessons/${lessonId}/ai/summary`,
+      { lang },
+      { timeout: AI_REQUEST_TIMEOUT_MS },
+    ),
 
   /** `POST /lessons/:id/ai/quiz` - enrolled only; 5 questions, cached per lesson + language. */
   lessonQuiz: (lessonId: string, lang: AiLang) =>
-    api.post<AiQuizDto>(`/lessons/${lessonId}/ai/quiz`, undefined, { params: { lang } }),
+    api.post<AiQuizDto>(`/lessons/${lessonId}/ai/quiz`, undefined, {
+      params: { lang },
+      timeout: AI_REQUEST_TIMEOUT_MS,
+    }),
 
   /** `GET /me/ai/recommendations` - personalised learning path. */
   recommendations: (lang: AiLang) =>
-    api.get<AiRecommendationsDto>('/me/ai/recommendations', { lang }),
+    api.get<AiRecommendationsDto>(
+      '/me/ai/recommendations',
+      { lang },
+      { timeout: AI_REQUEST_TIMEOUT_MS },
+    ),
 
   /** `GET /courses/:id/ai/chat` - AI Tutor history, newest first. */
   chatHistory: (courseId: string, page = 1, limit = 20) =>

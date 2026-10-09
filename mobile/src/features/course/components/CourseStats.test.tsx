@@ -27,4 +27,11 @@ describe('CourseStats', () => {
     expect(screen.getByLabelText('18 giờ tổng thời lượng')).toBeOnTheScreen();
     expect(screen.getByLabelText('1.233 lượt thích')).toBeOnTheScreen();
   });
+
+  it('lets a long label such as "tổng thời lượng" wrap instead of being cut off', async () => {
+    await i18n.changeLanguage('vi');
+    await render(<CourseStats {...PROPS} />);
+
+    expect(screen.getByText('tổng thời lượng').props.numberOfLines).toBe(2);
+  });
 });

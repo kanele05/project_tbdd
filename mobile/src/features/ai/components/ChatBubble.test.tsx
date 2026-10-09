@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { AccessibilityInfo } from 'react-native';
 
 import { AI_CHAT_MAX_LENGTH } from '../chatConfig';
 import { ChatBubble } from './ChatBubble';
@@ -24,6 +25,29 @@ describe('ChatBubble', () => {
     await render(<ChatBubble role="assistant" text={'Use **useState** here'} />);
 
     expect(screen.getByLabelText('AI Tutor said: Use useState here')).toBeOnTheScreen();
+  });
+
+  it('keeps a constant label while the answer streams and announces the finished one once', async () => {
+    const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
+    announce.mockClear();
+    const { rerender } = await render(<ChatBubble role="assistant" text="Hel" isStreaming />);
+    expect(screen.getByLabelText('AI Tutor is writing...')).toBeOnTheScreen();
+
+    await rerender(<ChatBubble role="assistant" text="Hello there" isStreaming />);
+    expect(screen.getByLabelText('AI Tutor is writing...')).toBeOnTheScreen();
+    expect(announce).not.toHaveBeenCalled();
+
+    await rerender(<ChatBubble role="assistant" text="Hello there" />);
+    expect(screen.getByLabelText('AI Tutor said: Hello there')).toBeOnTheScreen();
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledWith('AI Tutor said: Hello there');
+  });
+
+  it('does not announce an answer that was never streamed (saved history)', async () => {
+    const announce = jest.spyOn(AccessibilityInfo, 'announceForAccessibility');
+    announce.mockClear();
+    await render(<ChatBubble role="assistant" text="Old answer" />);
+    expect(announce).not.toHaveBeenCalled();
   });
 
   it('labels the user message as coming from the user', async () => {

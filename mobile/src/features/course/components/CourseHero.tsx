@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { AppText, Badge, GlassIconButton, HeroImage } from '@/components/ui';
+import { useFontScale } from '@/hooks/useFontScale';
 import { useTranslation } from '@/i18n';
 import { formatNumber } from '@/i18n/format';
 import { layout, makeStyles, shadows, spacing, useTheme, withAlpha } from '@/theme';
@@ -28,6 +29,11 @@ export type CourseHeroProps = {
 const HERO_HEIGHT = 480;
 /** Titles longer than this drop from the 38 dp hero size to 28 dp so they stay within 3 lines. */
 const LONG_TITLE_LENGTH = 34;
+/** The serif title is already large: it may grow with the system font, but only up to this much. */
+const TITLE_MAX_FONT_SCALE = 1.2;
+/** Extra hero height per 1.0 of system font scale above normal, so a 3-line title stays clear of the play button. */
+const HERO_HEIGHT_PER_FONT_SCALE = 120;
+const MAX_HERO_FONT_SCALE = 1.6;
 const PLAY_CORE = 68;
 const PLAY_RING = 92;
 
@@ -95,12 +101,14 @@ function CourseHeroBase({
     maximumFractionDigits: 1,
   });
   const isLong = title.length > LONG_TITLE_LENGTH;
+  const fontScale = Math.min(Math.max(useFontScale(), 1), MAX_HERO_FONT_SCALE);
+  const heroHeight = HERO_HEIGHT + Math.round((fontScale - 1) * HERO_HEIGHT_PER_FONT_SCALE);
 
   return (
     <View>
       <HeroImage
         uri={imageUrl}
-        height={HERO_HEIGHT}
+        height={heroHeight}
         testID="course-hero"
         top={
           <>
@@ -138,6 +146,7 @@ function CourseHeroBase({
           variant={isLong ? 'h1' : 'hero'}
           color="white"
           numberOfLines={3}
+          maxFontSizeMultiplier={TITLE_MAX_FONT_SCALE}
           accessibilityRole="header"
         >
           {title}

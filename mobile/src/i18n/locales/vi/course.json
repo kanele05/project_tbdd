@@ -51,7 +51,10 @@
   },
   "preview": {
     "close": "Đóng video giới thiệu",
-    "loading": "Đang tải video"
+    "loading": "Đang tải video",
+    "play": "Phát video xem thử",
+    "sourceLabel": "Video tham khảo · YouTube",
+    "openSource": "Mở video gốc"
   },
   "ai": {
     "title": "Tóm tắt bằng AI",

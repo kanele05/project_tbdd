@@ -48,10 +48,15 @@ describe('registerSchema', () => {
     email: 'rosie@example.com',
     password: 'abc12345',
     confirmPassword: 'abc12345',
+    role: 'STUDENT' as const,
   };
 
   it('accepts valid input', () => {
     expect(registerSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it('accepts teacher as the selected registration role', () => {
+    expect(registerSchema.safeParse({ ...valid, role: 'TEACHER' }).success).toBe(true);
   });
 
   it('rejects a short full name', () => {

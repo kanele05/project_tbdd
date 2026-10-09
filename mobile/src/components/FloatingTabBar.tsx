@@ -136,8 +136,10 @@ const useStyles = makeStyles((t) => ({
     justifyContent: 'center',
     gap: spacing.sm - 2,
   },
-  tabIdle: { width: 56 },
-  tabActive: { backgroundColor: t.colors.primary, paddingHorizontal: spacing.lg, flexShrink: 1 },
+  // Idle tabs are exactly the 48 dp touch target and the active pill is tight, so the label of the
+  // active tab keeps room on a 360 dp phone with a large system font ("Khóa của tôi" at 130 %).
+  tabIdle: { width: layout.minTouchTarget },
+  tabActive: { backgroundColor: t.colors.primary, paddingHorizontal: spacing.md, flexShrink: 1 },
   pressed: { opacity: 0.6 },
   label: { color: t.colors.onPrimary, flexShrink: 1 },
 }));

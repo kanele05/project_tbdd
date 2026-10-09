@@ -11,10 +11,11 @@ export function useCaptcha() {
 
   const onToken = useCallback((value: string) => setToken(value), []);
   const onExpire = useCallback(() => setToken(null), []);
+  const onError = useCallback(() => setToken(null), []);
   const reset = useCallback(() => {
     setToken(null);
     setResetKey((value) => value + 1);
   }, []);
 
-  return { token, resetKey, onToken, onExpire, reset };
+  return { token, resetKey, onToken, onExpire, onError, reset };
 }

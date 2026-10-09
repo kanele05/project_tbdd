@@ -30,8 +30,15 @@ jest.mock('expo-router', () => ({
 
 jest.mock('expo-status-bar', () => ({ StatusBar: () => null }));
 
+jest.mock('@/features/media/YouTubePlayer', () => ({ YouTubePlayer: () => null }));
+
 jest.mock('expo-video', () => ({
-  useVideoPlayer: () => ({ play: jest.fn() }),
+  useVideoPlayer: () => ({
+    status: 'readyToPlay',
+    playing: false,
+    play: jest.fn(),
+    addListener: jest.fn(() => ({ remove: jest.fn() })),
+  }),
   VideoView: () => null,
 }));
 

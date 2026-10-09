@@ -24,7 +24,8 @@ export type QuestionCardProps = {
 
 const AVATAR_SIZE = 40;
 const LIST_MAX_LINES = 4;
-const ACTION_HIT_SLOP = { top: 12, bottom: 12, left: 8, right: 8 } as const;
+// The like / comment rows are ~23 dp tall: 13 dp above and below make a 49 dp touch target.
+const ACTION_HIT_SLOP = { top: 13, bottom: 13, left: 8, right: 8 } as const;
 
 /** SC-15 / SC-16 question: avatar, name, "A day ago", text, ♡ likes and 💬 "{n} Comments". */
 function QuestionCardBase({ question, variant = 'list', onToggleLike, onOpen }: QuestionCardProps) {

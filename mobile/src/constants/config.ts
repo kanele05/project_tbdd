@@ -14,6 +14,12 @@ export const IS_API_URL_CONFIGURED = Boolean((process.env.EXPO_PUBLIC_API_URL ??
 export const APP_VERSION: string = Constants.expoConfig?.version ?? '0.0.0';
 
 export const API_TIMEOUT_MS = 15_000;
+export const AI_REQUEST_TIMEOUT_MS = 120_000;
+
+export type CaptchaProvider = 'turnstile' | 'recaptcha_v2';
+
+export const CAPTCHA_PROVIDER: CaptchaProvider =
+  process.env.EXPO_PUBLIC_CAPTCHA_PROVIDER === 'recaptcha_v2' ? 'recaptcha_v2' : 'turnstile';
 
 /** Cloudflare's published "always passes" Turnstile site key: fine for dev, useless in production. */
 const TURNSTILE_TEST_SITE_KEY = '1x00000000000000000000AA';
@@ -34,6 +40,24 @@ export const TURNSTILE_SITE_KEY: string =
 export const TURNSTILE_BASE_URL: string =
   (process.env.EXPO_PUBLIC_TURNSTILE_BASE_URL ?? '').trim() ||
   API_URL.replace(/^(https?:\/\/[^/]+).*$/, '$1');
+
+const RECAPTCHA_TEST_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+
+export const RECAPTCHA_SITE_KEY: string =
+  (process.env.EXPO_PUBLIC_RECAPTCHA_SITE_KEY ?? '').trim() ||
+  (__DEV__ ? RECAPTCHA_TEST_SITE_KEY : '');
+
+function getRecaptchaDefaultBaseUrl(): string {
+  try {
+    const { hostname } = new URL(API_URL);
+    return hostname ? `https://${hostname}` : '';
+  } catch {
+    return '';
+  }
+}
+
+export const RECAPTCHA_BASE_URL: string =
+  (process.env.EXPO_PUBLIC_RECAPTCHA_BASE_URL ?? '').trim() || getRecaptchaDefaultBaseUrl();
 
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;

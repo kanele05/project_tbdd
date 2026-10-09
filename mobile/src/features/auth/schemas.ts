@@ -48,6 +48,7 @@ export const registerSchema = z
     email: emailField,
     password: passwordRules,
     confirmPassword: z.string().min(1, { error: () => i18n.t('auth:validation.confirmRequired') }),
+    role: z.enum(['STUDENT', 'TEACHER']),
   })
   .refine((values) => values.password === values.confirmPassword, {
     path: ['confirmPassword'],

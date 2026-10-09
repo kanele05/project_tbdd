@@ -116,7 +116,13 @@ describe('useRegister', () => {
       resendAfter: 60,
     });
     const { result } = await run(() => useRegister());
-    const body = { email: 'a@b.co', password: 'secret123', fullName: 'Jane', captchaToken: 'tok' };
+    const body = {
+      email: 'a@b.co',
+      password: 'secret123',
+      fullName: 'Jane',
+      captchaToken: 'tok',
+      role: 'STUDENT' as const,
+    };
 
     await act(async () => {
       await result.current.mutateAsync(body);

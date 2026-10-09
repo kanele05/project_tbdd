@@ -155,7 +155,9 @@ describe('AiTutorScreen', () => {
     await fireEvent.changeText(screen.getByTestId('tutor-input'), 'Another one');
 
     expect(screen.getByTestId('tutor-send')).toBeDisabled();
-    expect(screen.getByLabelText('AI Tutor said: Typing')).toBeOnTheScreen();
+    // The streaming answer keeps one constant label (the final text is announced once it is done).
+    expect(screen.getByText('Typing')).toBeOnTheScreen();
+    expect(screen.getByLabelText('AI Tutor is writing...')).toBeOnTheScreen();
     expect(screen.getByLabelText('You said: Third question')).toBeOnTheScreen();
   });
 

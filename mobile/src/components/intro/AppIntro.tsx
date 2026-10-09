@@ -125,6 +125,7 @@ export function AppIntro({ isReady, isActive = true, onFinish, freezeAtMs }: App
     <Animated.View
       style={[styles.overlay, overlayStyle]}
       accessible
+      accessibilityViewIsModal
       accessibilityRole="image"
       accessibilityLabel={translate('appName')}
       testID="app-intro"

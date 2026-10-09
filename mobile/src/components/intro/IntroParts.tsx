@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: NEON,
-    boxShadow: '0 0 28px 8px rgba(46, 242, 255, 0.55)',
+    boxShadow: `0 0 28px 8px ${withAlpha(NEON, 0.55)}`,
   },
   glow: { position: 'absolute', width: 360, height: 220, pointerEvents: 'none' },
   ribbons: {

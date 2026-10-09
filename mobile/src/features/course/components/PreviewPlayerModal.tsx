@@ -1,8 +1,19 @@
+import { useEventListener } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { ActivityIndicator, Modal, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import {
+  ActivityIndicator,
+  type LayoutChangeEvent,
+  Modal,
+  Platform,
+  ScrollView,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText, Button, IconButton } from '@/components/ui';
+import { isYouTubeHostUrl } from '@/features/media/youtube';
+import { YouTubePlayer } from '@/features/media/YouTubePlayer';
 import { useTranslation } from '@/i18n';
 import { getErrorMessage } from '@/lib/appError';
 import { makeStyles, spacing, useTheme } from '@/theme';
@@ -15,20 +26,130 @@ export type PreviewPlayerModalProps = {
   onClose: () => void;
 };
 
-function PreviewVideo({ url }: { url: string }) {
+function PreviewMp4Video({
+  url,
+  loadingLabel,
+  playLabel,
+  errorMessage,
+  retryLabel,
+  onRetry,
+}: {
+  url: string;
+  loadingLabel: string;
+  playLabel: string;
+  errorMessage: string;
+  retryLabel: string;
+  onRetry: () => void;
+}) {
   const styles = useStyles();
+  const { colors } = useTheme();
   const player = useVideoPlayer(url, (instance) => {
-    instance.play();
+    if (Platform.OS !== 'web') instance.play();
   });
-  return <VideoView player={player} style={styles.video} nativeControls contentFit="contain" />;
+  const [status, setStatus] = useState(player.status);
+  const [isPlaying, setIsPlaying] = useState(player.playing);
+  useEventListener(player, 'statusChange', ({ status: nextStatus }) => setStatus(nextStatus));
+  useEventListener(player, 'playingChange', ({ isPlaying: nextIsPlaying }) =>
+    setIsPlaying(nextIsPlaying),
+  );
+
+  if (status === 'error') {
+    return (
+      <View style={styles.error}>
+        <AppText variant="body" color="white" align="center">
+          {errorMessage}
+        </AppText>
+        <Button title={retryLabel} variant="outline" onPress={onRetry} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.videoStage} testID="preview-video-stage">
+      <VideoView
+        player={player}
+        style={styles.video}
+        nativeControls
+        playsInline
+        contentFit="contain"
+      />
+      {status !== 'readyToPlay' ? (
+        <ActivityIndicator
+          style={styles.playerLoading}
+          pointerEvents="none"
+          size="large"
+          color={colors.white}
+          accessibilityLabel={loadingLabel}
+        />
+      ) : null}
+      {!isPlaying ? (
+        <View style={styles.playOverlay} pointerEvents="box-none">
+          <Button title={playLabel} style={styles.playButton} onPress={() => player.play()} />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function PreviewVideo(props: {
+  url: string;
+  loadingLabel: string;
+  playLabel: string;
+  errorMessage: string;
+  retryLabel: string;
+  onRetry: () => void;
+  sourceLabel: string;
+  openSourceLabel: string;
+  stageSize: { width: number; height: number };
+}) {
+  const styles = useStyles();
+  if (isYouTubeHostUrl(props.url)) {
+    const playerWidth =
+      props.stageSize.width > 0
+        ? Math.min(
+            props.stageSize.width,
+            (Math.max(200, props.stageSize.height - spacing.sm - 48) * 16) / 9,
+          )
+        : '100%';
+    return (
+      <ScrollView
+        style={styles.externalScroll}
+        contentContainerStyle={styles.externalContent}
+        testID="youtube-preview-stage"
+      >
+        <View style={{ width: playerWidth }} testID="youtube-preview-width">
+          <YouTubePlayer
+            source={props.url}
+            title={props.playLabel}
+            loadingLabel={props.loadingLabel}
+            errorLabel={props.errorMessage}
+            retryLabel={props.retryLabel}
+            sourceLabel={props.sourceLabel}
+            openSourceLabel={props.openSourceLabel}
+            onRetry={props.onRetry}
+          />
+        </View>
+      </ScrollView>
+    );
+  }
+  return <PreviewMp4Video {...props} />;
 }
 
 function PreviewBody({ lessonId, onClose }: { lessonId: string; onClose: () => void }) {
-  const { t } = useTranslation(['course', 'common']);
+  const { t } = useTranslation(['course', 'common', 'errors']);
   const { colors } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const { data, isPending, error, refetch } = usePreviewLesson(lessonId);
+  const [playerAttempt, setPlayerAttempt] = useState(0);
+  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
+  const onStageLayout = useCallback(({ nativeEvent: { layout } }: LayoutChangeEvent) => {
+    setStageSize((previous) =>
+      previous.width === layout.width && previous.height === layout.height
+        ? previous
+        : { width: layout.width, height: layout.height },
+    );
+  }, []);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
@@ -41,7 +162,7 @@ function PreviewBody({ lessonId, onClose }: { lessonId: string; onClose: () => v
           testID="preview-close"
         />
       </View>
-      <View style={styles.stage}>
+      <View style={styles.stage} testID="preview-stage" onLayout={onStageLayout}>
         {isPending ? (
           <ActivityIndicator
             size="large"
@@ -49,7 +170,20 @@ function PreviewBody({ lessonId, onClose }: { lessonId: string; onClose: () => v
             accessibilityLabel={t('course:preview.loading')}
           />
         ) : null}
-        {data ? <PreviewVideo url={data.videoUrl} /> : null}
+        {data ? (
+          <PreviewVideo
+            key={playerAttempt}
+            url={data.videoUrl}
+            loadingLabel={t('course:preview.loading')}
+            playLabel={t('course:preview.play')}
+            errorMessage={t('errors:generic')}
+            retryLabel={t('common:actions.retry')}
+            onRetry={() => setPlayerAttempt((attempt) => attempt + 1)}
+            sourceLabel={t('course:preview.sourceLabel')}
+            openSourceLabel={t('course:preview.openSource')}
+            stageSize={stageSize}
+          />
+        ) : null}
         {error ? (
           <View style={styles.error}>
             <AppText variant="body" color="white" align="center">
@@ -94,8 +228,28 @@ const useStyles = makeStyles((t) => ({
   // The `scrim` token (near-black in both themes) is the video backdrop.
   container: { flex: 1, backgroundColor: t.colors.scrim },
   topBar: { height: 56, justifyContent: 'center', paddingHorizontal: spacing.xs },
-  stage: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  video: { width: '100%', aspectRatio: 16 / 9 },
+  stage: { flex: 1, minHeight: 0, alignItems: 'center', justifyContent: 'center' },
+  videoStage: {
+    width: '100%',
+    height: '100%',
+    minHeight: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  video: { width: '100%', height: '100%' },
+  playOverlay: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playerLoading: { position: 'absolute', top: spacing.xl },
+  playButton: { alignSelf: 'center' },
   error: { alignItems: 'center', gap: spacing.lg, paddingHorizontal: spacing.xxl },
   title: { padding: spacing.xl },
+  externalScroll: { width: '100%', height: '100%' },
+  externalContent: { flexGrow: 1, alignItems: 'center', justifyContent: 'center' },
 }));

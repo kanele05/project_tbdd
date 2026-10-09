@@ -17,10 +17,10 @@ import { applyAuthError, getAuthErrorDetails } from '../authErrors';
 import { useAuthFlowStore } from '../authFlowStore';
 import { nowMs } from '../clock';
 import { AuthLayout } from '../components/AuthLayout';
+import { CaptchaWidget } from '../components/CaptchaWidget';
 import { FormError } from '../components/FormError';
 import { FormNotice } from '../components/FormNotice';
 import { LockoutBanner } from '../components/LockoutBanner';
-import { TurnstileWidget } from '../components/TurnstileWidget';
 import { useLogin } from '../hooks';
 import { loginSchema, type LoginFormValues } from '../schemas';
 import { useCaptcha } from '../useCaptcha';
@@ -182,9 +182,10 @@ export function LoginScreen() {
         </Pressable>
       </View>
       {isCaptchaRequired && !isLocked ? (
-        <TurnstileWidget
+        <CaptchaWidget
           onToken={captcha.onToken}
           onExpire={captcha.onExpire}
+          onError={captcha.onError}
           resetKey={captcha.resetKey}
         />
       ) : null}

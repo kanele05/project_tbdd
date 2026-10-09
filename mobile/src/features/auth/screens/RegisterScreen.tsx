@@ -12,8 +12,9 @@ import { useTranslation } from '@/i18n';
 import { applyAuthError } from '../authErrors';
 import { useAuthFlowStore } from '../authFlowStore';
 import { AuthLayout } from '../components/AuthLayout';
+import { CaptchaWidget } from '../components/CaptchaWidget';
 import { FormError } from '../components/FormError';
-import { TurnstileWidget } from '../components/TurnstileWidget';
+import { RegistrationRolePicker } from '../components/RegistrationRolePicker';
 import { useRegister } from '../hooks';
 import { registerSchema, type RegisterFormValues } from '../schemas';
 import { useCaptcha } from '../useCaptcha';
@@ -40,7 +41,13 @@ export function RegisterScreen() {
 
   const { control, handleSubmit, setError } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: {
+      fullName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: 'STUDENT',
+    },
   });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -56,6 +63,7 @@ export function RegisterScreen() {
         email,
         password: values.password,
         captchaToken: captcha.token,
+        role: values.role,
       });
       useAuthFlowStore.getState().startVerifyEmail(email, result.resendAfter);
       router.replace('/verify-email');
@@ -120,6 +128,7 @@ export function RegisterScreen() {
         name="password"
         label={t('password')}
         placeholder={t('placeholders.newPassword')}
+        helperText={t('hints.newPassword')}
         secureTextEntry
         autoCapitalize="none"
         autoComplete="new-password"
@@ -140,9 +149,11 @@ export function RegisterScreen() {
         returnKeyType="go"
         onSubmitEditing={onSubmit}
       />
-      <TurnstileWidget
+      <RegistrationRolePicker control={control} disabled={register.isPending} />
+      <CaptchaWidget
         onToken={captcha.onToken}
         onExpire={captcha.onExpire}
+        onError={captcha.onError}
         resetKey={captcha.resetKey}
       />
       <FormError message={formError} />

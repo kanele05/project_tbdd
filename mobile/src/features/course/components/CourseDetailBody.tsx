@@ -9,6 +9,7 @@ import { CourseLessonsTab } from '@/features/learning/components/CourseLessonsTa
 import { useToggleCourseLike } from '@/features/learning/hooks';
 import { CourseReviewsTab } from '@/features/review/components/CourseReviewsTab';
 import { useToggleFollow } from '@/features/teacher/hooks';
+import { useIsLargeText } from '@/hooks/useFontScale';
 import { useTranslation } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
@@ -17,7 +18,11 @@ import { getCourseBadge } from '@/utils/discount';
 
 import { useCourseAction } from '../useCourseAction';
 import { useShareCourse } from '../useShareCourse';
-import { COURSE_BOTTOM_BAR_CLEARANCE, CourseBottomBar } from './CourseBottomBar';
+import {
+  COURSE_BOTTOM_BAR_CLEARANCE,
+  COURSE_BOTTOM_BAR_LARGE_TEXT_EXTRA,
+  CourseBottomBar,
+} from './CourseBottomBar';
 import { CourseHero } from './CourseHero';
 import { CourseOverviewTab } from './CourseOverviewTab';
 import { CourseStats } from './CourseStats';
@@ -50,6 +55,9 @@ export function CourseDetailBody({
   const { colors } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const isLargeText = useIsLargeText();
+  const barClearance =
+    COURSE_BOTTOM_BAR_CLEARANCE + (isLargeText ? COURSE_BOTTOM_BAR_LARGE_TEXT_EXTRA : 0);
   const isSignedIn = useAuthStore((state) => state.user !== null);
   const { toggleBookmark } = useToggleBookmark();
   const { mutate: toggleLike } = useToggleCourseLike(course.id);
@@ -136,7 +144,7 @@ export function CourseDetailBody({
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: COURSE_BOTTOM_BAR_CLEARANCE + insets.bottom + spacing.xxl,
+          paddingBottom: barClearance + insets.bottom + spacing.xxl,
         }}
         refreshControl={
           <RefreshControl

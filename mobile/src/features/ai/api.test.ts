@@ -1,3 +1,4 @@
+import { AI_REQUEST_TIMEOUT_MS } from '@/constants/config';
 import { api } from '@/lib/apiClient';
 
 import { aiApi } from './api';
@@ -25,11 +26,27 @@ describe('aiApi', () => {
     await aiApi.recommendations('vi');
     await aiApi.lessonQuiz('l1', 'vi');
 
-    expect(mocked.get).toHaveBeenNthCalledWith(1, '/courses/c1/ai/summary', { lang: 'vi' });
-    expect(mocked.get).toHaveBeenNthCalledWith(2, '/lessons/l1/ai/summary', { lang: 'en' });
-    expect(mocked.get).toHaveBeenNthCalledWith(3, '/me/ai/recommendations', { lang: 'vi' });
+    expect(mocked.get).toHaveBeenNthCalledWith(
+      1,
+      '/courses/c1/ai/summary',
+      { lang: 'vi' },
+      { timeout: AI_REQUEST_TIMEOUT_MS },
+    );
+    expect(mocked.get).toHaveBeenNthCalledWith(
+      2,
+      '/lessons/l1/ai/summary',
+      { lang: 'en' },
+      { timeout: AI_REQUEST_TIMEOUT_MS },
+    );
+    expect(mocked.get).toHaveBeenNthCalledWith(
+      3,
+      '/me/ai/recommendations',
+      { lang: 'vi' },
+      { timeout: AI_REQUEST_TIMEOUT_MS },
+    );
     expect(mocked.post).toHaveBeenCalledWith('/lessons/l1/ai/quiz', undefined, {
       params: { lang: 'vi' },
+      timeout: AI_REQUEST_TIMEOUT_MS,
     });
   });
 

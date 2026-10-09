@@ -24,16 +24,16 @@ jest.mock('../hooks', () => ({
   useLogin: () => ({ mutateAsync: mockMutateAsync, isPending: false }),
 }));
 
-jest.mock('../components/TurnstileWidget', () => {
+jest.mock('../components/CaptchaWidget', () => {
   const { createElement } = jest.requireActual('react');
   const { Pressable, Text } = jest.requireActual('react-native');
   return {
-    TurnstileWidget: ({ onToken }: { onToken: (token: string) => void }) =>
+    CaptchaWidget: ({ onToken }: { onToken: (token: string) => void }) =>
       createElement(
         Pressable,
         {
           accessibilityRole: 'button',
-          accessibilityLabel: 'Solve CAPTCHA',
+          accessibilityLabel: 'Verify security',
           onPress: () => onToken('captcha-token'),
         },
         createElement(Text, null, 'captcha'),
@@ -117,7 +117,7 @@ describe('LoginScreen', () => {
     await submit('rosie@example.com', 'wrong-pass1');
 
     expect(await screen.findByText('Incorrect email or password.')).toBeOnTheScreen();
-    expect(screen.queryByLabelText('Solve CAPTCHA')).not.toBeOnTheScreen();
+    expect(screen.queryByLabelText('Verify security')).not.toBeOnTheScreen();
     expect(mockReplace).not.toHaveBeenCalled();
   });
 
@@ -132,7 +132,7 @@ describe('LoginScreen', () => {
     );
     await renderScreen();
     await submit('rosie@example.com', 'wrong-pass1');
-    expect(await screen.findByLabelText('Solve CAPTCHA')).toBeOnTheScreen();
+    expect(await screen.findByLabelText('Verify security')).toBeOnTheScreen();
 
     // Without a token the form does not even call the API.
     await fireEvent.press(screen.getByRole('button', { name: 'Log in' }));
@@ -140,7 +140,7 @@ describe('LoginScreen', () => {
     expect(mockMutateAsync).toHaveBeenCalledTimes(1);
 
     mockMutateAsync.mockResolvedValueOnce(SESSION);
-    await fireEvent.press(screen.getByLabelText('Solve CAPTCHA'));
+    await fireEvent.press(screen.getByLabelText('Verify security'));
     await fireEvent.press(screen.getByRole('button', { name: 'Log in' }));
 
     await waitFor(() =>

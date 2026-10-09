@@ -5,6 +5,8 @@ import { View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
+import { isYouTubeHostUrl, parseYouTubeVideoSource } from '@/features/media/youtube';
+import { YouTubePlayer } from '@/features/media/YouTubePlayer';
 import { useTranslation } from '@/i18n';
 import { makeStyles, spacing } from '@/theme';
 import type { LessonDetail } from '@/types/api';
@@ -26,7 +28,56 @@ export type LessonPlayerProps = {
  * - resumes at the saved `positionSec` (the first `readyToPlay` re-applies it if the seek raced);
  * - feeds the tracker with the 1 s `timeUpdate`, the position when paused, and `playToEnd`.
  */
-export function LessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
+export function LessonPlayer(props: LessonPlayerProps) {
+  if (isYouTubeHostUrl(props.lesson.videoUrl)) {
+    return <YouTubeLessonPlayer {...props} />;
+  }
+  return <Mp4LessonPlayer {...props} />;
+}
+
+function YouTubeLessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
+  const { t } = useTranslation(['learning', 'common']);
+  const styles = useStyles();
+  const [playerAttempt, setPlayerAttempt] = useState(0);
+  const source = parseYouTubeVideoSource(lesson.videoUrl);
+  const tracker = useLessonProgress(lesson, courseId);
+  const didEndRef = useRef(false);
+  const startPositionSec = getResumePosition(lesson);
+
+  return (
+    <View style={styles.container}>
+      <YouTubePlayer
+        key={`${lesson.videoUrl}:${playerAttempt}`}
+        source={lesson.videoUrl}
+        title={lesson.title}
+        initialPositionSec={
+          source?.endSeconds === undefined
+            ? startPositionSec
+            : Math.min(startPositionSec, source.endSeconds - source.startSeconds)
+        }
+        loadingLabel={t('loadingVideo')}
+        errorLabel={t('videoLoadFailed')}
+        retryLabel={t('common:actions.retry')}
+        onRetry={() => setPlayerAttempt((attempt) => attempt + 1)}
+        sourceLabel={t('videoSourceLabel')}
+        openSourceLabel={t('openVideoSource')}
+        onProgress={(positionSec) => tracker.update(positionSec)}
+        onPaused={(positionSec) => {
+          tracker.update(positionSec);
+          void tracker.flush();
+        }}
+        onEnded={() => {
+          if (didEndRef.current) return;
+          didEndRef.current = true;
+          void tracker.markEnded();
+          onEnded?.(lesson.nextLessonId);
+        }}
+      />
+    </View>
+  );
+}
+
+function Mp4LessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
   const { t } = useTranslation(['learning', 'common']);
   const styles = useStyles();
   const [startPositionSec] = useState(() => getResumePosition(lesson));

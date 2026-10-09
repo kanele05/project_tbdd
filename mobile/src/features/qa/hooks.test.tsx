@@ -1,10 +1,11 @@
-import { QueryClient, QueryClientProvider, type InfiniteData } from '@tanstack/react-query';
+import { QueryClientProvider, type InfiniteData } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { AppError } from '@/lib/appError';
 import { queryKeys } from '@/lib/queryKeys';
+import { createTestQueryClient } from '@/test/queryWrapper';
 import type { Paginated, QuestionDto } from '@/types/api';
 
 import { qaApi } from './api';
@@ -31,9 +32,7 @@ function makeQuestion(overrides: Partial<QuestionDto> = {}): QuestionDto {
 }
 
 function setup() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: Infinity } },
-  });
+  const queryClient = createTestQueryClient();
   const listKey = queryKeys.courseQuestions('course-1');
   const list: InfiniteData<Paginated<QuestionDto>, number> = {
     pageParams: [1],

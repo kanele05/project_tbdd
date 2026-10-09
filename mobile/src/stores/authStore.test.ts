@@ -64,6 +64,10 @@ describe('authStore', () => {
     mockedApi.logout.mockResolvedValue(undefined);
   });
 
+  afterEach(() => {
+    queryClient.clear();
+  });
+
   describe('hydrate', () => {
     it('becomes unauthenticated when there are no stored tokens', async () => {
       mockedTokenStorage.get.mockResolvedValue({ accessToken: null, refreshToken: null });

@@ -52,6 +52,7 @@ export function FilePickerField({
               source={{ uri: file.uri }}
               style={styles.thumb}
               contentFit="cover"
+              cachePolicy="memory-disk"
               accessibilityIgnoresInvertColors
             />
           ) : (

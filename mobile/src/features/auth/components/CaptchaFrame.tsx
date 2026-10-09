@@ -15,6 +15,24 @@ type CaptchaFrameProps = {
   children: ReactNode;
 };
 
+type CaptchaGateProps = {
+  onVerify: () => void;
+};
+
+export function CaptchaGate({ onVerify }: CaptchaGateProps) {
+  const { t } = useTranslation('auth');
+  const styles = useStyles();
+
+  return (
+    <View style={styles.gate}>
+      <AppText variant="body" color="textSecondary" align="center">
+        {t('captcha.verifyPrompt')}
+      </AppText>
+      <Button title={t('captcha.verify')} onPress={onVerify} fullWidth testID="captcha-verify" />
+    </View>
+  );
+}
+
 /** Shared chrome of the CAPTCHA widgets: a caption while it loads and a retry button when it fails. */
 export function CaptchaFrame({ status, onRetry, children }: CaptchaFrameProps) {
   const { t } = useTranslation('auth');
@@ -48,6 +66,7 @@ export function CaptchaFrame({ status, onRetry, children }: CaptchaFrameProps) {
 
 const useStyles = makeStyles((t) => ({
   frame: { gap: spacing.sm, alignItems: 'center' },
+  gate: { alignSelf: 'stretch', gap: spacing.md, alignItems: 'center' },
   surface: { alignSelf: 'stretch', minHeight: 70, alignItems: 'center', justifyContent: 'center' },
   hidden: { height: 0, overflow: 'hidden' },
   error: {

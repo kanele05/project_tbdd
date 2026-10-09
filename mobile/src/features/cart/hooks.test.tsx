@@ -1,8 +1,9 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor, act } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
 import { queryKeys } from '@/lib/queryKeys';
+import { createTestQueryClient, flushNotifications } from '@/test/queryWrapper';
 import type { CartDto, CheckoutResponse, CourseDetail, CourseSummary } from '@/types/api';
 
 import { useAddToCart, useCart, useCartCount, useCheckout, useRemoveFromCart } from './hooks';
@@ -48,9 +49,8 @@ const CART: CartDto = {
 };
 
 function setup() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
+  // No retries and no gc timers: a pending 5-minute timer keeps the Jest worker from exiting.
+  const queryClient = createTestQueryClient();
   const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -61,6 +61,7 @@ function setup() {
 /** Waits for TanStack's batched notification so no state update happens outside act(). */
 async function settled(result: { current: { isPending: boolean } }) {
   await waitFor(() => expect(result.current.isPending).toBe(false));
+  await act(flushNotifications);
 }
 
 function invalidatedKeys(spy: jest.SpyInstance): unknown[][] {

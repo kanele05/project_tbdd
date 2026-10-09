@@ -77,7 +77,8 @@ function CourseInfoBase({
 
 const useStyles = makeStyles((t) => ({
   container: { gap: spacing.md },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  // `flexWrap`: with a large system font the two pills no longer fit side by side.
+  row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
   pill: {
     minHeight: 40,
     flexDirection: 'row',

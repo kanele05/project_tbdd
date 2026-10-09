@@ -12,6 +12,8 @@
   "loadingVideo": "Đang tải video",
   "videoUnavailableOffline": "Hãy kết nối mạng để xem bài học này.",
   "videoLoadFailed": "Không tải được video này",
+  "videoSourceLabel": "Video tham khảo · YouTube",
+  "openVideoSource": "Mở video gốc",
   "likes_other": "{{count}} lượt thích",
   "shares_other": "{{count}} lượt chia sẻ",
   "likeCourse": "Thích khóa học này",

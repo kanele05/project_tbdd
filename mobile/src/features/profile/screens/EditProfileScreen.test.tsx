@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { showToast } from '@/components/ui/Toast';
 import { AppError } from '@/lib/appError';
+import { queryClient as appQueryClient } from '@/lib/queryClient';
 import { useAuthStore } from '@/stores/authStore';
 import { renderWithProviders, type ProviderOptions } from '@/test/renderWithProviders';
 import type { UserDto } from '@/types/api';
@@ -53,7 +54,10 @@ describe('EditProfileScreen', () => {
     useAuthStore.setState({ user: USER, status: 'authenticated' });
   });
 
-  afterEach(() => queryClient.clear());
+  afterEach(() => {
+    queryClient.clear();
+    appQueryClient.clear();
+  });
 
   it('shows the current profile with a read-only email and Save disabled until a change', async () => {
     await renderScreen();

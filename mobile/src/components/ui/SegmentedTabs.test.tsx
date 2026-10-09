@@ -50,3 +50,20 @@ describe('SegmentedTabs (concept B)', () => {
     });
   });
 });
+
+describe('SegmentedTabs with a large system font', () => {
+  it('lets a long label wrap onto a second line instead of cutting it off', async () => {
+    await render(
+      <SegmentedTabs
+        tabs={[
+          { key: 'all', label: 'All' },
+          { key: 'done', label: 'Hoàn thành' },
+        ]}
+        value="all"
+        onChange={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Hoàn thành').props.numberOfLines).toBe(2);
+  });
+});

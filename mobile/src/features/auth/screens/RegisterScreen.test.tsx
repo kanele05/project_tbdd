@@ -21,16 +21,16 @@ jest.mock('../hooks', () => ({
   useRegister: () => ({ mutateAsync: mockMutateAsync, isPending: false }),
 }));
 
-jest.mock('../components/TurnstileWidget', () => {
+jest.mock('../components/CaptchaWidget', () => {
   const { createElement } = jest.requireActual('react');
   const { Pressable, Text } = jest.requireActual('react-native');
   return {
-    TurnstileWidget: ({ onToken }: { onToken: (token: string) => void }) =>
+    CaptchaWidget: ({ onToken }: { onToken: (token: string) => void }) =>
       createElement(
         Pressable,
         {
           accessibilityRole: 'button',
-          accessibilityLabel: 'Solve CAPTCHA',
+          accessibilityLabel: 'Verify security',
           onPress: () => onToken('captcha-token'),
         },
         createElement(Text, null, 'captcha'),
@@ -55,6 +55,13 @@ describe('RegisterScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useAuthFlowStore.setState({ verifyEmail: null });
+  });
+
+  it('keeps the placeholder short (it is cut off on one line at large font sizes) and states the rule as a hint', async () => {
+    await render(<RegisterScreen />);
+
+    expect(screen.getByPlaceholderText('At least 8 characters')).toBeOnTheScreen();
+    expect(screen.getByText('Letters and numbers, at least 8 characters.')).toBeOnTheScreen();
   });
 
   it('shows password rule and mismatch errors', async () => {
@@ -98,7 +105,7 @@ describe('RegisterScreen', () => {
     await render(<RegisterScreen />);
 
     await fillForm({ 'Full name': '  Martha Rosie  ' });
-    await fireEvent.press(screen.getByLabelText('Solve CAPTCHA'));
+    await fireEvent.press(screen.getByLabelText('Verify security'));
     await fireEvent.press(screen.getByRole('button', { name: 'Create account' }));
 
     await waitFor(() =>
@@ -107,12 +114,36 @@ describe('RegisterScreen', () => {
         email: 'rosie@example.com',
         password: 'abc12345',
         captchaToken: 'captcha-token',
+        role: 'STUDENT',
       }),
     );
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/verify-email'));
     const flow = useAuthFlowStore.getState().verifyEmail;
     expect(flow?.email).toBe('rosie@example.com');
     expect(flow?.resendAvailableAt).toBeGreaterThan(Date.now());
+  });
+
+  it('sends TEACHER when the user selects Giảng viên', async () => {
+    mockMutateAsync.mockResolvedValue({
+      user: {},
+      emailVerificationRequired: true,
+      codeExpiresIn: 600,
+      resendAfter: 60,
+    });
+    await render(<RegisterScreen />);
+
+    await fillForm();
+    await fireEvent.press(screen.getByRole('radio', { name: 'Teacher' }));
+    await fireEvent.press(screen.getByLabelText('Verify security'));
+    await fireEvent.press(screen.getByRole('button', { name: 'Create account' }));
+
+    await waitFor(() =>
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          role: 'TEACHER',
+        }),
+      ),
+    );
   });
 
   it('shows the duplicate email error (409) under the email field', async () => {
@@ -122,7 +153,7 @@ describe('RegisterScreen', () => {
     await render(<RegisterScreen />);
 
     await fillForm();
-    await fireEvent.press(screen.getByLabelText('Solve CAPTCHA'));
+    await fireEvent.press(screen.getByLabelText('Verify security'));
     await fireEvent.press(screen.getByRole('button', { name: 'Create account' }));
 
     expect(await screen.findByText('This email is already registered.')).toBeOnTheScreen();
@@ -141,7 +172,7 @@ describe('RegisterScreen', () => {
     await render(<RegisterScreen />);
 
     await fillForm();
-    await fireEvent.press(screen.getByLabelText('Solve CAPTCHA'));
+    await fireEvent.press(screen.getByLabelText('Verify security'));
     await fireEvent.press(screen.getByRole('button', { name: 'Create account' }));
     expect(await screen.findByText('The human check failed. Please try again.')).toBeOnTheScreen();
 

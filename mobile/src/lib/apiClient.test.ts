@@ -1,6 +1,9 @@
 import { onlineManager } from '@tanstack/react-query';
 import { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
+import { AI_REQUEST_TIMEOUT_MS, API_TIMEOUT_MS } from '@/constants/config';
+import { aiApi } from '@/features/ai/api';
+
 import { api, apiClient, setAccessToken, setUnauthorizedHandler } from './apiClient';
 import { AppError, getErrorMessage, isAppError } from './appError';
 
@@ -42,6 +45,29 @@ describe('apiClient', () => {
   it('unwraps the { data } envelope', async () => {
     mockNetwork(() => ({ status: 200, data: { data: { id: 'u1' } } }));
     await expect(api.get<{ id: string }>('/auth/me')).resolves.toEqual({ id: 'u1' });
+  });
+
+  it('allows AI generation to finish without extending ordinary request timeouts', async () => {
+    const requests: { url: string | undefined; timeout: number | undefined }[] = [];
+    mockNetwork((config) => {
+      requests.push({ url: config.url, timeout: config.timeout });
+      return { status: 200, data: { data: null } };
+    });
+
+    await aiApi.courseSummary('c1', 'vi');
+    await aiApi.lessonSummary('l1', 'en');
+    await aiApi.lessonQuiz('l1', 'vi');
+    await aiApi.recommendations('vi');
+    await aiApi.chatHistory('c1');
+    await aiApi.clearChat('c1');
+    await api.get('/home');
+
+    expect(AI_REQUEST_TIMEOUT_MS).toBe(120_000);
+    expect(API_TIMEOUT_MS).toBe(15_000);
+    expect(requests.map((request) => request.timeout)).toEqual([
+      120_000, 120_000, 120_000, 120_000, 15_000, 15_000, 15_000,
+    ]);
+    expect(apiClient.defaults.timeout).toBe(API_TIMEOUT_MS);
   });
 
   it('attaches the Bearer token', async () => {

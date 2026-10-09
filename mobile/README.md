@@ -31,6 +31,8 @@ npx expo start              # quét QR bằng Expo Go
 EXPO_PUBLIC_API_URL=http://192.168.1.10:4000/api/v1
 ```
 
+Để dùng Turnstile với widget Cloudflare thật, đặt `EXPO_PUBLIC_TURNSTILE_SITE_KEY` (site key công khai) và `EXPO_PUBLIC_TURNSTILE_BASE_URL=https://app.eliuh.site` trong `mobile/.env`; allowlist widget cần có cả `eliuh.site` và `app.eliuh.site`. `TURNSTILE_SECRET_KEY` chỉ thuộc cấu hình server, không đặt trong mobile env. Nếu site key thiếu, app fallback sang test key; xác nhận biến hiện diện chưa chứng minh CAPTCHA thật hoạt động.
+
 - Điện thoại thật: dùng **IP LAN** của máy chạy server (`ipconfig` → IPv4), cùng Wi-Fi với điện thoại. **Không dùng `localhost`.**
 - Android Emulator: `http://10.0.2.2:4000/api/v1`.
 - Sửa `.env` xong phải khởi động lại Metro: `npx expo start -c`.
@@ -53,9 +55,11 @@ Khi dùng tunnel, API server vẫn phải truy cập được từ điện tho�
 | `npm run typecheck`                  | `tsc --noEmit`                                                     |
 | `npm run lint` / `lint:fix`          | ESLint (`--max-warnings 0`) — tự sắp xếp import                    |
 | `npm run format` / `format:check`    | Prettier                                                           |
+| `npm run check:contrast`             | kiểm tra tương phản WCAG light/dark (cũng được chạy trên CI)       |
 | `npm test` / `test:watch`            | Jest                                                               |
-| `npm run check:contrast`             | bảng tương phản WCAG light/dark (lỗi nếu cặp chữ < 4,5:1)          |
 | `npx expo export --platform android` | build thử bundle (kiểm tra import/route); xóa `dist/` sau khi chạy |
+
+CI chạy `format:check` và `check:contrast` cùng typecheck, lint, test.
 
 Trước khi báo "xong" một task: chạy `typecheck`, `lint`, `test` và báo kết quả thật (CLAUDE.md §11).
 

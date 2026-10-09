@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { TURNSTILE_SITE_KEY } from '@/constants/config';
 import { useTheme } from '@/theme';
 
-import { CaptchaFrame, type CaptchaStatus } from './CaptchaFrame';
+import { CaptchaFrame, CaptchaGate, type CaptchaStatus } from './CaptchaFrame';
 import { TURNSTILE_SCRIPT_URL, type TurnstileTheme, type TurnstileWidgetProps } from './turnstile';
 
 type TurnstileApi = {
@@ -58,13 +58,14 @@ function loadTurnstile(): Promise<TurnstileApi> {
  * CAPTCHA (Cloudflare Turnstile) on the web: loads Cloudflare's script and renders the official
  * widget straight into a DOM node. The site key must list this site's hostname.
  */
-export function TurnstileWidget({
-  onToken,
-  onExpire,
-  onError,
-  resetKey = 0,
-}: TurnstileWidgetProps) {
+export function TurnstileWidget(props: TurnstileWidgetProps) {
   const { isDark } = useTheme();
+  return <TurnstileChallenge key={`${props.resetKey ?? 0}-${isDark}`} {...props} />;
+}
+
+function TurnstileChallenge({ onToken, onExpire, onError }: TurnstileWidgetProps) {
+  const { isDark } = useTheme();
+  const [hasStarted, setHasStarted] = useState(false);
   const containerRef = useRef<View>(null);
   const [status, setStatus] = useState<CaptchaStatus>('loading');
   const [attempt, setAttempt] = useState(0);
@@ -74,12 +75,19 @@ export function TurnstileWidget({
   });
 
   useEffect(() => {
+    if (!hasStarted) return;
     let isCancelled = false;
     let widgetId: string | null = null;
     const fail = () => {
       if (isCancelled) return;
       setStatus('error');
+      callbacks.current.onExpire?.();
       callbacks.current.onError?.();
+    };
+    const expire = () => {
+      if (isCancelled) return;
+      setHasStarted(false);
+      callbacks.current.onExpire?.();
     };
 
     loadTurnstile()
@@ -91,9 +99,11 @@ export function TurnstileWidget({
           sitekey: TURNSTILE_SITE_KEY,
           theme: isDark ? 'dark' : 'light',
           size: 'flexible',
-          callback: (token) => callbacks.current.onToken(token),
-          'expired-callback': () => callbacks.current.onExpire?.(),
-          'timeout-callback': () => callbacks.current.onExpire?.(),
+          callback: (token) => {
+            if (!isCancelled) callbacks.current.onToken(token);
+          },
+          'expired-callback': expire,
+          'timeout-callback': expire,
           'error-callback': () => {
             fail();
             return true;
@@ -107,12 +117,14 @@ export function TurnstileWidget({
       isCancelled = true;
       if (widgetId && window.turnstile) window.turnstile.remove(widgetId);
     };
-  }, [attempt, resetKey, isDark]);
+  }, [attempt, hasStarted, isDark]);
 
   const retry = useCallback(() => {
     setStatus('loading');
     setAttempt((value) => value + 1);
   }, []);
+
+  if (!hasStarted) return <CaptchaGate onVerify={() => setHasStarted(true)} />;
 
   return (
     <CaptchaFrame status={status} onRetry={retry}>

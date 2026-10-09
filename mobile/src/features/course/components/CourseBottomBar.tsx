@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PriceTag } from '@/components/course';
 import { AppText, Button, GlassSurface } from '@/components/ui';
 import { SparklesIcon } from '@/components/ui/SparklesIcon';
+import { useIsLargeText } from '@/hooks/useFontScale';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { CourseDetail } from '@/types/api';
@@ -31,6 +32,9 @@ const AI_BUTTON_SIZE = layout.minTouchTarget;
 /** Space the scroll content must leave under the bar (bar height without the bottom inset). */
 export const COURSE_BOTTOM_BAR_CLEARANCE = 100;
 
+/** With a large system font the price sits on its own row above the buttons: the bar is taller. */
+export const COURSE_BOTTOM_BAR_LARGE_TEXT_EXTRA = 64;
+
 /**
  * Glass CTA bar pinned to the bottom of SC-09: stacked price (or the learning progress when
  * enrolled), the one neon button that follows BR-17 and the round AI button.
@@ -40,6 +44,7 @@ function CourseBottomBarBase({ course, isLoading, onAction, onAskAi }: CourseBot
   const { colors } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const isLargeText = useIsLargeText();
   const action = getCourseAction(course);
   const discountPercent = getDiscountPercent(course);
 
@@ -48,10 +53,17 @@ function CourseBottomBarBase({ course, isLoading, onAction, onAskAi }: CourseBot
       radius={0}
       isBordered={false}
       style={styles.bar}
-      contentStyle={[styles.content, { paddingBottom: insets.bottom + spacing.sm }]}
+      contentStyle={[
+        styles.content,
+        isLargeText ? styles.contentWrap : null,
+        { paddingBottom: insets.bottom + spacing.sm },
+      ]}
       testID="course-bottom-bar"
     >
-      <View style={styles.price}>
+      <View
+        style={[styles.price, isLargeText ? styles.priceRow : null]}
+        testID="course-bottom-bar-price"
+      >
         {course.enrollment ? (
           <>
             <AppText variant="caption">{t('bar.progress')}</AppText>
@@ -102,6 +114,9 @@ const useStyles = makeStyles((t) => ({
     borderTopColor: t.colors.border,
   },
   price: { flexShrink: 1 },
+  // Large system font: price row on top, then the button and the AI button share the row below.
+  contentWrap: { flexWrap: 'wrap', rowGap: spacing.sm },
+  priceRow: { width: '100%' },
   // Tighter padding: "Đăng ký miễn phí" must stay on one line next to the price.
   button: { flex: 1, paddingHorizontal: spacing.md },
   ai: {

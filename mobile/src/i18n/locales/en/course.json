@@ -51,7 +51,10 @@
   },
   "preview": {
     "close": "Close preview",
-    "loading": "Loading video"
+    "loading": "Loading video",
+    "play": "Play preview",
+    "sourceLabel": "Reference video · YouTube",
+    "openSource": "Open original"
   },
   "ai": {
     "title": "AI summary",

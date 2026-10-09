@@ -1,6 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
 import { CinematicHeader } from '@/components/ui/CinematicHeader';
@@ -40,11 +41,16 @@ export function SettingsScreen() {
   const user = useAuthStore((state) => state.user);
   const confirmLogout = useConfirmLogout();
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.screen}>
       <CinematicHeader title={t('title')} posterIndex={9} />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxxl }]}
+        showsVerticalScrollIndicator={false}
+        testID="settings-scroll"
+      >
         <SettingsSection title={t('language.title')} isRadioGroup>
           {LANGUAGE_OPTIONS.map((option) => (
             <OptionRow

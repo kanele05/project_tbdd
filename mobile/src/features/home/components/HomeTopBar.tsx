@@ -78,7 +78,7 @@ function HomeTopBarBase({
         </AppText>
         <AppText
           variant="caption"
-          numberOfLines={1}
+          numberOfLines={2}
           style={[shadow, isOnPhoto ? { color: withAlpha(colors.white, 0.88) } : null]}
         >
           {subtitle}

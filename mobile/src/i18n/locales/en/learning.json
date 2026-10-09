@@ -12,6 +12,8 @@
   "loadingVideo": "Loading video",
   "videoUnavailableOffline": "Connect to the internet to watch this lesson.",
   "videoLoadFailed": "Couldn't load this video",
+  "videoSourceLabel": "Reference video · YouTube",
+  "openVideoSource": "Open original",
   "likes_one": "{{count}} Like",
   "likes_other": "{{count}} Likes",
   "shares_one": "{{count}} Share",

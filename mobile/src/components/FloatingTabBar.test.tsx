@@ -48,6 +48,13 @@ describe('FloatingTabBar', () => {
     expect(screen.getByRole('tab', { name: 'Home' })).not.toBeSelected();
   });
 
+  it('keeps idle tabs at the 48 dp touch target so the active label has room on a 360 dp phone', async () => {
+    const { props } = makeProps(0);
+    await renderWithProviders(<FloatingTabBar {...props} />);
+
+    expect(screen.getByRole('tab', { name: 'Search' })).toHaveStyle({ width: 48, height: 48 });
+  });
+
   it('prints the label only on the active tab (the others are icon-only)', async () => {
     const { props } = makeProps(0);
     await renderWithProviders(<FloatingTabBar {...props} />);

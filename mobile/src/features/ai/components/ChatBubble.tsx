@@ -1,5 +1,5 @@
-import { memo, useMemo } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { memo, useEffect, useMemo, useRef } from 'react';
+import { AccessibilityInfo, ActivityIndicator, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { SparklesIcon } from '@/components/ui/SparklesIcon';
@@ -53,6 +53,16 @@ function ChatBubbleBase({ role, text, isStreaming = false, testID }: ChatBubbleP
   const isUser = role === 'user';
   const blocks = useMemo(() => parseTutorText(text), [text]);
   const label = t(isUser ? 'tutor.youSaid' : 'tutor.assistantSaid', { text: toPlainText(text) });
+  // While the answer arrives its label stays "AI Tutor is writing...": a label (and live region) that
+  // changed with every chunk would make TalkBack re-read the growing text over and over. The finished
+  // answer is announced once.
+  const wasStreaming = useRef(false);
+  useEffect(() => {
+    if (!isUser && wasStreaming.current && !isStreaming && text !== '') {
+      AccessibilityInfo.announceForAccessibility(label);
+    }
+    wasStreaming.current = isStreaming;
+  }, [isUser, isStreaming, text, label]);
 
   if (isUser) {
     return (
@@ -72,7 +82,7 @@ function ChatBubbleBase({ role, text, isStreaming = false, testID }: ChatBubbleP
       <View
         style={styles.assistantBubble}
         accessible
-        accessibilityLabel={label}
+        accessibilityLabel={isStreaming ? t('tutor.typing') : label}
         accessibilityLiveRegion={isStreaming ? 'polite' : 'none'}
       >
         {blocks.length === 0 && isStreaming ? (

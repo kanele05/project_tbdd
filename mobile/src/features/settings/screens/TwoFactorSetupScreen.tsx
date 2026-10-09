@@ -1,7 +1,8 @@
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
@@ -35,6 +36,8 @@ export function TwoFactorSetupScreen() {
   const { t } = useTranslation('settings');
   const toast = useToast();
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
+  const contentStyle = [styles.content, { paddingBottom: insets.bottom + spacing.xxxl }];
   const { mutate: startSetup, ...setup } = useSetupTwoFactor();
   const enable = useEnableTwoFactor();
   const hasStarted = useRef(false);
@@ -75,7 +78,7 @@ export function TwoFactorSetupScreen() {
     return (
       <View style={styles.screen}>
         <CinematicHeader title={t('security.recovery.title')} posterIndex={4} showBack={false} />
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={contentStyle} showsVerticalScrollIndicator={false}>
           <RecoveryCodesView codes={recoveryCodes} onSaved={() => router.back()} />
         </ScrollView>
       </View>
@@ -83,12 +86,14 @@ export function TwoFactorSetupScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    // The code field is at the bottom of a long page: let the keyboard push it up.
+    <KeyboardAvoidingView style={styles.screen} behavior="padding" testID="two-factor-setup-screen">
       <CinematicHeader title={t('security.setup.title')} posterIndex={4} />
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={contentStyle}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        testID="two-factor-setup-scroll"
       >
         {setup.isPending || setup.isIdle ? (
           <View style={styles.centered} accessibilityLabel={t('security.setup.preparing')}>
@@ -163,7 +168,7 @@ export function TwoFactorSetupScreen() {
           </>
         )}
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
