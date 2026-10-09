@@ -113,6 +113,10 @@ services:
       # CAPTCHA + 2FA
       TURNSTILE_SITE_KEY: "${TURNSTILE_SITE_KEY:-}"
       TURNSTILE_SECRET_KEY: "${TURNSTILE_SECRET_KEY:-}"
+      CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-turnstile}"
+      RECAPTCHA_SITE_KEY: "${RECAPTCHA_SITE_KEY:-}"
+      RECAPTCHA_SECRET_KEY: "${RECAPTCHA_SECRET_KEY:-}"
+      CAPTCHA_ALLOWED_HOSTNAMES: "${CAPTCHA_ALLOWED_HOSTNAMES:-}"
       TOTP_ENC_KEY: "${TOTP_ENC_KEY:?Set TOTP_ENC_KEY in deploy/.env (openssl rand -base64 32)}"
     volumes:
       - uploads:/app/uploads
@@ -127,6 +131,9 @@ services:
         # URL API được nhúng vào bundle lúc build -> đổi DOMAIN thì phải build lại image web.
         EXPO_PUBLIC_API_URL: "https://api.${DOMAIN}/api/v1"
         EXPO_PUBLIC_TURNSTILE_SITE_KEY: "${TURNSTILE_SITE_KEY:-}"
+        EXPO_PUBLIC_CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-turnstile}"
+        EXPO_PUBLIC_RECAPTCHA_SITE_KEY: "${RECAPTCHA_SITE_KEY:-}"
+        EXPO_PUBLIC_RECAPTCHA_BASE_URL: "https://app.${DOMAIN}"
     container_name: elearning-web
     mem_limit: 64m
 
@@ -279,7 +286,8 @@ services:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/etc/grafana/dashboards:ro
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/health"]
+      test:
+        ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 5s
       retries: 5

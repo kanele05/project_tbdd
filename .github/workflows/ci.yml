@@ -32,7 +32,7 @@ jobs:
   server:
     name: Server (typecheck, lint, test)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: server
@@ -107,8 +107,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Kiểm tra định dạng (Prettier)
+        run: npm run format:check
+
+      - name: Kiểm tra tương phản màu
+        run: npm run check:contrast
+
       - name: Test
-        run: npm test -- --ci
+        run: npm test -- --ci --runInBand
 
   docker:
     # Build thử 2 image để lỗi Dockerfile lộ ra ở PR chứ không phải lúc deploy (không push, không cần secret).

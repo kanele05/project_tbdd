@@ -1,8 +1,14 @@
-# Triển khai E-Learning lên VPS (DigitalOcean + Docker Compose)
+# Triển khai E-Learning lên VPS (AWS EC2 + Docker Compose)
+
+> **Kiểm chứng mới nhất 07/10/2026:** SSH qua Elastic IP `13.238.92.36` thành công, fingerprint ED25519 khớp AWS system log. Docker 29.8.2 và Compose 5.6.0 đã cài; container `hello-world` chạy thành công bằng user `ubuntu`. Swap 2 GiB, UFW, fail2ban và SSH chỉ dùng key đã được kiểm tra. Chưa triển khai app hoặc trỏ DNS. Xem [AWS_CLOUD.md](AWS_CLOUD.md) trước các bước dùng chung bên dưới.
+
+> **Nhà cung cấp hiện hành:** AWS EC2 Free Plan, Sydney, Ubuntu 24.04 x86/64, c7i-flex.large 2 vCPU/4 GiB, gp3 40 GiB. Chỉ bật khi test/demo. Giá Linux Console $0.11072/giờ (~$79.72/30 ngày, chưa ổ đĩa/IP/lưu lượng), credit $100 không đảm bảo chạy 24/7 tới bảo vệ. Người dùng chọn Elastic IP cố định; EBS và Elastic IP vẫn tiêu credit khi máy dừng. Không Upgrade/Activate advanced features. Các bước Linux cần sudo qua user Ubuntu, không mặc định root.
+
+> **Lịch sử:** Oracle/GCP/DigitalOcean không còn là phương án đang thực hiện. Không tạo thêm máy hoặc làm lại provisioning trên EC2 đã chuẩn bị.
 
 Hướng dẫn **từng bước, cho người làm lần đầu**. Làm tuần tự từ mục 1 đến mục 14; mỗi mục có lệnh cụ thể và cách **kiểm tra đã thành công**. Mọi lệnh ở khối `bash` chạy trên VPS (trừ khi ghi rõ "trên máy bạn").
 
-> Thuật ngữ: **VPS/droplet** = máy chủ ảo thuê trên DigitalOcean · **domain** = tên miền (ví dụ `elearning-demo.xyz`) · trong tài liệu này viết là `<domain>` — thay bằng tên miền thật của bạn.
+> Thuật ngữ: **VPS/VM** = máy chủ ảo; **droplet** là tên gọi riêng của DigitalOcean · **domain** = tên miền; trong tài liệu này viết là `<domain>` — dự án dùng `eliuh.site`.
 
 ---
 
@@ -24,33 +30,34 @@ Internet ──► Caddy (cổng 80/443, HTTPS tự động Let's Encrypt)
    mailpit (tùy chọn, profile "mail"): hộp thư giả để thử email
 ```
 
-| Service | Vai trò | Ai truy cập được |
-|---|---|---|
-| `caddy` | Reverse proxy + HTTPS | **Internet** (cổng 80, 443 — cổng duy nhất mở ra ngoài) |
-| `api` | REST API + `/metrics` (cổng nội bộ 9464) | Qua Caddy (`api.<domain>`); `/metrics` chỉ trong mạng Docker |
-| `web` | Bản web của app | Qua Caddy (`<domain>`, `app.<domain>`) |
-| `postgres` | Cơ sở dữ liệu PostgreSQL 17 | Chỉ trong mạng Docker |
-| `backup` | `pg_dump` hằng ngày vào `deploy/backups/` | Không có cổng |
-| `prometheus` / `loki` / `alloy` | Thu metrics / lưu log / thu log | Chỉ trong mạng Docker |
-| `grafana` | Dashboard | Qua Caddy (`grafana.<domain>`, có đăng nhập) |
-| `node-exporter`, `cadvisor`, `postgres-exporter` | Đo VPS / container / PostgreSQL | Chỉ Prometheus |
-| `mailpit` *(tùy chọn)* | Hộp thư giả | Chỉ qua SSH tunnel (`127.0.0.1:8025`) |
-| `uptime-kuma` *(tùy chọn)* | Trang uptime | Qua Caddy nếu bật `sites/status.caddy` |
+| Service                                          | Vai trò                                   | Ai truy cập được                                             |
+| ------------------------------------------------ | ----------------------------------------- | ------------------------------------------------------------ |
+| `caddy`                                          | Reverse proxy + HTTPS                     | **Internet** (cổng 80, 443 — cổng duy nhất mở ra ngoài)      |
+| `api`                                            | REST API + `/metrics` (cổng nội bộ 9464)  | Qua Caddy (`api.<domain>`); `/metrics` chỉ trong mạng Docker |
+| `web`                                            | Bản web của app                           | Qua Caddy (`<domain>`, `app.<domain>`)                       |
+| `postgres`                                       | Cơ sở dữ liệu PostgreSQL 17               | Chỉ trong mạng Docker                                        |
+| `backup`                                         | `pg_dump` hằng ngày vào `deploy/backups/` | Không có cổng                                                |
+| `prometheus` / `loki` / `alloy`                  | Thu metrics / lưu log / thu log           | Chỉ trong mạng Docker                                        |
+| `grafana`                                        | Dashboard                                 | Qua Caddy (`grafana.<domain>`, có đăng nhập)                 |
+| `node-exporter`, `cadvisor`, `postgres-exporter` | Đo VPS / container / PostgreSQL           | Chỉ Prometheus                                               |
+| `mailpit` _(tùy chọn)_                           | Hộp thư giả                               | Chỉ qua SSH tunnel (`127.0.0.1:8025`)                        |
+| `uptime-kuma` _(tùy chọn)_                       | Trang uptime                              | Qua Caddy nếu bật `sites/status.caddy`                       |
 
 Tổng giới hạn RAM đặt trong compose (`mem_limit`) ≈ 3,1 GB cho VPS 4 GB, kèm swap 2 GB ở mục 3.
 
 ### 0.2 Việc **bạn phải tự làm** (không ai làm hộ được)
 
-| Việc | Mục | Task PLAN |
-|---|---|---|
-| Đăng ký GitHub Student Developer Pack, nhận credit DigitalOcean | 1 | OPS-04 |
-| Tạo droplet, trỏ DNS tên miền, đặt GitHub Secrets | 2, 5, 8 | OPS-04 |
-| Tạo tài khoản Cloudflare, widget Turnstile (site key + secret key) | 11 | AUTH-11 |
-| Tạo tài khoản Brevo hoặc Resend, xác minh domain, SPF/DKIM/DMARC | 12 | AUTH-11 |
-| Lấy API key Gemini ở Google AI Studio | 13 | AI-01 |
-| `eas login` rồi build APK | 9 | PLT-02 |
+| Việc                                                             | Mục                | Task PLAN | Tình trạng (07/10/2026)                                                                                                                                                                     |
+| ---------------------------------------------------------------- | ------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chọn nhà cung cấp / xác minh tài khoản                           | AWS_CLOUD.md §1    | OPS-04    | AWS Free Plan đã đăng ký, EC2 Sydney Running/checks Passed theo người dùng                                                                                                                  |
+| Chuẩn bị EC2, IP, DNS và GitHub Secrets                          | AWS_CLOUD.md, 5, 8 | OPS-04    | SSH/Docker/swap/bảo mật đã kiểm chứng; Elastic IP `13.238.92.36` kết nối đúng máy; chờ DNS, env production, deploy và GitHub Secrets                                                        |
+| Tạo tài khoản Cloudflare, widget Turnstile                       | 11                 | AUTH-11   | Keys đã nhập vào env local tương ứng; chỉ xác nhận biến hiện diện, chưa kiểm tra giá trị. `EXPO_PUBLIC_TURNSTILE_BASE_URL` còn trống; CAPTCHA thật chưa xác minh; VPS chưa có `deploy/.env` |
+| Tạo tài khoản Brevo hoặc Resend, xác minh domain, SPF/DKIM/DMARC | 12                 | AUTH-11   | Brevo đã cấu hình và gửi OTP thật thành công                                                                                                                                                |
+| Lấy API key Gemini ở Google AI Studio                            | 13                 | AI-01     | Gemini thật đã chạy trên Android (05/10/2026)                                                                                                                                               |
+| Xác nhận CI checks                                               | —                  | OPS-03    | Run cũ: server/Docker pass, mobile bị hủy vì Jest không thoát. Đã sửa và xác nhận local 1467 test tự thoát exit 0; chưa push/rerun CI mới                                                   |
+| Đăng nhập/liên kết Expo, cấu hình EAS và build APK               | 9                  | PLT-02    | Người dùng đã cài CLI, login/init thành công; project đã liên kết. Site key công khai đã lên EAS preview/production; chưa build vì chưa có VPS/API production                               |
 
-> **Tuyệt đối không** dán mật khẩu, API key, private key vào chat, issue, commit hay ảnh chụp màn hình gửi người khác. Bí mật chỉ nằm trong `deploy/.env` trên VPS và trong GitHub Secrets.
+> **Tuyệt đối không** dán mật khẩu, API key, private key vào chat, issue, commit hay ảnh chụp màn hình gửi người khác. Production secrets chỉ nằm trong `deploy/.env` trên VPS và GitHub Secrets; env local không commit.
 
 ### 0.3 Cấu trúc thư mục `deploy/`
 
@@ -71,15 +78,11 @@ deploy/
 
 ---
 
-## 1. GitHub Student Developer Pack → credit DigitalOcean
+## 1. Nhà cung cấp và credit
 
-1. Vào <https://education.github.com/pack> → **Get student benefits** → đăng nhập GitHub → làm theo hướng dẫn xác minh sinh viên (email trường `.edu`/thẻ sinh viên). Việc duyệt có thể mất vài phút đến vài ngày.
-2. Khi đã được duyệt, mở lại trang Pack, tìm mục **DigitalOcean** → bấm **Get access** để nhận liên kết tạo tài khoản kèm credit (thường là **$200 dùng trong 1 năm** — ưu đãi có thể thay đổi, đọc điều kiện hiện hành trên trang Pack).
-3. Tạo tài khoản DigitalOcean **bằng đúng liên kết đó**. DigitalOcean yêu cầu thêm một phương thức thanh toán (thẻ hoặc PayPal) để xác minh; credit được trừ trước.
+**Hiện tại chọn AWS EC2:** làm theo [AWS_CLOUD.md](AWS_CLOUD.md). Máy Ubuntu x86_64 và Docker đã sẵn sàng; không cần hướng ARM64 của Oracle. Các tài liệu [Oracle](ORACLE_CLOUD.md) và [GCP](GOOGLE_CLOUD.md) chỉ giữ tham khảo. Không nâng cấp trả phí nếu chưa chủ động đồng ý.
 
-**Kiểm tra:** trang DigitalOcean → **Billing** hiển thị credit (vd. `$200.00`) và ngày hết hạn. Ghi lại ngày hết hạn; sau đó droplet 4 GB (≈ $24/tháng) sẽ tự trừ vào thẻ — nhớ **xóa droplet** khi không cần nữa (mục 14.3).
-
-> Pack còn tặng tên miền miễn phí 1 năm ở một số nhà đăng ký (xem trang Pack). Chọn đuôi miền mà nhà đăng ký hỗ trợ trỏ DNS tự do (bản ghi A/TXT/CNAME).
+**Phương án DigitalOcean cũ:** không mặc định Student Pack cấp $200 hay thời hạn một năm. Người dùng xác nhận không có credit ngày 07/10/2026. Mục 2 bên dưới chỉ giữ tham khảo, không phải bước cần thực hiện cho AWS.
 
 ---
 
@@ -97,14 +100,14 @@ cat ~/.ssh/elearning_admin.pub        # in khóa công khai - copy dòng này
 
 DigitalOcean → **Create → Droplets**:
 
-| Mục | Chọn |
-|---|---|
-| Region | **Singapore (SGP1)** — gần Việt Nam nhất |
-| Image | **Ubuntu 24.04 (LTS) x64** |
-| Size | **Basic → Regular (SSD) → 2 vCPU / 4 GB RAM / 80 GB** (≈ $24/tháng) |
-| Authentication | **SSH Key** → *New SSH Key* → dán khóa công khai ở 2.1 |
-| Hostname | `elearning` |
-| Tùy chọn khác | bỏ qua *Backups* (đã có sao lưu DB ở mục 10); có thể bật *Monitoring* miễn phí |
+| Mục            | Chọn                                                                           |
+| -------------- | ------------------------------------------------------------------------------ |
+| Region         | **Singapore (SGP1)** — gần Việt Nam nhất                                       |
+| Image          | **Ubuntu 24.04 (LTS) x64**                                                     |
+| Size           | **Basic → Regular (SSD) → 2 vCPU / 4 GB RAM / 80 GB** (≈ $24/tháng)            |
+| Authentication | **SSH Key** → _New SSH Key_ → dán khóa công khai ở 2.1                         |
+| Hostname       | `elearning`                                                                    |
+| Tùy chọn khác  | bỏ qua _Backups_ (đã có sao lưu DB ở mục 10); có thể bật _Monitoring_ miễn phí |
 
 Bấm **Create Droplet**, chờ ~1 phút, copy **địa chỉ IPv4** (vd. `203.0.113.10`).
 
@@ -271,12 +274,12 @@ docker compose version              # Docker Compose version v2.x
 
 Bạn cần 4 tên trỏ về IP của droplet:
 
-| Loại | Tên (Host) | Giá trị | TTL |
-|---|---|---|---|
-| A | `@` (tên miền gốc) | `203.0.113.10` (IP droplet) | 300 |
-| A | `app` | `203.0.113.10` | 300 |
-| A | `api` | `203.0.113.10` | 300 |
-| A | `grafana` | `203.0.113.10` | 300 |
+| Loại | Tên (Host)         | Giá trị                     | TTL |
+| ---- | ------------------ | --------------------------- | --- |
+| A    | `@` (tên miền gốc) | `203.0.113.10` (IP droplet) | 300 |
+| A    | `app`              | `203.0.113.10`              | 300 |
+| A    | `api`              | `203.0.113.10`              | 300 |
+| A    | `grafana`          | `203.0.113.10`              | 300 |
 
 - Vào trang quản lý DNS của nơi bạn mua tên miền (hoặc đổi nameserver sang DigitalOcean rồi tạo bản ghi ở **Networking → Domains**).
 - **TTL = 300 giây (5 phút)** trong lúc cấu hình để sửa sai có hiệu lực nhanh; ổn định rồi tăng lên 3600.
@@ -302,13 +305,13 @@ Bốn địa chỉ sau khi deploy: `https://eliuh.site` và `https://app.eliuh.s
 2. Nếu tên miền đã có sẵn bản ghi mặc định của Tenten (bản ghi `A` cho `@`/`www` trỏ về trang đỗ tên miền), **sửa** bản ghi `@` thay vì tạo trùng; xóa bản ghi `www` cũ hoặc trỏ nó về cùng IP.
 3. Bấm **Thêm** và tạo lần lượt (Loại `A`, Giá trị = IP droplet, độ ưu tiên để mặc định, TTL 300 nếu có ô TTL):
 
-   | Tên | Loại | Giá trị |
-   |---|---|---|
-   | `@` | A | IP droplet |
-   | `app` | A | IP droplet |
-   | `api` | A | IP droplet |
-   | `grafana` | A | IP droplet |
-   | `www` *(tùy chọn)* | A | IP droplet |
+   | Tên                | Loại | Giá trị    |
+   | ------------------ | ---- | ---------- |
+   | `@`                | A    | IP droplet |
+   | `app`              | A    | IP droplet |
+   | `api`              | A    | IP droplet |
+   | `grafana`          | A    | IP droplet |
+   | `www` _(tùy chọn)_ | A    | IP droplet |
 
 4. Bấm **Lưu**. **Không** dùng nút "Cấu hình theo IP" của Tenten nếu tên miền đã có bản ghi khác (nút này xóa toàn bộ bản ghi cũ — sẽ mất cả bản ghi email SPF/DKIM ở mục 12).
 5. Các bản ghi email của Brevo/Resend (mục 12.2: `TXT` SPF, `TXT`/`CNAME` DKIM, `TXT` `_dmarc`) cũng thêm ở đúng trang **Cài đặt DNS** này.
@@ -344,7 +347,7 @@ rm -rf /tmp/project_tbdd
 cd ~/elearning/deploy && ls
 ```
 
-*(Repo riêng tư? Trên máy bạn: `scp -i ~/.ssh/elearning_admin -r deploy deploy@203.0.113.10:~/elearning/`.)*
+_(Repo riêng tư? Trên máy bạn: `scp -i ~/.ssh/elearning_admin -r deploy deploy@203.0.113.10:~/elearning/`.)_
 
 **Kiểm tra:** `ls` hiện `docker-compose.yml  caddy  grafana  scripts ...` và `ls -a` có `.env.example`.
 
@@ -365,6 +368,8 @@ sed -i "s|^ACME_EMAIL=.*|ACME_EMAIL=ban@gmail.com|"        .env
 nano .env                                                   # xem lại, điền SMTP/Turnstile/Gemini ở các mục 11-13 sau
 ```
 
+Trước khi chạy seed ở mục 6.5, đặt hoặc xác nhận `PUBLIC_BASE_URL=https://api.<domain>` trong `deploy/.env` (domain hiện tại: `https://api.eliuh.site`). API dùng URL công khai này để tạo link tuyệt đối cho media.
+
 **Kiểm tra:** `grep -E "^(DOMAIN|ACME_EMAIL|POSTGRES_PASSWORD|JWT_SECRET|TOTP_ENC_KEY|GRAFANA_ADMIN_PASSWORD)=" .env` — cả 6 dòng đều có giá trị. Sau đó:
 
 ```bash
@@ -382,7 +387,7 @@ docker compose up -d caddy postgres backup prometheus loki alloy grafana node-ex
 docker compose ps
 ```
 
-*(Muốn thử Let's Encrypt trước mà không lo bị giới hạn số lần xin chứng chỉ: tạm đặt `ACME_CA=https://acme-staging-v02.api.letsencrypt.org/directory` trong `.env`, kiểm tra xong đổi lại bản thật và `docker compose up -d --force-recreate caddy`; xóa chứng chỉ staging bằng `docker volume rm elearning_caddy_data` khi caddy đã dừng.)*
+_(Muốn thử Let's Encrypt trước mà không lo bị giới hạn số lần xin chứng chỉ: tạm đặt `ACME_CA=https://acme-staging-v02.api.letsencrypt.org/directory` trong `.env`, kiểm tra xong đổi lại bản thật và `docker compose up -d --force-recreate caddy`; xóa chứng chỉ staging bằng `docker volume rm elearning_caddy_data` khi caddy đã dừng.)_
 
 **Kiểm tra:** cột STATUS của mọi service là `Up` (postgres/prometheus/grafana có thêm `(healthy)` sau ~30 giây).
 
@@ -420,16 +425,17 @@ docker compose exec -e SEED_FORCE=1 api /opt/tools/node_modules/.bin/tsx prisma/
    ```
 3. Vào **Dashboards → E-Learning** (thư mục tự nạp từ `grafana/dashboards/`). Có 4 dashboard:
 
-| Dashboard | Xem gì | Dữ liệu từ |
-|---|---|---|
-| **E-Learning · API** *(trang chủ mặc định)* | Request/s, tỷ lệ lỗi 4xx/5xx, latency p50/p95/p99 (tổng và theo route), request đang xử lý, CPU/RAM/event loop của Node.js, lệnh gọi AI (số lượng, độ trễ, tỷ lệ lỗi) | `/metrics` của API |
-| **E-Learning · Hạ tầng** | CPU, RAM, swap, disk, mạng, load của VPS; CPU/RAM/mạng/uptime từng container; OOM kill; trạng thái scrape (`up`) | node-exporter, cAdvisor |
-| **E-Learning · PostgreSQL** | Kết nối, giao dịch/s, cache hit, dung lượng DB, deadlock, khóa, bảng lớn nhất | postgres-exporter |
-| **E-Learning · Logs** | Số dòng log API theo mức độ, lỗi gần đây, request chậm > 1 giây, truy vấn Postgres chậm, lỗi Caddy/5xx, ô tìm kiếm tự do | Loki (qua Alloy) |
+| Dashboard                                   | Xem gì                                                                                                                                                                | Dữ liệu từ              |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| **E-Learning · API** _(trang chủ mặc định)_ | Request/s, tỷ lệ lỗi 4xx/5xx, latency p50/p95/p99 (tổng và theo route), request đang xử lý, CPU/RAM/event loop của Node.js, lệnh gọi AI (số lượng, độ trễ, tỷ lệ lỗi) | `/metrics` của API      |
+| **E-Learning · Hạ tầng**                    | CPU, RAM, swap, disk, mạng, load của VPS; CPU/RAM/mạng/uptime từng container; OOM kill; trạng thái scrape (`up`)                                                      | node-exporter, cAdvisor |
+| **E-Learning · PostgreSQL**                 | Kết nối, giao dịch/s, cache hit, dung lượng DB, deadlock, khóa, bảng lớn nhất                                                                                         | postgres-exporter       |
+| **E-Learning · Logs**                       | Số dòng log API theo mức độ, lỗi gần đây, request chậm > 1 giây, truy vấn Postgres chậm, lỗi Caddy/5xx, ô tìm kiếm tự do                                              | Loki (qua Alloy)        |
 
 Dashboard được nạp từ file nên **không sửa và lưu trong giao diện** được (tránh lệch với git). Muốn đổi: sửa file JSON trong `grafana/dashboards/`, deploy lại; Grafana tự nạp trong ≤ 60 giây.
 
 **Kiểm tra:**
+
 - **Connections → Data sources**: có `Prometheus` và `Loki`; bấm **Save & test** ra "Successfully queried".
 - **Explore** → chọn Prometheus → chạy `up` → mọi job (`api`, `node`, `cadvisor`, `postgres`, `prometheus`, `loki`, `alloy`, `grafana`) bằng **1**. (`api` = 0 cho tới khi API chạy ở mục 8.)
 - Tạo thử lưu lượng rồi xem dashboard API sau ~30 giây:
@@ -468,16 +474,16 @@ ssh-keyscan -t ed25519 203.0.113.10        # in ra 1 dòng "203.0.113.10 ssh-ed2
 
 Repo trên GitHub → **Settings → Secrets and variables → Actions → New repository secret**:
 
-| Secret | Giá trị | Bắt buộc |
-|---|---|---|
-| `SSH_HOST` | IP droplet, vd. `203.0.113.10` | ✔ |
-| `SSH_USER` | `deploy` | ✔ |
-| `SSH_KEY` | **toàn bộ** nội dung file `~/.ssh/elearning_deploy` (cả dòng `-----BEGIN OPENSSH PRIVATE KEY-----` và `END`) — `cat ~/.ssh/elearning_deploy` | ✔ |
-| `DOMAIN` | tên miền gốc, vd. `elearning-demo.xyz` (nhúng vào bản web: `https://api.<domain>/api/v1`) | ✔ |
-| `SSH_KNOWN_HOSTS` | dòng in ra bởi `ssh-keyscan` ở 8.1 (chống giả mạo máy chủ) | khuyến nghị |
-| `TURNSTILE_SITE_KEY` | site key Turnstile (mục 11); nhúng vào bản web lúc build | khi bật CAPTCHA |
-| `SSH_PORT` | cổng SSH nếu khác 22 | tùy chọn |
-| `DEPLOY_PATH` | thư mục deploy trên VPS nếu khác `elearning/deploy` (tính từ thư mục home) | tùy chọn |
+| Secret               | Giá trị                                                                                                                                      | Bắt buộc        |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `SSH_HOST`           | IP droplet, vd. `203.0.113.10`                                                                                                               | ✔               |
+| `SSH_USER`           | `deploy`                                                                                                                                     | ✔               |
+| `SSH_KEY`            | **toàn bộ** nội dung file `~/.ssh/elearning_deploy` (cả dòng `-----BEGIN OPENSSH PRIVATE KEY-----` và `END`) — `cat ~/.ssh/elearning_deploy` | ✔               |
+| `DOMAIN`             | tên miền gốc, vd. `elearning-demo.xyz` (nhúng vào bản web: `https://api.<domain>/api/v1`)                                                    | ✔               |
+| `SSH_KNOWN_HOSTS`    | dòng in ra bởi `ssh-keyscan` ở 8.1 (chống giả mạo máy chủ)                                                                                   | khuyến nghị     |
+| `TURNSTILE_SITE_KEY` | site key Turnstile (mục 11); nhúng vào bản web lúc build                                                                                     | khi bật CAPTCHA |
+| `SSH_PORT`           | cổng SSH nếu khác 22                                                                                                                         | tùy chọn        |
+| `DEPLOY_PATH`        | thư mục deploy trên VPS nếu khác `elearning/deploy` (tính từ thư mục home)                                                                   | tùy chọn        |
 
 Không cần secret để đăng nhập GHCR: workflow dùng `GITHUB_TOKEN` có sẵn.
 
@@ -494,6 +500,7 @@ Cũng kiểm tra **Settings → Actions → General → Workflow permissions**: 
 ```bash
 curl -s https://api.<domain>/api/v1/health      # {"data":{"status":"ok",...}}
 ```
+
 Mở `https://app.<domain>` thấy app web; `https://grafana.<domain>` → dashboard API bắt đầu có số liệu. Rồi chạy seed ở mục 6.5.
 
 ### 8.4 Gói (package) GHCR
@@ -505,53 +512,65 @@ Image nằm ở `ghcr.io/<chu-repo>/elearning-api` và `elearning-web` (xem tron
   ```bash
   echo "<token>" | docker login ghcr.io -u <ten-github> --password-stdin
   ```
-Nếu gói báo không cho repo truy cập: **Package settings → Manage Actions access → Add repository** (chọn repo, role *Write*).
+
+Nếu gói báo không cho repo truy cập: **Package settings → Manage Actions access → Add repository** (chọn repo, role _Write_).
 
 ### 8.5 Dùng hằng ngày
 
-| Việc | Cách làm |
-|---|---|
-| Kiểm thử | mở PR vào `develop`/`main` → `ci.yml` tự chạy |
-| Triển khai | merge vào `main` → `deploy.yml` tự build + cập nhật VPS (tag image: `latest`, `sha-xxxxxxx`) |
-| Phát hành | `git tag v1.0.0 && git push origin v1.0.0` → như trên, thêm tag `1.0.0`, `1.0` |
-| Deploy tay trên VPS | `cd ~/elearning/deploy && bash scripts/deploy.sh` |
+| Việc                      | Cách làm                                                                                                         |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Kiểm thử                  | mở PR vào `develop`/`main` → `ci.yml` tự chạy                                                                    |
+| Triển khai                | merge vào `main` → `deploy.yml` tự build + cập nhật VPS (tag image: `latest`, `sha-xxxxxxx`)                     |
+| Phát hành                 | `git tag v1.0.0 && git push origin v1.0.0` → như trên, thêm tag `1.0.0`, `1.0`                                   |
+| Deploy tay trên VPS       | `cd ~/elearning/deploy && bash scripts/deploy.sh`                                                                |
 | Quay về bản cũ (rollback) | sửa `.env`: `IMAGE_TAG=sha-xxxxxxx` (mã commit cũ) rồi `bash scripts/deploy.sh`; xong đặt lại `IMAGE_TAG=latest` |
-| Đổi `.env` | sửa file rồi `docker compose up -d` (tự tạo lại container có thay đổi) |
+| Đổi `.env`                | sửa file rồi `docker compose up -d` (tự tạo lại container có thay đổi)                                           |
 
 Mỗi lần deploy, `scripts/deploy.sh` kéo image mới, `docker compose up -d`, reload Caddy, restart Prometheus/Loki/Alloy nếu file cấu hình của chúng đổi, chờ API `healthy` (đã chạy xong `prisma migrate deploy`) và dọn image cũ.
 
 ---
 
-## 9. Build APK Android bằng EAS *(bạn tự `eas login`)*
+## 9. Build APK Android bằng EAS
 
 Trên **máy bạn** (cần Node.js):
 
 ```bash
-npm install -g eas-cli
 cd mobile
-eas login                    # đăng nhập tài khoản Expo (https://expo.dev, miễn phí) - bạn tự làm
-eas init                     # lần đầu: liên kết dự án với tài khoản Expo (ghi projectId vào app.json)
+npx eas-cli@latest login
+npx eas-cli@latest init                  # lần đầu: liên kết dự án với tài khoản Expo
+npx eas-cli@latest build:configure -p android
 ```
 
-Mở `mobile/eas.json`, ở hai profile `preview` và `production` sửa:
+Không cần cài `eas-cli` toàn cục. Lệnh `init` liên kết project Expo; `build:configure` cấu hình EAS Build. Tài khoản Expo miễn phí tại <https://expo.dev>.
 
-```json
-"EXPO_PUBLIC_API_URL": "https://api.<domain>/api/v1",
-"EXPO_PUBLIC_TURNSTILE_SITE_KEY": "<site key Turnstile - mục 11>"
-```
-
-(`eas.json` đã trỏ `api.eliuh.site`; thay `REPLACE_WITH_TURNSTILE_SITE_KEY`; **luôn dùng `https://`** — Android chặn HTTP thường.) Rồi build:
+Site key Turnstile là giá trị **công khai** được nhúng vào bundle, nhưng không nên commit trực tiếp vào `eas.json`. Trong Expo project, mở **Project settings → Environment variables**, tạo `EXPO_PUBLIC_TURNSTILE_SITE_KEY` với visibility `Plain text` cho cả hai environment `preview` và `production`. Khi có site key từ Cloudflare, có thể cấu hình bằng lệnh (chạy riêng cho từng environment):
 
 ```bash
-eas build -p android --profile preview       # ra file APK cài trực tiếp được (khuyên dùng)
-# eas build -p android --profile production  # ra AAB để đưa lên Google Play (không cài trực tiếp)
+npx eas-cli@latest env:set --name EXPO_PUBLIC_TURNSTILE_SITE_KEY --value "PASTE_REAL_TURNSTILE_SITE_KEY" --environment preview --visibility plaintext
+npx eas-cli@latest env:set --name EXPO_PUBLIC_TURNSTILE_SITE_KEY --value "PASTE_REAL_TURNSTILE_SITE_KEY" --environment production --visibility plaintext
+```
+
+Trước mỗi lần build, kiểm tra cả hai environment có biến đúng (không phải test key hoặc giá trị placeholder):
+
+```bash
+npx eas-cli@latest env:list --environment preview
+npx eas-cli@latest env:list --environment production
+```
+
+Trong `eas.json`, profile `preview` và `production` cần chọn EAS environment tương ứng (`"environment": "preview"` / `"environment": "production"`) và **xóa** `EXPO_PUBLIC_TURNSTILE_SITE_KEY` khỏi trường `env` của hai profile. Giá trị cùng tên trong `eas.json` có độ ưu tiên cao hơn biến EAS; placeholder `REPLACE_WITH_TURNSTILE_SITE_KEY` vì vậy sẽ che site key thật và làm CAPTCHA không hợp lệ. App mặc định dùng Turnstile test key nếu biến này vắng mặt, nên phải xác nhận biến production chứa site key thật trước khi build production. Hướng dẫn chính thức: [EAS environment variables](https://docs.expo.dev/eas/environment-variables/).
+
+Giữ `EXPO_PUBLIC_API_URL=https://api.eliuh.site/api/v1` và `EXPO_PUBLIC_TURNSTILE_BASE_URL=https://app.eliuh.site` trong `env` của từng profile `eas.json`; site key lấy riêng từ EAS environment được profile chọn. Trong `mobile/.env` local cũng đặt `EXPO_PUBLIC_TURNSTILE_BASE_URL=https://app.eliuh.site` và cho phép cả hai hostname `eliuh.site` và `app.eliuh.site` trong widget Cloudflare. Site key là công khai, còn `TURNSTILE_SECRET_KEY` chỉ lưu trong `server/.env`/`deploy/.env` phía server; không đưa secret key vào `mobile/.env`, EAS, `eas.json`, app hoặc GitHub Actions. VPS chưa được tạo nên chưa chạy build. CAPTCHA thật hiện chưa được xác minh; CI combined status cũng chưa xác nhận xanh. Khi API/VPS và các key đã sẵn sàng:
+
+```bash
+npx eas-cli@latest build -p android --profile preview       # ra file APK cài trực tiếp được (khuyên dùng)
+# npx eas-cli@latest build -p android --profile production # ra AAB để đưa lên Google Play
 ```
 
 Trả lời `Yes` khi EAS hỏi tạo Android keystore. Build chạy trên máy chủ của Expo (gói miễn phí có thể phải xếp hàng 10–30 phút). Xong, EAS in **liên kết tải APK + mã QR**.
 
 **Kiểm tra:** mở liên kết trên điện thoại Android → tải APK → cho phép "cài từ nguồn không xác định" → cài → mở app, đăng nhập được và danh sách khóa học hiện ra (app đang gọi `https://api.<domain>`). Lưu liên kết/QR vào README gốc (task DEP-04).
 
-> Đổi domain hoặc site key = phải build lại APK (hai giá trị này được nhúng vào app lúc build). iPhone chưa có bản native — dùng bản web `https://app.<domain>` (có thể "Thêm vào Màn hình chính").
+> Chỉ build APK production sau khi API trên VPS đã sẵn sàng và URL production trong `eas.json` hoạt động; VPS hiện chưa sẵn sàng nên chưa chạy build production. Đổi domain hoặc site key = phải build lại APK (hai giá trị này được nhúng vào app lúc build). iPhone chưa có bản native — dùng bản web `https://app.<domain>` (có thể "Thêm vào Màn hình chính").
 
 ---
 
@@ -612,26 +631,40 @@ Khôi phục trên **VPS mới**: làm mục 2–6 để có `.env` (dùng lại
 
 ---
 
-## 11. Cloudflare Turnstile (CAPTCHA)
+## 11. CAPTCHA: reCAPTCHA v2 Checkbox / Turnstile
+
+### 11.1 Lựa chọn hiện tại: reCAPTCHA v2 Checkbox (AUTH-14)
+
+Người dùng chọn checkbox thật của Google ngày 08/10. Không dùng nút xác nhận tự dựng để thay CAPTCHA. Turnstile cũ vẫn là provider mặc định cho tới khi có key Google thật và triển khai đồng bộ API/web.
+
+1. Tự mở <https://www.google.com/recaptcha/admin/create>, chọn **Challenge (v2) → “I'm not a robot” Checkbox**, không chọn Invisible/v3. Khai báo `eliuh.site`, `app.eliuh.site`, `api.eliuh.site`; thêm `localhost` nếu thử local.
+2. Trong `server/.env` local đặt `CAPTCHA_PROVIDER=recaptcha_v2`, `RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY`, `CAPTCHA_ALLOWED_HOSTNAMES=eliuh.site,app.eliuh.site,api.eliuh.site,localhost`. Secret chỉ nằm phía server, không gửi vào chat.
+3. Trong `mobile/.env` local đặt `EXPO_PUBLIC_CAPTCHA_PROVIDER=recaptcha_v2`, `EXPO_PUBLIC_RECAPTCHA_SITE_KEY` bằng site key công khai, `EXPO_PUBLIC_RECAPTCHA_BASE_URL=https://app.eliuh.site`. Khởi động lại server/Expo sau khi đổi env. Cần hostname local trong allowlist server khi thử web localhost.
+4. Production `deploy/.env` dùng cùng bốn biến server, nhưng bỏ `localhost` khỏi `CAPTCHA_ALLOWED_HOSTNAMES`. Web build lấy site key/provider từ Compose. Backup `.env` và image API/web hiện tại; build cả hai image thành công trước khi chuyển provider và recreate đồng thời API/web. Không chạy seed/migration cho đổi CAPTCHA. Giữ bản cũ để rollback cả provider và hai image nếu kiểm tay thất bại.
+5. GitHub Actions: tạo repository variable `CAPTCHA_PROVIDER=recaptcha_v2`, secret `RECAPTCHA_SITE_KEY` (công khai nhưng quản lý cùng cấu hình build). Không đưa `RECAPTCHA_SECRET_KEY` vào build args, web, EAS hoặc workflow. Secret chỉ ở `deploy/.env` trên VPS.
+6. EAS preview/production: cấu hình ba biến public tương ứng ở environment được profile chọn. Không để giá trị trong `eas.json` ghi đè nhầm provider/site key. Build lại web/APK khi đổi cấu hình public.
+7. Người dùng tự tick widget và thử đăng ký/quên mật khẩu/đăng nhập cần CAPTCHA. Server kiểm success, hostname allowlist chính xác, token mới không quá 120 giây và từ chối lỗi mạng; token đã dùng/expiry phải lấy lại. Key test chỉ dùng dev; production không nhận key test. Không coi unit test/mock là đã kiểm CAPTCHA thật.
+
+Nguồn chính thức: [Hiển thị checkbox v2](https://developers.google.com/recaptcha/docs/display), [Xác minh token server](https://developers.google.com/recaptcha/docs/verify).
+
+### 11.2 Provider Turnstile tương thích / lịch sử
 
 Turnstile là CAPTCHA miễn phí của Cloudflare, dùng ở đăng ký, quên mật khẩu và đăng nhập sau 3 lần sai (AUTH-05).
 
 1. Tạo tài khoản miễn phí tại <https://dash.cloudflare.com/sign-up> (bạn tự làm; **không** cần chuyển DNS sang Cloudflare).
 2. Dashboard → menu trái **Turnstile** → **Add widget**:
    - **Widget name:** `E-Learning`
-   - **Hostname Management:** thêm `<domain>` và `app.<domain>` (thêm `api.<domain>` nếu màn hình CAPTCHA trong app nạp widget từ địa chỉ đó)
-   - **Widget Mode:** *Managed* (khuyên dùng) → **Create**
+   - **Hostname Management:** thêm cả `eliuh.site` và `app.eliuh.site` (Caddy phục vụ web trên cả hai hostname; CAPTCHA trong WebView dùng `app.eliuh.site`)
+   - **Widget Mode:** _Managed_ (khuyên dùng) → **Create**
 3. Cloudflare hiển thị **Site Key** (công khai) và **Secret Key** (bí mật).
-4. Điền:
-   - VPS `deploy/.env`: `TURNSTILE_SITE_KEY=...` và `TURNSTILE_SECRET_KEY=...`, rồi `docker compose up -d api`.
-   - GitHub Secret `TURNSTILE_SITE_KEY` (để build web), và `EXPO_PUBLIC_TURNSTILE_SITE_KEY` trong `mobile/eas.json` (để build APK).
-   - Build lại web (push `main` hoặc **Run workflow**) và APK, vì site key được nhúng vào bản build.
+4. Sau khi VPS sẵn sàng, cấu hình `TURNSTILE_SITE_KEY` và `TURNSTILE_SECRET_KEY` trong `deploy/.env` trên VPS rồi khởi động lại API. Chỉ site key được dùng ở client: lưu GitHub Secret `TURNSTILE_SITE_KEY` để build web và EAS environment variable `EXPO_PUBLIC_TURNSTILE_SITE_KEY` trong `preview`/`production` để build APK. Local `mobile/.env` cần site key và `EXPO_PUBLIC_TURNSTILE_BASE_URL=https://app.eliuh.site`; allowlist widget phải có cả `eliuh.site` và `app.eliuh.site`. Không lưu secret key trong EAS hoặc client.
+5. Build lại web và APK sau khi cấu hình site key, vì site key được nhúng vào bundle. Chỉ xác nhận biến hiện diện không chứng minh CAPTCHA thật hoạt động; kiểm thử luồng CAPTCHA thật trước khi đánh dấu hoàn tất.
 
 **Key để thử (dev), không cần tài khoản — KHÔNG dùng production:**
 
-| | Site key | Secret key |
-|---|---|---|
-| Luôn qua | `1x00000000000000000000AA` | `1x0000000000000000000000000000000AA` |
+|            | Site key                   | Secret key                            |
+| ---------- | -------------------------- | ------------------------------------- |
+| Luôn qua   | `1x00000000000000000000AA` | `1x0000000000000000000000000000000AA` |
 | Luôn trượt | `2x00000000000000000000AB` | `2x0000000000000000000000000000000AA` |
 
 **Kiểm tra:** mở `https://app.<domain>` → màn Đăng ký → thấy ô "Verify you are human" và đăng ký được. Lỗi `110200` (domain not allowed) = hostname đang mở chưa nằm trong danh sách ở bước 2.
@@ -644,27 +677,28 @@ API gửi mã OTP xác minh email và mã quên mật khẩu qua SMTP (AUTH-02, 
 
 ### 12.1 Chọn nhà cung cấp
 
-| | Brevo | Resend |
-|---|---|---|
-| Gói miễn phí | khoảng 300 thư/ngày | khoảng 3.000 thư/tháng (100/ngày), 1 domain |
-| Đăng ký | <https://www.brevo.com> | <https://resend.com> |
-| `SMTP_HOST` / `SMTP_PORT` | `smtp-relay.brevo.com` / `587` | `smtp.resend.com` / `587` |
-| `SMTP_USER` | "Login" hiển thị ở trang *SMTP & API* | `resend` |
-| `SMTP_PASS` | **SMTP key** tạo ở trang *SMTP & API* (không phải mật khẩu tài khoản) | **API key** (`re_...`) tạo ở *API Keys* |
+|                           | Brevo                                                                 | Resend                                      |
+| ------------------------- | --------------------------------------------------------------------- | ------------------------------------------- |
+| Gói miễn phí              | khoảng 300 thư/ngày                                                   | khoảng 3.000 thư/tháng (100/ngày), 1 domain |
+| Đăng ký                   | <https://www.brevo.com>                                               | <https://resend.com>                        |
+| `SMTP_HOST` / `SMTP_PORT` | `smtp-relay.brevo.com` / `587`                                        | `smtp.resend.com` / `587`                   |
+| `SMTP_USER`               | "Login" hiển thị ở trang _SMTP & API_                                 | `resend`                                    |
+| `SMTP_PASS`               | **SMTP key** tạo ở trang _SMTP & API_ (không phải mật khẩu tài khoản) | **API key** (`re_...`) tạo ở _API Keys_     |
 
-*(Hạn mức và giao diện có thể thay đổi — xem trang của nhà cung cấp.)* Chọn một trong hai.
+_(Hạn mức và giao diện có thể thay đổi — xem trang của nhà cung cấp.)_ Chọn một trong hai.
 
 ### 12.2 Xác minh domain (SPF · DKIM · DMARC)
 
-Thêm domain ở nhà cung cấp (Brevo: *Senders, Domains & Dedicated IPs → Domains → Add a domain*; Resend: *Domains → Add Domain*). Họ hiển thị **chính xác** các bản ghi DNS cần tạo — copy nguyên văn vào trang DNS của tên miền (cùng nơi tạo bản ghi A ở mục 5), chờ rồi bấm **Verify**.
+Thêm domain ở nhà cung cấp (Brevo: _Senders, Domains & Dedicated IPs → Domains → Add a domain_; Resend: _Domains → Add Domain_). Họ hiển thị **chính xác** các bản ghi DNS cần tạo — copy nguyên văn vào trang DNS của tên miền (cùng nơi tạo bản ghi A ở mục 5), chờ rồi bấm **Verify**.
 
-| Bản ghi | Kiểu · Tên | Để làm gì | Ví dụ giá trị *(chỉ minh họa — dùng đúng giá trị nhà cung cấp đưa)* |
-|---|---|---|---|
-| **SPF** | TXT · `@` hoặc subdomain gửi thư | Liệt kê máy chủ được phép gửi thư cho domain | `v=spf1 include:spf.brevo.com ~all` |
-| **DKIM** | TXT/CNAME · `<selector>._domainkey` | Chữ ký số chứng minh thư không bị sửa/giả | `v=DKIM1; k=rsa; p=MIGfMA0...` |
-| **DMARC** | TXT · `_dmarc` | Quy định xử lý thư SPF/DKIM không khớp + báo cáo | `v=DMARC1; p=none; rua=mailto:ban@gmail.com` |
+| Bản ghi   | Kiểu · Tên                          | Để làm gì                                        | Ví dụ giá trị _(chỉ minh họa — dùng đúng giá trị nhà cung cấp đưa)_ |
+| --------- | ----------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+| **SPF**   | TXT · `@` hoặc subdomain gửi thư    | Liệt kê máy chủ được phép gửi thư cho domain     | `v=spf1 include:spf.brevo.com ~all`                                 |
+| **DKIM**  | TXT/CNAME · `<selector>._domainkey` | Chữ ký số chứng minh thư không bị sửa/giả        | `v=DKIM1; k=rsa; p=MIGfMA0...`                                      |
+| **DMARC** | TXT · `_dmarc`                      | Quy định xử lý thư SPF/DKIM không khớp + báo cáo | `v=DMARC1; p=none; rua=mailto:ban@gmail.com`                        |
 
 Lưu ý quan trọng:
+
 - Mỗi domain chỉ được có **một** bản ghi SPF. Nếu đã có sẵn, **gộp** `include:` mới vào cùng một dòng, không tạo dòng thứ hai.
 - DMARC bắt đầu ở `p=none` (chỉ theo dõi); khi thư đã qua ổn vài tuần mới nâng lên `p=quarantine`.
 - Nhà cung cấp có thể yêu cầu thêm một bản ghi TXT "mã xác minh" hoặc MX cho subdomain (vd. `send.<domain>` của Resend) — thêm đủ theo hướng dẫn.
@@ -690,7 +724,7 @@ MAIL_FROM="E-Learning <no-reply@<domain>>"
 
 `MAIL_FROM` phải thuộc domain đã xác minh. Áp dụng: `docker compose up -d api`.
 
-**Kiểm tra:** đăng ký tài khoản trong app bằng một email thật → nhận mã OTP trong hộp thư (xem cả mục Spam). Mở thư → *Show original* (Gmail): `SPF: PASS`, `DKIM: PASS`, `DMARC: PASS`. Gửi thử vào <https://www.mail-tester.com> để chấm điểm (mục tiêu ≥ 9/10).
+**Kiểm tra:** đăng ký tài khoản trong app bằng một email thật → nhận mã OTP trong hộp thư (xem cả mục Spam). Mở thư → _Show original_ (Gmail): `SPF: PASS`, `DKIM: PASS`, `DMARC: PASS`. Gửi thử vào <https://www.mail-tester.com> để chấm điểm (mục tiêu ≥ 9/10).
 
 > DigitalOcean có thể **chặn kết nối SMTP đi ra** (cổng 25 luôn bị chặn; 465/587 có thể bị chặn ở tài khoản mới). Thử: `nc -vz smtp-relay.brevo.com 587`. Nếu timeout → thử cổng thay thế (Brevo: `2525`; Resend: `2587`) hoặc liên hệ hỗ trợ DigitalOcean để mở.
 
@@ -723,13 +757,17 @@ giữ cửa sổ này mở, vào <http://localhost:8025>. Mailpit hiển thị m
 2. Điền `deploy/.env`:
    ```ini
    GEMINI_API_KEY=AIza...
-   AI_PROVIDER=gemini        # hoặc để trống: có key thì tự dùng gemini, không có thì mock
+   AI_PROVIDER=gemini
+   GEMINI_MODEL=gemini-3.5-flash-lite
    ```
 3. Áp dụng: `docker compose up -d api`.
+
+Kết quả AI được lưu trong bảng `AiContent`; khóa cache hiện **không phân biệt provider/model**, và tóm tắt/quiz không có TTL. Đổi `AI_PROVIDER` hoặc `GEMINI_MODEL` không tự sinh lại kết quả cũ: nội dung mock có thể vẫn xuất hiện sau khi bật Gemini. Không chạy seed hoặc xóa toàn bộ cache/DB chỉ để đổi cấu hình; rà soát riêng kết quả mock cần làm mới trước demo. Dùng AI Tutor hoặc nội dung chưa có cache để kiểm tra provider mới.
 
 **Kiểm tra:** trong app mở một khóa học → **AI Tutor** hỏi một câu → có câu trả lời (không còn là văn bản giả của chế độ `mock`). Trong Grafana → dashboard **API** → hàng "AI (Google Gemini / mock)" có số liệu; `docker compose logs api | grep -i gemini` không có lỗi.
 
 Lưu ý:
+
 - Gói miễn phí có **giới hạn số request** (theo phút và theo ngày) và Google có thể dùng dữ liệu gửi lên để cải thiện sản phẩm → app không gửi thông tin cá nhân nhạy cảm. Server có hạn mức riêng (`AI_*_LIMIT_*` trong `.env`) để không chạm trần; vượt hạn mức trả `429 AI_RATE_LIMITED`.
 - Khóa bị lộ → vào AI Studio xóa rồi tạo lại, cập nhật `.env`.
 
@@ -750,27 +788,27 @@ df -h / && docker system df               # dung lượng ổ đĩa
 
 ### 14.1 Bảng chẩn đoán
 
-| Triệu chứng | Nguyên nhân thường gặp → cách xử lý |
-|---|---|
-| `docker compose` báo `Set DOMAIN in deploy/.env` (hoặc biến khác) | Biến bắt buộc còn trống → điền trong `.env` (mục 6.2). |
-| Trình duyệt báo chứng chỉ không hợp lệ / Caddy không xin được chứng chỉ | DNS chưa trỏ đúng (`nslookup`), có bản ghi AAAA thừa, cổng 80/443 bị chặn (ufw hoặc Firewall của DigitalOcean), hoặc đang dùng CA staging. Xem `docker compose logs caddy`. Bị Let's Encrypt giới hạn → dùng `ACME_CA` staging (mục 6.3) trong lúc thử. |
-| `502 Bad Gateway` ở `api.`/`app.` | Container chưa chạy hoặc chưa healthy: `docker compose ps`, `docker compose logs api`. Trước lần deploy đầu tiên đây là bình thường. |
-| `api` khởi động lại liên tục | `docker compose logs api`: `Invalid environment variables ...` → sửa biến được nêu (vd. `TOTP_ENC_KEY` phải 32 byte base64 và khác khóa dev); `password authentication failed` → xem dòng dưới; lỗi migration → đọc thông báo Prisma. |
-| `password authentication failed for user "elearning"` | Mật khẩu Postgres chỉ áp dụng khi **khởi tạo lần đầu**. Đổi `POSTGRES_PASSWORD` trong `.env` sau đó thì lệch. Sửa: đặt lại `.env` như cũ, hoặc đổi trong DB: `docker compose exec postgres psql -U elearning -c "ALTER USER elearning PASSWORD '<moi>';"` rồi cập nhật `.env`. (Chỉ khi chưa có dữ liệu mới nên `docker compose down -v` — lệnh đó **xóa toàn bộ dữ liệu**.) |
-| `pull access denied` / `manifest unknown` khi kéo image | Image chưa được build (chạy `deploy.yml` thành công trước), tên chủ repo (`GHCR_OWNER`) sai chữ hoa/thường, hoặc gói riêng tư và chưa `docker login` (mục 8.4). |
-| Workflow Deploy lỗi `Permission denied (publickey)` | `SSH_KEY` sai/thiếu dòng BEGIN/END, hoặc chưa thêm khóa công khai vào `~/.ssh/authorized_keys` của `deploy` (8.1). |
-| Workflow lỗi `Host key verification failed` | `SSH_KNOWN_HOSTS` sai IP/loại khóa → chạy lại `ssh-keyscan -t ed25519 <IP>` và dán lại, hoặc xóa secret này để dùng chế độ tin lần đầu. |
-| VPS hết RAM / container bị `Killed` | `free -h`, `docker stats`; dashboard **Hạ tầng** → "OOM kill". Chắc chắn đã bật swap (3.7). Giảm `--storage.tsdb.retention.*` của Prometheus, tắt profile không dùng, hoặc nâng droplet. |
-| Prometheus job `node` = 0 (DOWN) | Thiếu luật ufw cho node-exporter (3.4). Thử: `docker compose exec prometheus wget -qO- http://host.docker.internal:9100/metrics \| head -3`. Không ra gì → thêm lại luật ufw rồi `docker compose restart node-exporter prometheus`. |
-| Prometheus job `api` = 0 | API chưa chạy, hoặc đã đặt `METRICS_TOKEN` mà chưa cấu hình token cho Prometheus (xem phần bình luận trong `prometheus/prometheus.yml`). Cách đơn giản: để trống `METRICS_TOKEN` (cổng 9464 đã không ra Internet). |
-| Dashboard **Hạ tầng** không có tên container / thiếu container | cAdvisor chạy chưa đủ quyền trên một số máy → trong `docker-compose.yml`, mục `cadvisor` thêm dòng `privileged: true` rồi `docker compose up -d cadvisor`. |
-| Dashboard trống ("No data") | Chưa có lưu lượng (tạo thử bằng vòng lặp `curl` ở mục 7), khoảng thời gian chọn quá xa, hoặc job tương ứng đang DOWN (Explore → `up`). |
-| Dashboard **Logs** trống | `docker compose logs alloy` (lỗi đọc `/var/run/docker.sock`?), `docker compose logs loki`. Log Loki giữ 7 ngày. |
-| Không nhận được email OTP | `docker compose logs api \| grep -iE "smtp\|mail"`; kiểm tra `SMTP_*`, domain đã **Verified**, thư trong mục Spam, và cổng SMTP có bị chặn (mục 12.3). `SMTP_HOST` trống = API chỉ ghi thư ra log. |
-| Mã 2FA luôn "sai" | Đồng hồ điện thoại hoặc VPS lệch: `timedatectl` phải `synchronized: yes`; bật đồng bộ giờ tự động trên điện thoại. |
-| CAPTCHA báo lỗi / không hiện | Site key sai hoặc chưa build lại web/APK sau khi đổi key; hostname chưa thêm trong widget (lỗi `110200`); dùng nhầm key test ở production. |
-| Ổ đĩa đầy | `docker system df`; `docker image prune -af`; xóa bớt `backups/` cũ đã chép về máy; xem `du -sh /var/lib/docker/volumes/*`. Prometheus giữ 15 ngày/2 GB, Loki 7 ngày. |
-| Sau khi khởi động lại VPS có service không lên | Docker tự chạy lại mọi service (`restart: unless-stopped`). Nếu thiếu: `cd ~/elearning/deploy && docker compose up -d`. |
+| Triệu chứng                                                             | Nguyên nhân thường gặp → cách xử lý                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docker compose` báo `Set DOMAIN in deploy/.env` (hoặc biến khác)       | Biến bắt buộc còn trống → điền trong `.env` (mục 6.2).                                                                                                                                                                                                                                                                                                                       |
+| Trình duyệt báo chứng chỉ không hợp lệ / Caddy không xin được chứng chỉ | DNS chưa trỏ đúng (`nslookup`), có bản ghi AAAA thừa, cổng 80/443 bị chặn (ufw hoặc Firewall của DigitalOcean), hoặc đang dùng CA staging. Xem `docker compose logs caddy`. Bị Let's Encrypt giới hạn → dùng `ACME_CA` staging (mục 6.3) trong lúc thử.                                                                                                                      |
+| `502 Bad Gateway` ở `api.`/`app.`                                       | Container chưa chạy hoặc chưa healthy: `docker compose ps`, `docker compose logs api`. Trước lần deploy đầu tiên đây là bình thường.                                                                                                                                                                                                                                         |
+| `api` khởi động lại liên tục                                            | `docker compose logs api`: `Invalid environment variables ...` → sửa biến được nêu (vd. `TOTP_ENC_KEY` phải 32 byte base64 và khác khóa dev); `password authentication failed` → xem dòng dưới; lỗi migration → đọc thông báo Prisma.                                                                                                                                        |
+| `password authentication failed for user "elearning"`                   | Mật khẩu Postgres chỉ áp dụng khi **khởi tạo lần đầu**. Đổi `POSTGRES_PASSWORD` trong `.env` sau đó thì lệch. Sửa: đặt lại `.env` như cũ, hoặc đổi trong DB: `docker compose exec postgres psql -U elearning -c "ALTER USER elearning PASSWORD '<moi>';"` rồi cập nhật `.env`. (Chỉ khi chưa có dữ liệu mới nên `docker compose down -v` — lệnh đó **xóa toàn bộ dữ liệu**.) |
+| `pull access denied` / `manifest unknown` khi kéo image                 | Image chưa được build (chạy `deploy.yml` thành công trước), tên chủ repo (`GHCR_OWNER`) sai chữ hoa/thường, hoặc gói riêng tư và chưa `docker login` (mục 8.4).                                                                                                                                                                                                              |
+| Workflow Deploy lỗi `Permission denied (publickey)`                     | `SSH_KEY` sai/thiếu dòng BEGIN/END, hoặc chưa thêm khóa công khai vào `~/.ssh/authorized_keys` của `deploy` (8.1).                                                                                                                                                                                                                                                           |
+| Workflow lỗi `Host key verification failed`                             | `SSH_KNOWN_HOSTS` sai IP/loại khóa → chạy lại `ssh-keyscan -t ed25519 <IP>` và dán lại, hoặc xóa secret này để dùng chế độ tin lần đầu.                                                                                                                                                                                                                                      |
+| VPS hết RAM / container bị `Killed`                                     | `free -h`, `docker stats`; dashboard **Hạ tầng** → "OOM kill". Chắc chắn đã bật swap (3.7). Giảm `--storage.tsdb.retention.*` của Prometheus, tắt profile không dùng, hoặc nâng droplet.                                                                                                                                                                                     |
+| Prometheus job `node` = 0 (DOWN)                                        | Thiếu luật ufw cho node-exporter (3.4). Thử: `docker compose exec prometheus wget -qO- http://host.docker.internal:9100/metrics \| head -3`. Không ra gì → thêm lại luật ufw rồi `docker compose restart node-exporter prometheus`.                                                                                                                                          |
+| Prometheus job `api` = 0                                                | API chưa chạy, hoặc đã đặt `METRICS_TOKEN` mà chưa cấu hình token cho Prometheus (xem phần bình luận trong `prometheus/prometheus.yml`). Cách đơn giản: để trống `METRICS_TOKEN` (cổng 9464 đã không ra Internet).                                                                                                                                                           |
+| Dashboard **Hạ tầng** không có tên container / thiếu container          | cAdvisor chạy chưa đủ quyền trên một số máy → trong `docker-compose.yml`, mục `cadvisor` thêm dòng `privileged: true` rồi `docker compose up -d cadvisor`.                                                                                                                                                                                                                   |
+| Dashboard trống ("No data")                                             | Chưa có lưu lượng (tạo thử bằng vòng lặp `curl` ở mục 7), khoảng thời gian chọn quá xa, hoặc job tương ứng đang DOWN (Explore → `up`).                                                                                                                                                                                                                                       |
+| Dashboard **Logs** trống                                                | `docker compose logs alloy` (lỗi đọc `/var/run/docker.sock`?), `docker compose logs loki`. Log Loki giữ 7 ngày.                                                                                                                                                                                                                                                              |
+| Không nhận được email OTP                                               | `docker compose logs api \| grep -iE "smtp\|mail"`; kiểm tra `SMTP_*`, domain đã **Verified**, thư trong mục Spam, và cổng SMTP có bị chặn (mục 12.3). `SMTP_HOST` trống = API chỉ ghi thư ra log.                                                                                                                                                                           |
+| Mã 2FA luôn "sai"                                                       | Đồng hồ điện thoại hoặc VPS lệch: `timedatectl` phải `synchronized: yes`; bật đồng bộ giờ tự động trên điện thoại.                                                                                                                                                                                                                                                           |
+| CAPTCHA báo lỗi / không hiện                                            | Site key sai hoặc chưa build lại web/APK sau khi đổi key; hostname chưa thêm trong widget (lỗi `110200`); dùng nhầm key test ở production.                                                                                                                                                                                                                                   |
+| Ổ đĩa đầy                                                               | `docker system df`; `docker image prune -af`; xóa bớt `backups/` cũ đã chép về máy; xem `du -sh /var/lib/docker/volumes/*`. Prometheus giữ 15 ngày/2 GB, Loki 7 ngày.                                                                                                                                                                                                        |
+| Sau khi khởi động lại VPS có service không lên                          | Docker tự chạy lại mọi service (`restart: unless-stopped`). Nếu thiếu: `cd ~/elearning/deploy && docker compose up -d`.                                                                                                                                                                                                                                                      |
 
 ### 14.2 Cập nhật hệ điều hành
 
@@ -783,7 +821,7 @@ Sau reboot các container tự chạy lại (khoảng 1–2 phút).
 
 ### 14.3 Dọn dẹp khi không dùng nữa
 
-Credit hết hạn sau 1 năm; droplet còn chạy sẽ trừ tiền thẻ. Khi nộp bài/bảo vệ xong: sao lưu DB về máy (mục 10.3) rồi DigitalOcean → droplet → **Destroy**; xóa bản ghi DNS và (nếu cần) thu hồi khóa/API key (Gemini, Brevo/Resend, Cloudflare).
+Khi nộp bài/bảo vệ xong: sao lưu DB và uploads ra ngoài VPS, kiểm tra khôi phục trước khi xóa. Với Google Cloud, rà soát VM, persistent disks, snapshots và static IP theo [GOOGLE_CLOUD.md](GOOGLE_CLOUD.md#5-kết-thúc-demotrial); dừng VM không đồng nghĩa mọi tài nguyên đã ngừng tiêu credit. Với DigitalOcean, xóa droplet và tài nguyên phụ khi không dùng; không giả định còn credit. Dọn DNS và thu hồi khóa/API key không còn cần thiết.
 
 ---
 

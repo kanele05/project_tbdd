@@ -16,7 +16,7 @@ name: Deploy
 on:
   push:
     branches: [main]
-    tags: ['v*']
+    tags: ["v*"]
   workflow_dispatch:
 
 # Mỗi lúc chỉ một lượt deploy; lượt mới đợi lượt cũ xong (không hủy giữa chừng để tránh deploy dở).
@@ -132,6 +132,9 @@ jobs:
           build-args: |
             EXPO_PUBLIC_API_URL=https://api.${{ secrets.DOMAIN }}/api/v1
             EXPO_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
+            EXPO_PUBLIC_CAPTCHA_PROVIDER=${{ vars.CAPTCHA_PROVIDER || 'turnstile' }}
+            EXPO_PUBLIC_RECAPTCHA_SITE_KEY=${{ secrets.RECAPTCHA_SITE_KEY }}
+            EXPO_PUBLIC_RECAPTCHA_BASE_URL=https://app.${{ secrets.DOMAIN }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
