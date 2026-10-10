@@ -1,7 +1,7 @@
 #!/bin/sh
 # Sao lưu PostgreSQL hằng ngày bằng pg_dump (định dạng custom -Fc, đã nén), giữ BACKUP_KEEP bản mới nhất.
 # Chạy trong container "backup" (image postgres:17-alpine; kết nối qua biến PGHOST/PGUSER/PGPASSWORD/PGDATABASE).
-# Khôi phục: xem deploy/README.md mục "Sao lưu và khôi phục".
+# Khôi phục: xem deploy/README.md mục 10 "Sao lưu và khôi phục database".
 set -eu
 
 BACKUP_DIR="${BACKUP_DIR:-/backups}"

@@ -438,7 +438,7 @@ Repo trên GitHub → **Settings → Secrets and variables → Actions**:
 | `SSH_KEY`            | Secret   | **toàn bộ** nội dung file `~/.ssh/elearning_deploy` (cả dòng `BEGIN` và `END`) | ✔                  |
 | `DOMAIN`             | Secret   | tên miền gốc `<domain>` (nhúng vào bản web: `https://api.<domain>/api/v1`)     | ✔                  |
 | `SSH_KNOWN_HOSTS`    | Secret   | dòng in ra bởi `ssh-keyscan` ở 8.1 (chống giả mạo máy chủ)                     | khuyến nghị        |
-| `CAPTCHA_PROVIDER`   | Variable | `recaptcha_v2` hoặc `turnstile` (mặc định `turnstile`)                         | khi bật CAPTCHA    |
+| `CAPTCHA_PROVIDER`   | Variable | `recaptcha_v2` hoặc `turnstile` (mặc định `recaptcha_v2`)                      | khi bật CAPTCHA    |
 | `RECAPTCHA_SITE_KEY` | Secret   | site key reCAPTCHA (công khai, được nhúng vào bản web lúc build)               | khi dùng reCAPTCHA |
 | `TURNSTILE_SITE_KEY` | Secret   | site key Turnstile (công khai, được nhúng vào bản web lúc build)               | khi dùng Turnstile |
 | `SSH_PORT`           | Secret   | cổng SSH nếu khác 22                                                           | tùy chọn           |
@@ -600,7 +600,7 @@ Khôi phục trên **máy chủ mới**: làm mục 1–6 để có `.env` (dùn
 
 ## 11. CAPTCHA: reCAPTCHA v2 hoặc Turnstile
 
-API hỗ trợ hai nhà cung cấp, chọn bằng biến `CAPTCHA_PROVIDER` trong `deploy/.env`: `recaptcha_v2` (Google reCAPTCHA v2 Checkbox) hoặc `turnstile` (Cloudflare, mặc định). CAPTCHA được dùng ở đăng ký, quên mật khẩu và đăng nhập sau nhiều lần sai.
+API hỗ trợ hai nhà cung cấp, chọn bằng biến `CAPTCHA_PROVIDER` trong `deploy/.env`: `recaptcha_v2` (Google reCAPTCHA v2 Checkbox) hoặc `turnstile` (Cloudflare); mặc định là `recaptcha_v2`. CAPTCHA được dùng ở đăng ký, quên mật khẩu và đăng nhập sau nhiều lần sai.
 
 Quy tắc chung cho cả hai:
 

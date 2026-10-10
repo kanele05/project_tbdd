@@ -1,17 +1,21 @@
 name: Deploy
 
-# Triển khai lên VPS DigitalOcean: kiểm thử -> build image (api + web) đẩy lên GHCR -> SSH vào VPS cập nhật.
+# Triển khai lên VPS AWS EC2 (Sydney): kiểm thử -> build image (api + web) đẩy lên GHCR -> SSH vào VPS cập nhật.
 # Chạy khi push lên main, khi tạo tag v* (vd. v1.0.0) hoặc bấm "Run workflow" thủ công (chỉ có tác dụng trên main/tag).
 #
 # Cần cấu hình GitHub Secrets (Settings -> Secrets and variables -> Actions) - xem deploy/README.md mục 8:
-#   SSH_HOST            IP (hoặc tên miền) của VPS                                       [bắt buộc]
-#   SSH_USER            user SSH trên VPS (không phải root), có quyền chạy docker       [bắt buộc]
+#   SSH_HOST            Elastic IP (hoặc tên miền) của EC2                              [bắt buộc]
+#   SSH_USER            user SSH trên EC2 (Ubuntu: `ubuntu`), có quyền chạy docker     [bắt buộc]
 #   SSH_KEY             private key SSH (toàn bộ nội dung file, gồm dòng BEGIN/END)     [bắt buộc]
 #   DOMAIN              tên miền gốc, vd. example.com (nhúng vào bản web + kiểm tra)    [bắt buộc]
 #   SSH_KNOWN_HOSTS     kết quả của `ssh-keyscan -t ed25519 <SSH_HOST>`                 [khuyến nghị - chống giả mạo máy chủ]
 #   SSH_PORT            cổng SSH, mặc định 22                                           [tùy chọn]
-#   DEPLOY_PATH         thư mục deploy trên VPS, mặc định elearning/deploy (tính từ home) [tùy chọn]
-#   TURNSTILE_SITE_KEY  site key Cloudflare Turnstile, nhúng vào bản web                [tùy chọn cho tới khi bật CAPTCHA]
+#   DEPLOY_PATH         thư mục deploy trên EC2, mặc định elearning/deploy (= /home/ubuntu/elearning/deploy) [tùy chọn]
+#   RECAPTCHA_SITE_KEY  site key Google reCAPTCHA v2 Checkbox, nhúng vào bản web           [bắt buộc khi CAPTCHA_PROVIDER=recaptcha_v2 (mặc định)]
+#   TURNSTILE_SITE_KEY  site key Cloudflare Turnstile, nhúng vào bản web                [chỉ khi CAPTCHA_PROVIDER=turnstile]
+# GitHub Variable (Settings -> Secrets and variables -> Actions -> Variables):
+#   CAPTCHA_PROVIDER    recaptcha_v2 (mặc định) hoặc turnstile - phải khớp CAPTCHA_PROVIDER trong deploy/.env trên EC2
+# Lưu ý: IMAGE_TAG trong deploy/.env trên EC2 nên là `latest` (deploy.sh kéo tag đó); đừng để tag build tay như manual-*.
 # Token đăng nhập GHCR là GITHUB_TOKEN có sẵn của workflow - không cần tạo thêm secret.
 on:
   push:
@@ -42,6 +46,9 @@ jobs:
       SSH_USER: ${{ secrets.SSH_USER }}
       SSH_KEY: ${{ secrets.SSH_KEY }}
       DOMAIN: ${{ secrets.DOMAIN }}
+      CAPTCHA_PROVIDER: ${{ vars.CAPTCHA_PROVIDER || 'recaptcha_v2' }}
+      RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+      TURNSTILE_SITE_KEY: ${{ secrets.TURNSTILE_SITE_KEY }}
     steps:
       - name: Kiểm tra secret bắt buộc
         run: |
@@ -52,6 +59,16 @@ jobs:
               missing=1
             fi
           done
+          # Site key CAPTCHA được nhúng vào bản web lúc build; thiếu key thì build web sẽ hỏng sau ~10 phút.
+          case "$CAPTCHA_PROVIDER" in
+            recaptcha_v2) key_name=RECAPTCHA_SITE_KEY ;;
+            turnstile) key_name=TURNSTILE_SITE_KEY ;;
+            *) echo "::error::Variable CAPTCHA_PROVIDER phải là recaptcha_v2 hoặc turnstile (đang là '$CAPTCHA_PROVIDER')"; exit 1 ;;
+          esac
+          if [ -z "${!key_name}" ]; then
+            echo "::error::Thiếu GitHub Secret ${key_name} (CAPTCHA_PROVIDER=${CAPTCHA_PROVIDER}, xem deploy/README.md mục 11)"
+            missing=1
+          fi
           exit "$missing"
 
   ci:
@@ -132,14 +149,14 @@ jobs:
           build-args: |
             EXPO_PUBLIC_API_URL=https://api.${{ secrets.DOMAIN }}/api/v1
             EXPO_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
-            EXPO_PUBLIC_CAPTCHA_PROVIDER=${{ vars.CAPTCHA_PROVIDER || 'turnstile' }}
+            EXPO_PUBLIC_CAPTCHA_PROVIDER=${{ vars.CAPTCHA_PROVIDER || 'recaptcha_v2' }}
             EXPO_PUBLIC_RECAPTCHA_SITE_KEY=${{ secrets.RECAPTCHA_SITE_KEY }}
             EXPO_PUBLIC_RECAPTCHA_BASE_URL=https://app.${{ secrets.DOMAIN }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
   deploy:
-    name: Deploy lên VPS
+    name: Deploy lên EC2
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15

@@ -20,7 +20,7 @@ x-service-defaults: &service-defaults
 
 networks:
   # Mạng mặc định của project (mọi service tự tham gia). Cố định dải IP để quy tắc ufw cho
-  # node-exporter (README bước 4) luôn đúng.
+  # node-exporter (README mục 3, provision-ubuntu.sh) luôn đúng.
   default:
     name: elearning
     ipam:
@@ -113,7 +113,7 @@ services:
       # CAPTCHA + 2FA
       TURNSTILE_SITE_KEY: "${TURNSTILE_SITE_KEY:-}"
       TURNSTILE_SECRET_KEY: "${TURNSTILE_SECRET_KEY:-}"
-      CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-turnstile}"
+      CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-recaptcha_v2}"
       RECAPTCHA_SITE_KEY: "${RECAPTCHA_SITE_KEY:-}"
       RECAPTCHA_SECRET_KEY: "${RECAPTCHA_SECRET_KEY:-}"
       CAPTCHA_ALLOWED_HOSTNAMES: "${CAPTCHA_ALLOWED_HOSTNAMES:-}"
@@ -131,7 +131,7 @@ services:
         # URL API được nhúng vào bundle lúc build -> đổi DOMAIN thì phải build lại image web.
         EXPO_PUBLIC_API_URL: "https://api.${DOMAIN}/api/v1"
         EXPO_PUBLIC_TURNSTILE_SITE_KEY: "${TURNSTILE_SITE_KEY:-}"
-        EXPO_PUBLIC_CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-turnstile}"
+        EXPO_PUBLIC_CAPTCHA_PROVIDER: "${CAPTCHA_PROVIDER:-recaptcha_v2}"
         EXPO_PUBLIC_RECAPTCHA_SITE_KEY: "${RECAPTCHA_SITE_KEY:-}"
         EXPO_PUBLIC_RECAPTCHA_BASE_URL: "https://app.${DOMAIN}"
     container_name: elearning-web
@@ -350,7 +350,7 @@ services:
   # Tùy chọn (profile)
   # ---------------------------------------------------------------------------
   # Hộp thư giả: nhận mọi email API gửi tới mailpit:1025 và KHÔNG gửi ra ngoài.
-  # Giao diện chỉ mở ở 127.0.0.1:8025 của VPS -> xem bằng SSH tunnel (README mục Mailpit), không có đường nào từ Internet.
+  # Giao diện chỉ mở ở 127.0.0.1:8025 của VPS -> xem bằng SSH tunnel (README mục 16.1), không có đường nào từ Internet.
   mailpit:
     <<: *service-defaults
     profiles: ["mail"]

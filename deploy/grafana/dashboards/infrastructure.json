@@ -2,7 +2,7 @@
   "id": null,
   "uid": "elearning-infra",
   "title": "E-Learning · Hạ tầng (VPS + container)",
-  "description": "Sức khỏe VPS DigitalOcean (node-exporter: CPU, RAM, swap, disk, mạng, load) và từng container Docker (cAdvisor).",
+  "description": "Sức khỏe VPS AWS EC2 (node-exporter: CPU, RAM, swap, disk, mạng, load) và từng container Docker (cAdvisor).",
   "tags": [
     "elearning",
     "infra"

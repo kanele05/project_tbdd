@@ -63,12 +63,22 @@ api.{$DOMAIN} {
 	import common
 	import security_headers
 
+	# File web có hash trong tên: cache 1 năm. Dùng `>` (hoãn tới lúc gửi response) để thay luôn giá trị
+	# Cache-Control mà container web trả về, kể cả khi image web cũ vẫn gửi "no-cache".
+	# index.html và các file khác giữ nguyên "no-cache" do web đặt.
+	@hashed path /_expo/static/* /assets/*
+	header @hashed >Cache-Control "public, max-age=31536000, immutable"
+
 	reverse_proxy web:8080
 }
 
 # --- Grafana --------------------------------------------------------------------
 grafana.{$DOMAIN} {
 	import common
+
+	# Grafana tự gửi X-Frame-Options/nosniff nhưng không gửi HSTS -> chỉ thêm HSTS (không import security_headers
+	# để khỏi gửi trùng X-Frame-Options với giá trị khác).
+	header Strict-Transport-Security "max-age=15552000"
 
 	reverse_proxy grafana:3000
 }

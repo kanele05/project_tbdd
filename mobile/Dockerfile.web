@@ -56,10 +56,15 @@ COPY <<'CADDYFILE' /etc/caddy/Caddyfile
 :8080 {
 	root * /srv
 
-	# Mặc định luôn kiểm tra lại (index.html + deep link); file có hash trong tên -> cache vĩnh viễn.
-	header Cache-Control "no-cache"
-	@hashed path /_expo/* /assets/*
+	# File có hash trong tên (/_expo/static/*, /assets/*) -> cache vĩnh viễn; mọi thứ còn lại (index.html,
+	# deep link, file không hash) luôn kiểm tra lại. Hai matcher loại trừ nhau, vì Caddy xếp các `header`
+	# cùng tên theo độ cụ thể của matcher (matcher rộng chạy SAU) nên một `header` không matcher sẽ ghi đè `immutable`.
+	@hashed path /_expo/static/* /assets/*
+	@mutable {
+		not path /_expo/static/* /assets/*
+	}
 	header @hashed Cache-Control "public, max-age=31536000, immutable"
+	header @mutable Cache-Control "no-cache"
 
 	# SPA: đường dẫn không phải file thật (vd /course/123) -> trả index.html để Expo Router xử lý.
 	# File build bị thiếu (/_expo/*, /assets/*) vẫn trả 404 thay vì index.html.
