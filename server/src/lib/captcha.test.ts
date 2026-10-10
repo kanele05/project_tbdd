@@ -210,6 +210,25 @@ describe('assertCaptcha with reCAPTCHA v2', () => {
   });
 });
 
+describe('assertCaptcha with non-object siteverify bodies', () => {
+  it.each([
+    ['recaptcha_v2', 'null'],
+    ['recaptcha_v2', '[]'],
+    ['turnstile', 'null'],
+    ['turnstile', '[{"success":true}]'],
+  ] as const)('fails closed for %s when the body is %s', async (provider, body) => {
+    const { assertCaptcha } = loadCaptcha({
+      provider,
+      secret: SECRET,
+      allowedHostnames: HOSTNAMES,
+    });
+    respond(body);
+    await expect(assertCaptcha('token', null)).rejects.toMatchObject({
+      code: 'CAPTCHA_UNAVAILABLE',
+    });
+  });
+});
+
 describe('assertCaptcha without a configured secret', () => {
   it('keeps the development skip behavior', async () => {
     const { assertCaptcha } = loadCaptcha({ provider: 'recaptcha_v2' });
