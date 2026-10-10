@@ -1,12 +1,12 @@
 # E-Learning Server
 
 REST API cho E-Learning App: **Node.js + Express 5 + TypeScript (strict) + Prisma 7 + PostgreSQL**.
-Đặc tả API/DB và quy ước code nằm trong tài liệu nội bộ của nhóm (`PLAN.md`, `CLAUDE.md` — không đưa lên repo).
+Triển khai production (Docker Compose, HTTPS, giám sát, CI/CD): xem [../deploy/README.md](../deploy/README.md). App di động/web: [../mobile/README.md](../mobile/README.md).
 
 ## 1. Yêu cầu
 
 - Node.js ≥ 20 (đã chạy với v24), npm ≥ 10.
-- **Không cần** Docker / cài PostgreSQL / tài khoản Neon để phát triển local: dùng PostgreSQL nhúng (`embedded-postgres`) qua `npm run db:start`.
+- **Không cần** Docker / cài PostgreSQL / tài khoản dịch vụ database để phát triển local: dùng PostgreSQL nhúng (`embedded-postgres`) qua `npm run db:start`.
 - Windows / macOS / Linux (x64, arm64) đều được hỗ trợ bởi `embedded-postgres`.
 
 ## 2. Cài đặt lần đầu
@@ -40,12 +40,12 @@ Sinh JWT_SECRET: `node -e "console.log(require('crypto').randomBytes(32).toStrin
 - Máy khởi động lại thì chạy lại `npm run db:start`.
 - **Vì sao không dùng `prisma dev`?** Đã thử: chạy được nhưng mọi tên database trong URL đều trỏ về **cùng một** instance PGlite (không tách được `elearning` / `elearning_test`) và xử lý truy vấn tuần tự. Vì vậy dùng PostgreSQL thật (embedded-postgres).
 
-### Đổi sang Neon (hoặc PostgreSQL khác)
+### Dùng PostgreSQL khác (vd. dịch vụ PostgreSQL trên cloud)
 
 Chỉ cần sửa `DATABASE_URL` trong `.env` (và `.env.test` trỏ tới **branch/DB riêng** cho test):
 
 ```
-DATABASE_URL=postgresql://USER:PASSWORD@ep-xxx.aws.neon.tech/neondb?sslmode=require
+DATABASE_URL=postgresql://USER:PASSWORD@host.example.com:5432/elearning?sslmode=require
 ```
 
 Sau đó `npm run db:migrate:deploy` (áp migration) và `npm run prisma:seed`. Code không đổi. Seed từ chối chạy khi `NODE_ENV=production` (cần `SEED_FORCE=1`).
@@ -110,9 +110,11 @@ server/
 
 Alias `@/` → `src/` hoạt động ở dev (tsx), build (tsc-alias), test (Jest `moduleNameMapper`) và typecheck (`paths`).
 
-## 7. Endpoint hiện có
+## 7. Endpoint
 
-Base URL `/api/v1`. Thành công `{ data, meta? }`, lỗi `{ error: { code, message, details? } }`.
+Base URL `/api/v1`. Thành công `{ data, meta? }`, lỗi `{ error: { code, message, details? } }`. Phân trang `?page=1&limit=20` (tối đa 50).
+
+Bảng dưới liệt kê nhóm endpoint xác thực, tài khoản và dữ liệu chung. Các nhóm còn lại (khóa học, bài học, ghi danh, giỏ hàng, đơn hàng, đánh giá, hỏi đáp, bài nộp, giảng viên, thông báo, AI...) nằm trong `src/modules/<tên>/<tên>.routes.ts`; mỗi module có schema zod mô tả đầu vào.
 
 | Method & path                                                                                 | Auth | Ghi chú                                                                                                                                      |
 | --------------------------------------------------------------------------------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -133,16 +135,7 @@ Base URL `/api/v1`. Thành công `{ data, meta? }`, lỗi `{ error: { code, mess
 
 Rate limit: `POST /auth/login` + `POST /auth/register` **10 request/phút/IP** (dùng chung bộ đếm; `GET /auth/me` không bị giới hạn); verify-email / reset-password / 2fa/verify 10/phút; resend-verification / forgot-password 5/phút; refresh 30/phút; `/me/password`, `/me/2fa/*`, `DELETE /me/sessions*` 10/phút → 429 `RATE_LIMITED`; toàn bộ API 300 request/phút/IP. Tắt khi test.
 
-### Quyết định thiết kế bổ sung (PLAN §9 chưa nêu - cần đồng bộ vào PLAN nếu nhóm đồng ý)
-
-- : không có header = khách; **có header nhưng token sai/hết hạn = 401 ** (để mobile đăng xuất đúng lúc).
-- Route không tồn tại → 404 ; body JSON > 100 KB → 413 ; JSON hỏng → 400 ; Prisma P2002 → 409 , P2025 → 404 .
-- = mảng .
-- trả (lỗi: 503, ).
-- vẫn có giá trị khi nếu khóa có giá gốc cao hơn; giảm giá làm tròn về 0 % thì coi như không giảm.
-- = trung bình cộng các khóa đã publish có đánh giá (làm tròn 1 chữ số); = tổng .
-
-### Quyết định thiết kế bổ sung (PLAN §9 chưa nêu - cần đồng bộ vào PLAN nếu nhóm đồng ý)
+### Quy ước hành vi của API
 
 - `optionalAuth`: không có header `Authorization` = khách; **có header nhưng token sai/hết hạn = 401 `UNAUTHORIZED`** (để mobile đăng xuất đúng lúc).
 - Route không tồn tại → 404 `NOT_FOUND`; body JSON > 100 KB → 413 `PAYLOAD_TOO_LARGE`; JSON hỏng → 400 `VALIDATION_ERROR`; Prisma P2002 → 409 `CONFLICT`, P2025 → 404 `NOT_FOUND`.
@@ -153,22 +146,22 @@ Rate limit: `POST /auth/login` + `POST /auth/register` **10 request/phút/IP** (
 
 ## 8. Helper dùng chung cho các module
 
-| Helper                                                                                                                                                                                                                   | Vị trí                                                        | Dùng để                                                                                                                                                 |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ApiError(status, code, message, details?)`, `ApiError.of(code, message)`, `.notFound/.forbidden/.conflict/.unprocessable/.unauthorized`                                                                                 | `lib/ApiError.ts`, `lib/errorCodes.ts`                        | Ném lỗi nghiệp vụ; `ERROR_STATUS` là bảng mã lỗi → HTTP status (PAYMENT_FAILED 402, FILE_TOO_LARGE 413, UNSUPPORTED_FILE_TYPE 415, RATE_LIMITED 429...) |
-| `validate({ body?, query?, params? })`                                                                                                                                                                                   | `middlewares/validate.ts`                                     | zod; dữ liệu đã parse ghi đè `req.body/query/params`; lỗi 400 `details: [{source, field, message}]`                                                     |
-| `requireAuth`, `optionalAuth`, `getAuthUser(req)`                                                                                                                                                                        | `middlewares/requireAuth.ts`                                  | JWT Bearer; `optionalAuth`: không header = khách, token sai = 401                                                                                       |
-| `ok(res, data, meta?)`, `created(...)`, `noContent(res)`                                                                                                                                                                 | `lib/response.ts`                                             | Định dạng `{ data, meta }`                                                                                                                              |
-| `paginationQuery` (zod), `getPagination(query)` → `{page, limit, skip, take}`, `buildPaginationMeta(total, pagination)`                                                                                                  | `lib/pagination.ts`                                           | Phân trang, limit ≤ 50                                                                                                                                  |
-| `cache.wrap(key, ttlMs, loader)`, `cache.invalidatePrefix(prefix)`, `cache.delete/clear`                                                                                                                                 | `lib/cache.ts`                                                | Cache TTL trong bộ nhớ (lru-cache)                                                                                                                      |
-| `upload.single('file')`, `createUpload({ maxSizeBytes, allowedMimeTypes })`, `IMAGE_MIME_TYPES`, `uploadedFileUrl(filename)`                                                                                             | `middlewares/upload.ts`                                       | Upload ≤ 10 MB, whitelist png/jpg/pdf/zip/txt vào `uploads/`                                                                                            |
-| `toCourseSummary(row, { bookmarkedIds })`, `courseSummarySelect`, `toTeacherSummary(row)`, `teacherSummarySelect`, `toUserDto(row)`, `userDtoSelect`, `toCategoryDto`, `toTagDto`, `computeBadge(course)`                | `lib/mappers.ts`                                              | Mapper + Prisma `select` chuẩn; BR-10                                                                                                                   |
-| `getBookmarkedIds(userId, courseIds)`                                                                                                                                                                                    | `lib/bookmarkedIds.ts`                                        | 1 query cho cả danh sách → truyền vào `toCourseSummary`                                                                                                 |
-| `toAbsoluteUrl(path)`                                                                                                                                                                                                    | `lib/url.ts`                                                  | `/static/...` → URL tuyệt đối theo `PUBLIC_BASE_URL`                                                                                                    |
-| `recomputeDenormalized()`                                                                                                                                                                                                | `lib/denormalize.ts`                                          | Tính lại ratingAvg/Count, enrollmentCount, lessonCount, totalDurationSec, likeCount, answerCount                                                        |
-| `signAccessToken`, `verifyToken`, `signChallengeToken`, `hashPassword`, `verifyPassword`                                                                                                                                 | `lib/jwt.ts`, `lib/password.ts`                               | Access token JWT 15 phút (HS256, claim `sid` = phiên), bcryptjs cost 10                                                                                 |
-| `isSessionActive(sid)`, `queueMail`, `assertCaptcha`, `verifyTotp`                                                                                                                                                       | `lib/sessionGuard.ts`, `mailer.ts`, `turnstile.ts`, `totp.ts` | Phiên còn hiệu lực (cache 30 s), gửi email nền (nodemailer), CAPTCHA Turnstile, TOTP RFC 6238                                                           |
-| `createTestApi()`, `resetDb()`, `authHeader(user)` (user phải do `createUser` tạo: có sẵn Session), `installMailbox()`/`mockTurnstile()`, `createUser/Teacher/Category/Tag/Course/CourseWithLessons/Enrollment/Bookmark` | `tests/helpers/*`                                             | Viết integration test                                                                                                                                   |
+| Helper                                                                                                                                                                                                                   | Vị trí                                                      | Dùng để                                                                                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ApiError(status, code, message, details?)`, `ApiError.of(code, message)`, `.notFound/.forbidden/.conflict/.unprocessable/.unauthorized`                                                                                 | `lib/ApiError.ts`, `lib/errorCodes.ts`                      | Ném lỗi nghiệp vụ; `ERROR_STATUS` là bảng mã lỗi → HTTP status (PAYMENT_FAILED 402, FILE_TOO_LARGE 413, UNSUPPORTED_FILE_TYPE 415, RATE_LIMITED 429...) |
+| `validate({ body?, query?, params? })`                                                                                                                                                                                   | `middlewares/validate.ts`                                   | zod; dữ liệu đã parse ghi đè `req.body/query/params`; lỗi 400 `details: [{source, field, message}]`                                                     |
+| `requireAuth`, `optionalAuth`, `getAuthUser(req)`                                                                                                                                                                        | `middlewares/requireAuth.ts`                                | JWT Bearer; `optionalAuth`: không header = khách, token sai = 401                                                                                       |
+| `ok(res, data, meta?)`, `created(...)`, `noContent(res)`                                                                                                                                                                 | `lib/response.ts`                                           | Định dạng `{ data, meta }`                                                                                                                              |
+| `paginationQuery` (zod), `getPagination(query)` → `{page, limit, skip, take}`, `buildPaginationMeta(total, pagination)`                                                                                                  | `lib/pagination.ts`                                         | Phân trang, limit ≤ 50                                                                                                                                  |
+| `cache.wrap(key, ttlMs, loader)`, `cache.invalidatePrefix(prefix)`, `cache.delete/clear`                                                                                                                                 | `lib/cache.ts`                                              | Cache TTL trong bộ nhớ (lru-cache)                                                                                                                      |
+| `upload.single('file')`, `createUpload({ maxSizeBytes, allowedMimeTypes })`, `IMAGE_MIME_TYPES`, `uploadedFileUrl(filename)`                                                                                             | `middlewares/upload.ts`                                     | Upload ≤ 10 MB, whitelist png/jpg/pdf/zip/txt vào `uploads/`                                                                                            |
+| `toCourseSummary(row, { bookmarkedIds })`, `courseSummarySelect`, `toTeacherSummary(row)`, `teacherSummarySelect`, `toUserDto(row)`, `userDtoSelect`, `toCategoryDto`, `toTagDto`, `computeBadge(course)`                | `lib/mappers.ts`                                            | Mapper + Prisma `select` chuẩn; BR-10                                                                                                                   |
+| `getBookmarkedIds(userId, courseIds)`                                                                                                                                                                                    | `lib/bookmarkedIds.ts`                                      | 1 query cho cả danh sách → truyền vào `toCourseSummary`                                                                                                 |
+| `toAbsoluteUrl(path)`                                                                                                                                                                                                    | `lib/url.ts`                                                | `/static/...` → URL tuyệt đối theo `PUBLIC_BASE_URL`                                                                                                    |
+| `recomputeDenormalized()`                                                                                                                                                                                                | `lib/denormalize.ts`                                        | Tính lại ratingAvg/Count, enrollmentCount, lessonCount, totalDurationSec, likeCount, answerCount                                                        |
+| `signAccessToken`, `verifyToken`, `signChallengeToken`, `hashPassword`, `verifyPassword`                                                                                                                                 | `lib/jwt.ts`, `lib/password.ts`                             | Access token JWT 15 phút (HS256, claim `sid` = phiên), bcryptjs cost 10                                                                                 |
+| `isSessionActive(sid)`, `queueMail`, `assertCaptcha`, `verifyTotp`                                                                                                                                                       | `lib/sessionGuard.ts`, `mailer.ts`, `captcha.ts`, `totp.ts` | Phiên còn hiệu lực (cache 30 s), gửi email nền (nodemailer), CAPTCHA (reCAPTCHA v2 / Turnstile), TOTP RFC 6238                                          |
+| `createTestApi()`, `resetDb()`, `authHeader(user)` (user phải do `createUser` tạo: có sẵn Session), `installMailbox()`/`mockTurnstile()`, `createUser/Teacher/Category/Tag/Course/CourseWithLessons/Enrollment/Bookmark` | `tests/helpers/*`                                           | Viết integration test                                                                                                                                   |
 
 ## 9. Cách thêm module mới (checklist)
 
@@ -179,24 +172,26 @@ Ví dụ module `bookmark`:
    - `['/categories', 'category']` → router khai báo `router.get('/', ...)`;
    - module nhiều nhóm đường dẫn (`/courses/:id/bookmark`, `/me/bookmarks`) → `['/', 'bookmark']` rồi khai báo **đầy đủ** đường dẫn trong router.
 3. Ném lỗi bằng `ApiError.of('COURSE_NOT_FOUND', '...')`; trả DTO qua mapper trong `lib/mappers.ts` (thiếu thì thêm mapper + `select` dùng chung, không tự nhân bản).
-4. Đổi DB: sửa `prisma/schema.prisma` → `npm run db:migrate -- --name <ten>` → `npm run db:migrate:test`; báo owner schema (A), 1 migration/PR; cập nhật PLAN.md §8.2.
+4. Đổi DB: sửa `prisma/schema.prisma` → `npm run db:migrate -- --name <ten>` → `npm run db:migrate:test`; mỗi PR một migration.
 5. Test: unit test service (mock `@/lib/prisma`, mẫu `auth.service.test.ts`) + integration test `tests/integration/<module>.test.ts` (mẫu `auth.test.ts`, `catalog.test.ts`; happy path + ≥ 1 case lỗi); `npm run typecheck && npm run lint && npm test`.
-6. Cập nhật đặc tả endpoint/DTO/mã lỗi ở PLAN.md §9 (và `mobile/src/types/api.ts` nếu đổi DTO), rồi tick task trong PLAN.md.
+6. Cập nhật `mobile/src/types/api.ts` nếu đổi DTO trả về cho app.
 
 ## 10. Biến môi trường
 
-| Biến                | Mặc định                  | Ghi chú                                                                                                    |
-| ------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `NODE_ENV`          | `development`             | `test` → dùng `.env.test`, tắt cache/rate limit/log                                                        |
-| `PORT`              | `4000`                    |                                                                                                            |
-| `DATABASE_URL`      | — (bắt buộc)              | Local: `postgresql://postgres:postgres@localhost:5433/elearning?schema=public`; Neon: có `sslmode=require` |
-| `JWT_SECRET`        | — (bắt buộc, ≥ 32 ký tự)  |                                                                                                            |
-| `ACCESS_TOKEN_TTL`  | `15m`                     | Thời hạn access token (dạng `15m`, `12h`, `30d`)                                                           |
-| `REFRESH_TOKEN_TTL` | `30d`                     | Thời hạn refresh token (trượt theo mỗi lần refresh)                                                        |
-| `CORS_ORIGIN`       | `*`                       | Có thể liệt kê nhiều origin, phân cách dấu phẩy                                                            |
-| `PUBLIC_BASE_URL`   | `http://localhost:<PORT>` | Đặt `http://<IP-LAN>:4000` để điện thoại tải được ảnh/tài liệu                                             |
-| `UPLOAD_DIR`        | `uploads`                 |                                                                                                            |
-| `LOG_LEVEL`         | tùy môi trường            | `debug` (dev) / `info` (prod) / `silent` (test)                                                            |
+| Biến                | Mặc định                  | Ghi chú                                                                                                                    |
+| ------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`          | `development`             | `test` → dùng `.env.test`, tắt cache/rate limit/log                                                                        |
+| `PORT`              | `4000`                    |                                                                                                                            |
+| `DATABASE_URL`      | — (bắt buộc)              | Local: `postgresql://postgres:postgres@localhost:5433/elearning?schema=public`; dịch vụ cloud thường cần `sslmode=require` |
+| `JWT_SECRET`        | — (bắt buộc, ≥ 32 ký tự)  |                                                                                                                            |
+| `ACCESS_TOKEN_TTL`  | `15m`                     | Thời hạn access token (dạng `15m`, `12h`, `30d`)                                                                           |
+| `REFRESH_TOKEN_TTL` | `30d`                     | Thời hạn refresh token (trượt theo mỗi lần refresh)                                                                        |
+| `CORS_ORIGIN`       | `*`                       | Có thể liệt kê nhiều origin, phân cách dấu phẩy                                                                            |
+| `PUBLIC_BASE_URL`   | `http://localhost:<PORT>` | Đặt `http://<IP-LAN>:4000` để điện thoại tải được ảnh/tài liệu                                                             |
+| `UPLOAD_DIR`        | `uploads`                 |                                                                                                                            |
+| `LOG_LEVEL`         | tùy môi trường            | `debug` (dev) / `info` (prod) / `silent` (test)                                                                            |
+
+Ngoài ra còn các nhóm biến cho email SMTP (`SMTP_*`, `MAIL_FROM`), CAPTCHA (`CAPTCHA_PROVIDER`, `RECAPTCHA_*`, `TURNSTILE_*`, `CAPTCHA_ALLOWED_HOSTNAMES`), AI (`AI_PROVIDER`, `GEMINI_*`, `AI_*_LIMIT_*`) và 2FA (`TOTP_ENC_KEY`). Danh sách đầy đủ và giá trị mặc định: [.env.example](.env.example) và `src/config/env.ts`; mẫu cho production: [../deploy/.env.example](../deploy/.env.example).
 
 ## 11. Xử lý sự cố
 
