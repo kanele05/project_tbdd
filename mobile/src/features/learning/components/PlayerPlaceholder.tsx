@@ -43,7 +43,8 @@ export function PlayerPlaceholder({ message, onRetry }: PlayerPlaceholderProps) 
 /** The video slot is always dark (like a cinema screen), in light mode too. */
 const useStyles = makeStyles((t) => ({
   container: {
-    flex: 1,
+    width: '100%',
+    aspectRatio: 16 / 9,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.md,

@@ -45,7 +45,7 @@ function YouTubeLessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
   const startPositionSec = getResumePosition(lesson);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.youtube}>
       <YouTubePlayer
         key={`${lesson.videoUrl}:${playerAttempt}`}
         source={lesson.videoUrl}
@@ -153,9 +153,13 @@ function Mp4LessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
   );
 }
 
-/** The video slot is always dark, in light mode too. */
+/**
+ * The video slot is always dark, in light mode too. MP4: a 16:9 box. YouTube: natural height
+ * (16:9 embed + attribution row), so nothing spills over the tabs below.
+ */
 const useStyles = makeStyles((t) => ({
-  container: { flex: 1, backgroundColor: t.colors.scrim },
+  container: { width: '100%', aspectRatio: 16 / 9, backgroundColor: t.colors.scrim },
+  youtube: { width: '100%', backgroundColor: t.colors.scrim },
   video: { flex: 1 },
   overlay: {
     position: 'absolute',

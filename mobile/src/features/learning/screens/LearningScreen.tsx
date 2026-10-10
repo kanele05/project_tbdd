@@ -213,9 +213,10 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },
   flex: { flex: 1 },
-  // 16:9: the lesson videos are 16:9 (a 3:2 box would letterbox them) and the lesson list keeps
-  // more room on small phones. Always dark, like a cinema screen, also in light mode.
-  player: { aspectRatio: 16 / 9, backgroundColor: t.colors.scrim },
+  // No fixed height here: the MP4 player and the placeholder are 16:9 boxes, while the YouTube player
+  // is 16:9 plus its source/attribution row - a fixed 16:9 slot made that row overlap the tabs.
+  // Always dark, like a cinema screen, also in light mode.
+  player: { backgroundColor: t.colors.scrim },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
   headerBlock: {
     gap: spacing.lg,
