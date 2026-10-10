@@ -3,7 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
-import { fontFamily, makeStyles, spacing, useTheme } from '@/theme';
+import { fontFamily, layout, makeStyles, spacing, useTheme } from '@/theme';
 
 import { getClipRelativeTime, parseYouTubeVideoSource } from './youtube';
 import type { YouTubePlayerProps } from './YouTubePlayer';
@@ -280,7 +280,7 @@ const useStyles = makeStyles((t) => ({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: layout.screenPaddingX,
   },
   sourceLink: {
     color: t.colors.primaryText,

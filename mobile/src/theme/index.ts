@@ -16,7 +16,7 @@ export type { RadiusToken } from './radius';
 export { shadows } from './shadows';
 export { layout, spacing } from './spacing';
 export type { SpacingToken } from './spacing';
-export { ThemeProvider, useTheme } from './ThemeProvider';
+export { DarkThemeScope, ThemeProvider, useTheme } from './ThemeProvider';
 export type { Theme, ThemeMode } from './ThemeProvider';
 export { fontAssets, fontFamily, typography } from './typography';
 export type { FontFamilyToken, TextVariant } from './typography';

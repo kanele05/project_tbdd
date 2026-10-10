@@ -58,6 +58,16 @@ export function isAllowedRecaptchaUrl(value: string, baseUrl: string): boolean {
   }
 }
 
+/** The page we load ourselves (`about:blank` or the configured base origin). */
+export function isRecaptchaPageUrl(value: string, baseUrl: string): boolean {
+  if (value === 'about:blank') return true;
+  try {
+    return new URL(value).origin === new URL(baseUrl).origin;
+  } catch {
+    return false;
+  }
+}
+
 export function isRecaptchaMessageFromBaseUrl(value: string, baseUrl: string): boolean {
   try {
     const messageUrl = new URL(value);

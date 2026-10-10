@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, useWindowDimensions } from 'react-native';
+import { Linking, StyleSheet, useWindowDimensions } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { AppText } from '@/components/ui/AppText';
@@ -13,10 +13,25 @@ import {
   getRecaptchaSize,
   isAllowedRecaptchaUrl,
   isRecaptchaMessageFromBaseUrl,
+  isRecaptchaPageUrl,
   isValidRecaptchaBaseUrl,
   parseRecaptchaMessage,
   type RecaptchaWidgetProps,
 } from './recaptcha';
+
+/**
+ * Sub-frames (the Google challenge iframes) may load Google hosts. A top-level navigation away from
+ * our own page (the "Privacy - Terms" links) would replace the checkbox, so it is cancelled and
+ * opened in the system browser instead.
+ */
+function shouldLoadRequest(request: { url: string; isTopFrame?: boolean }): boolean {
+  if (!isAllowedRecaptchaUrl(request.url, RECAPTCHA_BASE_URL)) return false;
+  if (request.isTopFrame === true && !isRecaptchaPageUrl(request.url, RECAPTCHA_BASE_URL)) {
+    void Linking.openURL(request.url).catch(() => undefined);
+    return false;
+  }
+  return true;
+}
 
 export function RecaptchaWidget(props: RecaptchaWidgetProps) {
   const { isDark } = useTheme();
@@ -158,13 +173,11 @@ function RecaptchaChallenge({ onToken, onExpire, onError }: RecaptchaWidgetProps
       <WebView
         key={attempt}
         source={{ html, baseUrl: RECAPTCHA_BASE_URL }}
-        originWhitelist={['*']}
+        originWhitelist={['https://*', 'about:blank']}
         onMessage={handleMessage}
         onError={fail}
         onHttpError={fail}
-        onShouldStartLoadWithRequest={(request) =>
-          isAllowedRecaptchaUrl(request.url, RECAPTCHA_BASE_URL)
-        }
+        onShouldStartLoadWithRequest={shouldLoadRequest}
         javaScriptEnabled
         domStorageEnabled
         setSupportMultipleWindows={false}

@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { Linking } from 'react-native';
 
 import { API_URL } from '@/constants/config';
 
@@ -45,6 +46,29 @@ describe('YouTubePlayer', () => {
     expect(webViewSource.baseUrl).toBe(new URL(API_URL).origin);
     expect(screen.getByText('Reference video · YouTube')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Open original' })).toBeOnTheScreen();
+  });
+
+  it('cancels top-level navigation away from the player and opens YouTube links externally', async () => {
+    const openUrl = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    await render(<YouTubePlayer {...PLAYER_PROPS} />);
+    const navigation = mockWebViewProps?.onShouldStartLoadWithRequest as (request: {
+      url: string;
+      isTopFrame?: boolean;
+    }) => boolean;
+    const origin = new URL(API_URL).origin;
+
+    expect(navigation({ url: `${origin}/`, isTopFrame: true })).toBe(true);
+    expect(navigation({ url: 'about:blank', isTopFrame: true })).toBe(true);
+    expect(
+      navigation({ url: 'https://www.youtube.com/embed/AbCdEf12345', isTopFrame: false }),
+    ).toBe(true);
+    expect(
+      navigation({ url: 'https://www.youtube.com/watch?v=AbCdEf12345', isTopFrame: true }),
+    ).toBe(false);
+    expect(openUrl).toHaveBeenCalledWith('https://www.youtube.com/watch?v=AbCdEf12345');
+    expect(navigation({ url: 'https://attacker.example/', isTopFrame: true })).toBe(false);
+    expect(openUrl).toHaveBeenCalledTimes(1);
+    openUrl.mockRestore();
   });
 
   it('does not mount a player for invalid YouTube sources', async () => {

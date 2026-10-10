@@ -9,7 +9,7 @@ import { resetTestPreferences } from '@/test/renderWithProviders';
 
 import { makeStyles } from './makeStyles';
 import { darkPalette, lightPalette } from './palettes';
-import { ThemeProvider, useTheme } from './ThemeProvider';
+import { DarkThemeScope, ThemeProvider, useTheme } from './ThemeProvider';
 
 jest.mock('react-native/Libraries/Utilities/useColorScheme', () => ({
   __esModule: true,
@@ -21,6 +21,23 @@ const mockUseColorScheme = useColorScheme as jest.Mock;
 function wrapper({ children }: { children: React.ReactNode }) {
   return <ThemeProvider>{children}</ThemeProvider>;
 }
+
+describe('DarkThemeScope', () => {
+  it('provides the dark palette to its subtree even when the app is in light mode', async () => {
+    resetTestPreferences();
+    mockUseColorScheme.mockReturnValue('light');
+    const { result } = await renderHook(() => useTheme(), {
+      wrapper: ({ children }: { children: React.ReactNode }) => (
+        <ThemeProvider>
+          <DarkThemeScope>{children}</DarkThemeScope>
+        </ThemeProvider>
+      ),
+    });
+    expect(result.current.colors).toBe(darkPalette);
+    expect(result.current.isDark).toBe(true);
+    expect(result.current.statusBarStyle).toBe('light');
+  });
+});
 
 describe('useTheme', () => {
   beforeEach(() => {

@@ -5,9 +5,9 @@ import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { API_URL } from '@/constants/config';
-import { makeStyles, spacing, useTheme } from '@/theme';
+import { layout, makeStyles, spacing, useTheme } from '@/theme';
 
-import { getClipRelativeTime, parseYouTubeVideoSource } from './youtube';
+import { getClipRelativeTime, isYouTubeHostUrl, parseYouTubeVideoSource } from './youtube';
 
 export type YouTubePlayerProps = {
   source: string;
@@ -102,6 +102,27 @@ function isAllowedNavigation(url: string): boolean {
   }
 }
 
+/**
+ * Gate for WebView navigations. Sub-frames (the YouTube iframe) may load Google / YouTube hosts;
+ * a top-level navigation away from the player page (the "Watch on YouTube" logo, the title link)
+ * would replace the player and drop the bridge, so it is cancelled and opened in the system browser.
+ */
+export function shouldLoadPlayerRequest(request: { url: string; isTopFrame?: boolean }): boolean {
+  if (request.isTopFrame === true && !isPlayerPage(request.url)) {
+    if (isYouTubeHostUrl(request.url)) void Linking.openURL(request.url).catch(() => undefined);
+    return false;
+  }
+  return isAllowedNavigation(request.url);
+}
+
+function isPlayerPage(url: string): boolean {
+  try {
+    return url === 'about:blank' || new URL(url).origin === getApiOrigin();
+  } catch {
+    return false;
+  }
+}
+
 export function YouTubePlayer({ ...props }: YouTubePlayerProps) {
   return <NativeYouTubePlayer key={props.source} {...props} />;
 }
@@ -188,7 +209,7 @@ function NativeYouTubePlayer({
           }}
           style={styles.player}
           originWhitelist={['https://*', `${getApiOrigin()}/*`, 'about:blank']}
-          onShouldStartLoadWithRequest={({ url }) => isAllowedNavigation(url)}
+          onShouldStartLoadWithRequest={shouldLoadPlayerRequest}
           onMessage={handleMessage}
           onError={() => setHasError(true)}
           onHttpError={({ nativeEvent }) => {
@@ -257,6 +278,6 @@ const useStyles = makeStyles((t) => ({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: layout.screenPaddingX,
   },
 }));

@@ -1,5 +1,5 @@
 import { act, fireEvent, render, renderHook, screen } from '@testing-library/react-native';
-import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { Linking, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useCaptcha } from '../useCaptcha';
 import { RecaptchaWidget } from './RecaptchaWidget';
@@ -14,7 +14,8 @@ type WebViewProps = {
   onMessage: (event: { nativeEvent: { data: string; url: string } }) => void;
   onError: () => void;
   onHttpError: () => void;
-  onShouldStartLoadWithRequest: (request: { url: string }) => boolean;
+  onShouldStartLoadWithRequest: (request: { url: string; isTopFrame?: boolean }) => boolean;
+  originWhitelist: string[];
   scrollEnabled: boolean;
   style: StyleProp<ViewStyle>;
 };
@@ -162,5 +163,22 @@ describe('RecaptchaWidget (native)', () => {
     expect(allow?.({ url: 'https://www.google.com/recaptcha/api2/anchor' })).toBe(true);
     expect(allow?.({ url: 'https://www.gstatic.com/recaptcha/challenge' })).toBe(true);
     expect(allow?.({ url: 'https://evil.example.com/' })).toBe(false);
+  });
+
+  it('opens top-level Google links (Privacy - Terms) in the system browser instead of the widget', async () => {
+    const openUrl = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    await render(<RecaptchaWidget onToken={jest.fn()} />);
+    const allow = lastProps?.onShouldStartLoadWithRequest;
+
+    expect(lastProps?.originWhitelist).toEqual(['https://*', 'about:blank']);
+    expect(allow?.({ url: 'https://captcha.example.test/', isTopFrame: true })).toBe(true);
+    expect(
+      allow?.({ url: 'https://www.google.com/recaptcha/api2/bframe', isTopFrame: false }),
+    ).toBe(true);
+    expect(allow?.({ url: 'https://policies.google.com/privacy', isTopFrame: true })).toBe(false);
+    expect(openUrl).toHaveBeenCalledWith('https://policies.google.com/privacy');
+    expect(allow?.({ url: 'https://evil.example.com/', isTopFrame: true })).toBe(false);
+    expect(openUrl).toHaveBeenCalledTimes(1);
+    openUrl.mockRestore();
   });
 });

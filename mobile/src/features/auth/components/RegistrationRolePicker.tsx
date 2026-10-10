@@ -25,7 +25,13 @@ export function RegistrationRolePicker({ control, disabled = false }: Registrati
       name="role"
       render={({ field: { onChange, value } }) => (
         <View accessibilityRole="radiogroup" accessibilityLabel={t('role.label')}>
-          <AppText variant="label" style={styles.label}>
+          {/* The radiogroup already announces this label: hide the visible copy from screen readers. */}
+          <AppText
+            variant="label"
+            style={styles.label}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          >
             {t('role.label')}
           </AppText>
           <View style={styles.options}>

@@ -16,7 +16,7 @@ import { isYouTubeHostUrl } from '@/features/media/youtube';
 import { YouTubePlayer } from '@/features/media/YouTubePlayer';
 import { useTranslation } from '@/i18n';
 import { getErrorMessage } from '@/lib/appError';
-import { makeStyles, spacing, useTheme } from '@/theme';
+import { DarkThemeScope, makeStyles, spacing, useTheme } from '@/theme';
 
 import { usePreviewLesson } from '../hooks';
 
@@ -219,7 +219,11 @@ export function PreviewPlayerModal({ lessonId, onClose }: PreviewPlayerModalProp
       statusBarTranslucent
       supportedOrientations={['portrait', 'landscape']}
     >
-      {lessonId !== null ? <PreviewBody lessonId={lessonId} onClose={onClose} /> : null}
+      {lessonId !== null ? (
+        <DarkThemeScope>
+          <PreviewBody lessonId={lessonId} onClose={onClose} />
+        </DarkThemeScope>
+      ) : null}
     </Modal>
   );
 }

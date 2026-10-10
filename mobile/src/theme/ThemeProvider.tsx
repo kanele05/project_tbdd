@@ -82,6 +82,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
+/**
+ * Re-provides the dark palette to a subtree that always sits on a black surface (the full-screen
+ * video modal), so text, buttons and links stay readable when the app itself is in light mode.
+ */
+export function DarkThemeScope({ children }: { children: ReactNode }) {
+  const parent = useContext(ThemeContext);
+  const value = useMemo<Theme>(
+    () => ({ ...parent, colors: darkPalette, isDark: true, statusBarStyle: 'light' }),
+    [parent],
+  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}
+
 /** `const { colors, isDark, mode, setMode } = useTheme()`. Re-renders when the theme changes. */
 export function useTheme(): Theme {
   return useContext(ThemeContext);
