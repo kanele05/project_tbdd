@@ -12,14 +12,23 @@ jest.mock('@/lib/prisma', () => ({
 
 const preview: CoursePreviewUpdate = {
   courseId: 'crs_python_introduction',
-  lessonIds: ['les_python_introduction_01', 'les_python_introduction_02'],
-  videoUrl: 'https://api.example.com/static/previews/python-introduction-v1.mp4',
-  durationSec: 18,
+  lessons: [
+    {
+      lessonId: 'les_python_introduction_01',
+      videoUrl: 'https://www.youtube.com/watch?v=AbCdEf12345&start=10&end=130',
+      durationSec: 120,
+    },
+    {
+      lessonId: 'les_python_introduction_02',
+      videoUrl: 'https://www.youtube.com/watch?v=AbCdEf12345&start=190&end=250',
+      durationSec: 60,
+    },
+  ],
 };
 
 function originalLessons() {
-  return preview.lessonIds.map((id) => ({
-    id,
+  return preview.lessons.map(({ lessonId }) => ({
+    id: lessonId,
     isPreview: true,
     videoUrl: 'https://old.example.com/sample.mp4',
     durationSec: 10,
@@ -27,10 +36,14 @@ function originalLessons() {
   }));
 }
 
+function withSecondUrl(videoUrl: string): CoursePreviewUpdate {
+  return { ...preview, lessons: [preview.lessons[0], { ...preview.lessons[1], videoUrl }] };
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockFindMany.mockResolvedValue(originalLessons());
-  mockUpdateMany.mockResolvedValue({ count: 2 });
+  mockUpdateMany.mockResolvedValue({ count: 1 });
   mockAggregate.mockResolvedValue({ _sum: { durationSec: 156 } });
   mockTransaction.mockImplementation((callback: (transaction: unknown) => unknown) =>
     callback({
@@ -50,37 +63,51 @@ describe('updateCoursePreviews', () => {
     expect(mockUpdateCourse).not.toHaveBeenCalled();
   });
 
-  it('only updates the known preview lessons and their course duration', async () => {
+  it('gives each preview lesson its own excerpt and recomputes the course duration', async () => {
     await updateCoursePreviews([preview], true);
-    expect(mockUpdateMany).toHaveBeenCalledWith({
-      where: {
-        id: { in: preview.lessonIds },
-        isPreview: true,
-        section: { courseId: preview.courseId },
-      },
-      data: { videoUrl: preview.videoUrl, durationSec: 18 },
-    });
+    expect(mockUpdateMany).toHaveBeenCalledTimes(2);
+    for (const lesson of preview.lessons) {
+      expect(mockUpdateMany).toHaveBeenCalledWith({
+        where: { id: lesson.lessonId, isPreview: true, section: { courseId: preview.courseId } },
+        data: { videoUrl: lesson.videoUrl, durationSec: lesson.durationSec },
+      });
+    }
     expect(mockUpdateCourse).toHaveBeenCalledWith({
       where: { id: preview.courseId },
       data: { totalDurationSec: 156 },
     });
   });
 
+  it('only rewrites the lesson that differs', async () => {
+    const [first, second] = originalLessons();
+    mockFindMany.mockResolvedValue([
+      { ...first, videoUrl: preview.lessons[0].videoUrl, durationSec: 120 },
+      second,
+    ]);
+    const result = await updateCoursePreviews([preview], true);
+    expect(result.changes[0]?.changedLessons).toBe(1);
+    expect(mockUpdateMany).toHaveBeenCalledTimes(1);
+    expect(mockUpdateMany.mock.calls[0]?.[0]).toMatchObject({
+      where: { id: preview.lessons[1].lessonId },
+    });
+  });
+
   it('does not rewrite previews already synchronized', async () => {
     mockFindMany.mockResolvedValue(
-      originalLessons().map((lesson) => ({
+      originalLessons().map((lesson, index) => ({
         ...lesson,
-        videoUrl: preview.videoUrl,
-        durationSec: 18,
+        videoUrl: preview.lessons[index]?.videoUrl,
+        durationSec: preview.lessons[index]?.durationSec,
       })),
     );
     const result = await updateCoursePreviews([preview], true);
     expect(result.changes[0]?.changedLessons).toBe(0);
     expect(mockUpdateMany).not.toHaveBeenCalled();
+    expect(mockUpdateCourse).not.toHaveBeenCalled();
   });
 
   it('aborts the transaction if a preview changes concurrently', async () => {
-    mockUpdateMany.mockResolvedValue({ count: 1 });
+    mockUpdateMany.mockResolvedValueOnce({ count: 1 }).mockResolvedValueOnce({ count: 0 });
     await expect(updateCoursePreviews([preview], true)).rejects.toThrow('changed concurrently');
     expect(mockUpdateCourse).not.toHaveBeenCalled();
   });
@@ -107,19 +134,37 @@ describe('updateCoursePreviews', () => {
     expect(mockTransaction).not.toHaveBeenCalled();
   });
 
+  it('rejects a lesson listed under two courses before opening a transaction', async () => {
+    await expect(
+      updateCoursePreviews([preview, { ...preview, courseId: 'crs_other' }], true),
+    ).rejects.toThrow('Duplicate lesson');
+    expect(mockTransaction).not.toHaveBeenCalled();
+  });
+
   it.each([0, -1, 1.5])(
     'rejects invalid duration %s before opening a transaction',
     async (duration) => {
-      await expect(updateCoursePreviews([{ ...preview, durationSec: duration }])).rejects.toThrow(
-        'Invalid preview duration',
-      );
+      const invalid: CoursePreviewUpdate = {
+        ...preview,
+        lessons: [{ ...preview.lessons[0], durationSec: duration }, preview.lessons[1]],
+      };
+      await expect(updateCoursePreviews([invalid])).rejects.toThrow('Invalid preview duration');
       expect(mockTransaction).not.toHaveBeenCalled();
     },
   );
 
-  it('rejects non-HTTP video URLs', async () => {
-    await expect(
-      updateCoursePreviews([{ ...preview, videoUrl: 'file:///video.mp4' }]),
-    ).rejects.toThrow('Invalid preview URL');
+  it.each([
+    'file:///video.mp4',
+    'http://www.youtube.com/watch?v=AbCdEf12345',
+    'https://youtube.com/watch?v=AbCdEf12345',
+    'https://www.youtube.com.evil.example/watch?v=AbCdEf12345',
+    'https://www.youtube.com/embed/AbCdEf12345',
+    'https://api.example.com/static/previews/python-introduction-v2.mp4',
+    'not a url',
+  ])('rejects the non-YouTube-watch video URL %s', async (videoUrl) => {
+    await expect(updateCoursePreviews([withSecondUrl(videoUrl)])).rejects.toThrow(
+      'Invalid preview URL',
+    );
+    expect(mockTransaction).not.toHaveBeenCalled();
   });
 });

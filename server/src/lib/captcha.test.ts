@@ -210,6 +210,91 @@ describe('assertCaptcha with reCAPTCHA v2', () => {
   });
 });
 
+describe('assertCaptcha with Turnstile', () => {
+  const TURNSTILE_SECRET = '1x0000000000000000000000000000000AA';
+  const TURNSTILE_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+
+  it('posts secret, response and IP as a form and accepts a confirmed token', async () => {
+    respond({ success: true });
+    const { assertCaptcha } = loadCaptcha({ provider: 'turnstile', secret: TURNSTILE_SECRET });
+
+    await expect(assertCaptcha('good-token', '1.2.3.4')).resolves.toBeUndefined();
+
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe(TURNSTILE_URL);
+    expect(init.method).toBe('POST');
+    const body = init.body as URLSearchParams;
+    expect(body.get('secret')).toBe(TURNSTILE_SECRET);
+    expect(body.get('response')).toBe('good-token');
+    expect(body.get('remoteip')).toBe('1.2.3.4');
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('omits remoteip when the IP is unknown', async () => {
+    respond({ success: true });
+    const { assertCaptcha } = loadCaptcha({ provider: 'turnstile', secret: TURNSTILE_SECRET });
+    await assertCaptcha('good-token', null);
+    const body = (fetchSpy.mock.calls[0]?.[1] as RequestInit).body as URLSearchParams;
+    expect(body.has('remoteip')).toBe(false);
+  });
+
+  it('rejects a missing token with 400 CAPTCHA_REQUIRED without calling Cloudflare', async () => {
+    const { assertCaptcha } = loadCaptcha({ provider: 'turnstile', secret: TURNSTILE_SECRET });
+    await expect(assertCaptcha(undefined, null)).rejects.toMatchObject({
+      status: 400,
+      code: 'CAPTCHA_REQUIRED',
+      details: { captchaRequired: true },
+    });
+    await expect(assertCaptcha('', null)).rejects.toMatchObject({ code: 'CAPTCHA_REQUIRED' });
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it.each([[{ success: false, 'error-codes': ['invalid-input-response'] }], [{ success: 'true' }]])(
+    'rejects a token Cloudflare does not confirm (%j) with 400 CAPTCHA_FAILED',
+    async (body) => {
+      respond(body);
+      const { assertCaptcha } = loadCaptcha({ provider: 'turnstile', secret: TURNSTILE_SECRET });
+      await expect(assertCaptcha('bad', null)).rejects.toMatchObject({
+        status: 400,
+        code: 'CAPTCHA_FAILED',
+        details: { captchaRequired: true },
+      });
+    },
+  );
+
+  it('fails safe (503 CAPTCHA_UNAVAILABLE) on a network error', async () => {
+    fetchSpy.mockRejectedValue(new TypeError('fetch failed'));
+    const { assertCaptcha } = loadCaptcha({ provider: 'turnstile', secret: TURNSTILE_SECRET });
+    await expect(assertCaptcha('x', null)).rejects.toMatchObject({
+      status: 503,
+      code: 'CAPTCHA_UNAVAILABLE',
+    });
+    expect(mockLogger.warn).toHaveBeenCalled();
+  });
+
+  it('fails safe when Cloudflare answers with an HTTP error or invalid JSON', async () => {
+    const { assertCaptcha } = loadCaptcha({ provider: 'turnstile', secret: TURNSTILE_SECRET });
+    respond('Bad gateway', 502);
+    await expect(assertCaptcha('x', null)).rejects.toMatchObject({ code: 'CAPTCHA_UNAVAILABLE' });
+    respond('<html>not json</html>', 200);
+    await expect(assertCaptcha('x', null)).rejects.toMatchObject({ code: 'CAPTCHA_UNAVAILABLE' });
+  });
+
+  it('skips verification outside production without a secret and fails closed in production', async () => {
+    const development = loadCaptcha({ provider: 'turnstile' });
+    await expect(development.assertCaptcha(undefined, null)).resolves.toBeUndefined();
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    const production = loadCaptcha({ provider: 'turnstile', isProduction: true });
+    await expect(production.assertCaptcha('anything', null)).rejects.toMatchObject({
+      status: 503,
+      code: 'CAPTCHA_UNAVAILABLE',
+    });
+    expect(mockLogger.error).toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
 describe('assertCaptcha with non-object siteverify bodies', () => {
   it.each([
     ['recaptcha_v2', 'null'],

@@ -65,6 +65,7 @@ Sau đó `npm run db:migrate:deploy` (áp migration) và `npm run prisma:seed`. 
 | Giảng viên         | `ramono.wultschner@example.com`, `sara.weise@example.com`... (cùng mật khẩu)                                                            |
 
 - **Ảnh:** URL Unsplash trực tiếp (đã kiểm tra HTTP 200 và xem thử khớp chủ đề) và `randomuser.me` cho avatar. Không tải ảnh về repo.
+- **Video xem thử:** 2 bài đầu của mỗi khóa là 2 đoạn YouTube riêng (cùng một video đã kiểm tra phát được), khai báo ở `prisma/seed-data/externalCoursePreviewManifest.json`; các bài còn lại dùng clip MP4 bên dưới.
 - **Video:** 5 clip MP4 công khai (test-videos.co.uk, MDN CC0, Blender) dùng lặp lại; `durationSec` = thời lượng thật đọc từ header MP4 (10 s / 10 s / 10 s / 5 s / 52 s). Danh sách ở `prisma/seed-data/media.ts`.
 - **Tài liệu:** `static/resources/Document 1.txt`, `Document 2.pdf` (sinh bằng `npx tsx scripts/generateResources.ts`); URL build từ `PUBLIC_BASE_URL` **tại thời điểm seed** → đổi `PUBLIC_BASE_URL` (vd sang IP LAN) thì chạy lại seed.
 
@@ -83,8 +84,32 @@ Sau đó `npm run db:migrate:deploy` (áp migration) và `npm run prisma:seed`. 
 | `npm run db:reset`                              | `prisma migrate reset --force` (xóa sạch DB dev; chỉ người thật chạy - Prisma CLI chặn khi chạy bởi AI agent) |
 | `npm run db:seed` / `prisma:seed`               | Seed                                                                                                          |
 | `npm run db:studio`                             | Prisma Studio                                                                                                 |
+| `npm run previews:dry-run` / `previews:apply`   | Cập nhật video xem thử YouTube (dry-run / ghi DB) - xem mục 5.1                                               |
 
 **Test:** `tests/globalSetup.ts` chạy `prisma migrate deploy` + TRUNCATE mọi bảng trên DB test (từ chối chạy nếu tên DB không chứa `test`); mỗi file integration test gọi `resetDb()` trong `beforeEach`. Jest chạy với `--experimental-vm-modules` (bắt buộc để Prisma 7 nạp WASM query compiler). Cache server bị tắt khi `NODE_ENV=test`.
+
+### 5.1 Cập nhật video xem thử YouTube (không reseed)
+
+Mỗi khóa có 2 bài xem thử (`les_<slug>_01`, `_02`), mỗi bài một đoạn YouTube riêng của cùng một video. Hợp đồng manifest (`prisma/seed-data/externalCoursePreviewManifest.json`, 30 mục, `.strict()`): `slug`, `videoId`, `title`, `creator`, `playbackVerified: true`, `verifiedAt`, `excerpts` = đúng 2 đoạn `{ startSeconds, endSeconds }`, mỗi đoạn 45-180 giây, đoạn 2 bắt đầu **sau hoặc đúng lúc** đoạn 1 kết thúc (không chồng nhau). Updater chỉ chấp nhận URL `https://www.youtube.com/watch?...`, không còn chế độ MP4 và **bắt buộc** `--external-manifest`. Mặc định là dry-run; chỉ ghi DB khi có `--apply`. Updater chạy trong 1 transaction, idempotent (lần 2 báo `changedLessons: 0`), kiểm tra bài thuộc đúng khóa và tính lại `totalDurationSec` của khóa. Không ảnh hưởng người dùng, ghi danh, tiến độ học.
+
+**Dev** (từ `server/`, DB trong `.env`):
+
+```bash
+npm run previews:dry-run   # xem sẽ đổi bao nhiêu bài (log "Preview dry run", changedLessons)
+npm run previews:apply     # ghi DB
+```
+
+**Production** (trên VPS, thư mục chứa `docker-compose.yml`; image production không có `tsx` trong `PATH` nên gọi bản cài ở `/opt/tools`; `npm run previews:*` chỉ dùng được ở máy dev):
+
+```bash
+# 1) Backup DB trước (xem deploy/README.md - mục backup), rồi dry-run:
+docker compose exec api /opt/tools/node_modules/.bin/tsx scripts/updateCoursePreviews.ts   --external-manifest prisma/seed-data/externalCoursePreviewManifest.json
+# 2) Đọc kết quả (applied=false, changedLessons theo từng khóa). Nếu đúng mong đợi thì ghi:
+docker compose exec api /opt/tools/node_modules/.bin/tsx scripts/updateCoursePreviews.ts   --external-manifest prisma/seed-data/externalCoursePreviewManifest.json --apply
+# 3) Chạy lại lệnh dry-run: phải báo changedLessons = 0 cho mọi khóa.
+```
+
+Quy tắc: luôn dry-run và backup trước; **không** chạy `db:seed` / `SEED_FORCE=1` trên production (seed xóa toàn bộ dữ liệu người dùng); manifest nằm trong image nên muốn đổi đoạn video phải build + deploy image mới trước khi chạy updater. Script này (kèm `prisma/`, `src/`, `tsconfig.json`) đã được `Dockerfile` đưa vào image.
 
 ## 6. Cấu trúc
 

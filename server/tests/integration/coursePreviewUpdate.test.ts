@@ -12,9 +12,18 @@ async function fixture() {
   const enrollment = await createEnrollment(user.id, course.id, { progressPercent: 35 });
   const preview: CoursePreviewUpdate = {
     courseId: course.id,
-    lessonIds: [lessons[0]!.id, lessons[1]!.id],
-    videoUrl: 'https://api.example.com/static/previews/fixture-v1.mp4',
-    durationSec: 18,
+    lessons: [
+      {
+        lessonId: lessons[0]!.id,
+        videoUrl: 'https://www.youtube.com/watch?v=AbCdEf12345&start=10&end=28',
+        durationSec: 18,
+      },
+      {
+        lessonId: lessons[1]!.id,
+        videoUrl: 'https://www.youtube.com/watch?v=AbCdEf12345&start=40&end=70',
+        durationSec: 30,
+      },
+    ],
   };
   return { course, lessons, user, enrollment, preview };
 }
@@ -40,10 +49,13 @@ describe('course preview data update', () => {
     });
     await updateCoursePreviews([preview], true);
     const updatedCourse = await prisma.course.findUniqueOrThrow({ where: { id: course.id } });
-    expect(updatedCourse.totalDurationSec).toBe(51);
+    expect(updatedCourse.totalDurationSec).toBe(63);
     expect(updatedCourse.lessonCount).toBe(3);
-    const updatedPreview = await prisma.lesson.findUniqueOrThrow({ where: { id: lessons[0]!.id } });
-    expect(updatedPreview).toMatchObject({ videoUrl: preview.videoUrl, durationSec: 18 });
+    for (const [index, target] of preview.lessons.entries()) {
+      const updated = await prisma.lesson.findUniqueOrThrow({ where: { id: lessons[index]!.id } });
+      expect(updated).toMatchObject({ videoUrl: target.videoUrl, durationSec: target.durationSec });
+    }
+    expect(preview.lessons[0].videoUrl).not.toBe(preview.lessons[1].videoUrl);
     expect(await prisma.lesson.findUniqueOrThrow({ where: { id: lessons[2]!.id } })).toEqual(
       lessons[2],
     );
@@ -68,7 +80,13 @@ describe('course preview data update', () => {
       updateCoursePreviews(
         [
           preview,
-          { ...preview, courseId: 'missing-course', lessonIds: ['missing-1', 'missing-2'] },
+          {
+            courseId: 'missing-course',
+            lessons: [
+              { ...preview.lessons[0], lessonId: 'missing-1' },
+              { ...preview.lessons[1], lessonId: 'missing-2' },
+            ],
+          },
         ],
         true,
       ),

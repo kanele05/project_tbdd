@@ -1,59 +1,28 @@
+/**
+ * Cập nhật 2 bài xem thử (YouTube) của mỗi khóa học mà KHÔNG cần reseed.
+ * Mặc định chạy thử (dry-run); thêm `--apply` để ghi DB. Xem mục "Cập nhật video xem thử" trong server/README.md.
+ */
 import fs from 'node:fs';
 import path from 'node:path';
 
 import { logger } from '@/lib/logger';
 import { disconnectPrisma } from '@/lib/prisma';
-import {
-  type CoursePreviewUpdate,
-  updateCoursePreviews,
-} from '@/modules/course/coursePreviewUpdate.service';
+import { updateCoursePreviews } from '@/modules/course/coursePreviewUpdate.service';
+import { parsePreviewUpdateArgs } from '@/modules/course/coursePreviewUpdateArgs';
 import { parseExternalPreviewManifest } from '@/modules/course/externalPreviewManifest';
 
-import { getCoursePreview } from '../prisma/seed-data/coursePreviews';
-import { courseId, COURSES } from '../prisma/seed-data/courses';
-
-function getRenderedPreviews(): CoursePreviewUpdate[] {
-  return COURSES.map((course): CoursePreviewUpdate => {
-    const id = courseId(course.slug);
-    const asset = path.resolve(__dirname, '..', 'static', 'previews', `${course.slug}-v2.mp4`);
-    if (!fs.existsSync(asset) || fs.statSync(asset).size === 0) {
-      throw new Error(`Missing rendered preview: ${course.slug}`);
-    }
-    const preview = getCoursePreview(course.slug);
-    return {
-      courseId: id,
-      lessonIds: [`les_${id.slice(4)}_01`, `les_${id.slice(4)}_02`],
-      videoUrl: preview.url,
-      durationSec: preview.durationSec,
-    };
-  });
-}
+import { COURSES } from '../prisma/seed-data/courses';
 
 async function main() {
-  const args = process.argv.slice(2);
-  const manifestIndex = args.indexOf('--external-manifest');
-  const manifestPath = manifestIndex === -1 ? undefined : args[manifestIndex + 1];
-  if (manifestIndex !== -1 && (!manifestPath || manifestPath.startsWith('--'))) {
-    throw new Error('Provide a JSON file after --external-manifest');
-  }
-  const expectedArgs = new Set([
-    '--apply',
-    '--external-manifest',
-    ...(manifestPath ? [manifestPath] : []),
-  ]);
-  if (args.some((arg) => !expectedArgs.has(arg)) || new Set(args).size !== args.length) {
-    throw new Error('Usage: updateCoursePreviews [--apply] [--external-manifest file.json]');
-  }
-  const shouldApply = args.includes('--apply');
-  const previews = manifestPath
-    ? parseExternalPreviewManifest(
-        JSON.parse(fs.readFileSync(path.resolve(manifestPath), 'utf8')) as unknown,
-        COURSES.map((course) => course.slug),
-      )
-    : getRenderedPreviews();
+  const { manifestPath, shouldApply } = parsePreviewUpdateArgs(process.argv.slice(2));
+  const previews = parseExternalPreviewManifest(
+    JSON.parse(fs.readFileSync(path.resolve(manifestPath), 'utf8')) as unknown,
+    COURSES.map((course) => course.slug),
+  );
   const result = await updateCoursePreviews(previews, shouldApply);
+  const changedLessons = result.changes.reduce((total, item) => total + item.changedLessons, 0);
   logger.info(
-    result,
+    { ...result, changedLessons },
     shouldApply ? 'Course previews updated without reseeding' : 'Preview dry run',
   );
 }

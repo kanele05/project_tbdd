@@ -1,1 +1,0 @@
-All graphics, animation, typography layout, and source code in this directory are original work authored for this project. No third-party image, video, music, or stock asset is included. Runtime dependencies retain their own licenses.

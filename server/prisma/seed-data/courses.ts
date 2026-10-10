@@ -4,6 +4,8 @@
  * - 3 khóa miễn phí, 5 khóa Best-seller, 6 khóa "Course that inspires" (isFeatured).
  * - `benefits` KHÔNG ghi chứng chỉ (Certificate là "Won't" trong PLAN §2.2).
  */
+import { courseId } from '@/modules/course/courseIds';
+
 import { type CategorySlug } from './categories';
 import { PHOTO } from './media';
 
@@ -31,7 +33,7 @@ export type CourseSeed = {
   popularity: Popularity;
 };
 
-export const courseId = (slug: string): string => `crs_${slug.replace(/-/g, '_')}`;
+export { courseId };
 
 const BENEFITS_COMMON = ['Lifetime access to all lessons', 'Learn at your own pace on any device'];
 

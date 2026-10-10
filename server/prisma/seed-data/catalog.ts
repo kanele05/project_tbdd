@@ -7,7 +7,7 @@ import path from 'node:path';
 
 import { courseId, COURSES, type CourseSeed } from './courses';
 import { CURRICULUM } from './curriculum';
-import { getExternalCoursePreview } from './externalCoursePreviews';
+import { getExternalCoursePreviews } from './externalCoursePreviews';
 import { buildLessonContent } from './lessonContent';
 import { PHOTO, staticUrl, unsplash, VIDEOS } from './media';
 import { tagId } from './tags';
@@ -94,6 +94,9 @@ export function buildCatalog(now: number): Catalog {
     const curriculum = CURRICULUM[seed.slug];
     if (!curriculum) throw new Error(`Thiếu chương trình học cho "${seed.slug}"`);
 
+    // Bài 01 và 02 là bài xem thử, mỗi bài một đoạn video YouTube riêng.
+    const previews = getExternalCoursePreviews(seed.slug);
+
     const row: CourseRow = {
       seed,
       id,
@@ -116,7 +119,7 @@ export function buildCatalog(now: number): Catalog {
         number += 1;
         const video = VIDEOS[(courseIndex + number) % VIDEOS.length];
         if (!video) throw new Error('Danh sách VIDEOS rỗng');
-        const preview = number <= 2 ? getExternalCoursePreview(seed.slug) : undefined;
+        const preview = number <= 2 ? previews[number - 1] : undefined;
         const lessonId = `les_${id.slice(4)}_${String(number).padStart(2, '0')}`;
         const lesson: LessonRow = {
           id: lessonId,

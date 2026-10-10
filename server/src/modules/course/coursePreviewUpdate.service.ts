@@ -1,23 +1,46 @@
 import { type Prisma, prisma } from '@/lib/prisma';
 
-export type CoursePreviewUpdate = {
-  courseId: string;
-  lessonIds: readonly [string, string];
+export type PreviewLessonUpdate = {
+  lessonId: string;
   videoUrl: string;
   durationSec: number;
 };
+
+export type CoursePreviewUpdate = {
+  courseId: string;
+  /** Hai bài xem thử của khóa; mỗi bài có đoạn video riêng. */
+  lessons: readonly [PreviewLessonUpdate, PreviewLessonUpdate];
+};
+
+const ALLOWED_PREVIEW_ORIGIN = 'https://www.youtube.com';
+const ALLOWED_PREVIEW_PATH = '/watch';
+
+function assertAllowedPreviewUrl(lesson: PreviewLessonUpdate) {
+  let videoUrl: URL;
+  try {
+    videoUrl = new URL(lesson.videoUrl);
+  } catch {
+    throw new Error(`Invalid preview URL: ${lesson.lessonId}`);
+  }
+  if (videoUrl.origin !== ALLOWED_PREVIEW_ORIGIN || videoUrl.pathname !== ALLOWED_PREVIEW_PATH) {
+    throw new Error(`Invalid preview URL: ${lesson.lessonId}`);
+  }
+}
 
 function validatePreviews(previews: readonly CoursePreviewUpdate[]) {
   if (new Set(previews.map((preview) => preview.courseId)).size !== previews.length) {
     throw new Error('Duplicate course in preview manifest');
   }
+  const lessonIds = previews.flatMap((preview) => preview.lessons.map((lesson) => lesson.lessonId));
+  if (new Set(lessonIds).size !== lessonIds.length) {
+    throw new Error('Duplicate lesson in preview manifest');
+  }
   for (const preview of previews) {
-    if (!Number.isInteger(preview.durationSec) || preview.durationSec <= 0) {
-      throw new Error(`Invalid preview duration: ${preview.courseId}`);
-    }
-    const videoUrl = new URL(preview.videoUrl);
-    if (!['http:', 'https:'].includes(videoUrl.protocol)) {
-      throw new Error(`Invalid preview URL: ${preview.courseId}`);
+    for (const lesson of preview.lessons) {
+      if (!Number.isInteger(lesson.durationSec) || lesson.durationSec <= 0) {
+        throw new Error(`Invalid preview duration: ${lesson.lessonId}`);
+      }
+      assertAllowedPreviewUrl(lesson);
     }
   }
 }
@@ -28,7 +51,7 @@ async function syncPreview(
   shouldApply: boolean,
 ) {
   const lessons = await transaction.lesson.findMany({
-    where: { id: { in: [...preview.lessonIds] } },
+    where: { id: { in: preview.lessons.map((lesson) => lesson.lessonId) } },
     select: {
       id: true,
       isPreview: true,
@@ -43,20 +66,18 @@ async function syncPreview(
   ) {
     throw new Error(`Expected two matching preview lessons: ${preview.courseId}`);
   }
-  const changedLessons = lessons.filter(
-    (lesson) => lesson.videoUrl !== preview.videoUrl || lesson.durationSec !== preview.durationSec,
-  );
-  if (shouldApply && changedLessons.length > 0) {
-    const result = await transaction.lesson.updateMany({
-      where: {
-        id: { in: changedLessons.map((lesson) => lesson.id) },
-        isPreview: true,
-        section: { courseId: preview.courseId },
-      },
-      data: { videoUrl: preview.videoUrl, durationSec: preview.durationSec },
-    });
-    if (result.count !== changedLessons.length)
-      throw new Error('Preview lessons changed concurrently');
+  const changes = preview.lessons.filter((target) => {
+    const current = lessons.find((lesson) => lesson.id === target.lessonId);
+    return current?.videoUrl !== target.videoUrl || current.durationSec !== target.durationSec;
+  });
+  if (shouldApply && changes.length > 0) {
+    for (const target of changes) {
+      const result = await transaction.lesson.updateMany({
+        where: { id: target.lessonId, isPreview: true, section: { courseId: preview.courseId } },
+        data: { videoUrl: target.videoUrl, durationSec: target.durationSec },
+      });
+      if (result.count !== 1) throw new Error('Preview lessons changed concurrently');
+    }
     const total = await transaction.lesson.aggregate({
       where: { section: { courseId: preview.courseId } },
       _sum: { durationSec: true },
@@ -66,7 +87,7 @@ async function syncPreview(
       data: { totalDurationSec: total._sum.durationSec ?? 0 },
     });
   }
-  return { courseId: preview.courseId, changedLessons: changedLessons.length };
+  return { courseId: preview.courseId, changedLessons: changes.length };
 }
 
 export async function updateCoursePreviews(

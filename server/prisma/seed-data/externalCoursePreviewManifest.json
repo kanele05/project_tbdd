@@ -4,8 +4,16 @@
     "videoId": "6lmvCqvmjfE",
     "title": "Design Thinking 101",
     "creator": "NNgroup",
-    "startSeconds": 18,
-    "endSeconds": 138,
+    "excerpts": [
+      {
+        "startSeconds": 18,
+        "endSeconds": 102
+      },
+      {
+        "startSeconds": 102,
+        "endSeconds": 186
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -14,8 +22,16 @@
     "videoId": "j6Ule7GXaRs",
     "title": "Learn Web Design For Beginners - Full Course",
     "creator": "Flux Academy",
-    "startSeconds": 326,
-    "endSeconds": 446,
+    "excerpts": [
+      {
+        "startSeconds": 326,
+        "endSeconds": 446
+      },
+      {
+        "startSeconds": 506,
+        "endSeconds": 626
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -24,8 +40,16 @@
     "videoId": "OtUWbsvCujM",
     "title": "When to Use Which UX Research Method",
     "creator": "NNgroup",
-    "startSeconds": 45,
-    "endSeconds": 165,
+    "excerpts": [
+      {
+        "startSeconds": 45,
+        "endSeconds": 165
+      },
+      {
+        "startSeconds": 195,
+        "endSeconds": 270
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -34,8 +58,16 @@
     "videoId": "ExXK7b73ze8",
     "title": "Digital Painting Tutorial: Process From Start to Finish",
     "creator": "Anna Sok _ Art",
-    "startSeconds": 60,
-    "endSeconds": 180,
+    "excerpts": [
+      {
+        "startSeconds": 60,
+        "endSeconds": 180
+      },
+      {
+        "startSeconds": 240,
+        "endSeconds": 360
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -44,8 +76,16 @@
     "videoId": "P-r_WH-DjpM",
     "title": "Office Makeover | *SUPER* Functional Small Space Transformation",
     "creator": "Make My Space Work",
-    "startSeconds": 180,
-    "endSeconds": 300,
+    "excerpts": [
+      {
+        "startSeconds": 180,
+        "endSeconds": 300
+      },
+      {
+        "startSeconds": 360,
+        "endSeconds": 480
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -54,8 +94,16 @@
     "videoId": "7j2trHBIdM4",
     "title": "A guide to designing packaging with Jamie Paige and Adobe Illustrator | Adobe Creative Cloud",
     "creator": "Adobe Creative Cloud",
-    "startSeconds": 79,
-    "endSeconds": 199,
+    "excerpts": [
+      {
+        "startSeconds": 79,
+        "endSeconds": 199
+      },
+      {
+        "startSeconds": 259,
+        "endSeconds": 379
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -64,8 +112,16 @@
     "videoId": "UnBO2_AYJ7o",
     "title": "Make it pop!",
     "creator": "Canva",
-    "startSeconds": 4,
-    "endSeconds": 99,
+    "excerpts": [
+      {
+        "startSeconds": 4,
+        "endSeconds": 49
+      },
+      {
+        "startSeconds": 49,
+        "endSeconds": 94
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -74,8 +130,16 @@
     "videoId": "UoLF3oG94RA",
     "title": "Take Your Art to the Next Level: Procreate Perspective Essentials",
     "creator": "Liz Kohler Brown",
-    "startSeconds": 27,
-    "endSeconds": 147,
+    "excerpts": [
+      {
+        "startSeconds": 27,
+        "endSeconds": 147
+      },
+      {
+        "startSeconds": 207,
+        "endSeconds": 327
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -84,8 +148,16 @@
     "videoId": "dhrX_biPH8c",
     "title": "The new responsive design",
     "creator": "Chrome for Developers",
-    "startSeconds": 35,
-    "endSeconds": 155,
+    "excerpts": [
+      {
+        "startSeconds": 35,
+        "endSeconds": 155
+      },
+      {
+        "startSeconds": 215,
+        "endSeconds": 335
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -94,8 +166,16 @@
     "videoId": "eKVPXk2BnB8",
     "title": "Figma Design for beginners: Prototyping fundamentals",
     "creator": "Figma",
-    "startSeconds": 30,
-    "endSeconds": 150,
+    "excerpts": [
+      {
+        "startSeconds": 30,
+        "endSeconds": 150
+      },
+      {
+        "startSeconds": 210,
+        "endSeconds": 317
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -104,8 +184,16 @@
     "videoId": "L-tpK7Eeuow",
     "title": "Design System & Figma Variable Set Up - Full Tutorial",
     "creator": "UI Collective",
-    "startSeconds": 511,
-    "endSeconds": 631,
+    "excerpts": [
+      {
+        "startSeconds": 511,
+        "endSeconds": 631
+      },
+      {
+        "startSeconds": 691,
+        "endSeconds": 811
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -114,8 +202,16 @@
     "videoId": "o9CloFonY0E",
     "title": "Define your design system's foundations - Lesson 2 part 2 : Introduction to design systems",
     "creator": "Figma",
-    "startSeconds": 45,
-    "endSeconds": 165,
+    "excerpts": [
+      {
+        "startSeconds": 45,
+        "endSeconds": 165
+      },
+      {
+        "startSeconds": 225,
+        "endSeconds": 345
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -124,8 +220,16 @@
     "videoId": "f5qdVYucS8g",
     "title": "Photoshop Masterclass: Complex Collage | Adobe Creative Cloud",
     "creator": "Adobe Creative Cloud",
-    "startSeconds": 483,
-    "endSeconds": 603,
+    "excerpts": [
+      {
+        "startSeconds": 483,
+        "endSeconds": 603
+      },
+      {
+        "startSeconds": 663,
+        "endSeconds": 783
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -134,8 +238,16 @@
     "videoId": "hkOqk8kf1xk",
     "title": "Typography in Graphic Design (Ep 1) | Foundations of Graphic Design | Adobe Creative Cloud",
     "creator": "Adobe Creative Cloud",
-    "startSeconds": 40,
-    "endSeconds": 160,
+    "excerpts": [
+      {
+        "startSeconds": 40,
+        "endSeconds": 110
+      },
+      {
+        "startSeconds": 110,
+        "endSeconds": 180
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -144,8 +256,16 @@
     "videoId": "R_90mRTjFuk",
     "title": "Mobile App Design in Figma - Figma Tutorial",
     "creator": "Zaid",
-    "startSeconds": 113,
-    "endSeconds": 233,
+    "excerpts": [
+      {
+        "startSeconds": 113,
+        "endSeconds": 233
+      },
+      {
+        "startSeconds": 293,
+        "endSeconds": 413
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -154,8 +274,16 @@
     "videoId": "ZAh3D3O3Ffg",
     "title": "How to Create a Poster | Adobe Creative Cloud",
     "creator": "Adobe Creative Cloud",
-    "startSeconds": 40,
-    "endSeconds": 160,
+    "excerpts": [
+      {
+        "startSeconds": 40,
+        "endSeconds": 160
+      },
+      {
+        "startSeconds": 220,
+        "endSeconds": 340
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -164,8 +292,16 @@
     "videoId": "DCcA5F5lJtg",
     "title": "How to Design Seamless Patterns: An Adobe Illustrator Tutorial with Jess Miller!",
     "creator": "Adobe Live",
-    "startSeconds": 30,
-    "endSeconds": 150,
+    "excerpts": [
+      {
+        "startSeconds": 30,
+        "endSeconds": 150
+      },
+      {
+        "startSeconds": 160,
+        "endSeconds": 236
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -174,8 +310,16 @@
     "videoId": "Uphw7JC_ZRQ",
     "title": "Asana Projects: Create a project like a pro",
     "creator": "Asana",
-    "startSeconds": 9,
-    "endSeconds": 105,
+    "excerpts": [
+      {
+        "startSeconds": 9,
+        "endSeconds": 65
+      },
+      {
+        "startSeconds": 65,
+        "endSeconds": 121
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -184,8 +328,16 @@
     "videoId": "XDpwDwcXGoU",
     "title": "What is Digital Marketing: Tutorial for Beginners",
     "creator": "HubSpot Marketing",
-    "startSeconds": 5,
-    "endSeconds": 130,
+    "excerpts": [
+      {
+        "startSeconds": 5,
+        "endSeconds": 66
+      },
+      {
+        "startSeconds": 66,
+        "endSeconds": 127
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -194,8 +346,16 @@
     "videoId": "SyuJI8xU0gc",
     "title": "Story Structures - Plot Theory: Brandon Sanderson's Writing Lecture #3 (2025)",
     "creator": "Brandon Sanderson",
-    "startSeconds": 155,
-    "endSeconds": 305,
+    "excerpts": [
+      {
+        "startSeconds": 155,
+        "endSeconds": 305
+      },
+      {
+        "startSeconds": 365,
+        "endSeconds": 485
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -204,8 +364,16 @@
     "videoId": "a7_WFUlFS94",
     "title": "PHP in 100 Seconds",
     "creator": "Fireship",
-    "startSeconds": 0,
-    "endSeconds": 90,
+    "excerpts": [
+      {
+        "startSeconds": 0,
+        "endSeconds": 65
+      },
+      {
+        "startSeconds": 65,
+        "endSeconds": 130
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -214,8 +382,16 @@
     "videoId": "x7X9w_GIm1s",
     "title": "Python in 100 Seconds",
     "creator": "Fireship",
-    "startSeconds": 0,
-    "endSeconds": 120,
+    "excerpts": [
+      {
+        "startSeconds": 0,
+        "endSeconds": 66
+      },
+      {
+        "startSeconds": 66,
+        "endSeconds": 132
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -224,8 +400,16 @@
     "videoId": "DHjqpvDnNGE",
     "title": "JavaScript in 100 Seconds",
     "creator": "Fireship",
-    "startSeconds": 0,
-    "endSeconds": 90,
+    "excerpts": [
+      {
+        "startSeconds": 0,
+        "endSeconds": 73
+      },
+      {
+        "startSeconds": 73,
+        "endSeconds": 146
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -234,8 +418,16 @@
     "videoId": "xkYpNfpmbGY",
     "title": "SQL Joins - Beginner to PRO Masterclass with 10 Examples",
     "creator": "Chandoo",
-    "startSeconds": 142,
-    "endSeconds": 238,
+    "excerpts": [
+      {
+        "startSeconds": 142,
+        "endSeconds": 238
+      },
+      {
+        "startSeconds": 298,
+        "endSeconds": 418
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -244,8 +436,16 @@
     "videoId": "l9AzO1FMgM8",
     "title": "Java in 100 Seconds",
     "creator": "Fireship",
-    "startSeconds": 0,
-    "endSeconds": 90,
+    "excerpts": [
+      {
+        "startSeconds": 0,
+        "endSeconds": 67
+      },
+      {
+        "startSeconds": 67,
+        "endSeconds": 134
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -254,8 +454,16 @@
     "videoId": "Opg5nsf6X04",
     "title": "How to Write A Landing Page That Converts",
     "creator": "Alex Cattoni",
-    "startSeconds": 45,
-    "endSeconds": 165,
+    "excerpts": [
+      {
+        "startSeconds": 45,
+        "endSeconds": 165
+      },
+      {
+        "startSeconds": 225,
+        "endSeconds": 345
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -264,8 +472,16 @@
     "videoId": "hUmZldt0DTg",
     "title": "Ultimate Guide to Film Composition & Framing — Key Elements Explained [Shot List Ep. 11]",
     "creator": "StudioBinder",
-    "startSeconds": 45,
-    "endSeconds": 165,
+    "excerpts": [
+      {
+        "startSeconds": 45,
+        "endSeconds": 165
+      },
+      {
+        "startSeconds": 225,
+        "endSeconds": 345
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -274,8 +490,16 @@
     "videoId": "-varpUzy9Pc",
     "title": "How to Get Started with Adobe Premiere Pro | Tutorial for Beginners | Adobe Creative Cloud",
     "creator": "Adobe Creative Cloud",
-    "startSeconds": 11,
-    "endSeconds": 131,
+    "excerpts": [
+      {
+        "startSeconds": 11,
+        "endSeconds": 131
+      },
+      {
+        "startSeconds": 191,
+        "endSeconds": 311
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -284,8 +508,16 @@
     "videoId": "I_tRSrPru94",
     "title": "How to introduce yourself: Easy English Conversations 💬 Episode 1",
     "creator": "BBC Learning English",
-    "startSeconds": 15,
-    "endSeconds": 135,
+    "excerpts": [
+      {
+        "startSeconds": 15,
+        "endSeconds": 81
+      },
+      {
+        "startSeconds": 81,
+        "endSeconds": 147
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   },
@@ -294,8 +526,16 @@
     "videoId": "Mqyw63xYmko",
     "title": "Most Important Phrases to Study before you travel to Spanish speaking countries",
     "creator": "Learn Spanish with SpanishPod101.com",
-    "startSeconds": 20,
-    "endSeconds": 140,
+    "excerpts": [
+      {
+        "startSeconds": 20,
+        "endSeconds": 140
+      },
+      {
+        "startSeconds": 200,
+        "endSeconds": 320
+      }
+    ],
     "playbackVerified": true,
     "verifiedAt": "2026-10-08T16:46:16Z"
   }

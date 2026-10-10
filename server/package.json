@@ -31,7 +31,9 @@
     "db:reset": "prisma migrate reset --force",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:seed": "tsx prisma/seed.ts",
+    "previews:dry-run": "tsx scripts/updateCoursePreviews.ts --external-manifest prisma/seed-data/externalCoursePreviewManifest.json",
+    "previews:apply": "tsx scripts/updateCoursePreviews.ts --external-manifest prisma/seed-data/externalCoursePreviewManifest.json --apply"
   },
   "dependencies": {
     "@google/genai": "^2.27.0",
