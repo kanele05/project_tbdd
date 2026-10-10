@@ -30,13 +30,44 @@ declare global {
   }
 }
 
-let scriptPromise: Promise<RecaptchaApi> | null = null;
+type RecaptchaLoad = {
+  language: string;
+  promise: Promise<RecaptchaApi>;
+  /** Aborts a pending load (timer, callback, script tag) and rejects its promise. */
+  abort: () => void;
+};
+
+let currentLoad: RecaptchaLoad | null = null;
+let loadedLanguage: string | null = null;
 let nextScriptLoadId = 0;
 
+/**
+ * The widget language is fixed by the `hl` parameter of api.js, so a language change needs a fresh
+ * script: drop our script tag, Google's helper scripts, the grecaptcha globals and the detached
+ * challenge popups, then load api.js again with the new `hl`.
+ */
+function resetRecaptchaRuntime(): void {
+  currentLoad?.abort();
+  currentLoad = null;
+  loadedLanguage = null;
+  document
+    .querySelectorAll('script[data-recaptcha-v2], script[src*="gstatic.com/recaptcha"]')
+    .forEach((node) => node.remove());
+  document
+    .querySelectorAll('iframe[src*="recaptcha/api2/bframe"]')
+    .forEach((frame) => frame.parentElement?.parentElement?.remove());
+  const globals = window as unknown as Record<string, unknown>;
+  globals.grecaptcha = undefined;
+  globals.___grecaptcha_cfg = undefined;
+}
+
 function loadRecaptcha(language: string): Promise<RecaptchaApi> {
-  if (window.grecaptcha) return Promise.resolve(window.grecaptcha);
-  if (scriptPromise) return scriptPromise;
-  const loadPromise = new Promise<RecaptchaApi>((resolve, reject) => {
+  if (window.grecaptcha && loadedLanguage === language) return Promise.resolve(window.grecaptcha);
+  if (currentLoad?.language === language) return currentLoad.promise;
+  if (currentLoad || window.grecaptcha) resetRecaptchaRuntime();
+
+  let abort: () => void = () => undefined;
+  const promise = new Promise<RecaptchaApi>((resolve, reject) => {
     const script = document.createElement('script');
     const callbackName = `onRecaptchaV2Loaded${++nextScriptLoadId}`;
     const callbackWindow = window as unknown as Window & Record<string, unknown>;
@@ -55,9 +86,10 @@ function loadRecaptcha(language: string): Promise<RecaptchaApi> {
       isSettled = true;
       cleanup();
       script.remove();
-      if (scriptPromise === loadPromise) scriptPromise = null;
+      if (currentLoad?.promise === promise) currentLoad = null;
       reject(error);
     };
+    abort = () => finishWithError(new Error('reCAPTCHA load aborted'));
     callbackWindow[callbackName] = () => {
       if (!window.grecaptcha) {
         finishWithError(new Error('reCAPTCHA unavailable'));
@@ -66,6 +98,7 @@ function loadRecaptcha(language: string): Promise<RecaptchaApi> {
       if (isSettled) return;
       isSettled = true;
       cleanup();
+      loadedLanguage = language;
       resolve(window.grecaptcha);
     };
     script.src = `${RECAPTCHA_SCRIPT_URL}?onload=${callbackName}&render=explicit&hl=${encodeURIComponent(
@@ -77,8 +110,10 @@ function loadRecaptcha(language: string): Promise<RecaptchaApi> {
     script.onerror = () => finishWithError(new Error('reCAPTCHA script failed to load'));
     document.head.appendChild(script);
   });
-  scriptPromise = loadPromise;
-  return loadPromise;
+  // Abandoned loads (language switched mid-flight) reject on purpose; nobody listens any more.
+  promise.catch(() => undefined);
+  currentLoad = { language, promise, abort: () => abort() };
+  return promise;
 }
 
 export function RecaptchaWidget(props: RecaptchaWidgetProps) {

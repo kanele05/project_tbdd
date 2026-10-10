@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import { Linking } from 'react-native';
 
 import { API_URL } from '@/constants/config';
@@ -160,5 +160,32 @@ describe('YouTubePlayer', () => {
     expect(screen.getByText('Video unavailable')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: 'Retry' }));
     expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws the loading and error states inside the 16:9 frame, never below it', async () => {
+    await render(<YouTubePlayer {...PLAYER_PROPS} maxHeight={273} onRetry={jest.fn()} />);
+
+    expect(screen.getByTestId('youtube-stage')).toHaveStyle({
+      aspectRatio: 16 / 9,
+      maxHeight: 273,
+    });
+    expect(screen.getByText('Loading video')).toBeOnTheScreen();
+
+    const onMessage = mockWebViewProps?.onMessage as (event: unknown) => void;
+    await act(async () => {
+      onMessage({
+        nativeEvent: {
+          url: `${new URL(API_URL).origin}/`,
+          data: JSON.stringify({ type: 'error', code: 153 }),
+        },
+      });
+    });
+
+    const stage = screen.getByTestId('youtube-stage');
+    expect(within(stage).getByText('Video unavailable')).toBeOnTheScreen();
+    expect(within(stage).getByRole('button', { name: 'Retry' })).toBeOnTheScreen();
+    // The attribution row and the "open original" link stay outside the frame, under it.
+    expect(within(stage).queryByText('Reference video · YouTube')).not.toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Open original' })).toBeOnTheScreen();
   });
 });

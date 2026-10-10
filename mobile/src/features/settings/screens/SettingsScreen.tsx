@@ -19,14 +19,29 @@ import { SettingsSection } from '../components/SettingsSection';
 const LANGUAGE_OPTIONS: readonly LanguagePreference[] = ['system', 'vi', 'en'];
 const THEME_OPTIONS: readonly ThemeMode[] = ['system', 'light', 'dark'];
 
-type InfoRowProps = { label: string; value: string };
+type InfoRowProps = {
+  label: string;
+  value: string;
+  /** Long values (email): label on its own line, value below it and allowed to wrap. */
+  isStacked?: boolean;
+};
 
-function InfoRow({ label, value }: InfoRowProps) {
+function InfoRow({ label, value, isStacked = false }: InfoRowProps) {
   const styles = useStyles();
   return (
-    <View style={styles.infoRow} accessible accessibilityLabel={`${label}: ${value}`}>
+    <View
+      style={[styles.infoRow, isStacked ? styles.infoRowStacked : null]}
+      accessible
+      accessibilityLabel={`${label}: ${value}`}
+    >
       <AppText variant="body">{label}</AppText>
-      <AppText variant="body" color="textSecondary" numberOfLines={1} style={styles.infoValue}>
+      <AppText
+        variant="body"
+        color="textSecondary"
+        numberOfLines={isStacked ? 2 : 1}
+        ellipsizeMode={isStacked ? 'middle' : 'tail'}
+        style={isStacked ? styles.infoValueStacked : styles.infoValue}
+      >
         {value}
       </AppText>
     </View>
@@ -82,7 +97,7 @@ export function SettingsScreen() {
         </SettingsSection>
 
         <SettingsSection title={t('account.title')}>
-          {user ? <InfoRow label={t('account.signedInAs')} value={user.email} /> : null}
+          {user ? <InfoRow label={t('account.signedInAs')} value={user.email} isStacked /> : null}
           <NavRow
             icon="shield"
             label={t('security.row')}
@@ -125,7 +140,14 @@ const useStyles = makeStyles((t) => ({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
+  infoRowStacked: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    gap: spacing.xxs,
+  },
   infoValue: { flexShrink: 1 },
+  infoValueStacked: { alignSelf: 'stretch' },
   logoutRow: {
     minHeight: layout.minTouchTarget,
     flexDirection: 'row',

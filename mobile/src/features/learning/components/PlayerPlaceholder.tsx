@@ -1,9 +1,8 @@
-import { ActivityIndicator, View } from 'react-native';
-
-import { AppText } from '@/components/ui/AppText';
-import { Button } from '@/components/ui/Button';
+import { PlayerStage } from '@/features/media/PlayerStage';
+import { PlayerStatus } from '@/features/media/PlayerStatus';
 import { useTranslation } from '@/i18n';
-import { makeStyles, spacing, useTheme } from '@/theme';
+
+import { usePlayerMaxHeight } from '../playerLayout';
 
 export type PlayerPlaceholderProps = {
   /** `loading` spinner, or a `message` (offline / error) with an optional Retry. */
@@ -11,44 +10,25 @@ export type PlayerPlaceholderProps = {
   onRetry?: () => void;
 };
 
-/** Dark box in the video slot while the lesson loads, or when it cannot be played. */
+/**
+ * Dark 16:9 box in the video slot while the lesson loads, or when it cannot be played. It is the
+ * same size as the player, so the tabs below do not jump when the video appears.
+ */
 export function PlayerPlaceholder({ message, onRetry }: PlayerPlaceholderProps) {
   const { t } = useTranslation(['learning', 'common']);
-  const { colors } = useTheme();
-  const styles = useStyles();
+  const maxHeight = usePlayerMaxHeight();
   return (
-    <View style={styles.container} testID="player-placeholder">
+    <PlayerStage maxHeight={maxHeight} testID="player-placeholder">
       {message ? (
-        <>
-          <AppText variant="body" color="white" align="center">
-            {message}
-          </AppText>
-          {onRetry ? (
-            <Button
-              title={t('common:actions.retry')}
-              variant="outline"
-              size="sm"
-              leftIcon="refresh-cw"
-              onPress={onRetry}
-            />
-          ) : null}
-        </>
+        <PlayerStatus
+          kind="error"
+          label={message}
+          retryLabel={t('common:actions.retry')}
+          onRetry={onRetry}
+        />
       ) : (
-        <ActivityIndicator color={colors.white} accessibilityLabel={t('loadingVideo')} />
+        <PlayerStatus kind="loading" label={t('loadingVideo')} />
       )}
-    </View>
+    </PlayerStage>
   );
 }
-
-/** The video slot is always dark (like a cinema screen), in light mode too. */
-const useStyles = makeStyles((t) => ({
-  container: {
-    width: '100%',
-    aspectRatio: 16 / 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    padding: spacing.lg,
-    backgroundColor: t.colors.scrim,
-  },
-}));

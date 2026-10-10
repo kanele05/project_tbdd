@@ -77,7 +77,7 @@ describe('CurriculumList', () => {
     const completed = screen.getByTestId('lesson-row-lesson-1');
     expect(within(completed).getByText('01')).toBeOnTheScreen();
     expect(within(completed).getByText('Amet adipisicing consectetur')).toBeOnTheScreen();
-    expect(within(completed).getByText('01:23 mins')).toBeOnTheScreen();
+    expect(within(completed).getByText('1 min 23 secs')).toBeOnTheScreen();
     expect(within(completed).getByTestId('lesson-status-COMPLETED')).toBeOnTheScreen();
 
     const inProgress = screen.getByTestId('lesson-row-lesson-2');
@@ -88,7 +88,7 @@ describe('CurriculumList', () => {
 
     const locked = screen.getByTestId('lesson-row-lesson-4');
     expect(within(locked).getByTestId('lesson-status-LOCKED')).toBeOnTheScreen();
-    expect(within(locked).getByText('62:05 mins')).toBeOnTheScreen();
+    expect(within(locked).getByText('1 hr 2 mins')).toBeOnTheScreen();
   });
 
   it('highlights the IN_PROGRESS lesson with the primarySoft fill and accent border', async () => {
@@ -149,7 +149,7 @@ describe('CurriculumList', () => {
 
     expect(
       screen.getByRole('button', {
-        name: 'Lesson 2, Adipisicing dolor amet occaeca, 01:23 mins, in progress',
+        name: 'Lesson 2, Adipisicing dolor amet occaeca, 1 min 23 secs, in progress',
       }),
     ).toBeOnTheScreen();
   });

@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { Keyboard } from 'react-native';
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { AppError } from '@/lib/appError';
@@ -413,5 +414,64 @@ describe('LearningScreen', () => {
     await renderScreen();
 
     expect(screen.getByLabelText('Loading lessons')).toBeOnTheScreen();
+  });
+
+  describe('small screens: the video folds while typing', () => {
+    const handlers: Record<string, () => void> = {};
+    const showKeyboard = () => act(async () => void handlers.keyboardDidShow?.());
+    const hideKeyboard = () => act(async () => void handlers.keyboardDidHide?.());
+
+    beforeEach(() => {
+      jest.spyOn(Keyboard, 'addListener').mockImplementation(((
+        event: string,
+        handler: () => void,
+      ) => {
+        handlers[event] = handler;
+        return { remove: jest.fn() };
+      }) as never);
+    });
+    afterEach(() => jest.restoreAllMocks());
+
+    it('shows a mini bar and keeps the player mounted when the keyboard opens on the Q&A tab', async () => {
+      await renderScreen();
+      await fireEvent.press(screen.getByRole('tab', { name: 'Q&A' }));
+      expect(screen.queryByTestId('mini-player-bar')).not.toBeOnTheScreen();
+
+      await showKeyboard();
+
+      expect(screen.getByTestId('mini-player-bar')).toBeOnTheScreen();
+      expect(screen.getByRole('button', { name: 'Show video' })).toBeOnTheScreen();
+      // Still mounted (playback is not lost), only hidden from the screen reader.
+      expect(
+        screen.getByText('playing lesson-2', { includeHiddenElements: true }),
+      ).toBeOnTheScreen();
+      expect(screen.queryByText('playing lesson-2')).not.toBeOnTheScreen();
+
+      await hideKeyboard();
+
+      expect(screen.queryByTestId('mini-player-bar')).not.toBeOnTheScreen();
+      expect(screen.getByText('playing lesson-2')).toBeOnTheScreen();
+    });
+
+    it('dismisses the keyboard when the mini bar is pressed', async () => {
+      const dismiss = jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => undefined);
+      await renderScreen();
+      await fireEvent.press(screen.getByRole('tab', { name: 'Q&A' }));
+      await showKeyboard();
+
+      await fireEvent.press(screen.getByTestId('mini-player-bar'));
+
+      expect(dismiss).toHaveBeenCalledTimes(1);
+      dismiss.mockRestore();
+    });
+
+    it('never folds the video on the Lessons tab', async () => {
+      await renderScreen();
+
+      await showKeyboard();
+
+      expect(screen.queryByTestId('mini-player-bar')).not.toBeOnTheScreen();
+      expect(screen.getByText('playing lesson-2')).toBeOnTheScreen();
+    });
   });
 });

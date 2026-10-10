@@ -49,7 +49,8 @@
     "hour_other": "{{count}} hrs",
     "hourLong_one": "{{count}} hour",
     "hourLong_other": "{{count}} hours",
-    "lesson": "{{time}} mins"
+    "second_one": "{{count}} sec",
+    "second_other": "{{count}} secs"
   },
   "badge": {
     "bestSeller": "Best-seller",

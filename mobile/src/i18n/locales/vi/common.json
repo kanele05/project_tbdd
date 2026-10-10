@@ -44,7 +44,7 @@
     "minute_other": "{{count}} phút",
     "hour_other": "{{count}} giờ",
     "hourLong_other": "{{count}} giờ",
-    "lesson": "{{time}} phút"
+    "second_other": "{{count}} giây"
   },
   "badge": {
     "bestSeller": "Bán chạy",

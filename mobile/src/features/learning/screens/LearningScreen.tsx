@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BookmarkButton } from '@/components/course/BookmarkButton';
@@ -22,6 +22,7 @@ import { useCourseAccessGuard } from '../accessGuard';
 import { CourseInfo } from '../components/CourseInfo';
 import { CurriculumList } from '../components/CurriculumList';
 import { LessonListSkeleton } from '../components/LessonListSkeleton';
+import { MiniPlayerBar } from '../components/MiniPlayerBar';
 import { PlayerSlot } from '../components/PlayerSlot';
 import {
   useActiveLesson,
@@ -30,6 +31,7 @@ import {
   useShareCourse,
   useToggleCourseLike,
 } from '../hooks';
+import { useIsKeyboardVisible } from '../playerLayout';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '../queryStatus';
 import { getShortCourseTitle } from '../videoUtils';
 
@@ -53,6 +55,8 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
   const { activeLessonId, selectLesson } = useActiveLesson({ paramLessonId, course, curriculum });
   const lesson = useLesson(activeLessonId);
   const [tab, setTab] = useState<LearningTab>('lessons');
+  // Typing in Q&A on a small phone: the video folds into a one-line bar (it stays mounted, so it keeps playing).
+  const isPlayerCollapsed = useIsKeyboardVisible() && tab !== 'lessons';
 
   useCourseAccessGuard(courseId, [lesson.error, curriculum.error]);
 
@@ -67,6 +71,7 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
   const handleToggleLike = useCallback(() => {
     if (courseData) toggleLike(courseData.isLiked);
   }, [courseData, toggleLike]);
+  const handleExpandPlayer = useCallback(() => Keyboard.dismiss(), []);
   const handleShare = useCallback(() => void share(), [share]);
   const handleAskTutor = useCallback(() => {
     router.push({ pathname: '/learn/[courseId]/tutor', params: { courseId } });
@@ -170,7 +175,15 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
           </View>
         }
       />
-      <View style={styles.player}>
+      {isPlayerCollapsed ? (
+        <MiniPlayerBar title={lesson.data?.title} onExpand={handleExpandPlayer} />
+      ) : null}
+      <View
+        style={[styles.player, isPlayerCollapsed ? styles.playerCollapsed : null]}
+        accessibilityElementsHidden={isPlayerCollapsed}
+        importantForAccessibility={isPlayerCollapsed ? 'no-hide-descendants' : 'auto'}
+        testID="player-region"
+      >
         <PlayerSlot
           courseId={courseId}
           activeLessonId={activeLessonId}
@@ -213,10 +226,13 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },
   flex: { flex: 1 },
-  // No fixed height here: the MP4 player and the placeholder are 16:9 boxes, while the YouTube player
-  // is 16:9 plus its source/attribution row - a fixed 16:9 slot made that row overlap the tabs.
+  // No fixed height here: the MP4 player, the placeholder and the loading/error states are 16:9
+  // boxes (capped at 35% of the window height), while the YouTube player is 16:9 plus its
+  // source/attribution row - a fixed 16:9 slot made that row overlap the tabs.
   // Always dark, like a cinema screen, also in light mode.
   player: { backgroundColor: t.colors.scrim },
+  // Zero height, not unmounted: the WebView / iframe keeps its state.
+  playerCollapsed: { height: 0, overflow: 'hidden' },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
   headerBlock: {
     gap: spacing.lg,

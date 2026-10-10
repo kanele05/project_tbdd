@@ -1,16 +1,17 @@
 import { useEventListener } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useRef, useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { AppText } from '@/components/ui/AppText';
-import { Button } from '@/components/ui/Button';
+import { PlayerStage } from '@/features/media/PlayerStage';
+import { PlayerStatus } from '@/features/media/PlayerStatus';
 import { isYouTubeHostUrl, parseYouTubeVideoSource } from '@/features/media/youtube';
 import { YouTubePlayer } from '@/features/media/YouTubePlayer';
 import { useTranslation } from '@/i18n';
-import { makeStyles, spacing } from '@/theme';
+import { makeStyles } from '@/theme';
 import type { LessonDetail } from '@/types/api';
 
+import { usePlayerMaxHeight } from '../playerLayout';
 import { useLessonProgress } from '../useLessonProgress';
 import { getResumePosition, resolveVideoUrl, seekPlayer } from '../videoUtils';
 
@@ -38,6 +39,7 @@ export function LessonPlayer(props: LessonPlayerProps) {
 function YouTubeLessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
   const { t } = useTranslation(['learning', 'common']);
   const styles = useStyles();
+  const maxHeight = usePlayerMaxHeight();
   const [playerAttempt, setPlayerAttempt] = useState(0);
   const source = parseYouTubeVideoSource(lesson.videoUrl);
   const tracker = useLessonProgress(lesson, courseId);
@@ -58,6 +60,7 @@ function YouTubeLessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
         loadingLabel={t('loadingVideo')}
         errorLabel={t('videoLoadFailed')}
         retryLabel={t('common:actions.retry')}
+        maxHeight={maxHeight}
         onRetry={() => setPlayerAttempt((attempt) => attempt + 1)}
         sourceLabel={t('videoSourceLabel')}
         openSourceLabel={t('openVideoSource')}
@@ -79,7 +82,7 @@ function YouTubeLessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
 
 function Mp4LessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
   const { t } = useTranslation(['learning', 'common']);
-  const styles = useStyles();
+  const maxHeight = usePlayerMaxHeight();
   const [startPositionSec] = useState(() => getResumePosition(lesson));
   const [hasError, setHasError] = useState(false);
   const isReadyRef = useRef(false);
@@ -122,55 +125,33 @@ function Mp4LessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
   });
 
   return (
-    <View style={styles.container}>
+    <PlayerStage maxHeight={maxHeight}>
       <VideoView
         player={player}
-        style={styles.video}
+        style={StyleSheet.absoluteFill}
         nativeControls
         fullscreenOptions={{ enable: true }}
         contentFit="contain"
         accessibilityLabel={lesson.title}
       />
       {hasError ? (
-        <View style={styles.overlay}>
-          <AppText variant="body" color="white" align="center">
-            {t('videoLoadFailed')}
-          </AppText>
-          <Button
-            title={t('common:actions.retry')}
-            variant="outline"
-            size="sm"
-            onPress={() => {
-              setHasError(false);
-              void player
-                .replaceAsync({ uri: resolveVideoUrl(lesson.videoUrl) })
-                .then(() => player.play());
-            }}
-          />
-        </View>
+        <PlayerStatus
+          kind="error"
+          label={t('videoLoadFailed')}
+          retryLabel={t('common:actions.retry')}
+          onRetry={() => {
+            setHasError(false);
+            void player
+              .replaceAsync({ uri: resolveVideoUrl(lesson.videoUrl) })
+              .then(() => player.play());
+          }}
+        />
       ) : null}
-    </View>
+    </PlayerStage>
   );
 }
 
-/**
- * The video slot is always dark, in light mode too. MP4: a 16:9 box. YouTube: natural height
- * (16:9 embed + attribution row), so nothing spills over the tabs below.
- */
+/** The YouTube slot is the 16:9 frame (loading/error inside it) plus the attribution row. */
 const useStyles = makeStyles((t) => ({
-  container: { width: '100%', aspectRatio: 16 / 9, backgroundColor: t.colors.scrim },
   youtube: { width: '100%', backgroundColor: t.colors.scrim },
-  video: { flex: 1 },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    padding: spacing.lg,
-    backgroundColor: t.colors.scrim,
-  },
 }));

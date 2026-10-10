@@ -10,6 +10,7 @@
   "loadLessonsFailed": "Không tải được danh sách bài học",
   "loadingLessons": "Đang tải danh sách bài học",
   "loadingVideo": "Đang tải video",
+  "showVideo": "Hiện video",
   "videoUnavailableOffline": "Hãy kết nối mạng để xem bài học này.",
   "videoLoadFailed": "Không tải được video này",
   "videoSourceLabel": "Video tham khảo · YouTube",

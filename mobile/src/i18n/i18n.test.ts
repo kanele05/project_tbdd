@@ -1,6 +1,6 @@
 import { getLocales } from 'expo-localization';
 
-import { formatDuration, formatTotalHours } from '@/utils/formatDuration';
+import { formatDuration, formatLessonDuration, formatTotalHours } from '@/utils/formatDuration';
 import { formatPrice, formatPriceOrFree } from '@/utils/formatPrice';
 import { formatRelativeTime } from '@/utils/formatRelativeTime';
 
@@ -123,6 +123,9 @@ describe('formatting follows the language', () => {
     expect(formatDuration(8700)).toBe('2 giờ 25 phút');
     expect(formatDuration(3600)).toBe('1 giờ');
     expect(formatTotalHours(14 * 3600)).toBe('14 giờ');
+    expect(formatLessonDuration(52)).toBe('52 giây');
+    expect(formatLessonDuration(120)).toBe('2 phút');
+    expect(formatLessonDuration(83)).toBe('1 phút 23 giây');
   });
 
   it('formats relative times with the dayjs locale', async () => {

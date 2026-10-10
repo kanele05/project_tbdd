@@ -30,7 +30,7 @@ function TeacherRowBase({ teacher, onOpenTeacher, onToggleFollow }: TeacherRowPr
       >
         <Avatar uri={teacher.avatarUrl} name={teacher.fullName} size={AVATAR_SIZE} hasRing />
         <View style={styles.texts}>
-          <AppText variant="title" numberOfLines={1}>
+          <AppText variant="title" numberOfLines={2}>
             {teacher.fullName}
           </AppText>
           <AppText variant="caption" numberOfLines={1}>

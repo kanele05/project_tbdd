@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { API_URL } from '@/constants/config';
-import { layout, makeStyles, spacing, useTheme } from '@/theme';
+import { layout, makeStyles } from '@/theme';
 
+import { PlayerStage } from './PlayerStage';
+import { PlayerStatus } from './PlayerStatus';
 import { getClipRelativeTime, isYouTubeHostUrl, parseYouTubeVideoSource } from './youtube';
 
 export type YouTubePlayerProps = {
@@ -18,6 +20,8 @@ export type YouTubePlayerProps = {
   retryLabel: string;
   sourceLabel: string;
   openSourceLabel: string;
+  /** Cap for the 16:9 frame on tall/wide windows (the frame is never below 200 dp). */
+  maxHeight?: number;
   onRetry?: () => void;
   onProgress?: (positionSec: number) => void;
   onPaused?: (positionSec: number) => void;
@@ -136,13 +140,13 @@ function NativeYouTubePlayer({
   retryLabel,
   sourceLabel,
   openSourceLabel,
+  maxHeight,
   onRetry,
   onProgress,
   onPaused,
   onEnded,
 }: YouTubePlayerProps) {
   const styles = useStyles();
-  const { colors } = useTheme();
   const video = useMemo(() => parseYouTubeVideoSource(source), [source]);
   const [isReady, setIsReady] = useState(false);
   const [hasError, setHasError] = useState(!video);
@@ -196,50 +200,40 @@ function NativeYouTubePlayer({
 
   return (
     <View style={styles.container}>
-      {video && !hasError ? (
-        <WebView
-          key={source}
-          source={{
-            html: createPlayerHtml(
-              video.videoId,
-              video.startSeconds + Math.max(0, initialPositionSec),
-              video.endSeconds,
-            ),
-            baseUrl: getApiOrigin(),
-          }}
-          style={styles.player}
-          originWhitelist={['https://*', `${getApiOrigin()}/*`, 'about:blank']}
-          onShouldStartLoadWithRequest={shouldLoadPlayerRequest}
-          onMessage={handleMessage}
-          onError={() => setHasError(true)}
-          onHttpError={({ nativeEvent }) => {
-            if (nativeEvent.statusCode >= 400) setHasError(true);
-          }}
-          javaScriptEnabled
-          domStorageEnabled
-          allowsInlineMediaPlayback
-          allowsFullscreenVideo
-          mediaPlaybackRequiresUserAction
-          setSupportMultipleWindows={false}
-          accessibilityLabel={title}
-        />
-      ) : null}
-      {!isReady && !hasError ? (
-        <View style={styles.status} accessibilityLiveRegion="polite">
-          <ActivityIndicator size="small" color={colors.primaryText} />
-          <AppText variant="caption" color="textSecondary" accessibilityLabel={loadingLabel}>
-            {loadingLabel}
-          </AppText>
-        </View>
-      ) : null}
-      {hasError ? (
-        <View style={styles.status} accessibilityLiveRegion="polite">
-          <AppText variant="body" color="textPrimary" align="center">
-            {errorLabel}
-          </AppText>
-          {onRetry ? <Button title={retryLabel} variant="outline" onPress={onRetry} /> : null}
-        </View>
-      ) : null}
+      <PlayerStage minHeight={MIN_PLAYER_HEIGHT} maxHeight={maxHeight} testID="youtube-stage">
+        {video && !hasError ? (
+          <WebView
+            key={source}
+            source={{
+              html: createPlayerHtml(
+                video.videoId,
+                video.startSeconds + Math.max(0, initialPositionSec),
+                video.endSeconds,
+              ),
+              baseUrl: getApiOrigin(),
+            }}
+            style={styles.player}
+            originWhitelist={['https://*', `${getApiOrigin()}/*`, 'about:blank']}
+            onShouldStartLoadWithRequest={shouldLoadPlayerRequest}
+            onMessage={handleMessage}
+            onError={() => setHasError(true)}
+            onHttpError={({ nativeEvent }) => {
+              if (nativeEvent.statusCode >= 400) setHasError(true);
+            }}
+            javaScriptEnabled
+            domStorageEnabled
+            allowsInlineMediaPlayback
+            allowsFullscreenVideo
+            mediaPlaybackRequiresUserAction
+            setSupportMultipleWindows={false}
+            accessibilityLabel={title}
+          />
+        ) : null}
+        {!isReady && !hasError ? <PlayerStatus kind="loading" label={loadingLabel} /> : null}
+        {hasError ? (
+          <PlayerStatus kind="error" label={errorLabel} retryLabel={retryLabel} onRetry={onRetry} />
+        ) : null}
+      </PlayerStage>
       <View style={styles.sourceRow}>
         <AppText variant="caption" color="textMuted">
           {sourceLabel}
@@ -252,27 +246,12 @@ function NativeYouTubePlayer({
   );
 }
 
+/** The embed must be at least 200 dp tall (YouTube player policy). */
+const MIN_PLAYER_HEIGHT = 200;
+
 const useStyles = makeStyles((t) => ({
-  container: {
-    width: '100%',
-    alignItems: 'stretch',
-    gap: spacing.sm,
-    backgroundColor: t.colors.background,
-  },
-  player: {
-    width: '100%',
-    minWidth: 200,
-    minHeight: 200,
-    aspectRatio: 16 / 9,
-    backgroundColor: t.colors.scrim,
-  },
-  status: {
-    minHeight: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-  },
+  container: { width: '100%', alignItems: 'stretch', backgroundColor: t.colors.background },
+  player: { ...StyleSheet.absoluteFill, backgroundColor: t.colors.scrim },
   sourceRow: {
     minHeight: 44,
     flexDirection: 'row',

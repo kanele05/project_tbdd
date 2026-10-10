@@ -1,10 +1,11 @@
 import { createElement, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { Button } from '@/components/ui/Button';
-import { fontFamily, layout, makeStyles, spacing, useTheme } from '@/theme';
+import { fontFamily, layout, makeStyles } from '@/theme';
 
+import { PlayerStage } from './PlayerStage';
+import { PlayerStatus } from './PlayerStatus';
 import { getClipRelativeTime, parseYouTubeVideoSource } from './youtube';
 import type { YouTubePlayerProps } from './YouTubePlayer';
 
@@ -105,13 +106,13 @@ function WebYouTubePlayer({
   retryLabel,
   sourceLabel,
   openSourceLabel,
+  maxHeight,
   onRetry,
   onProgress,
   onPaused,
   onEnded,
 }: YouTubePlayerProps) {
   const styles = useStyles();
-  const { colors } = useTheme();
   const video = useMemo(() => parseYouTubeVideoSource(source), [source]);
   const [iframeElement, setIframeElement] = useState<HTMLIFrameElement | null>(null);
   const onProgressRef = useRef(onProgress);
@@ -205,33 +206,23 @@ function WebYouTubePlayer({
 
   return (
     <View style={styles.container}>
-      {video && !hasError
-        ? createElement('iframe', {
-            ref: setIframeElement,
-            src: iframeUrl,
-            title,
-            allow: 'encrypted-media; picture-in-picture; fullscreen',
-            allowFullScreen: true,
-            referrerPolicy: 'strict-origin-when-cross-origin',
-            style: styles.iframe as CSSProperties,
-          })
-        : null}
-      {!isReady && !hasError ? (
-        <View style={styles.status} accessibilityLiveRegion="polite">
-          <ActivityIndicator size="small" color={colors.primaryText} />
-          <AppText variant="caption" color="textSecondary" accessibilityLabel={loadingLabel}>
-            {loadingLabel}
-          </AppText>
-        </View>
-      ) : null}
-      {hasError ? (
-        <View style={styles.status} accessibilityLiveRegion="polite">
-          <AppText variant="body" color="textPrimary" align="center">
-            {errorLabel}
-          </AppText>
-          {onRetry ? <Button title={retryLabel} variant="outline" onPress={onRetry} /> : null}
-        </View>
-      ) : null}
+      <PlayerStage minHeight={MIN_PLAYER_HEIGHT} maxHeight={maxHeight} testID="youtube-stage">
+        {video && !hasError
+          ? createElement('iframe', {
+              ref: setIframeElement,
+              src: iframeUrl,
+              title,
+              allow: 'encrypted-media; picture-in-picture; fullscreen',
+              allowFullScreen: true,
+              referrerPolicy: 'strict-origin-when-cross-origin',
+              style: styles.iframe as CSSProperties,
+            })
+          : null}
+        {!isReady && !hasError ? <PlayerStatus kind="loading" label={loadingLabel} /> : null}
+        {hasError ? (
+          <PlayerStatus kind="error" label={errorLabel} retryLabel={retryLabel} onRetry={onRetry} />
+        ) : null}
+      </PlayerStage>
       <View style={styles.sourceRow}>
         <AppText variant="caption" color="textMuted">
           {sourceLabel}
@@ -253,27 +244,20 @@ function WebYouTubePlayer({
   );
 }
 
+/** The embed must be at least 200 dp tall (YouTube player policy). */
+const MIN_PLAYER_HEIGHT = 200;
+
 const useStyles = makeStyles((t) => ({
-  container: {
-    width: '100%',
-    alignItems: 'stretch',
-    gap: spacing.sm,
-    backgroundColor: t.colors.background,
-  },
+  container: { width: '100%', alignItems: 'stretch', backgroundColor: t.colors.background },
+  // Fills the 16:9 PlayerStage (absolute: a raw DOM iframe has no flex sizing of its own).
   iframe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
     width: '100%',
-    minWidth: 200,
-    minHeight: 200,
-    aspectRatio: 16 / 9,
+    height: '100%',
     border: 0,
     backgroundColor: t.colors.scrim,
-  },
-  status: {
-    minHeight: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
   },
   sourceRow: {
     minHeight: 44,

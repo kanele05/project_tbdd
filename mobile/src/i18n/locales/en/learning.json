@@ -10,6 +10,7 @@
   "loadLessonsFailed": "Couldn't load the lessons",
   "loadingLessons": "Loading lessons",
   "loadingVideo": "Loading video",
+  "showVideo": "Show video",
   "videoUnavailableOffline": "Connect to the internet to watch this lesson.",
   "videoLoadFailed": "Couldn't load this video",
   "videoSourceLabel": "Reference video · YouTube",

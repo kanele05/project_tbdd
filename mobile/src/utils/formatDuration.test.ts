@@ -19,14 +19,28 @@ describe('formatDuration', () => {
 });
 
 describe('formatLessonDuration', () => {
-  it('formats mm:ss with a mins suffix', () => {
-    expect(formatLessonDuration(83)).toBe('01:23 mins');
-    expect(formatLessonDuration(0)).toBe('00:00 mins');
-    expect(formatLessonDuration(605)).toBe('10:05 mins');
+  it('shows seconds only under one minute', () => {
+    expect(formatLessonDuration(52)).toBe('52 secs');
+    expect(formatLessonDuration(1)).toBe('1 sec');
+    expect(formatLessonDuration(0)).toBe('0 secs');
   });
 
-  it('lets minutes exceed 59', () => {
-    expect(formatLessonDuration(3725)).toBe('62:05 mins');
+  it('drops the seconds on whole minutes', () => {
+    expect(formatLessonDuration(120)).toBe('2 mins');
+    expect(formatLessonDuration(60)).toBe('1 min');
+  });
+
+  it('combines minutes and seconds', () => {
+    expect(formatLessonDuration(83)).toBe('1 min 23 secs');
+    expect(formatLessonDuration(605)).toBe('10 mins 5 secs');
+  });
+
+  it('switches to hours from 60 minutes', () => {
+    expect(formatLessonDuration(3725)).toBe('1 hr 2 mins');
+  });
+
+  it('treats invalid input as zero', () => {
+    expect(formatLessonDuration(Number.NaN)).toBe('0 secs');
   });
 });
 

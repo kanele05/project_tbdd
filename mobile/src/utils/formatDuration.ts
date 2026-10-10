@@ -18,13 +18,19 @@ export function formatDuration(totalSeconds: number): string {
   return `${hoursText} ${i18n.t('common:duration.minute', { count: minutes })}`;
 }
 
-/** Lesson length in the curriculum list: 83 -> "01:23 mins" (en) / "01:23 phút" (vi). */
+/**
+ * Lesson length in the curriculum list: 52 -> "52 secs", 120 -> "2 mins", 83 -> "1 min 23 secs"
+ * (en) / "52 giây", "2 phút", "1 phút 23 giây" (vi). One hour or more drops the seconds.
+ */
 export function formatLessonDuration(totalSeconds: number): string {
   const safe = Math.round(safeSeconds(totalSeconds));
+  if (safe >= 3600) return formatDuration(safe);
   const minutes = Math.floor(safe / 60);
   const seconds = safe % 60;
-  const time = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  return i18n.t('common:duration.lesson', { time });
+  if (minutes === 0) return i18n.t('common:duration.second', { count: seconds });
+  const minutesText = i18n.t('common:duration.minute', { count: minutes });
+  if (seconds === 0) return minutesText;
+  return `${minutesText} ${i18n.t('common:duration.second', { count: seconds })}`;
 }
 
 /** Whole hours for the benefits list ("14 hours on-demand video"): 50400 -> "14 hours". */
