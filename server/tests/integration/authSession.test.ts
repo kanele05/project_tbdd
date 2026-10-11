@@ -390,6 +390,7 @@ describe('new device alert (AUTH-06)', () => {
       type: 'SYSTEM',
       title: 'New device sign-in',
       isRead: false,
+      data: { key: 'NEW_DEVICE', params: { device: 'Chrome on Windows' } },
     });
     expect(notifications[0]?.body).toContain('Chrome on Windows');
 
@@ -425,6 +426,7 @@ describe('new device alert (AUTH-06)', () => {
     expect(mailbox.lastTo(user.email).subject).toBe('Đăng nhập mới vào tài khoản E-Learning');
     const note = await prisma.notification.findFirstOrThrow({ where: { userId: user.id } });
     expect(note.title).toBe('Đăng nhập từ thiết bị mới');
+    expect(note.data).toEqual({ key: 'NEW_DEVICE', params: { device: 'Laptop' } });
   });
 });
 

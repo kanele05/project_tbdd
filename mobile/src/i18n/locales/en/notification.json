@@ -18,5 +18,55 @@
     "NEW_COURSE": "New course from a teacher you follow",
     "PROJECT_GRADED": "Your project was graded",
     "REVIEW_REPLY": "The instructor replied to your review"
+  },
+  "messages": {
+    "NEW_DEVICE": {
+      "title": "New device sign-in",
+      "body": "Your account was signed in from a new device: {{device}}. If this wasn't you, change your password."
+    },
+    "ORDER_PAID_ONE": {
+      "title": "Payment successful",
+      "body": "You are now enrolled in {{courseTitle}}. Start learning today!"
+    },
+    "ORDER_PAID_MANY": {
+      "title": "Payment successful",
+      "body": "You are now enrolled in {{count}} courses. Start learning today!"
+    },
+    "NEW_ANSWER": {
+      "title": "New answer to your question",
+      "body": "{{author}} answered your question in \"{{courseTitle}}\"."
+    },
+    "COURSE_COMPLETED": {
+      "title": "Course completed",
+      "body": "Congratulations! You completed \"{{courseTitle}}\"."
+    },
+    "COURSE_APPROVED": {
+      "title": "Your course was approved",
+      "body": "\"{{courseTitle}}\" has been approved and is now published."
+    },
+    "REVISION_APPROVED": {
+      "title": "Your course changes were approved",
+      "body": "The changes you submitted for \"{{courseTitle}}\" are now live."
+    },
+    "COURSE_REJECTED": {
+      "title": "Your course was not approved",
+      "body": "\"{{courseTitle}}\": {{reason}}"
+    },
+    "REVISION_REJECTED": {
+      "title": "Your course changes were not approved",
+      "body": "\"{{courseTitle}}\": {{reason}}"
+    },
+    "NEW_COURSE": {
+      "title": "New course from an instructor you follow",
+      "body": "{{teacher}} published \"{{courseTitle}}\"."
+    },
+    "PROJECT_GRADED": {
+      "title": "Your project was graded",
+      "body": "Your project \"{{projectTitle}}\" in \"{{courseTitle}}\" received {{grade}}/100."
+    },
+    "REVIEW_REPLY": {
+      "title": "The instructor replied to your review",
+      "body": "The instructor of \"{{courseTitle}}\" replied to your review."
+    }
   }
 }

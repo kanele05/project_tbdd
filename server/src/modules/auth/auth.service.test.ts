@@ -456,8 +456,11 @@ describe('authService.login', () => {
       expect.anything(),
       expect.objectContaining({
         userId: 'user-1',
-        type: 'SYSTEM',
-        body: expect.stringContaining('Pixel 8'),
+        message: expect.objectContaining({
+          type: 'SYSTEM',
+          body: expect.stringContaining('Pixel 8'),
+          data: { key: 'NEW_DEVICE', params: { device: 'Pixel 8' } },
+        }),
       }),
     );
     const mail = mockQueueMail.mock.calls[0]?.[0] as { to: string; subject: string; text: string };

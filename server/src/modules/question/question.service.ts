@@ -2,6 +2,7 @@ import type { Prisma } from '@/generated/prisma/client';
 import { ApiError } from '@/lib/ApiError';
 import { isCourseTeacher } from '@/lib/courseOwnership';
 import { assertEnrolled, assertEnrolledInCourse } from '@/lib/enrollmentGuard';
+import { notificationMessage } from '@/lib/notificationMessage';
 import { notify } from '@/lib/notify';
 import { buildPaginationMeta, getPagination, type PaginationMeta } from '@/lib/pagination';
 import { prisma } from '@/lib/prisma';
@@ -138,10 +139,11 @@ export function createAnswer(
     if (question.userId !== userId) {
       await notify(tx, {
         userId: question.userId,
-        type: 'NEW_ANSWER',
-        title: 'New answer to your question',
-        body: `${answer.user.fullName} answered your question in "${question.course.title}".`,
-        data: { courseId: question.courseId, questionId },
+        message: notificationMessage('NEW_ANSWER', {
+          author: answer.user.fullName,
+          courseTitle: question.course.title,
+        }),
+        refs: { courseId: question.courseId, questionId },
       });
     }
     return toAnswerDto(answer);

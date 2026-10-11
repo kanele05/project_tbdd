@@ -11,8 +11,9 @@ import { maskIp } from '@/lib/device';
 import { CHALLENGE_TOKEN_TTL_SEC, signChallengeToken, verifyChallengeToken } from '@/lib/jwt';
 import { logger } from '@/lib/logger';
 import { queueMail } from '@/lib/mailer';
-import { newDeviceMail, newDeviceNotification, verifyEmailMail } from '@/lib/mailTemplates';
+import { newDeviceMail, verifyEmailMail } from '@/lib/mailTemplates';
 import { toUserDto, userDtoSelect } from '@/lib/mappers';
+import { notificationMessage } from '@/lib/notificationMessage';
 import { notify } from '@/lib/notify';
 import { hashPassword, verifyPassword } from '@/lib/password';
 import { Prisma, prisma } from '@/lib/prisma';
@@ -322,8 +323,10 @@ async function alertNewDevice(
     metadata: { deviceName: started.deviceName },
   });
   try {
-    const text = newDeviceNotification(ctx.lang, started.deviceName);
-    await notify(prisma, { userId: user.id, type: 'SYSTEM', title: text.title, body: text.body });
+    await notify(prisma, {
+      userId: user.id,
+      message: notificationMessage('NEW_DEVICE', { device: started.deviceName }, ctx.lang),
+    });
   } catch (err) {
     logger.warn({ err }, 'Failed to create new-device notification');
   }

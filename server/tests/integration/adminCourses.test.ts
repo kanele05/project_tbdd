@@ -219,10 +219,19 @@ describe('POST /admin/courses/:id/approve (new course)', () => {
     expect(teacherNotes).toHaveLength(1);
     expect(teacherNotes[0]).toMatchObject({
       type: 'COURSE_APPROVED',
-      data: { courseId: course.id },
+      data: {
+        courseId: course.id,
+        key: 'COURSE_APPROVED',
+        params: { courseTitle: stored.title },
+      },
     });
     const fanNotes = await prisma.notification.findMany({ where: { userId: fan.id } });
     expect(fanNotes.map((n) => n.type)).toEqual(['NEW_COURSE']);
+    expect(fanNotes[0]?.data).toEqual({
+      courseId: course.id,
+      key: 'NEW_COURSE',
+      params: { teacher: teacher.user.fullName, courseTitle: stored.title },
+    });
     expect(await prisma.notification.count({ where: { userId: stranger.id } })).toBe(0);
 
     const mail = mailbox.lastTo(teacher.user.email);
@@ -330,6 +339,11 @@ describe('POST /admin/courses/:id/reject', () => {
     const note = await prisma.notification.findFirstOrThrow({ where: { userId: teacher.user.id } });
     expect(note.type).toBe('COURSE_REJECTED');
     expect(note.body).toContain(reason);
+    expect(note.data).toEqual({
+      courseId: course.id,
+      key: 'COURSE_REJECTED',
+      params: { courseTitle: course.title, reason },
+    });
     const mail = mailbox.lastTo(teacher.user.email);
     expect(mail.text).toContain(reason);
     expect(mail.subject).toContain('chưa được duyệt');

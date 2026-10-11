@@ -50,6 +50,55 @@ export function getNotificationTitle(
 type LocalizedType =
   'COURSE_APPROVED' | 'COURSE_REJECTED' | 'NEW_COURSE' | 'PROJECT_GRADED' | 'REVIEW_REPLY';
 
+/** Message keys the app can translate, with the params each one needs (mirrors `NOTIFICATION_MESSAGES` on the server). */
+const MESSAGE_PARAMS = {
+  NEW_DEVICE: ['device'],
+  ORDER_PAID_ONE: ['courseTitle'],
+  ORDER_PAID_MANY: ['count'],
+  NEW_ANSWER: ['author', 'courseTitle'],
+  COURSE_COMPLETED: ['courseTitle'],
+  COURSE_APPROVED: ['courseTitle'],
+  REVISION_APPROVED: ['courseTitle'],
+  COURSE_REJECTED: ['courseTitle', 'reason'],
+  REVISION_REJECTED: ['courseTitle', 'reason'],
+  NEW_COURSE: ['teacher', 'courseTitle'],
+  PROJECT_GRADED: ['projectTitle', 'courseTitle', 'grade'],
+  REVIEW_REPLY: ['courseTitle'],
+} as const;
+
+type MessageKey = keyof typeof MESSAGE_PARAMS;
+
+function isMessageKey(key: unknown): key is MessageKey {
+  return typeof key === 'string' && Object.prototype.hasOwnProperty.call(MESSAGE_PARAMS, key);
+}
+
+function hasParam(value: unknown): boolean {
+  return (typeof value === 'string' && value.length > 0) || Number.isFinite(value);
+}
+
+export type NotificationText = { title: string; body: string };
+
+/**
+ * Title + body of a notification in the UI language. When the server sent a known `data.key` with every
+ * param that message needs, the text comes from `notification:messages.<key>` (so it follows the
+ * language picked in Settings); otherwise - old rows, unknown keys, missing params - it falls back to
+ * the stored text (the type-based title for the teacher / admin types, see `getNotificationTitle`).
+ * Read it while rendering with `useTranslation('notification')` mounted, so the row re-renders when the
+ * language changes.
+ */
+export function getNotificationText(
+  notification: Pick<NotificationDto, 'type' | 'title' | 'body' | 'data'>,
+): NotificationText {
+  const { key, params } = notification.data ?? {};
+  if (isMessageKey(key) && params && MESSAGE_PARAMS[key].every((name) => hasParam(params[name]))) {
+    return {
+      title: i18n.t(`notification:messages.${key}.title`, params),
+      body: i18n.t(`notification:messages.${key}.body`, params),
+    };
+  }
+  return { title: getNotificationTitle(notification), body: notification.body };
+}
+
 /**
  * Where tapping a notification goes. By `type` (when given): `COURSE_APPROVED` / `COURSE_REJECTED` open
  * the studio page of the course, `NEW_COURSE` the course, `PROJECT_GRADED` the Projects tab of the

@@ -260,7 +260,12 @@ describe('POST /questions/:id/answers', () => {
         userId: asker.id,
         type: 'NEW_ANSWER',
         isRead: false,
-        data: { courseId: course.id, questionId: question.id },
+        data: {
+          courseId: course.id,
+          questionId: question.id,
+          key: 'NEW_ANSWER',
+          params: { author: 'Helper Two', courseTitle: 'UX Foundation' },
+        },
       }),
     );
     expect(notifications[0]!.body).toContain('Helper Two');

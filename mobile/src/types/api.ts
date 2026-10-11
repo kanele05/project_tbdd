@@ -200,6 +200,13 @@ export type NotificationData = {
   submissionId?: string;
   /** `REVIEW_REPLY`. */
   reviewId?: string;
+  /**
+   * Stable message key (`NEW_DEVICE`, `ORDER_PAID_ONE`, `COURSE_REJECTED`...). With `params` the app renders the
+   * text in the UI language (`notification:messages.<key>`); absent on old rows or unknown keys, where the
+   * stored `title`/`body` are shown instead.
+   */
+  key?: string;
+  params?: Record<string, string | number>;
 };
 
 export type NotificationDto = {

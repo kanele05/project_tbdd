@@ -96,7 +96,12 @@ describe('questionService.createAnswer (BR-09)', () => {
         data: expect.objectContaining({
           userId: 'asker',
           type: 'NEW_ANSWER',
-          data: { courseId: 'course-1', questionId: 'q-1' },
+          data: {
+            courseId: 'course-1',
+            questionId: 'q-1',
+            key: 'NEW_ANSWER',
+            params: { author: 'Helper Two', courseTitle: 'UX Foundation' },
+          },
         }),
       }),
     );

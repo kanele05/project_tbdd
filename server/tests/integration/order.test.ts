@@ -51,7 +51,7 @@ describe('POST /orders/checkout (BR-07)', () => {
     expect(notifications[0]).toMatchObject({
       type: 'ORDER_PAID',
       isRead: false,
-      data: { courseId: a.id },
+      data: { courseId: a.id, key: 'ORDER_PAID_MANY', params: { count: 2 } },
     });
   });
 

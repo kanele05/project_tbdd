@@ -17,6 +17,7 @@ tests
 scripts/*
 !scripts/updateCoursePreviews.ts
 !scripts/setUserRole.ts
+!scripts/backfillNotificationKeys.ts
 Dockerfile
 .dockerignore
 README.md

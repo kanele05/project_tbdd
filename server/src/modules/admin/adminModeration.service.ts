@@ -11,6 +11,7 @@ import { snapshotFromRevision } from '@/lib/courseRevisionPayload';
 import { logger } from '@/lib/logger';
 import { queueMail } from '@/lib/mailer';
 import { courseDecisionMail } from '@/lib/mailTemplates';
+import { notificationMessage } from '@/lib/notificationMessage';
 import { notify } from '@/lib/notify';
 import { prisma } from '@/lib/prisma';
 import { invalidateHomeCache } from '@/modules/home/home.service';
@@ -153,13 +154,10 @@ export async function approveCourse(
     });
     await notify(tx, {
       userId: course.teacher.userId,
-      type: 'COURSE_APPROVED',
-      title: target === 'COURSE' ? 'Your course was approved' : 'Your course changes were approved',
-      body:
-        target === 'COURSE'
-          ? `"${approved.title}" has been approved and is now published.`
-          : `The changes you submitted for "${approved.title}" are now live.`,
-      data: { courseId },
+      message: notificationMessage(target === 'COURSE' ? 'COURSE_APPROVED' : 'REVISION_APPROVED', {
+        courseTitle: approved.title,
+      }),
+      refs: { courseId },
     });
   }, TX_OPTIONS);
 
@@ -196,13 +194,11 @@ export async function rejectCourse(
     });
     await notify(tx, {
       userId: course.teacher.userId,
-      type: 'COURSE_REJECTED',
-      title:
-        target === 'COURSE'
-          ? 'Your course was not approved'
-          : 'Your course changes were not approved',
-      body: `"${course.title}": ${cleanReason}`,
-      data: { courseId },
+      message: notificationMessage(target === 'COURSE' ? 'COURSE_REJECTED' : 'REVISION_REJECTED', {
+        courseTitle: course.title,
+        reason: cleanReason,
+      }),
+      refs: { courseId },
     });
   }, TX_OPTIONS);
 

@@ -71,21 +71,22 @@ Sau đó `npm run db:migrate:deploy` (áp migration) và `npm run prisma:seed`. 
 
 ## 5. Scripts
 
-| Script                                            | Mô tả                                                                                                         |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                                     | `tsx watch src/server.ts` (tự reload)                                                                         |
-| `npm run build` / `npm start`                     | Biên dịch `tsc` + `tsc-alias` ra `dist/`, chạy `node dist/server.js`                                          |
-| `npm run typecheck` / `lint` / `format`           | `tsc --noEmit` · ESLint (flat config) · Prettier                                                              |
-| `npm test`                                        | Toàn bộ test (unit + integration) tuần tự (`--runInBand`) trên DB `elearning_test`                            |
-| `npm run test:unit`                               | Chỉ unit test (`src/**`), **không cần DB**                                                                    |
-| `npm run test:integration` / `test:coverage`      | Integration test · kèm coverage                                                                               |
-| `npm run db:migrate -- --name <ten>`              | `prisma migrate dev` - tạo + áp migration mới (đổi `prisma/schema.prisma`)                                    |
-| `npm run db:migrate:deploy` / `db:migrate:test`   | Áp migration lên DB dev / test                                                                                |
-| `npm run db:reset`                                | `prisma migrate reset --force` (xóa sạch DB dev; chỉ người thật chạy - Prisma CLI chặn khi chạy bởi AI agent) |
-| `npm run db:seed` / `prisma:seed`                 | Seed                                                                                                          |
-| `npm run db:studio`                               | Prisma Studio                                                                                                 |
-| `npm run previews:dry-run` / `previews:apply`     | Cập nhật video xem thử YouTube (dry-run / ghi DB) - xem mục 5.1                                               |
-| `npm run user:set-role -- --email <e> --role <R>` | Đổi vai trò tài khoản (tạo ADMIN) - dry-run, thêm `--apply` để ghi - xem mục 5.2                              |
+| Script                                              | Mô tả                                                                                                         |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                                       | `tsx watch src/server.ts` (tự reload)                                                                         |
+| `npm run build` / `npm start`                       | Biên dịch `tsc` + `tsc-alias` ra `dist/`, chạy `node dist/server.js`                                          |
+| `npm run typecheck` / `lint` / `format`             | `tsc --noEmit` · ESLint (flat config) · Prettier                                                              |
+| `npm test`                                          | Toàn bộ test (unit + integration) tuần tự (`--runInBand`) trên DB `elearning_test`                            |
+| `npm run test:unit`                                 | Chỉ unit test (`src/**`), **không cần DB**                                                                    |
+| `npm run test:integration` / `test:coverage`        | Integration test · kèm coverage                                                                               |
+| `npm run db:migrate -- --name <ten>`                | `prisma migrate dev` - tạo + áp migration mới (đổi `prisma/schema.prisma`)                                    |
+| `npm run db:migrate:deploy` / `db:migrate:test`     | Áp migration lên DB dev / test                                                                                |
+| `npm run db:reset`                                  | `prisma migrate reset --force` (xóa sạch DB dev; chỉ người thật chạy - Prisma CLI chặn khi chạy bởi AI agent) |
+| `npm run db:seed` / `prisma:seed`                   | Seed                                                                                                          |
+| `npm run db:studio`                                 | Prisma Studio                                                                                                 |
+| `npm run previews:dry-run` / `previews:apply`       | Cập nhật video xem thử YouTube (dry-run / ghi DB) - xem mục 5.1                                               |
+| `npm run user:set-role -- --email <e> --role <R>`   | Đổi vai trò tài khoản (tạo ADMIN) - dry-run, thêm `--apply` để ghi - xem mục 5.2                              |
+| `npm run notifications:backfill:dry-run` / `:apply` | Gắn khóa dịch (`data.key`) cho thông báo cũ (dry-run / ghi DB) - xem mục 5.3                                  |
 
 **Test:** `tests/globalSetup.ts` chạy `prisma migrate deploy` + TRUNCATE mọi bảng trên DB test (từ chối chạy nếu tên DB không chứa `test`); mỗi file integration test gọi `resetDb()` trong `beforeEach`. Jest chạy với `--experimental-vm-modules` (bắt buộc để Prisma 7 nạp WASM query compiler). Cache server bị tắt khi `NODE_ENV=test`.
 
@@ -131,6 +132,29 @@ docker compose exec api /opt/tools/node_modules/.bin/tsx scripts/setUserRole.ts 
 ```
 
 Quy tắc: tài khoản phải đăng ký + xác minh email trước; luôn dry-run trước; script nằm trong image (`Dockerfile` + `.dockerignore`) nên chỉ cần build + deploy image mới trước khi chạy lần đầu.
+
+### 5.3 Backfill khóa thông báo (`notifications:backfill:*`)
+
+Thông báo được lưu kèm `data.key` + `data.params` (vd `ORDER_PAID_ONE` + `{ courseTitle }`) để mobile dịch theo ngôn ngữ đang chọn; `title`/`body` chỉ còn là bản dự phòng. Các dòng tạo TRƯỚC thay đổi này chỉ có chữ đã dựng sẵn (lẫn tiếng Việt/Anh) nên cần backfill một lần. Script chỉ động vào dòng **chưa có** `data.key` và khớp một mẫu câu đã biết (EN + VI, kèm vài mẫu cũ của seed); dòng không khớp giữ nguyên (mobile hiển thị chữ đã lưu). Mặc định **dry-run**, thêm `--apply` mới ghi; cập nhật theo lô trong transaction, **idempotent** (chạy lại: `matched: 0`). Log chỉ có số đếm theo `key`, số dòng không khớp (theo `type`) và vài mẫu đã cắt ngắn, không in nguyên nội dung.
+
+**Dev** (từ `server/`, DB trong `.env`):
+
+```bash
+npm run notifications:backfill:dry-run   # log "Notification backfill dry run": scanned, matched, byKey, unmatched
+npm run notifications:backfill:apply     # ghi DB
+```
+
+**Production** (trên VPS, thư mục chứa `docker-compose.yml`; gọi `tsx` ở `/opt/tools` như mục 5.1):
+
+```bash
+# 1) Backup DB trước (deploy/README.md), rồi dry-run:
+docker compose exec api /opt/tools/node_modules/.bin/tsx scripts/backfillNotificationKeys.ts
+# 2) Đọc kết quả (applied=false, byKey, unmatched). Nếu đúng mong đợi thì ghi:
+docker compose exec api /opt/tools/node_modules/.bin/tsx scripts/backfillNotificationKeys.ts --apply
+# 3) Chạy lại dry-run: phải báo matched = 0.
+```
+
+Quy tắc: luôn dry-run và backup trước; script nằm trong image (`Dockerfile` + `.dockerignore`) nên cần build + deploy image mới (API đã ghi `data.key` cho thông báo mới) trước khi chạy lần đầu. Thông báo mới tạo từ giờ đã có `key` nên không cần chạy lại.
 
 ## 6. Cấu trúc
 

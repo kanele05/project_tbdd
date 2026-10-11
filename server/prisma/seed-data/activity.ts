@@ -8,6 +8,8 @@
  * Các học viên còn lại được chọn ngẫu nhiên; chỉ người đã ghi danh mới review / hỏi đáp / nộp project (BR-08, BR-09).
  */
 import type { Prisma } from '../../src/generated/prisma/client';
+import { notificationMessage } from '../../src/lib/notificationMessage';
+import { notificationData } from '../../src/lib/notify';
 import { type Catalog, type CourseRow } from './catalog';
 import { type CategorySlug } from './categories';
 import { courseId, type Popularity } from './courses';
@@ -455,34 +457,40 @@ function addDemoContent(activity: Activity, now: number, rng: Random, helpers: D
   });
 
   const uxFoundation = course('ux-foundation');
+  const paid = notificationMessage('ORDER_PAID_ONE', { courseTitle: uxFoundation.seed.title });
+  const completed = notificationMessage('COURSE_COMPLETED', { courseTitle: palettes.seed.title });
+  const answered = notificationMessage('NEW_ANSWER', {
+    author: userName.get(answerer.id) ?? 'A learner',
+    courseTitle: typography.seed.title,
+  });
   activity.notifications.push(
     {
       id: 'ntf_demo_1',
       userId: demoId,
-      type: 'ORDER_PAID',
-      title: 'Payment successful',
-      body: `You are now enrolled in ${uxFoundation.seed.title}. Start learning today!`,
-      data: { courseId: uxFoundation.id },
+      type: paid.type,
+      title: paid.title,
+      body: paid.body,
+      data: notificationData(paid, { courseId: uxFoundation.id }),
       isRead: true,
       createdAt: at(now - 20 * DAY_MS),
     },
     {
       id: 'ntf_demo_2',
       userId: demoId,
-      type: 'COURSE_COMPLETED',
-      title: 'Course completed!',
-      body: `Congratulations! You completed ${palettes.seed.title}.`,
-      data: { courseId: palettes.id },
+      type: completed.type,
+      title: completed.title,
+      body: completed.body,
+      data: notificationData(completed, { courseId: palettes.id }),
       isRead: false,
       createdAt: at(now - 3 * DAY_MS),
     },
     {
       id: 'ntf_demo_3',
       userId: demoId,
-      type: 'NEW_ANSWER',
-      title: 'New answer to your question',
-      body: `${userName.get(answerer.id) ?? 'A learner'} answered your question in ${typography.seed.title}.`,
-      data: { courseId: typography.id, questionId },
+      type: answered.type,
+      title: answered.title,
+      body: answered.body,
+      data: notificationData(answered, { courseId: typography.id, questionId }),
       isRead: false,
       createdAt: at(now - 3 * HOUR_MS),
     },

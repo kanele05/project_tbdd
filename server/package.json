@@ -34,7 +34,9 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "previews:dry-run": "tsx scripts/updateCoursePreviews.ts --external-manifest prisma/seed-data/externalCoursePreviewManifest.json",
     "previews:apply": "tsx scripts/updateCoursePreviews.ts --external-manifest prisma/seed-data/externalCoursePreviewManifest.json --apply",
-    "user:set-role": "tsx scripts/setUserRole.ts"
+    "user:set-role": "tsx scripts/setUserRole.ts",
+    "notifications:backfill:dry-run": "tsx scripts/backfillNotificationKeys.ts",
+    "notifications:backfill:apply": "tsx scripts/backfillNotificationKeys.ts --apply"
   },
   "dependencies": {
     "@google/genai": "^2.27.0",

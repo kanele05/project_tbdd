@@ -9,7 +9,7 @@ import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { NotificationDto } from '@/types/api';
 import { formatRelativeTime } from '@/utils/formatRelativeTime';
 
-import { getNotificationIcon, getNotificationTitle } from '../notificationMeta';
+import { getNotificationIcon, getNotificationText } from '../notificationMeta';
 
 export type NotificationItemProps = {
   notification: NotificationDto;
@@ -24,8 +24,8 @@ function NotificationItemBase({ notification, onPress }: NotificationItemProps) 
   const styles = useStyles();
   const { icon, color, background } = getNotificationIcon(notification.type);
   const time = formatRelativeTime(notification.createdAt);
-  const title = getNotificationTitle(notification);
-  const label = [notification.isRead ? null : t('unread'), title, notification.body, time]
+  const { title, body } = getNotificationText(notification);
+  const label = [notification.isRead ? null : t('unread'), title, body, time]
     .filter(Boolean)
     .join('. ');
 
@@ -52,7 +52,7 @@ function NotificationItemBase({ notification, onPress }: NotificationItemProps) 
           {title}
         </AppText>
         <AppText variant="body" color="textSecondary" numberOfLines={2}>
-          {notification.body}
+          {body}
         </AppText>
         <AppText variant="caption">{time}</AppText>
       </View>

@@ -258,7 +258,11 @@ describe('lessonService.saveProgress', () => {
         data: expect.objectContaining({
           userId: 'user-1',
           type: 'COURSE_COMPLETED',
-          data: { courseId: 'course-1' },
+          data: {
+            courseId: 'course-1',
+            key: 'COURSE_COMPLETED',
+            params: { courseTitle: 'UX Foundation' },
+          },
         }),
       }),
     );

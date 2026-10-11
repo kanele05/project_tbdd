@@ -269,7 +269,28 @@ export type NotificationType =
   | 'PROJECT_GRADED'
   | 'REVIEW_REPLY';
 
-/** `NotificationDto.data` (PLAN §9.3 + §2.4): id để mobile mở đúng màn khi chạm thông báo. */
+/**
+ * Khóa thông báo ổn định (mobile dịch theo `notification:messages.<key>`). Mỗi khóa có bộ `params`
+ * riêng - xem `NotificationParamsMap` trong `lib/notificationMessage.ts`.
+ */
+export type NotificationMessageKey =
+  | 'NEW_DEVICE'
+  | 'ORDER_PAID_ONE'
+  | 'ORDER_PAID_MANY'
+  | 'NEW_ANSWER'
+  | 'COURSE_COMPLETED'
+  | 'COURSE_APPROVED'
+  | 'REVISION_APPROVED'
+  | 'COURSE_REJECTED'
+  | 'REVISION_REJECTED'
+  | 'NEW_COURSE'
+  | 'PROJECT_GRADED'
+  | 'REVIEW_REPLY';
+
+/** Tham số điền vào câu thông báo (`device`, `courseTitle`, `count`, `author`, `teacher`, `reason`, `grade`, `projectTitle`). */
+export type NotificationMessageParams = Record<string, string | number>;
+
+/** `NotificationDto.data` (PLAN §9.3 + §2.4): id để mobile mở đúng màn khi chạm + `key`/`params` để dịch thông báo. */
 export type NotificationDataDto = {
   courseId?: string;
   questionId?: string;
@@ -277,6 +298,9 @@ export type NotificationDataDto = {
   submissionId?: string;
   /** `REVIEW_REPLY`. */
   reviewId?: string;
+  /** Khóa câu thông báo; thiếu ở thông báo cũ (mobile dùng `title`/`body` đã lưu). */
+  key?: NotificationMessageKey;
+  params?: NotificationMessageParams;
 };
 
 export type NotificationDto = {

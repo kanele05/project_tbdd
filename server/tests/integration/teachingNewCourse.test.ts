@@ -24,7 +24,11 @@ describe('notifyFollowersOfNewCourse (FR-54, BR-27)', () => {
     const rows = await prisma.notification.findMany({ orderBy: { userId: 'asc' } });
     expect(rows.map((r) => r.userId).sort()).toEqual([f1.id, f2.id].sort());
     expect(rows.every((r) => r.type === 'NEW_COURSE')).toBe(true);
-    expect(rows[0]?.data).toEqual({ courseId: course.id });
+    expect(rows[0]?.data).toEqual({
+      courseId: course.id,
+      key: 'NEW_COURSE',
+      params: { teacher: 'Followed Teacher', courseTitle: 'Brand New' },
+    });
     expect(rows[0]?.body).toContain('Brand New');
     expect(await prisma.notification.count({ where: { userId: bystander.id } })).toBe(0);
     expect(await prisma.notification.count({ where: { userId: user.id } })).toBe(0);

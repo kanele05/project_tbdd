@@ -2,6 +2,7 @@ import { Prisma } from '@/generated/prisma/client';
 import { ApiError } from '@/lib/ApiError';
 import { assertCourseOwner, assertCourseTeacher } from '@/lib/courseOwnership';
 import { reviewDtoSelect, toReviewDto } from '@/lib/mappers';
+import { notificationMessage } from '@/lib/notificationMessage';
 import { notify } from '@/lib/notify';
 import { buildPaginationMeta, getPagination, type PaginationMeta } from '@/lib/pagination';
 import { prisma } from '@/lib/prisma';
@@ -167,10 +168,12 @@ export async function gradeSubmission(
     });
     await notify(tx, {
       userId: target.userId,
-      type: 'PROJECT_GRADED',
-      title: 'Your project was graded',
-      body: `Your project "${target.title}" in "${target.course.title}" received ${input.grade}/100.`,
-      data: { courseId: target.courseId, submissionId },
+      message: notificationMessage('PROJECT_GRADED', {
+        projectTitle: target.title,
+        courseTitle: target.course.title,
+        grade: input.grade,
+      }),
+      refs: { courseId: target.courseId, submissionId },
     });
     return toTeacherSubmissionDto(row);
   });
@@ -210,10 +213,8 @@ export async function replyToReview(
     if (review.teacherReply === null && review.userId !== userId) {
       await notify(tx, {
         userId: review.userId,
-        type: 'REVIEW_REPLY',
-        title: 'The instructor replied to your review',
-        body: `The instructor of "${review.course.title}" replied to your review.`,
-        data: { courseId: review.courseId, reviewId },
+        message: notificationMessage('REVIEW_REPLY', { courseTitle: review.course.title }),
+        refs: { courseId: review.courseId, reviewId },
       });
     }
     return toReviewDto(saved);

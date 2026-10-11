@@ -6,7 +6,7 @@
  *   const { course, lessons } = await createCourseWithLessons({ sections: 2, lessonsPerSection: 3 });
  *   await createEnrollment(user.id, course.id, { progressPercent: 30 });
  */
-import type { CourseStatus, NotificationType } from '@/generated/prisma/client';
+import type { CourseStatus, NotificationType, Prisma } from '@/generated/prisma/client';
 import { signAccessToken } from '@/lib/jwt';
 import { hashPassword } from '@/lib/password';
 import { prisma } from '@/lib/prisma';
@@ -356,7 +356,7 @@ export function createNotification(
     title?: string;
     isRead?: boolean;
     createdAt?: Date;
-    data?: { courseId?: string; questionId?: string };
+    data?: Prisma.InputJsonObject;
   } = {},
 ) {
   return prisma.notification.create({

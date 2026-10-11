@@ -254,7 +254,12 @@ describe('PUT /teacher/submissions/:id/grade', () => {
     expect(first).toHaveLength(1);
     expect(first[0]).toMatchObject({
       type: 'PROJECT_GRADED',
-      data: { courseId: course.id, submissionId: submission.id },
+      data: {
+        courseId: course.id,
+        submissionId: submission.id,
+        key: 'PROJECT_GRADED',
+        params: { projectTitle: 'Final project', courseTitle: 'Owned Course', grade: 85 },
+      },
     });
     expect(first[0]?.body).toContain('85/100');
 
@@ -347,7 +352,12 @@ describe('PUT/DELETE /teacher/reviews/:id/reply', () => {
     expect(notifications).toHaveLength(1);
     expect(notifications[0]).toMatchObject({
       type: 'REVIEW_REPLY',
-      data: { courseId: course.id, reviewId: review.id },
+      data: {
+        courseId: course.id,
+        reviewId: review.id,
+        key: 'REVIEW_REPLY',
+        params: { courseTitle: 'Owned Course' },
+      },
     });
 
     const edited = await api.put(url).set(authHeader(owner.user)).send({ reply: 'Edited reply.' });

@@ -47,6 +47,39 @@ describe('/notifications', () => {
     ]);
   });
 
+  it('exposes data.key and data.params so the app can translate, and drops unknown keys', async () => {
+    const user = await createUser();
+    await createNotification(user.id, {
+      title: 'Known',
+      type: 'PROJECT_GRADED',
+      createdAt: new Date('2026-09-03T00:00:00Z'),
+      data: {
+        courseId: 'crs_1',
+        key: 'PROJECT_GRADED',
+        params: { projectTitle: 'Logo', courseTitle: 'UX', grade: 85 },
+      },
+    });
+    await createNotification(user.id, {
+      title: 'Unknown',
+      createdAt: new Date('2026-09-02T00:00:00Z'),
+      data: { courseId: 'crs_2', key: 'SOMETHING_NEW', params: { a: 'b' } },
+    });
+
+    const res = await api.get(`${API}/notifications`).set(authHeader(user));
+
+    expect(res.body.data).toEqual([
+      expect.objectContaining({
+        title: 'Known',
+        data: {
+          courseId: 'crs_1',
+          key: 'PROJECT_GRADED',
+          params: { projectTitle: 'Logo', courseTitle: 'UX', grade: 85 },
+        },
+      }),
+      expect.objectContaining({ title: 'Unknown', data: { courseId: 'crs_2' } }),
+    ]);
+  });
+
   it('returns the unread count for the badge', async () => {
     const user = await createUser();
     await createNotification(user.id);

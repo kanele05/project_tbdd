@@ -256,6 +256,11 @@ describe('POST /admin/courses/:id/approve (revision)', () => {
     expect(notes.map((n) => [n.userId, n.type])).toEqual([
       [seeded.teacher.user.id, 'COURSE_APPROVED'],
     ]);
+    expect(notes[0]?.data).toEqual({
+      courseId: seeded.course.id,
+      key: 'REVISION_APPROVED',
+      params: { courseTitle: 'Revised course title' },
+    });
     expect(mailbox.lastTo(seeded.teacher.user.email).text).toContain('Revised course title');
     expect(payload.sections).toHaveLength(3);
   });
@@ -365,6 +370,11 @@ describe('POST /admin/courses/:id/reject (revision)', () => {
     });
     const note = await prisma.notification.findFirstOrThrow({ where: { userId: teacher.user.id } });
     expect(note.type).toBe('COURSE_REJECTED');
+    expect(note.data).toEqual({
+      courseId: course.id,
+      key: 'REVISION_REJECTED',
+      params: { courseTitle: course.title, reason },
+    });
     expect(mailbox.lastTo(teacher.user.email).text).toContain(reason);
     // Đã bị từ chối thì không còn chờ duyệt: duyệt / từ chối lại -> 422.
     const again = await api.post(`${API}/admin/courses/${course.id}/approve`).set(authHeader(root));

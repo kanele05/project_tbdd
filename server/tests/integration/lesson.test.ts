@@ -333,7 +333,11 @@ describe('PUT /lessons/:id/progress', () => {
       expect.objectContaining({
         type: 'COURSE_COMPLETED',
         isRead: false,
-        data: { courseId: course.id },
+        data: {
+          courseId: course.id,
+          key: 'COURSE_COMPLETED',
+          params: { courseTitle: course.title },
+        },
       }),
     );
   });

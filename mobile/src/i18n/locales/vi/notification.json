@@ -18,5 +18,55 @@
     "NEW_COURSE": "Khóa học mới từ giảng viên bạn theo dõi",
     "PROJECT_GRADED": "Project của bạn đã được chấm điểm",
     "REVIEW_REPLY": "Giảng viên đã phản hồi đánh giá của bạn"
+  },
+  "messages": {
+    "NEW_DEVICE": {
+      "title": "Đăng nhập từ thiết bị mới",
+      "body": "Tài khoản của bạn vừa được đăng nhập từ thiết bị mới: {{device}}. Nếu không phải bạn, hãy đổi mật khẩu."
+    },
+    "ORDER_PAID_ONE": {
+      "title": "Thanh toán thành công",
+      "body": "Bạn đã được ghi danh vào {{courseTitle}}. Bắt đầu học ngay hôm nay!"
+    },
+    "ORDER_PAID_MANY": {
+      "title": "Thanh toán thành công",
+      "body": "Bạn đã được ghi danh vào {{count}} khóa học. Bắt đầu học ngay hôm nay!"
+    },
+    "NEW_ANSWER": {
+      "title": "Câu hỏi của bạn có câu trả lời mới",
+      "body": "{{author}} đã trả lời câu hỏi của bạn trong \"{{courseTitle}}\"."
+    },
+    "COURSE_COMPLETED": {
+      "title": "Hoàn thành khóa học",
+      "body": "Chúc mừng! Bạn đã hoàn thành \"{{courseTitle}}\"."
+    },
+    "COURSE_APPROVED": {
+      "title": "Khóa học của bạn đã được duyệt",
+      "body": "\"{{courseTitle}}\" đã được duyệt và hiện đã được xuất bản."
+    },
+    "REVISION_APPROVED": {
+      "title": "Thay đổi khóa học của bạn đã được duyệt",
+      "body": "Các thay đổi bạn gửi cho \"{{courseTitle}}\" đã có hiệu lực."
+    },
+    "COURSE_REJECTED": {
+      "title": "Khóa học của bạn chưa được duyệt",
+      "body": "\"{{courseTitle}}\": {{reason}}"
+    },
+    "REVISION_REJECTED": {
+      "title": "Thay đổi khóa học của bạn chưa được duyệt",
+      "body": "\"{{courseTitle}}\": {{reason}}"
+    },
+    "NEW_COURSE": {
+      "title": "Khóa học mới từ giảng viên bạn theo dõi",
+      "body": "{{teacher}} vừa xuất bản \"{{courseTitle}}\"."
+    },
+    "PROJECT_GRADED": {
+      "title": "Project của bạn đã được chấm điểm",
+      "body": "Project \"{{projectTitle}}\" của bạn trong \"{{courseTitle}}\" đạt {{grade}}/100 điểm."
+    },
+    "REVIEW_REPLY": {
+      "title": "Giảng viên đã phản hồi đánh giá của bạn",
+      "body": "Giảng viên của \"{{courseTitle}}\" đã phản hồi đánh giá của bạn."
+    }
   }
 }

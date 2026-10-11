@@ -1,5 +1,6 @@
 import { isProduction } from '@/config/env';
 import { ApiError } from '@/lib/ApiError';
+import { type NotificationMessage, notificationMessage } from '@/lib/notificationMessage';
 import { notify } from '@/lib/notify';
 import { buildPaginationMeta, getPagination, type PaginationMeta } from '@/lib/pagination';
 import { Prisma, prisma } from '@/lib/prisma';
@@ -59,17 +60,17 @@ type CheckoutOutcome =
 
 type CartLine = { courseId: string; course: { title: string; priceCents: number } };
 
-/** Nội dung thông báo ORDER_PAID (khớp dữ liệu seed: "You are now enrolled in ..."). */
+/** Thông báo ORDER_PAID: 1 khóa -> ORDER_PAID_ONE (tên khóa), nhiều khóa -> ORDER_PAID_MANY (số khóa). */
 export function buildPaidNotification(lines: readonly CartLine[]): {
-  title: string;
-  body: string;
+  message: NotificationMessage;
   courseId: string;
 } {
   const [first] = lines;
-  const target = lines.length === 1 ? first.course.title : `${lines.length} courses`;
   return {
-    title: 'Payment successful',
-    body: `You are now enrolled in ${target}. Start learning today!`,
+    message:
+      lines.length === 1
+        ? notificationMessage('ORDER_PAID_ONE', { courseTitle: first.course.title })
+        : notificationMessage('ORDER_PAID_MANY', { count: lines.length }),
     courseId: first.courseId,
   };
 }
@@ -139,14 +140,8 @@ async function runCheckout(
     data: { enrollmentCount: { increment: 1 } },
   });
   await tx.cartItem.deleteMany({ where: { userId } });
-  const message = buildPaidNotification(lines);
-  await notify(tx, {
-    userId,
-    type: 'ORDER_PAID',
-    title: message.title,
-    body: message.body,
-    data: { courseId: message.courseId },
-  });
+  const paid = buildPaidNotification(lines);
+  await notify(tx, { userId, message: paid.message, refs: { courseId: paid.courseId } });
   return { kind: 'paid', result: { order: toOrderDto(order), enrolledCourseIds: courseIds } };
 }
 

@@ -94,7 +94,14 @@ describe('checkout (BR-07)', () => {
     expect(tx.cartItem.deleteMany).toHaveBeenCalledWith({ where: { userId: 'u1' } });
     expect(notify).toHaveBeenCalledWith(
       tx,
-      expect.objectContaining({ userId: 'u1', type: 'ORDER_PAID', data: { courseId: 'a' } }),
+      expect.objectContaining({
+        userId: 'u1',
+        message: expect.objectContaining({
+          type: 'ORDER_PAID',
+          data: { key: 'ORDER_PAID_MANY', params: { count: 2 } },
+        }),
+        refs: { courseId: 'a' },
+      }),
     );
     expect(invalidateHomeCache).toHaveBeenCalledTimes(1);
     expect(result.enrolledCourseIds).toEqual(['a', 'b']);
@@ -150,13 +157,17 @@ describe('checkout (BR-07)', () => {
 describe('buildPaidNotification', () => {
   it('names the course for a single purchase and counts courses otherwise', () => {
     expect(buildPaidNotification([line('a', 1)])).toEqual({
-      title: 'Payment successful',
-      body: 'You are now enrolled in A. Start learning today!',
+      message: {
+        type: 'ORDER_PAID',
+        title: 'Payment successful',
+        body: 'You are now enrolled in A. Start learning today!',
+        data: { key: 'ORDER_PAID_ONE', params: { courseTitle: 'A' } },
+      },
       courseId: 'a',
     });
-    expect(buildPaidNotification([line('a', 1), line('b', 1)]).body).toBe(
-      'You are now enrolled in 2 courses. Start learning today!',
-    );
+    const many = buildPaidNotification([line('a', 1), line('b', 1)]);
+    expect(many.message.body).toBe('You are now enrolled in 2 courses. Start learning today!');
+    expect(many.message.data).toEqual({ key: 'ORDER_PAID_MANY', params: { count: 2 } });
   });
 });
 

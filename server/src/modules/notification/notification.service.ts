@@ -1,9 +1,25 @@
 import { ApiError } from '@/lib/ApiError';
+import { isNotificationMessageKey } from '@/lib/notificationMessage';
 import { buildPaginationMeta, getPagination, type PaginationMeta } from '@/lib/pagination';
 import { prisma } from '@/lib/prisma';
-import type { NotificationDto, NotificationType } from '@/types/dto';
+import type { NotificationDto, NotificationMessageParams, NotificationType } from '@/types/dto';
 
-/** Cột `data` là JSON tự do -> chỉ giữ `courseId` / `questionId` / `submissionId` / `reviewId` dạng chuỗi (PLAN §9.3, §2.4). */
+/** `params` chỉ giữ giá trị chuỗi / số hữu hạn (tên khóa, số khóa, điểm...). */
+function parseMessageParams(value: unknown): NotificationMessageParams | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
+  const params: NotificationMessageParams = {};
+  for (const [name, item] of Object.entries(value)) {
+    if (typeof item === 'string' || (typeof item === 'number' && Number.isFinite(item))) {
+      params[name] = item;
+    }
+  }
+  return params;
+}
+
+/**
+ * Cột `data` là JSON tự do -> chỉ giữ `courseId` / `questionId` / `submissionId` / `reviewId` dạng chuỗi
+ * và cặp `key` (khóa đã biết) + `params` để mobile dịch thông báo theo ngôn ngữ đang chọn (PLAN §9.3, §2.4).
+ */
 export function parseNotificationData(value: unknown): NotificationDto['data'] {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
   const record = value as Record<string, unknown>;
@@ -12,6 +28,11 @@ export function parseNotificationData(value: unknown): NotificationDto['data'] {
   if (typeof record.questionId === 'string') data.questionId = record.questionId;
   if (typeof record.submissionId === 'string') data.submissionId = record.submissionId;
   if (typeof record.reviewId === 'string') data.reviewId = record.reviewId;
+  const params = parseMessageParams(record.params);
+  if (isNotificationMessageKey(record.key) && params) {
+    data.key = record.key;
+    data.params = params;
+  }
   return Object.keys(data).length > 0 ? data : null;
 }
 

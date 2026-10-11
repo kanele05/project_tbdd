@@ -1,6 +1,7 @@
 import type { Role } from '@/generated/prisma/client';
 import { ApiError } from '@/lib/ApiError';
 import { visibleCourseWhere } from '@/lib/courseVisibility';
+import { notificationMessage } from '@/lib/notificationMessage';
 import { notify } from '@/lib/notify';
 import { prisma } from '@/lib/prisma';
 import { toAbsoluteUrl } from '@/lib/url';
@@ -254,10 +255,8 @@ export async function saveProgress(
         enrollmentData.completedAt = new Date();
         await notify(tx, {
           userId,
-          type: 'COURSE_COMPLETED',
-          title: 'Course completed',
-          body: `Congratulations! You completed "${course.title}".`,
-          data: { courseId },
+          message: notificationMessage('COURSE_COMPLETED', { courseTitle: course.title }),
+          refs: { courseId },
         });
       }
     }

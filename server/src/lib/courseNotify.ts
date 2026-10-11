@@ -1,5 +1,7 @@
 import type { Prisma } from '@/generated/prisma/client';
 import { ApiError } from '@/lib/ApiError';
+import { notificationMessage } from '@/lib/notificationMessage';
+import { notificationData } from '@/lib/notify';
 import { prisma } from '@/lib/prisma';
 
 type CourseNotifyDb = Pick<Prisma.TransactionClient, 'course' | 'follow' | 'notification'>;
@@ -9,7 +11,7 @@ type CourseNotifyDb = Pick<Prisma.TransactionClient, 'course' | 'follow' | 'noti
  * cho mọi người đang theo dõi giảng viên. Chỉ dùng `createMany` (1 câu lệnh), nên gọi trong CÙNG transaction
  * với thao tác duyệt (`db = tx`). Trả số thông báo đã tạo.
  *
- * Tiêu đề / nội dung lưu bằng tiếng Anh (mobile hiển thị theo `type` + `data`, giống các loại thông báo khác).
+ * Tiêu đề / nội dung lưu bằng tiếng Anh làm dự phòng; mobile dịch theo `data.key` + `data.params`.
  * Người theo dõi chính là giảng viên (không xảy ra, CANNOT_FOLLOW_SELF) vẫn bị loại cho chắc.
  */
 export async function notifyFollowersOfNewCourse(
@@ -32,13 +34,18 @@ export async function notifyFollowersOfNewCourse(
   });
   if (followers.length === 0) return 0;
 
+  const message = notificationMessage('NEW_COURSE', {
+    teacher: course.teacher.user.fullName,
+    courseTitle: course.title,
+  });
+  const data = notificationData(message, { courseId: course.id });
   const result = await db.notification.createMany({
     data: followers.map((follower) => ({
       userId: follower.userId,
-      type: 'NEW_COURSE' as const,
-      title: 'New course from an instructor you follow',
-      body: `${course.teacher.user.fullName} published "${course.title}".`,
-      data: { courseId: course.id },
+      type: message.type,
+      title: message.title,
+      body: message.body,
+      data,
     })),
   });
   return result.count;

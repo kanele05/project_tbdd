@@ -28,6 +28,33 @@ describe('parseNotificationData', () => {
     expect(parseNotificationData({ courseId: 5 })).toBeNull();
   });
 
+  it('keeps a known key with its string / number params and drops the rest', () => {
+    expect(
+      parseNotificationData({
+        courseId: 'c',
+        key: 'PROJECT_GRADED',
+        params: { projectTitle: 'Logo', grade: 85, nested: { a: 1 }, flag: true },
+      }),
+    ).toEqual({
+      courseId: 'c',
+      key: 'PROJECT_GRADED',
+      params: { projectTitle: 'Logo', grade: 85 },
+    });
+    expect(parseNotificationData({ key: 'NEW_DEVICE', params: { device: 'Pixel 8' } })).toEqual({
+      key: 'NEW_DEVICE',
+      params: { device: 'Pixel 8' },
+    });
+  });
+
+  it('ignores an unknown key or a key without params', () => {
+    expect(parseNotificationData({ courseId: 'c', key: 'FUTURE_KEY', params: { a: 'b' } })).toEqual(
+      {
+        courseId: 'c',
+      },
+    );
+    expect(parseNotificationData({ courseId: 'c', key: 'NEW_DEVICE' })).toEqual({ courseId: 'c' });
+  });
+
   it('returns null for null, arrays and primitives', () => {
     for (const value of [null, undefined, [], 'x', 3, {}]) {
       expect(parseNotificationData(value)).toBeNull();
