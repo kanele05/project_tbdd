@@ -5,6 +5,7 @@ jest.mock('@/lib/prisma', () => ({
     bookmark: { count: jest.fn() },
     enrollment: { count: jest.fn() },
     user: { update: jest.fn() },
+    $queryRaw: jest.fn(),
   },
   Prisma: jest.requireActual('@/generated/prisma/client').Prisma,
 }));
@@ -12,6 +13,8 @@ jest.mock('@/lib/prisma', () => ({
 type Fn = jest.Mock;
 const db = (jest.requireMock('@/lib/prisma') as { prisma: Record<string, Record<string, Fn>> })
   .prisma;
+const queryRaw = (jest.requireMock('@/lib/prisma') as { prisma: { $queryRaw: Fn } }).prisma
+  .$queryRaw;
 const { Prisma } = jest.requireActual('@/generated/prisma/client');
 
 const userRow = {
@@ -25,25 +28,40 @@ const userRow = {
 };
 
 beforeEach(() => {
-  for (const model of Object.values(db)) for (const fn of Object.values(model)) fn.mockReset();
+  queryRaw.mockReset().mockResolvedValue([{ learningSec: 0 }]);
+  for (const model of Object.values(db)) {
+    if (typeof model === 'object') for (const fn of Object.values(model)) fn.mockReset();
+  }
 });
 
 describe('getMyStats (BR-15)', () => {
   it('counts bookmarks, ongoing (< 100 %) and completed (= 100 %) enrollments', async () => {
     db.bookmark.count.mockResolvedValue(4);
     db.enrollment.count.mockResolvedValueOnce(3).mockResolvedValueOnce(1);
+    queryRaw.mockResolvedValue([{ learningSec: 5400 }]);
 
     await expect(getMyStats('u1')).resolves.toEqual({
       savedCount: 4,
       ongoingCount: 3,
       completedCount: 1,
+      learningSec: 5400,
     });
+    expect(queryRaw).toHaveBeenCalledTimes(1);
     expect(db.enrollment.count).toHaveBeenNthCalledWith(1, {
       where: { userId: 'u1', progressPercent: { lt: 100 } },
     });
     expect(db.enrollment.count).toHaveBeenNthCalledWith(2, {
       where: { userId: 'u1', progressPercent: 100 },
     });
+  });
+});
+
+describe('getMyStats learningSec', () => {
+  it('is 0 when the aggregate returns no row', async () => {
+    db.bookmark.count.mockResolvedValue(0);
+    db.enrollment.count.mockResolvedValue(0);
+    queryRaw.mockResolvedValue([]);
+    await expect(getMyStats('u1')).resolves.toMatchObject({ learningSec: 0 });
   });
 });
 

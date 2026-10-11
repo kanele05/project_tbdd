@@ -5,7 +5,14 @@ import { paths } from '@/config/env';
 import { prisma } from '@/lib/prisma';
 
 import { authHeader } from '../helpers/authHelper';
-import { createBookmark, createCourse, createEnrollment, createUser } from '../helpers/factories';
+import {
+  createBookmark,
+  createCourse,
+  createCourseWithLessons,
+  createEnrollment,
+  createLessonProgress,
+  createUser,
+} from '../helpers/factories';
 import { resetDb } from '../helpers/resetDb';
 import { API, createTestApi } from '../helpers/testApp';
 
@@ -48,7 +55,12 @@ describe('GET /me/stats (BR-15)', () => {
     const res = await api.get(`${API}/me/stats`).set(authHeader(user));
 
     expect(res.status).toBe(200);
-    expect(res.body.data).toEqual({ savedCount: 2, ongoingCount: 2, completedCount: 1 });
+    expect(res.body.data).toEqual({
+      savedCount: 2,
+      ongoingCount: 2,
+      completedCount: 1,
+      learningSec: 0,
+    });
   });
 
   it('returns zeros for a new user and 401 without a token', async () => {
@@ -56,8 +68,33 @@ describe('GET /me/stats (BR-15)', () => {
     const res = await api.get(`${API}/me/stats`).set(authHeader(user));
     const anonymous = await api.get(`${API}/me/stats`);
 
-    expect(res.body.data).toEqual({ savedCount: 0, ongoingCount: 0, completedCount: 0 });
+    expect(res.body.data).toEqual({
+      savedCount: 0,
+      ongoingCount: 0,
+      completedCount: 0,
+      learningSec: 0,
+    });
     expect(anonymous.status).toBe(401);
+  });
+});
+
+describe('GET /me/stats learningSec', () => {
+  it('sums full duration for completed lessons and capped position for partial ones', async () => {
+    const user = await createUser();
+    const other = await createUser();
+    const { lessons } = await createCourseWithLessons({ lessonDurationSec: 100 });
+    // Hoàn thành: đủ 100 s (kể cả khi positionSec nhỏ); dở dang 40 s; vượt thời lượng -> chặn ở 100 s.
+    await createLessonProgress(user.id, lessons[0].id, { isCompleted: true, positionSec: 10 });
+    await createLessonProgress(user.id, lessons[1].id, { positionSec: 40 });
+    await createLessonProgress(user.id, lessons[2].id, { positionSec: 999 });
+    await createLessonProgress(user.id, lessons[3].id, { positionSec: 0 });
+    await createLessonProgress(other.id, lessons[4].id, { isCompleted: true });
+
+    const res = await api.get(`${API}/me/stats`).set(authHeader(user));
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.learningSec).toBe(240);
+    expect(Number.isInteger(res.body.data.learningSec)).toBe(true);
   });
 });
 

@@ -138,6 +138,10 @@ export type MyCourseItemDto = {
   progressPercent: number;
   lastLessonId: string | null;
   lastAccessedAt: string;
+  lessonCount: number;
+  completedLessonCount: number;
+  /** Bài học gần nhất: `number` là vị trí 1-based trong giáo trình; null nếu chưa học/đã bị xóa. */
+  lastLesson: { id: string; title: string; number: number } | null;
 };
 
 export type LessonProgressResponseDto = {
@@ -246,7 +250,13 @@ export type EnrollmentStateDto = {
   lastLessonId: string | null;
 };
 
-export type MeStatsDto = { savedCount: number; ongoingCount: number; completedCount: number };
+export type MeStatsDto = {
+  savedCount: number;
+  ongoingCount: number;
+  completedCount: number;
+  /** Tổng thời gian học (giây): bài hoàn thành = đủ thời lượng, bài dở dang = vị trí đã xem. */
+  learningSec: number;
+};
 
 export type NotificationType =
   | 'ORDER_PAID'
