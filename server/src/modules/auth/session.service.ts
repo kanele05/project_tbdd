@@ -100,7 +100,7 @@ type RefreshRow = {
     userId: string;
     revokedAt: Date | null;
     expiresAt: Date;
-    user: UserDtoRow;
+    user: UserDtoRow & { disabledAt: Date | null };
   };
 };
 
@@ -133,13 +133,17 @@ export async function refreshSession(
           userId: true,
           revokedAt: true,
           expiresAt: true,
-          user: { select: userDtoSelect },
+          user: { select: { ...userDtoSelect, disabledAt: true } },
         },
       },
     },
   });
   if (!row || row.session.revokedAt || row.expiresAt <= now || row.session.expiresAt <= now) {
     throw invalidRefreshToken();
+  }
+  // BR-28: tài khoản bị khóa không làm mới được phiên (admin cũng đã thu hồi mọi phiên lúc khóa).
+  if (row.session.user.disabledAt) {
+    throw ApiError.of('ACCOUNT_DISABLED', 'This account has been disabled');
   }
   if (row.usedAt) return rejectReuse(row, ctx, now);
 

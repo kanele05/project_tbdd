@@ -25,7 +25,7 @@ describe('GET /categories', () => {
     const business = await createCategory({ name: 'Business', slug: 'business', order: 1 });
     await createCourse({ categoryId: design.id });
     await createCourse({ categoryId: design.id });
-    await createCourse({ categoryId: design.id, isPublished: false }); // không được đếm
+    await createCourse({ categoryId: design.id, status: 'ARCHIVED' }); // không được đếm
 
     const res = await api.get(`${API}/categories`);
 

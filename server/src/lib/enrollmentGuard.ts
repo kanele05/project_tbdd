@@ -65,7 +65,7 @@ export async function assertCoursePublished(
   db: Pick<Prisma.TransactionClient, 'course'> = prisma,
 ): Promise<void> {
   const course = await db.course.findFirst({
-    where: { id: courseId, isPublished: true },
+    where: { id: courseId, status: 'PUBLISHED' },
     select: { id: true },
   });
   if (!course) throw ApiError.of('COURSE_NOT_FOUND', 'Course not found');

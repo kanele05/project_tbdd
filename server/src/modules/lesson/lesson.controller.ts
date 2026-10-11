@@ -8,12 +8,12 @@ import * as lessonService from './lesson.service';
 
 export async function curriculum(req: Request, res: Response): Promise<void> {
   const { id } = req.params as CourseIdParams;
-  ok(res, await lessonService.getCurriculum(id, req.user?.id));
+  ok(res, await lessonService.getCurriculum(id, req.user?.id, req.user?.role));
 }
 
 export async function detail(req: Request, res: Response): Promise<void> {
   const { id } = req.params as LessonIdParams;
-  ok(res, await lessonService.getLesson(getAuthUser(req).id, id));
+  ok(res, await lessonService.getLesson(getAuthUser(req).id, id, getAuthUser(req).role));
 }
 
 export async function saveProgress(req: Request, res: Response): Promise<void> {

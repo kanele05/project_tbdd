@@ -61,7 +61,7 @@ describe('GET /home', () => {
     await createCourse({
       title: 'Hidden',
       categoryId: cat.id,
-      isPublished: false,
+      status: 'ARCHIVED',
       enrollmentCount: 999,
     });
     await createBanner({ title: 'Second', order: 2 });

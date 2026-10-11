@@ -207,6 +207,8 @@ describe('GET /questions/:id/answers', () => {
         content: 'First answer, from the helper.',
         createdAt: '2026-09-01T00:00:00.000Z',
         user: { id: helper.id, fullName: 'Helper Two', avatarUrl: null },
+        isInstructor: false,
+        isPinned: false,
       },
       expect.objectContaining({ content: 'Second answer, from the asker.' }),
     ]);
@@ -245,6 +247,8 @@ describe('POST /questions/:id/answers', () => {
       content: 'Start with a base size of 16 and scale by 1.25.',
       createdAt: expect.any(String),
       user: { id: helper.id, fullName: 'Helper Two', avatarUrl: null },
+      isInstructor: false,
+      isPinned: false,
     });
     const stored = await prisma.question.findUniqueOrThrow({ where: { id: question.id } });
     expect(stored.answerCount).toBe(1);

@@ -20,11 +20,13 @@ function loadGuard(isTest: boolean): Guard {
   return loaded as Guard;
 }
 
+const row = (role = 'STUDENT') => ({ user: { role } });
+
 beforeEach(() => mockFindFirst.mockReset());
 
 describe('isSessionActive with the cache disabled (test mode)', () => {
   it('queries the database every time and filters revoked / expired sessions', async () => {
-    mockFindFirst.mockResolvedValue({ id: 's1' });
+    mockFindFirst.mockResolvedValue(row());
     const { isSessionActive } = loadGuard(true);
     const now = new Date('2026-10-04T00:00:00Z');
 
@@ -33,8 +35,8 @@ describe('isSessionActive with the cache disabled (test mode)', () => {
 
     expect(mockFindFirst).toHaveBeenCalledTimes(2);
     expect(mockFindFirst).toHaveBeenCalledWith({
-      where: { id: 's1', revokedAt: null, expiresAt: { gt: now } },
-      select: { id: true },
+      where: { id: 's1', revokedAt: null, expiresAt: { gt: now }, user: { disabledAt: null } },
+      select: { user: { select: { role: true } } },
     });
   });
 
@@ -47,7 +49,7 @@ describe('isSessionActive with the cache disabled (test mode)', () => {
 
 describe('isSessionActive with the cache enabled', () => {
   it('caches only positive results: the second call does not hit the database', async () => {
-    mockFindFirst.mockResolvedValue({ id: 's1' });
+    mockFindFirst.mockResolvedValue(row());
     const { isSessionActive } = loadGuard(false);
 
     expect(await isSessionActive('s1')).toBe(true);
@@ -65,12 +67,35 @@ describe('isSessionActive with the cache enabled', () => {
   });
 
   it('forgetSession makes a revoked session fail on the very next request', async () => {
-    mockFindFirst.mockResolvedValueOnce({ id: 's3' }).mockResolvedValueOnce(null);
+    mockFindFirst.mockResolvedValueOnce(row()).mockResolvedValueOnce(null);
     const { isSessionActive, forgetSession } = loadGuard(false);
 
     expect(await isSessionActive('s3')).toBe(true);
     forgetSession('s3');
     expect(await isSessionActive('s3')).toBe(false);
     expect(mockFindFirst).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('resolveActiveSession', () => {
+  it('returns the current database role of the session owner, not the token role', async () => {
+    mockFindFirst.mockResolvedValue(row('ADMIN'));
+    const { resolveActiveSession } = loadGuard(true);
+    expect(await resolveActiveSession('s9')).toEqual({ role: 'ADMIN' });
+  });
+
+  it('returns null for a revoked session or a disabled account', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    const { resolveActiveSession } = loadGuard(true);
+    expect(await resolveActiveSession('s9')).toBeNull();
+  });
+
+  it('caches the role together with the session (until forgetSession)', async () => {
+    mockFindFirst.mockResolvedValueOnce(row('TEACHER')).mockResolvedValueOnce(row('ADMIN'));
+    const { resolveActiveSession, forgetSession } = loadGuard(false);
+    expect(await resolveActiveSession('s10')).toEqual({ role: 'TEACHER' });
+    expect(await resolveActiveSession('s10')).toEqual({ role: 'TEACHER' });
+    forgetSession('s10');
+    expect(await resolveActiveSession('s10')).toEqual({ role: 'ADMIN' });
   });
 });

@@ -7,6 +7,7 @@ jest.mock('@/lib/prisma', () => {
     findUnique: jest.fn(),
     findUniqueOrThrow: jest.fn(),
     findMany: jest.fn(),
+    findFirst: jest.fn(),
     create: jest.fn(),
     createMany: jest.fn(),
     deleteMany: jest.fn(),
@@ -42,6 +43,8 @@ beforeEach(() => {
   ]) {
     for (const fn of Object.values(model)) fn.mockReset();
   }
+  // Mặc định: người gọi KHÔNG phải giảng viên của khóa (BR-24 xét trước khi kiểm tra ghi danh).
+  db.course.findFirst.mockResolvedValue(null);
   db.$transaction.mockReset();
   db.$transaction.mockImplementation((fn: (tx: unknown) => unknown) => fn(db));
 });
@@ -59,7 +62,9 @@ describe('questionService.createAnswer (BR-09)', () => {
     id: 'a-1',
     content: 'Use a modular scale.',
     createdAt: new Date('2026-10-01T00:00:00Z'),
+    isPinned: false,
     user: { id: 'helper', fullName: 'Helper Two', avatarUrl: null },
+    question: { course: { teacher: { userId: 'teacher-u' } } },
   };
 
   function arrange() {
@@ -80,6 +85,8 @@ describe('questionService.createAnswer (BR-09)', () => {
       content: 'Use a modular scale.',
       createdAt: '2026-10-01T00:00:00.000Z',
       user: { id: 'helper', fullName: 'Helper Two', avatarUrl: null },
+      isInstructor: false,
+      isPinned: false,
     });
     expect(db.question.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: { answerCount: { increment: 1 } } }),
@@ -292,7 +299,9 @@ describe('questionService.listAnswers', () => {
         id: 'a-1',
         content: 'Use 12 columns.',
         createdAt: new Date('2026-10-02T00:00:00Z'),
+        isPinned: true,
         user: { id: 'h', fullName: 'Helper', avatarUrl: null },
+        question: { course: { teacher: { userId: 'h' } } },
       },
     ]);
     db.answer.count.mockResolvedValue(21);
@@ -300,12 +309,13 @@ describe('questionService.listAnswers', () => {
     const { items, meta } = await questionService.listAnswers('u', 'q-1', { page: 2, limit: 20 });
 
     expect(items.map((a) => a.id)).toEqual(['a-1']);
+    expect(items[0]).toMatchObject({ isInstructor: true, isPinned: true });
     expect(meta).toEqual({ page: 2, limit: 20, total: 21, totalPages: 2 });
     expect(db.answer.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         skip: 20,
         take: 20,
-        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        orderBy: [{ isPinned: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
       }),
     );
   });
@@ -344,5 +354,48 @@ describe('questionService like / unlike error paths', () => {
     });
     expect(db.questionLike.createMany).not.toHaveBeenCalled();
     expect(db.questionLike.deleteMany).not.toHaveBeenCalled();
+  });
+});
+
+describe('questionService - course instructor access (BR-24)', () => {
+  it('lets the course instructor read and answer without being enrolled', async () => {
+    db.course.findFirst.mockResolvedValue({ id: 'course-1' });
+    db.enrollment.findUnique.mockResolvedValue(null);
+    db.question.findUnique.mockResolvedValue({
+      id: 'q-1',
+      userId: 'asker',
+      courseId: 'course-1',
+      course: { title: 'UX Foundation' },
+    });
+    db.answer.findMany.mockResolvedValue([]);
+    db.answer.count.mockResolvedValue(0);
+    db.answer.create.mockResolvedValue({
+      id: 'a-1',
+      content: 'Welcome!',
+      createdAt: new Date('2026-10-01T00:00:00Z'),
+      isPinned: false,
+      user: { id: 'teacher-u', fullName: 'Teacher', avatarUrl: null },
+      question: { course: { teacher: { userId: 'teacher-u' } } },
+    });
+    db.question.update.mockResolvedValue({ id: 'q-1' });
+    db.notification.create.mockResolvedValue({ id: 'n-1' });
+
+    await expect(questionService.listAnswers('teacher-u', 'q-1', {})).resolves.toMatchObject({
+      items: [],
+    });
+    const answer = await questionService.createAnswer('teacher-u', 'q-1', 'Welcome!');
+
+    expect(answer.isInstructor).toBe(true);
+    expect(db.enrollment.findUnique).not.toHaveBeenCalled();
+    expect(db.notification.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('still rejects a teacher of ANOTHER course who is not enrolled', async () => {
+    db.enrollment.findUnique.mockResolvedValue(null);
+    db.question.findUnique.mockResolvedValue({ courseId: 'course-1' });
+    await expect(questionService.likeQuestion('other-teacher', 'q-1')).rejects.toMatchObject({
+      status: 403,
+      code: 'NOT_ENROLLED',
+    });
   });
 });

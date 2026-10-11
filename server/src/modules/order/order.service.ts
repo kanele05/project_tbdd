@@ -80,10 +80,19 @@ async function runCheckout(
   input: CheckoutInput,
 ): Promise<CheckoutOutcome> {
   const cartLines = await tx.cartItem.findMany({
-    where: { userId, course: { isPublished: true } },
+    where: { userId, course: { status: 'PUBLISHED' } },
     orderBy: [{ addedAt: 'asc' }, { courseId: 'asc' }],
-    select: { courseId: true, course: { select: { title: true, priceCents: true } } },
+    select: {
+      courseId: true,
+      course: {
+        select: { title: true, priceCents: true, teacher: { select: { userId: true } } },
+      },
+    },
   });
+  // BR-23: giảng viên không mua khóa của chính mình (vd. thêm vào giỏ trước khi trở thành chủ khóa).
+  if (cartLines.some((line) => line.course.teacher.userId === userId)) {
+    throw ApiError.of('OWN_COURSE', 'Remove your own course from the cart to continue');
+  }
   // Khóa đã ghi danh (vd. mua song song ở 2 thiết bị) không bị tính tiền lần nữa.
   const alreadyEnrolled = new Set(
     (
@@ -160,16 +169,19 @@ export async function checkout(userId: string, input: CheckoutInput): Promise<Ch
 
 // ---------------------------------------------------------------- POST /courses/:id/enroll
 
-/** Ghi danh khóa MIỄN PHÍ: 404 · 422 `PAID_COURSE` (phải mua qua giỏ) · 409 `ALREADY_ENROLLED`. */
+/** Ghi danh khóa MIỄN PHÍ: 404 · 422 `OWN_COURSE` · 422 `PAID_COURSE` (phải mua qua giỏ) · 409 `ALREADY_ENROLLED`. */
 export async function enrollInFreeCourse(
   userId: string,
   courseId: string,
 ): Promise<EnrollmentStateDto> {
   const course = await prisma.course.findFirst({
-    where: { id: courseId, isPublished: true },
-    select: { id: true, priceCents: true },
+    where: { id: courseId, status: 'PUBLISHED' },
+    select: { id: true, priceCents: true, teacher: { select: { userId: true } } },
   });
   if (!course) throw ApiError.of('COURSE_NOT_FOUND', 'Course not found');
+  if (course.teacher.userId === userId) {
+    throw ApiError.of('OWN_COURSE', 'You cannot enroll in your own course');
+  }
   if (course.priceCents > 0) {
     throw ApiError.of('PAID_COURSE', 'This course is not free - add it to your cart to buy it');
   }

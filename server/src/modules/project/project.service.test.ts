@@ -18,6 +18,9 @@ const submissionRow = {
   imageUrl: '/uploads/cover.png',
   fileUrl: '/uploads/file.zip',
   createdAt: new Date('2026-09-01T00:00:00Z'),
+  grade: null,
+  feedback: null,
+  gradedAt: null,
   user: { id: 'u1', fullName: 'U', avatarUrl: null },
 };
 
@@ -32,6 +35,21 @@ describe('toSubmissionDto', () => {
     expect(dto.imageUrl).toMatch(/^https?:\/\/.+\/uploads\/cover\.png$/);
     expect(dto.createdAt).toBe('2026-09-01T00:00:00.000Z');
     expect(dto.user).toEqual({ id: 'u1', fullName: 'U', avatarUrl: null });
+    expect(dto).toMatchObject({ grade: null, feedback: null, gradedAt: null });
+  });
+
+  it('maps the teacher grade, feedback and gradedAt', () => {
+    const dto = toSubmissionDto({
+      ...submissionRow,
+      grade: 88,
+      feedback: 'Well done',
+      gradedAt: new Date('2026-09-02T00:00:00Z'),
+    });
+    expect(dto).toMatchObject({
+      grade: 88,
+      feedback: 'Well done',
+      gradedAt: '2026-09-02T00:00:00.000Z',
+    });
   });
 
   it('keeps a missing cover image as null and external URLs untouched', () => {

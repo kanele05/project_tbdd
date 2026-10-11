@@ -201,7 +201,7 @@ describe('loadCourseMaterial', () => {
     });
     expect(material.sections).toHaveLength(2);
     expect(db.course.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 'course-1', isPublished: true } }),
+      expect.objectContaining({ where: { id: 'course-1', status: 'PUBLISHED' } }),
     );
   });
 
@@ -478,7 +478,7 @@ describe('getRecommendations', () => {
 
     expect(db.course.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: { in: ids.slice(0, aiService.CANDIDATE_LIMIT) }, isPublished: true },
+        where: { id: { in: ids.slice(0, aiService.CANDIDATE_LIMIT) }, status: 'PUBLISHED' },
       }),
     );
   });

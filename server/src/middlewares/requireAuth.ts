@@ -2,7 +2,7 @@ import type { Request, RequestHandler } from 'express';
 
 import { ApiError } from '@/lib/ApiError';
 import { verifyToken } from '@/lib/jwt';
-import { isSessionActive } from '@/lib/sessionGuard';
+import { resolveActiveSession } from '@/lib/sessionGuard';
 import type { AuthUser } from '@/types/auth';
 
 function extractBearerToken(req: Request): string | null {
@@ -15,16 +15,24 @@ function extractBearerToken(req: Request): string | null {
 
 /**
  * Bắt buộc đăng nhập: thiếu / sai / hết hạn token, hoặc phiên (`sid`) đã bị thu hồi -> 401 `UNAUTHORIZED`.
- * Gán `req.user` (gồm `sessionId`).
+ * Gán `req.user` (gồm `sessionId`; `role` là vai trò hiện tại trong DB).
  */
 export const requireAuth: RequestHandler = async (req, _res, next) => {
+  // Đã xác thực ở middleware cấp mount (vd. `/teacher`, `/admin`) cùng request -> không kiểm tra phiên lần nữa.
+  if (req.user) {
+    next();
+    return;
+  }
   const token = extractBearerToken(req);
   const user = token ? verifyToken(token) : null;
-  if (!user || !(await isSessionActive(user.sessionId))) {
+  const session = user ? await resolveActiveSession(user.sessionId) : null;
+  if (!user || !session) {
     next(ApiError.unauthorized('Invalid or missing access token'));
     return;
   }
-  req.user = user;
+  // `role` lấy từ DB (qua sessionGuard, cache 30 s) chứ không tin claim trong JWT: đổi vai trò / khóa tài
+  // khoản có hiệu lực gần như ngay thay vì chờ access token hết hạn (15 phút).
+  req.user = { ...user, role: session.role };
   next();
 };
 

@@ -3,13 +3,15 @@ import { buildPaginationMeta, getPagination, type PaginationMeta } from '@/lib/p
 import { prisma } from '@/lib/prisma';
 import type { NotificationDto, NotificationType } from '@/types/dto';
 
-/** Cột `data` là JSON tự do -> chỉ giữ `courseId` / `questionId` dạng chuỗi (đúng PLAN §9.3). */
+/** Cột `data` là JSON tự do -> chỉ giữ `courseId` / `questionId` / `submissionId` / `reviewId` dạng chuỗi (PLAN §9.3, §2.4). */
 export function parseNotificationData(value: unknown): NotificationDto['data'] {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
   const record = value as Record<string, unknown>;
-  const data: { courseId?: string; questionId?: string } = {};
+  const data: NonNullable<NotificationDto['data']> = {};
   if (typeof record.courseId === 'string') data.courseId = record.courseId;
   if (typeof record.questionId === 'string') data.questionId = record.questionId;
+  if (typeof record.submissionId === 'string') data.submissionId = record.submissionId;
+  if (typeof record.reviewId === 'string') data.reviewId = record.reviewId;
   return Object.keys(data).length > 0 ? data : null;
 }
 

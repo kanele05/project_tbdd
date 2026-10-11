@@ -57,7 +57,7 @@ describe('GET /courses - search (BR-13)', () => {
     await createCourse({
       title: 'Design Systems Hidden',
       teacherId: t.profile.id,
-      isPublished: false,
+      status: 'ARCHIVED',
     });
 
     const res = await api.get(`${API}/courses`).query({ q: '  design   SYSTEMS ' });
@@ -270,7 +270,7 @@ describe('GET /courses/:id', () => {
   });
 
   it('returns 404 COURSE_NOT_FOUND for a missing or unpublished course', async () => {
-    const hidden = await createCourse({ isPublished: false });
+    const hidden = await createCourse({ status: 'ARCHIVED' });
 
     const missing = await api.get(`${API}/courses/does-not-exist`);
     const unpublished = await api.get(`${API}/courses/${hidden.id}`);
@@ -289,7 +289,7 @@ describe('GET /courses/:id/similar', () => {
     for (let i = 1; i <= 4; i += 1) {
       await createCourse({ categoryId: cat.id, title: `Same ${i}`, ratingAvg: i, ratingCount: 1 });
     }
-    await createCourse({ categoryId: cat.id, title: 'Hidden', isPublished: false, ratingAvg: 5 });
+    await createCourse({ categoryId: cat.id, title: 'Hidden', status: 'ARCHIVED', ratingAvg: 5 });
     await createCourse({ categoryId: otherCat.id, title: 'Elsewhere', ratingAvg: 5 });
 
     const res = await api.get(`${API}/courses/${base.id}/similar`);

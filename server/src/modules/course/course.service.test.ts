@@ -51,7 +51,7 @@ describe('escapeLikePattern', () => {
 
 describe('buildCourseWhere', () => {
   it('always restricts to published courses', () => {
-    expect(buildCourseWhere({})).toEqual({ isPublished: true, AND: [] });
+    expect(buildCourseWhere({})).toEqual({ status: 'PUBLISHED', AND: [] });
   });
 
   it('adds one case-insensitive OR group per search word over title/subtitle/tag/teacher', () => {
@@ -159,7 +159,7 @@ describe('getCourseDetail', () => {
       code: 'COURSE_NOT_FOUND',
     });
     expect(db.course.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 'nope', isPublished: true } }),
+      expect.objectContaining({ where: { id: 'nope', status: 'PUBLISHED' } }),
     );
   });
 });
@@ -257,7 +257,9 @@ describe('findCourseSummariesByIds', () => {
 
     expect(result.map((c) => c.id)).toEqual(['c', 'a']);
     expect(db.course.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: { in: ['c', 'missing', 'a'] }, isPublished: true } }),
+      expect.objectContaining({
+        where: { id: { in: ['c', 'missing', 'a'] }, status: 'PUBLISHED' },
+      }),
     );
   });
 });
@@ -362,7 +364,7 @@ describe('getSimilarCourses', () => {
     ]);
     expect(db.course.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { isPublished: true, categoryId: 'cat', id: { not: 'c1' } },
+        where: { status: 'PUBLISHED', categoryId: 'cat', id: { not: 'c1' } },
         take: 3,
       }),
     );

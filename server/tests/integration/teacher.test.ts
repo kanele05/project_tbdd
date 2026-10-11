@@ -34,7 +34,7 @@ describe('GET /teachers', () => {
     await createCourse({ teacherId: mid.profile.id, ratingAvg: 4, ratingCount: 5 });
     await createCourse({
       teacherId: mid.profile.id,
-      isPublished: false,
+      status: 'ARCHIVED',
       ratingAvg: 1,
       ratingCount: 9,
     });
@@ -64,7 +64,7 @@ describe('GET /teachers/:id', () => {
     const [s1, s2, viewer] = await Promise.all([createUser(), createUser(), createUser()]);
     const a = await createCourse({ teacherId: teacher.profile.id, ratingAvg: 4, ratingCount: 2 });
     const b = await createCourse({ teacherId: teacher.profile.id });
-    await createCourse({ teacherId: teacher.profile.id, isPublished: false });
+    await createCourse({ teacherId: teacher.profile.id, status: 'ARCHIVED' });
     await createEnrollment(s1.id, a.id);
     await createEnrollment(s1.id, b.id); // cùng 1 học viên -> chỉ tính 1
     await createEnrollment(s2.id, a.id);
@@ -130,7 +130,7 @@ describe('GET /teachers/:id/courses', () => {
     await createCourse({
       teacherId: teacher.profile.id,
       categoryId: second.id,
-      isPublished: false,
+      status: 'ARCHIVED',
     });
     await createBookmark(viewer.id, top.id);
 
@@ -166,7 +166,7 @@ describe('GET /teachers/:id/reviews', () => {
   it('lists reviews of the teacher courses, newest first, with the course reference', async () => {
     const teacher = await createTeacher();
     const course = await createCourse({ teacherId: teacher.profile.id, title: 'Reviewed' });
-    const hidden = await createCourse({ teacherId: teacher.profile.id, isPublished: false });
+    const hidden = await createCourse({ teacherId: teacher.profile.id, status: 'ARCHIVED' });
     const elsewhere = await createCourse();
     const [u1, u2, u3] = await Promise.all([createUser(), createUser(), createUser()]);
     await createReview(u1.id, course.id, {

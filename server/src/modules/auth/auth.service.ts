@@ -70,12 +70,18 @@ const loginUserSelect = {
   totpEnabledAt: true,
   totpSecretEnc: true,
   totpLastStep: true,
+  disabledAt: true,
 } as const;
 
 type LoginUser = NonNullable<Awaited<ReturnType<typeof findLoginUser>>>;
 
 function findLoginUser(where: { email: string } | { id: string }) {
   return prisma.user.findUnique({ where, select: loginUserSelect });
+}
+
+/** BR-28: tài khoản bị admin khóa không đăng nhập được (kiểm tra SAU khi mật khẩu đúng, không lộ cho người lạ). */
+function assertNotDisabled(user: { disabledAt: Date | null }): void {
+  if (user.disabledAt) throw ApiError.of('ACCOUNT_DISABLED', 'This account has been disabled');
 }
 
 function sentCode(): SentCodeDto {
@@ -232,6 +238,7 @@ export async function login(input: LoginInput, ctx: ClientContext): Promise<Logi
     found?.passwordHash ?? (await getDummyHash()),
   );
   if (!found || !matches) return rejectBadCredentials(found, input.email, ctx);
+  assertNotDisabled(found);
 
   if (!found.emailVerifiedAt) {
     await resetFailures(found);
@@ -259,6 +266,7 @@ export async function verifyTwoFactorLogin(
   if (!user?.totpEnabledAt) {
     throw ApiError.of('INVALID_CHALLENGE', 'Two-factor session expired, sign in again');
   }
+  assertNotDisabled(user);
   assertNotLocked(stateOf(user));
 
   const method = await verifySecondFactor(user, input);
@@ -287,6 +295,7 @@ async function completeLogin(
   clientDeviceName: string | undefined,
   method: 'password' | 'totp' | 'recovery_code' | 'email_verification',
 ): Promise<AuthSessionDto> {
+  assertNotDisabled(user);
   const started = await startSession(user, ctx, clientDeviceName);
   await recordAuthEvent({
     userId: user.id,

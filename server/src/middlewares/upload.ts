@@ -27,6 +27,8 @@ export const IMAGE_MIME_TYPES = ['image/png', 'image/jpeg'];
 export type UploadOptions = {
   maxSizeBytes?: number;
   allowedMimeTypes?: string[];
+  /** Thư mục con của `UPLOAD_DIR` (vd. `courses` -> `/uploads/courses/<tên file>`); chỉ chữ thường, số, `-`, `_`. */
+  subDir?: string;
 };
 
 /**
@@ -35,12 +37,20 @@ export type UploadOptions = {
  * cho avatar. Quá dung lượng -> 413 `FILE_TOO_LARGE`; sai loại -> 415 `UNSUPPORTED_FILE_TYPE`.
  */
 export function createUpload(options: UploadOptions = {}): multer.Multer {
-  const { maxSizeBytes = MAX_UPLOAD_BYTES, allowedMimeTypes = ALLOWED_MIME_TYPES } = options;
+  const {
+    maxSizeBytes = MAX_UPLOAD_BYTES,
+    allowedMimeTypes = ALLOWED_MIME_TYPES,
+    subDir,
+  } = options;
+  if (subDir !== undefined && !/^[a-z0-9_-]+$/.test(subDir)) {
+    throw new Error(`Invalid upload subDir "${subDir}"`);
+  }
+  const destination = subDir ? path.join(paths.uploads, subDir) : paths.uploads;
 
   const storage = multer.diskStorage({
     destination: (_req, _file, cb) => {
-      fs.mkdirSync(paths.uploads, { recursive: true });
-      cb(null, paths.uploads);
+      fs.mkdirSync(destination, { recursive: true });
+      cb(null, destination);
     },
     filename: (_req, file, cb) => {
       const ext = MIME_TO_EXT[file.mimetype] ?? path.extname(file.originalname).toLowerCase();
@@ -62,7 +72,7 @@ export function createUpload(options: UploadOptions = {}): multer.Multer {
 /** Instance mặc định: ≤ 10 MB, whitelist png/jpg/pdf/zip/txt. */
 export const upload = createUpload();
 
-/** URL tuyệt đối của file vừa upload (`req.file.filename`). */
-export function uploadedFileUrl(filename: string): string {
-  return toAbsoluteUrl(`/uploads/${filename}`);
+/** URL tuyệt đối của file vừa upload (`req.file.filename`); `subDir` trùng với option của `createUpload`. */
+export function uploadedFileUrl(filename: string, subDir?: string): string {
+  return toAbsoluteUrl(`/uploads/${subDir ? `${subDir}/` : ''}${filename}`);
 }

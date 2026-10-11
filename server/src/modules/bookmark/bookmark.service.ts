@@ -22,7 +22,7 @@ export async function listBookmarks(
   query: { page?: number; limit?: number },
 ): Promise<{ items: CourseSummaryDto[]; meta: PaginationMeta }> {
   const pagination = getPagination(query);
-  const where = { userId, course: { isPublished: true } };
+  const where = { userId, course: { status: 'PUBLISHED' } } as const;
   const [rows, total] = await Promise.all([
     prisma.bookmark.findMany({
       where,

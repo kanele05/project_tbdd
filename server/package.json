@@ -33,7 +33,8 @@
     "db:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
     "previews:dry-run": "tsx scripts/updateCoursePreviews.ts --external-manifest prisma/seed-data/externalCoursePreviewManifest.json",
-    "previews:apply": "tsx scripts/updateCoursePreviews.ts --external-manifest prisma/seed-data/externalCoursePreviewManifest.json --apply"
+    "previews:apply": "tsx scripts/updateCoursePreviews.ts --external-manifest prisma/seed-data/externalCoursePreviewManifest.json --apply",
+    "user:set-role": "tsx scripts/setUserRole.ts"
   },
   "dependencies": {
     "@google/genai": "^2.27.0",

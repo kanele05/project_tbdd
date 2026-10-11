@@ -50,7 +50,7 @@ async function loadBanners(): Promise<BannerDto[]> {
 /** BR-11: popular = `enrollmentCount` giảm dần; inspires = `isFeatured`. */
 async function loadCourses(onlyFeatured: boolean): Promise<CourseSummaryDto[]> {
   const rows = await prisma.course.findMany({
-    where: { isPublished: true, ...(onlyFeatured ? { isFeatured: true } : {}) },
+    where: { status: 'PUBLISHED', ...(onlyFeatured ? { isFeatured: true } : {}) },
     orderBy: buildCourseOrderBy('popular'),
     take: HOME_SECTION_SIZE,
     select: courseSummarySelect,

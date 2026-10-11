@@ -50,7 +50,7 @@ const lessonRow = {
   videoUrl: '/static/videos/sample.mp4',
   isPreview: false,
   sectionId: 'section-1',
-  section: { order: 1, courseId: 'course-1' },
+  section: { order: 1, courseId: 'course-1', course: { teacher: { userId: 'teacher-user' } } },
 };
 
 describe('lessonService.getCurriculum', () => {
@@ -121,6 +121,20 @@ describe('lessonService.getLesson (BR-01)', () => {
       isCompleted: false,
       nextLessonId: null, // bài kế tiếp bị khóa
     });
+    expect(db.enrollment.update).not.toHaveBeenCalled();
+  });
+
+  it('lets the course teacher and an admin watch any lesson without enrolling or recording progress', async () => {
+    db.lesson.findUnique.mockResolvedValue(lessonRow);
+    db.enrollment.findUnique.mockResolvedValue(null);
+    db.lessonProgress.findUnique.mockResolvedValue(null);
+    db.lesson.findFirst.mockResolvedValue({ id: 'lesson-3', isPreview: false });
+
+    const asTeacher = await lessonService.getLesson('teacher-user', 'lesson-2', 'TEACHER');
+    const asAdmin = await lessonService.getLesson('admin-1', 'lesson-2', 'ADMIN');
+
+    expect(asTeacher.nextLessonId).toBe('lesson-3');
+    expect(asAdmin.id).toBe('lesson-2');
     expect(db.enrollment.update).not.toHaveBeenCalled();
   });
 
@@ -280,6 +294,7 @@ describe('lessonService.saveProgress', () => {
 
 describe('lessonService.getCurriculum (signed-in user)', () => {
   const course = {
+    teacher: { userId: 'teacher-user' },
     sections: [
       {
         id: 's1',
@@ -314,5 +329,18 @@ describe('lessonService.getCurriculum (signed-in user)', () => {
     const result = await lessonService.getCurriculum('course-1', 'user-1');
 
     expect(result[0]?.lessons.every((l) => l.status === 'LOCKED')).toBe(true);
+  });
+
+  it('unlocks every lesson for the course teacher and for an admin without reading progress (BR-23)', async () => {
+    db.course.findFirst.mockResolvedValue(course);
+
+    const asTeacher = await lessonService.getCurriculum('course-1', 'teacher-user', 'TEACHER');
+    const asAdmin = await lessonService.getCurriculum('course-1', 'someone', 'ADMIN');
+
+    for (const result of [asTeacher, asAdmin]) {
+      expect(result[0]?.lessons.every((l) => l.status === 'UNLOCKED')).toBe(true);
+    }
+    expect(db.enrollment.findUnique).not.toHaveBeenCalled();
+    expect(db.lessonProgress.findMany).not.toHaveBeenCalled();
   });
 });

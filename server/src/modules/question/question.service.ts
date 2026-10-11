@@ -1,4 +1,6 @@
+import type { Prisma } from '@/generated/prisma/client';
 import { ApiError } from '@/lib/ApiError';
+import { isCourseTeacher } from '@/lib/courseOwnership';
 import { assertEnrolled, assertEnrolledInCourse } from '@/lib/enrollmentGuard';
 import { notify } from '@/lib/notify';
 import { buildPaginationMeta, getPagination, type PaginationMeta } from '@/lib/pagination';
@@ -13,14 +15,31 @@ function questionNotFound(): ApiError {
   return ApiError.of('QUESTION_NOT_FOUND', 'Question not found');
 }
 
-/** Tìm câu hỏi rồi kiểm tra người dùng đã ghi danh khóa của câu hỏi (✓E): 404 trước, 403 sau. */
+type QnaDb = Pick<Prisma.TransactionClient, 'enrollment' | 'course'>;
+
+/**
+ * Quyền xem / tương tác Q&A của khóa (BR-09, BR-24): giảng viên (chủ) của khóa luôn được vào, người khác
+ * phải đã ghi danh (403 `NOT_ENROLLED`). `mustExist`: khóa chưa chắc tồn tại -> 404 `COURSE_NOT_FOUND`.
+ */
+async function assertQnaAccess(
+  userId: string,
+  courseId: string,
+  options: { mustExist?: boolean; db?: QnaDb } = {},
+): Promise<void> {
+  const db = options.db ?? prisma;
+  if (await isCourseTeacher(userId, courseId, db)) return;
+  if (options.mustExist) await assertEnrolledInCourse(userId, courseId, db);
+  else await assertEnrolled(userId, courseId, db);
+}
+
+/** Tìm câu hỏi rồi kiểm tra quyền Q&A của khóa chứa nó (✓E hoặc giảng viên): 404 trước, 403 sau. */
 async function requireQuestionAccess(userId: string, questionId: string): Promise<void> {
   const question = await prisma.question.findUnique({
     where: { id: questionId },
     select: { courseId: true },
   });
   if (!question) throw questionNotFound();
-  await assertEnrolled(userId, question.courseId);
+  await assertQnaAccess(userId, question.courseId);
 }
 
 /** `GET /courses/:id/questions`: mới nhất trước, kèm `isLiked` của người xem. */
@@ -29,7 +48,7 @@ export async function listQuestions(
   courseId: string,
   query: Page,
 ): Promise<{ items: QuestionDto[]; meta: PaginationMeta }> {
-  await assertEnrolledInCourse(userId, courseId);
+  await assertQnaAccess(userId, courseId, { mustExist: true });
   const pagination = getPagination(query);
   const [rows, total] = await Promise.all([
     prisma.question.findMany({
@@ -65,11 +84,11 @@ export async function getQuestion(userId: string, questionId: string): Promise<Q
     select: { ...questionSelect(userId), courseId: true },
   });
   if (!row) throw questionNotFound();
-  await assertEnrolled(userId, row.courseId);
+  await assertQnaAccess(userId, row.courseId);
   return toQuestionDto(row);
 }
 
-/** `GET /questions/:id/answers`: cũ -> mới. */
+/** `GET /questions/:id/answers`: câu trả lời ghim (BR-24) đứng đầu, sau đó cũ -> mới. */
 export async function listAnswers(
   userId: string,
   questionId: string,
@@ -80,7 +99,7 @@ export async function listAnswers(
   const [rows, total] = await Promise.all([
     prisma.answer.findMany({
       where: { questionId },
-      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      orderBy: [{ isPinned: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
       skip: pagination.skip,
       take: pagination.take,
       select: answerSelect,
@@ -105,7 +124,7 @@ export function createAnswer(
       select: { id: true, userId: true, courseId: true, course: { select: { title: true } } },
     });
     if (!question) throw questionNotFound();
-    await assertEnrolled(userId, question.courseId, tx);
+    await assertQnaAccess(userId, question.courseId, { db: tx });
 
     const answer = await tx.answer.create({
       data: { questionId, userId, content },
@@ -137,7 +156,7 @@ export function likeQuestion(userId: string, questionId: string): Promise<LikeSt
       select: { courseId: true },
     });
     if (!question) throw questionNotFound();
-    await assertEnrolled(userId, question.courseId, tx);
+    await assertQnaAccess(userId, question.courseId, { db: tx });
 
     const { count } = await tx.questionLike.createMany({
       data: [{ userId, questionId }],
@@ -166,7 +185,7 @@ export function unlikeQuestion(userId: string, questionId: string): Promise<Like
       select: { courseId: true },
     });
     if (!question) throw questionNotFound();
-    await assertEnrolled(userId, question.courseId, tx);
+    await assertQnaAccess(userId, question.courseId, { db: tx });
 
     const { count } = await tx.questionLike.deleteMany({ where: { userId, questionId } });
     const updated =

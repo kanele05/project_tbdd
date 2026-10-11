@@ -1,4 +1,5 @@
 import { isTest } from '@/config/env';
+import type { Role } from '@/generated/prisma/client';
 import { TtlCache } from '@/lib/cache';
 import { prisma } from '@/lib/prisma';
 
@@ -11,6 +12,11 @@ import { prisma } from '@/lib/prisma';
  *    nếu sau này chạy nhiều instance thì độ trễ tối đa là 30 s (ngắn hơn nhiều so với TTL access token 15 phút);
  *  - phiên bị thu hồi (kết quả "không") không cache, luôn kiểm tra lại DB nên không bao giờ "sống lại".
  * Tắt khi test để dữ liệu test không bị "dính" cache.
+ *
+ * Cùng truy vấn này còn:
+ *  - trả `role` HIỆN TẠI trong DB (không tin `role` trong JWT) -> đổi vai trò (script `user:set-role`) có hiệu
+ *    lực tối đa sau 30 s thay vì chờ access token hết hạn; `requireAuth` gán `req.user.role` từ đây;
+ *  - từ chối phiên của tài khoản đã bị khóa (`User.disabledAt`, BR-28) dù phiên chưa kịp thu hồi.
  */
 const SESSION_CACHE_TTL_MS = 30_000;
 const sessionCache = new TtlCache({
@@ -21,15 +27,27 @@ const sessionCache = new TtlCache({
 
 const cacheKey = (sessionId: string): string => `session:${sessionId}`;
 
-export async function isSessionActive(sessionId: string, now = new Date()): Promise<boolean> {
-  if (sessionCache.get<true>(cacheKey(sessionId))) return true;
+export type ActiveSession = { role: Role };
+
+/** Phiên còn hiệu lực (chưa thu hồi / hết hạn, tài khoản không bị khóa) kèm vai trò hiện tại; ngược lại `null`. */
+export async function resolveActiveSession(
+  sessionId: string,
+  now = new Date(),
+): Promise<ActiveSession | null> {
+  const cached = sessionCache.get<ActiveSession>(cacheKey(sessionId));
+  if (cached) return cached;
   const session = await prisma.session.findFirst({
-    where: { id: sessionId, revokedAt: null, expiresAt: { gt: now } },
-    select: { id: true },
+    where: { id: sessionId, revokedAt: null, expiresAt: { gt: now }, user: { disabledAt: null } },
+    select: { user: { select: { role: true } } },
   });
-  if (!session) return false;
-  sessionCache.set(cacheKey(sessionId), true);
-  return true;
+  if (!session) return null;
+  const active: ActiveSession = { role: session.user.role };
+  sessionCache.set(cacheKey(sessionId), active);
+  return active;
+}
+
+export async function isSessionActive(sessionId: string, now = new Date()): Promise<boolean> {
+  return (await resolveActiveSession(sessionId, now)) !== null;
 }
 
 /** Gọi ngay sau khi thu hồi phiên để các request kế tiếp bị từ chối tức thì. */

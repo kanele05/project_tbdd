@@ -22,7 +22,11 @@ const { Prisma } = jest.requireActual('@/generated/prisma/client');
 
 beforeEach(() => {
   for (const model of Object.values(db)) for (const fn of Object.values(model)) fn.mockReset();
-  db.course.findFirst.mockResolvedValue({ id: 'c1', priceCents: 4900 });
+  db.course.findFirst.mockResolvedValue({
+    id: 'c1',
+    priceCents: 4900,
+    teacher: { userId: 'teacher-u' },
+  });
   db.enrollment.findUnique.mockResolvedValue(null);
   db.cartItem.findUnique.mockResolvedValue(null);
 });
@@ -51,7 +55,12 @@ describe('addToCart (BR-06)', () => {
     ],
     [
       'free',
-      () => db.course.findFirst.mockResolvedValue({ id: 'c1', priceCents: 0 }),
+      () =>
+        db.course.findFirst.mockResolvedValue({
+          id: 'c1',
+          priceCents: 0,
+          teacher: { userId: 'teacher-u' },
+        }),
       422,
       'FREE_COURSE',
     ],
@@ -67,8 +76,20 @@ describe('addToCart (BR-06)', () => {
     expect(db.cartItem.create).not.toHaveBeenCalled();
   });
 
+  it('rejects the course teacher with 422 OWN_COURSE (BR-23)', async () => {
+    await expect(addToCart('teacher-u', 'c1')).rejects.toMatchObject({
+      status: 422,
+      code: 'OWN_COURSE',
+    });
+    expect(db.cartItem.create).not.toHaveBeenCalled();
+  });
+
   it('reports ALREADY_ENROLLED before FREE_COURSE for an owned free course', async () => {
-    db.course.findFirst.mockResolvedValue({ id: 'c1', priceCents: 0 });
+    db.course.findFirst.mockResolvedValue({
+      id: 'c1',
+      priceCents: 0,
+      teacher: { userId: 'teacher-u' },
+    });
     db.enrollment.findUnique.mockResolvedValue({ id: 'e' });
     await expect(addToCart('u1', 'c1')).rejects.toMatchObject({ code: 'ALREADY_ENROLLED' });
   });

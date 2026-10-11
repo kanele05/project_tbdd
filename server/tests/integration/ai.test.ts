@@ -225,7 +225,7 @@ describe('GET /courses/:id/ai/summary', () => {
 
   it('returns 404 COURSE_NOT_FOUND for an unknown or unpublished course', async () => {
     const { student } = await setup();
-    const unpublished = await createCourse({ isPublished: false });
+    const unpublished = await createCourse({ status: 'ARCHIVED' });
 
     const unknown = await api.get(`${API}/courses/nope/ai/summary`).set(authHeader(student));
     const hidden = await api

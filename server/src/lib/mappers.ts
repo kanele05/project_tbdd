@@ -104,7 +104,7 @@ export const teacherSummarySelect = {
   user: { select: { fullName: true, avatarUrl: true } },
   // Chỉ khóa đã publish và đã có đánh giá mới tính điểm (PLAN.md §9.3, BR-11).
   courses: {
-    where: { isPublished: true, ratingCount: { gt: 0 } },
+    where: { status: 'PUBLISHED', ratingCount: { gt: 0 } },
     select: { ratingAvg: true, ratingCount: true },
   },
 } satisfies Prisma.TeacherProfileSelect;
@@ -170,7 +170,7 @@ export const categoryDtoSelect = {
   slug: true,
   icon: true,
   color: true,
-  _count: { select: { courses: { where: { isPublished: true } } } },
+  _count: { select: { courses: { where: { status: 'PUBLISHED' } } } },
 } satisfies Prisma.CategorySelect;
 
 export type CategoryRow = Prisma.CategoryGetPayload<{ select: typeof categoryDtoSelect }>;
@@ -212,6 +212,8 @@ export const reviewDtoSelect = {
   rating: true,
   content: true,
   createdAt: true,
+  teacherReply: true,
+  teacherRepliedAt: true,
   user: { select: userRefSelect },
 } satisfies Prisma.ReviewSelect;
 
@@ -227,6 +229,8 @@ export function toReviewDto(review: ReviewDtoRow): ReviewDto {
     content: review.content,
     createdAt: review.createdAt.toISOString(),
     user: toUserRef(review.user),
+    teacherReply: review.teacherReply ?? null,
+    teacherRepliedAt: review.teacherRepliedAt?.toISOString() ?? null,
   };
   if (review.course) dto.course = { id: review.course.id, title: review.course.title };
   return dto;

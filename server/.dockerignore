@@ -16,6 +16,7 @@ src/generated
 tests
 scripts/*
 !scripts/updateCoursePreviews.ts
+!scripts/setUserRole.ts
 Dockerfile
 .dockerignore
 README.md

@@ -1,4 +1,6 @@
+import type { Role } from '@/generated/prisma/client';
 import { ApiError } from '@/lib/ApiError';
+import { visibleCourseWhere } from '@/lib/courseVisibility';
 import { notify } from '@/lib/notify';
 import { prisma } from '@/lib/prisma';
 import { toAbsoluteUrl } from '@/lib/url';
@@ -12,6 +14,9 @@ import {
   type CurriculumViewer,
 } from './lesson.logic';
 import type { SaveProgressBody } from './lesson.schema';
+
+/** Chủ khóa / admin: mọi bài mở khóa, không có tiến độ. */
+const STAFF_VIEWER: CurriculumViewer = { ...ANONYMOUS_VIEWER, isEnrolled: true };
 
 function lessonNotFound(): ApiError {
   return ApiError.of('LESSON_NOT_FOUND', 'Lesson not found');
@@ -46,10 +51,12 @@ async function loadViewer(userId: string, courseId: string): Promise<CurriculumV
 export async function getCurriculum(
   courseId: string,
   userId?: string,
+  role?: Role,
 ): Promise<CurriculumSectionDto[]> {
   const course = await prisma.course.findFirst({
-    where: { id: courseId, isPublished: true },
+    where: visibleCourseWhere(courseId, userId ? { id: userId, role } : undefined),
     select: {
+      teacher: { select: { userId: true } },
       sections: {
         orderBy: { order: 'asc' },
         select: {
@@ -66,7 +73,13 @@ export async function getCurriculum(
   });
   if (!course) throw ApiError.of('COURSE_NOT_FOUND', 'Course not found');
 
-  const viewer = userId ? await loadViewer(userId, courseId) : ANONYMOUS_VIEWER;
+  // BR-23: chủ khóa và admin xem được mọi bài (không ghi tiến độ).
+  const isStaff = userId !== undefined && (role === 'ADMIN' || course.teacher.userId === userId);
+  const viewer = isStaff
+    ? STAFF_VIEWER
+    : userId
+      ? await loadViewer(userId, courseId)
+      : ANONYMOUS_VIEWER;
   return buildCurriculum(course.sections, viewer);
 }
 
@@ -96,7 +109,11 @@ async function findNextLessonId(
  * `GET /lessons/:id` (BR-01): đã ghi danh HOẶC bài preview mới được xem; ngược lại 403 `NOT_ENROLLED`
  * và KHÔNG lộ `videoUrl`. Đã ghi danh -> ghi nhận bài đang học (`lastLessonId`, `lastAccessedAt`).
  */
-export async function getLesson(userId: string, lessonId: string): Promise<LessonDetailDto> {
+export async function getLesson(
+  userId: string,
+  lessonId: string,
+  role?: Role,
+): Promise<LessonDetailDto> {
   const lesson = await prisma.lesson.findUnique({
     where: { id: lessonId },
     select: {
@@ -107,7 +124,13 @@ export async function getLesson(userId: string, lessonId: string): Promise<Lesso
       videoUrl: true,
       isPreview: true,
       sectionId: true,
-      section: { select: { order: true, courseId: true } },
+      section: {
+        select: {
+          order: true,
+          courseId: true,
+          course: { select: { teacher: { select: { userId: true } } } },
+        },
+      },
     },
   });
   if (!lesson) throw lessonNotFound();
@@ -117,7 +140,9 @@ export async function getLesson(userId: string, lessonId: string): Promise<Lesso
     where: { userId_courseId: { userId, courseId } },
     select: { id: true },
   });
-  if (!enrollment && !lesson.isPreview) throw notEnrolled();
+  // BR-23: chủ khóa và admin xem được mọi bài mà không cần ghi danh (không ghi tiến độ / lastLessonId).
+  const isStaff = role === 'ADMIN' || lesson.section.course.teacher.userId === userId;
+  if (!enrollment && !isStaff && !lesson.isPreview) throw notEnrolled();
 
   const [progress, nextLessonId] = await Promise.all([
     prisma.lessonProgress.findUnique({
@@ -131,7 +156,7 @@ export async function getLesson(userId: string, lessonId: string): Promise<Lesso
         sectionOrder: lesson.section.order,
         courseId,
       },
-      enrollment !== null,
+      enrollment !== null || isStaff,
     ),
   ]);
 

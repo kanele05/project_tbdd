@@ -71,20 +71,21 @@ Sau đó `npm run db:migrate:deploy` (áp migration) và `npm run prisma:seed`. 
 
 ## 5. Scripts
 
-| Script                                          | Mô tả                                                                                                         |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                                   | `tsx watch src/server.ts` (tự reload)                                                                         |
-| `npm run build` / `npm start`                   | Biên dịch `tsc` + `tsc-alias` ra `dist/`, chạy `node dist/server.js`                                          |
-| `npm run typecheck` / `lint` / `format`         | `tsc --noEmit` · ESLint (flat config) · Prettier                                                              |
-| `npm test`                                      | Toàn bộ test (unit + integration) tuần tự (`--runInBand`) trên DB `elearning_test`                            |
-| `npm run test:unit`                             | Chỉ unit test (`src/**`), **không cần DB**                                                                    |
-| `npm run test:integration` / `test:coverage`    | Integration test · kèm coverage                                                                               |
-| `npm run db:migrate -- --name <ten>`            | `prisma migrate dev` - tạo + áp migration mới (đổi `prisma/schema.prisma`)                                    |
-| `npm run db:migrate:deploy` / `db:migrate:test` | Áp migration lên DB dev / test                                                                                |
-| `npm run db:reset`                              | `prisma migrate reset --force` (xóa sạch DB dev; chỉ người thật chạy - Prisma CLI chặn khi chạy bởi AI agent) |
-| `npm run db:seed` / `prisma:seed`               | Seed                                                                                                          |
-| `npm run db:studio`                             | Prisma Studio                                                                                                 |
-| `npm run previews:dry-run` / `previews:apply`   | Cập nhật video xem thử YouTube (dry-run / ghi DB) - xem mục 5.1                                               |
+| Script                                            | Mô tả                                                                                                         |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                                     | `tsx watch src/server.ts` (tự reload)                                                                         |
+| `npm run build` / `npm start`                     | Biên dịch `tsc` + `tsc-alias` ra `dist/`, chạy `node dist/server.js`                                          |
+| `npm run typecheck` / `lint` / `format`           | `tsc --noEmit` · ESLint (flat config) · Prettier                                                              |
+| `npm test`                                        | Toàn bộ test (unit + integration) tuần tự (`--runInBand`) trên DB `elearning_test`                            |
+| `npm run test:unit`                               | Chỉ unit test (`src/**`), **không cần DB**                                                                    |
+| `npm run test:integration` / `test:coverage`      | Integration test · kèm coverage                                                                               |
+| `npm run db:migrate -- --name <ten>`              | `prisma migrate dev` - tạo + áp migration mới (đổi `prisma/schema.prisma`)                                    |
+| `npm run db:migrate:deploy` / `db:migrate:test`   | Áp migration lên DB dev / test                                                                                |
+| `npm run db:reset`                                | `prisma migrate reset --force` (xóa sạch DB dev; chỉ người thật chạy - Prisma CLI chặn khi chạy bởi AI agent) |
+| `npm run db:seed` / `prisma:seed`                 | Seed                                                                                                          |
+| `npm run db:studio`                               | Prisma Studio                                                                                                 |
+| `npm run previews:dry-run` / `previews:apply`     | Cập nhật video xem thử YouTube (dry-run / ghi DB) - xem mục 5.1                                               |
+| `npm run user:set-role -- --email <e> --role <R>` | Đổi vai trò tài khoản (tạo ADMIN) - dry-run, thêm `--apply` để ghi - xem mục 5.2                              |
 
 **Test:** `tests/globalSetup.ts` chạy `prisma migrate deploy` + TRUNCATE mọi bảng trên DB test (từ chối chạy nếu tên DB không chứa `test`); mỗi file integration test gọi `resetDb()` trong `beforeEach`. Jest chạy với `--experimental-vm-modules` (bắt buộc để Prisma 7 nạp WASM query compiler). Cache server bị tắt khi `NODE_ENV=test`.
 
@@ -110,6 +111,26 @@ docker compose exec api /opt/tools/node_modules/.bin/tsx scripts/updateCoursePre
 ```
 
 Quy tắc: luôn dry-run và backup trước; **không** chạy `db:seed` / `SEED_FORCE=1` trên production (seed xóa toàn bộ dữ liệu người dùng); manifest nằm trong image nên muốn đổi đoạn video phải build + deploy image mới trước khi chạy updater. Script này (kèm `prisma/`, `src/`, `tsconfig.json`) đã được `Dockerfile` đưa vào image.
+
+### 5.2 Nâng quyền admin / giảng viên (`user:set-role`, BR-30)
+
+Không có API đăng ký ADMIN. Admin chỉ được tạo bằng seed (dev: `admin@example.com`, cùng mật khẩu với tài khoản mẫu) hoặc script này. Script chỉ nhận tài khoản **đã xác minh email**, mặc định **dry-run** (chỉ in `fromRole` → `toRole`), thêm `--apply` mới ghi DB; nâng lên `TEACHER` tự tạo `TeacherProfile` rỗng nếu chưa có. Vai trò mới có hiệu lực tối đa sau 30 giây (API đọc role từ DB, không tin claim trong access token).
+
+**Dev** (từ `server/`):
+
+```bash
+npm run user:set-role -- --email someone@example.com --role ADMIN           # dry-run
+npm run user:set-role -- --email someone@example.com --role ADMIN --apply   # ghi DB
+```
+
+**Production** (trên VPS, thư mục chứa `docker-compose.yml`; gọi `tsx` ở `/opt/tools` như mục 5.1):
+
+```bash
+docker compose exec api /opt/tools/node_modules/.bin/tsx scripts/setUserRole.ts --email someone@example.com --role ADMIN
+docker compose exec api /opt/tools/node_modules/.bin/tsx scripts/setUserRole.ts --email someone@example.com --role ADMIN --apply
+```
+
+Quy tắc: tài khoản phải đăng ký + xác minh email trước; luôn dry-run trước; script nằm trong image (`Dockerfile` + `.dockerignore`) nên chỉ cần build + deploy image mới trước khi chạy lần đầu.
 
 ## 6. Cấu trúc
 

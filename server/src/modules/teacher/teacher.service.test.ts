@@ -198,7 +198,7 @@ describe('getTopTeachers / listTeachers (BR-11)', () => {
     expect(top.map((t) => t.id)).toEqual(['high', 'mid']);
     expect(top[0]).toMatchObject({ ratingAvg: 4.7, ratingCount: 10 });
     expect(db.teacherProfile.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { courses: { some: { isPublished: true } } } }),
+      expect.objectContaining({ where: { courses: { some: { status: 'PUBLISHED' } } } }),
     );
   });
 
@@ -301,7 +301,7 @@ describe('getTeacherCourses', () => {
     ]);
     expect(groups[1]?.courses[0]?.isBookmarked).toBe(true);
     expect(db.course.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { teacherId: 't1', isPublished: true }, take: 100 }),
+      expect.objectContaining({ where: { teacherId: 't1', status: 'PUBLISHED' }, take: 100 }),
     );
   });
 
@@ -331,6 +331,8 @@ describe('listTeacherReviews', () => {
         createdAt: new Date('2026-10-01T00:00:00Z'),
         user: { id: 'u', fullName: 'Student', avatarUrl: null },
         course: { id: 'c1', title: 'UX Foundation' },
+        teacherReply: 'Thank you!',
+        teacherRepliedAt: new Date('2026-10-02T00:00:00Z'),
       },
     ]);
 
@@ -344,12 +346,14 @@ describe('listTeacherReviews', () => {
         createdAt: '2026-10-01T00:00:00.000Z',
         user: { id: 'u', fullName: 'Student', avatarUrl: null },
         course: { id: 'c1', title: 'UX Foundation' },
+        teacherReply: 'Thank you!',
+        teacherRepliedAt: '2026-10-02T00:00:00.000Z',
       },
     ]);
     expect(meta).toEqual({ page: 2, limit: 10, total: 11, totalPages: 2 });
     expect(db.review.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { course: { teacherId: 't1', isPublished: true } },
+        where: { course: { teacherId: 't1', status: 'PUBLISHED' } },
         skip: 10,
         take: 10,
       }),

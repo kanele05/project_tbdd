@@ -41,7 +41,11 @@ export function createApp(): Express {
   app.use('/static', express.static(paths.static, staticOptions));
   app.use('/uploads', express.static(paths.uploads, staticOptions));
 
-  app.use(API_PREFIX, apiRateLimiter, express.json({ limit: '100kb' }), createApiRouter());
+  app.use(API_PREFIX, apiRateLimiter);
+  // Bản sửa đổi khóa học (PUT /teacher/courses/:id/revision) chứa cả chương trình học -> cho phép body lớn hơn.
+  // Parser chạy trước nên parser 100 kb bên dưới thấy body đã được đọc và bỏ qua.
+  app.use(`${API_PREFIX}/teacher`, express.json({ limit: '1mb' }));
+  app.use(API_PREFIX, express.json({ limit: '100kb' }), createApiRouter());
 
   app.use(notFound);
   app.use(errorHandler);

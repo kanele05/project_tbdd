@@ -7,7 +7,7 @@ import type { CartDto } from '@/types/dto';
 /** Giỏ hàng của người dùng, mới thêm trước; `totalCents` = Σ giá HIỆN TẠI của các khóa (BR-07). */
 export async function getCart(userId: string): Promise<CartDto> {
   const rows = await prisma.cartItem.findMany({
-    where: { userId, course: { isPublished: true } },
+    where: { userId, course: { status: 'PUBLISHED' } },
     orderBy: [{ addedAt: 'desc' }, { courseId: 'asc' }],
     select: { addedAt: true, course: { select: courseSummarySelect } },
   });
@@ -24,17 +24,21 @@ export async function getCart(userId: string): Promise<CartDto> {
 
 /**
  * BR-06: 404 khóa không tồn tại · 409 `ALREADY_ENROLLED` · 422 `FREE_COURSE` (ghi danh trực tiếp)
- * · 409 `ALREADY_IN_CART`.
+ * · 409 `ALREADY_IN_CART` · 422 `OWN_COURSE` (khóa của chính giảng viên).
  */
 export async function addToCart(
   userId: string,
   courseId: string,
 ): Promise<{ courseId: string; addedAt: string }> {
   const course = await prisma.course.findFirst({
-    where: { id: courseId, isPublished: true },
-    select: { id: true, priceCents: true },
+    where: { id: courseId, status: 'PUBLISHED' },
+    select: { id: true, priceCents: true, teacher: { select: { userId: true } } },
   });
   if (!course) throw ApiError.of('COURSE_NOT_FOUND', 'Course not found');
+  // BR-23: giảng viên không mua khóa của chính mình.
+  if (course.teacher.userId === userId) {
+    throw ApiError.of('OWN_COURSE', 'You cannot buy your own course');
+  }
 
   const [enrollment, inCart] = await Promise.all([
     prisma.enrollment.findUnique({

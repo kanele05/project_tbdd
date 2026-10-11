@@ -184,3 +184,84 @@ export function newDeviceNotification(
   const t = COPY[lang].newDevice;
   return { title: t.notificationTitle, body: t.notificationBody(deviceName) };
 }
+
+/* ------------------------- Kết quả duyệt khóa học (TA-03, BR-27) ------------------------- */
+
+export type CourseDecisionParams = {
+  fullName: string;
+  courseTitle: string;
+  /** `revision` = bản sửa đổi của khóa đã xuất bản. */
+  target: 'course' | 'revision';
+  decision: 'APPROVED' | 'REJECTED';
+  /** Lý do từ chối (bắt buộc khi `REJECTED`). */
+  reason?: string;
+};
+
+const DECISION_COPY = {
+  en: {
+    greeting: (name: string) => `Hi ${name},`,
+    subject: (p: CourseDecisionParams) =>
+      p.decision === 'APPROVED'
+        ? p.target === 'course'
+          ? `Your course was approved - ${APP_NAME}`
+          : `Your course changes were approved - ${APP_NAME}`
+        : p.target === 'course'
+          ? `Your course was not approved - ${APP_NAME}`
+          : `Your course changes were not approved - ${APP_NAME}`,
+    body: (p: CourseDecisionParams) =>
+      p.decision === 'APPROVED'
+        ? p.target === 'course'
+          ? `Your course "${p.courseTitle}" has been approved and is now published.`
+          : `The changes you submitted for "${p.courseTitle}" have been approved and are now live.`
+        : p.target === 'course'
+          ? `Your course "${p.courseTitle}" was not approved.`
+          : `The changes you submitted for "${p.courseTitle}" were not approved.`,
+    reason: (reason: string) => `Reason from the reviewer: ${reason}`,
+    footerApproved: 'Thank you for teaching with us.',
+    footerRejected: 'Update your course and submit it again whenever you are ready.',
+  },
+  vi: {
+    greeting: (name: string) => `Xin chào ${name},`,
+    subject: (p: CourseDecisionParams) =>
+      p.decision === 'APPROVED'
+        ? p.target === 'course'
+          ? `Khóa học của bạn đã được duyệt - ${APP_NAME}`
+          : `Bản sửa đổi khóa học của bạn đã được duyệt - ${APP_NAME}`
+        : p.target === 'course'
+          ? `Khóa học của bạn chưa được duyệt - ${APP_NAME}`
+          : `Bản sửa đổi khóa học của bạn chưa được duyệt - ${APP_NAME}`,
+    body: (p: CourseDecisionParams) =>
+      p.decision === 'APPROVED'
+        ? p.target === 'course'
+          ? `Khóa học "${p.courseTitle}" của bạn đã được duyệt và đang được xuất bản.`
+          : `Các thay đổi bạn gửi cho khóa "${p.courseTitle}" đã được duyệt và đang có hiệu lực.`
+        : p.target === 'course'
+          ? `Khóa học "${p.courseTitle}" của bạn chưa được duyệt.`
+          : `Các thay đổi bạn gửi cho khóa "${p.courseTitle}" chưa được duyệt.`,
+    reason: (reason: string) => `Lý do từ người duyệt: ${reason}`,
+    footerApproved: 'Cảm ơn bạn đã giảng dạy cùng chúng tôi.',
+    footerRejected: 'Hãy chỉnh sửa khóa học và gửi duyệt lại khi bạn sẵn sàng.',
+  },
+} as const;
+
+/**
+ * Email báo kết quả duyệt khóa / bản sửa đổi cho giảng viên. Tài khoản chưa lưu ngôn ngữ ưa thích nên
+ * `'both'` gộp tiếng Việt + tiếng Anh vào cùng một thư.
+ */
+export function courseDecisionMail(
+  lang: Lang | 'both',
+  params: CourseDecisionParams,
+): RenderedMail {
+  const langs: Lang[] = lang === 'both' ? ['vi', 'en'] : [lang];
+  const copies = langs.map((l) => DECISION_COPY[l]);
+  const reason = params.decision === 'REJECTED' ? params.reason?.trim() : undefined;
+
+  return render({
+    subject: copies.map((c) => c.subject(params)).join(' / '),
+    greeting: copies.map((c) => c.greeting(params.fullName)).join(' / '),
+    paragraphs: copies.flatMap((c) => [c.body(params), ...(reason ? [c.reason(reason)] : [])]),
+    footer: copies
+      .map((c) => (params.decision === 'APPROVED' ? c.footerApproved : c.footerRejected))
+      .join(' '),
+  });
+}

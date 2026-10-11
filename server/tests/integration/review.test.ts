@@ -65,6 +65,8 @@ describe('GET /courses/:id/reviews', () => {
       content: 'Newest review of the three.',
       createdAt: '2026-09-03T00:00:00.000Z',
       user: { id: b.id, fullName: 'Test User', avatarUrl: null },
+      teacherReply: null,
+      teacherRepliedAt: null,
     });
     expect(res.body.meta).toEqual({
       page: 1,
@@ -189,6 +191,8 @@ describe('PUT /courses/:id/reviews/me', () => {
       content: 'Solid content and clear explanations.',
       createdAt: expect.any(String),
       user: { id: user.id, fullName: 'Test User', avatarUrl: null },
+      teacherReply: null,
+      teacherRepliedAt: null,
     });
     const stored = await prisma.course.findUniqueOrThrow({ where: { id: course.id } });
     expect(stored.ratingCount).toBe(1);

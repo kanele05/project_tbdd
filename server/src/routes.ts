@@ -1,7 +1,11 @@
 import { type RequestHandler, Router } from 'express';
 
+import { requireAuth } from '@/middlewares/requireAuth';
+import { requireRole } from '@/middlewares/requireRole';
+
 /**
- * [đường dẫn gắn dưới /api/v1, tên thư mục module, ...middleware áp dụng cho cả module]
+ * [đường dẫn gắn dưới /api/v1, tên module, ...middleware áp dụng cho cả module]
+ * Tên module là `<thư mục>` (file `<thư mục>.routes.ts`) hoặc `<thư mục>/<tên file>` (file `<tên file>.routes.ts`).
  */
 type ModuleMount = readonly [
   mountPath: string,
@@ -27,6 +31,11 @@ type ModuleMount = readonly [
  *  Sau đó: viết test tại tests/integration/<tên>.test.ts và cập nhật PLAN.md §9 (và mobile/src/types/api.ts nếu đổi DTO).
  * ============================================================================
  */
+/** Mọi route giảng viên (`/teacher/*`, `/me/teacher-profile`): đăng nhập + role TEACHER (BR-23). */
+const TEACHER_ONLY: readonly RequestHandler[] = [requireAuth, requireRole('TEACHER')];
+/** Mọi route quản trị (`/admin/*`): đăng nhập + role ADMIN (BR-23). */
+const ADMIN_ONLY: readonly RequestHandler[] = [requireAuth, requireRole('ADMIN')];
+
 const MODULES: readonly ModuleMount[] = [
   ['/health', 'health'],
   ['/auth', 'auth'],
@@ -52,14 +61,24 @@ const MODULES: readonly ModuleMount[] = [
   ['/', 'like'],
   // Module AI (Gemini; gắn ở gốc, khai báo đầy đủ đường dẫn trong router):
   ['/', 'ai'],
+  // ------------------------------------------------------------------ Giảng viên & Quản trị (PLAN §2.4)
+  // Mỗi mount đã gồm requireAuth + requireRole -> router bên trong KHÔNG cần lặp lại, chỉ khai báo route
+  // (và guard chủ khóa: `assertCourseOwner` trong service). Mỗi agent chỉ sửa file trong thư mục module của mình.
+  ['/teacher/ai', 'ai/courseDraft', ...TEACHER_ONLY], // POST /teacher/ai/course-draft (TA-05)
+  ['/teacher', 'studio', ...TEACHER_ONLY], // khóa/chương/bài/duyệt/bản sửa đổi/upload ảnh (TA-02)
+  ['/teacher', 'teaching', ...TEACHER_ONLY], // stats, bài nộp + chấm, phản hồi review, ghim Q&A (TA-04)
+  ['/me/teacher-profile', 'studio/teacherProfile', ...TEACHER_ONLY], // GET/PATCH hồ sơ giảng viên (TA-02)
+  ['/admin/courses', 'ai/courseReview', ...ADMIN_ONLY], // GET /admin/courses/:id/ai-review (TA-05)
+  ['/admin', 'admin', ...ADMIN_ONLY], // hàng chờ, duyệt, người dùng, dashboard (TA-03)
 ];
 
 function loadRouter(moduleName: string): Router {
   // Tải theo tên thư mục để mỗi module tự đăng ký bằng 1 dòng (không cần import ở đây).
+  const [dir, file = dir] = moduleName.split('/');
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const loaded = require(`./modules/${moduleName}/${moduleName}.routes`) as { router?: Router };
+  const loaded = require(`./modules/${dir}/${file}.routes`) as { router?: Router };
   if (!loaded.router) {
-    throw new Error(`Module "${moduleName}" must export "router" from ${moduleName}.routes.ts`);
+    throw new Error(`Module "${moduleName}" must export "router" from its ${file}.routes.ts`);
   }
   return loaded.router;
 }

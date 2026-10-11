@@ -46,7 +46,7 @@ describe('PUT /courses/:id/bookmark', () => {
 
   it('returns 404 for an unpublished course', async () => {
     const user = await createUser();
-    const course = await createCourse({ isPublished: false });
+    const course = await createCourse({ status: 'ARCHIVED' });
     const res = await api.put(`${API}/courses/${course.id}/bookmark`).set(authHeader(user));
     expect(res.status).toBe(404);
   });
@@ -159,7 +159,7 @@ describe('GET /me/bookmarks', () => {
 
   it('hides unpublished courses', async () => {
     const user = await createUser();
-    const hidden = await createCourse({ isPublished: false });
+    const hidden = await createCourse({ status: 'ARCHIVED' });
     await createBookmark(user.id, hidden.id);
 
     const res = await api.get(`${API}/me/bookmarks`).set(authHeader(user));

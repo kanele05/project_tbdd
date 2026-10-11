@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
 import express, { type Express, Router } from 'express';
 import request from 'supertest';
 import { z } from 'zod';
@@ -9,12 +12,13 @@ import { errorHandler } from '@/middlewares/errorHandler';
 import { notFound } from '@/middlewares/notFound';
 import { createRateLimiter } from '@/middlewares/rateLimit';
 import { getAuthUser, optionalAuth, requireAuth } from '@/middlewares/requireAuth';
-import { createUpload } from '@/middlewares/upload';
+import { requireRole } from '@/middlewares/requireRole';
+import { createUpload, uploadedFileUrl } from '@/middlewares/upload';
 import { validate } from '@/middlewares/validate';
 
-const mockIsSessionActive = jest.fn();
+const mockResolveSession = jest.fn();
 jest.mock('@/lib/sessionGuard', () => ({
-  isSessionActive: (...args: unknown[]) => mockIsSessionActive(...args),
+  resolveActiveSession: (...args: unknown[]) => mockResolveSession(...args),
 }));
 
 function buildApp(setup: (router: Router) => void): Express {
@@ -174,26 +178,26 @@ describe('requireAuth / optionalAuth', () => {
   const token = signAccessToken({ id: 'user-1', role: 'STUDENT', sessionId: 'sess-1' });
 
   beforeEach(() => {
-    mockIsSessionActive.mockReset();
-    mockIsSessionActive.mockResolvedValue(true);
+    mockResolveSession.mockReset();
+    mockResolveSession.mockResolvedValue({ role: 'STUDENT' });
   });
 
   it('requireAuth accepts a valid Bearer token and exposes the session id', async () => {
     const res = await request(app).get('/private').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ id: 'user-1', sid: 'sess-1' });
-    expect(mockIsSessionActive).toHaveBeenCalledWith('sess-1');
+    expect(mockResolveSession).toHaveBeenCalledWith('sess-1');
   });
 
   it('requireAuth returns 401 when the session of a valid token was revoked', async () => {
-    mockIsSessionActive.mockResolvedValue(false);
+    mockResolveSession.mockResolvedValue(null);
     const res = await request(app).get('/private').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(401);
     expect(res.body.error.code).toBe('UNAUTHORIZED');
   });
 
   it('optionalAuth also rejects a token whose session was revoked', async () => {
-    mockIsSessionActive.mockResolvedValue(false);
+    mockResolveSession.mockResolvedValue(null);
     const res = await request(app).get('/public').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(401);
   });
@@ -217,6 +221,40 @@ describe('requireAuth / optionalAuth', () => {
   });
 });
 
+describe('requireRole', () => {
+  const app = buildApp((r) => {
+    r.get(
+      '/teacher',
+      requireAuth,
+      requireRole('TEACHER'),
+      (req, res) => void res.json({ role: getAuthUser(req).role }),
+    );
+    r.get('/no-auth', requireRole('ADMIN'), (_req, res) => void res.json({ ok: true }));
+  });
+  const token = signAccessToken({ id: 'user-1', role: 'STUDENT', sessionId: 'sess-1' });
+
+  beforeEach(() => mockResolveSession.mockReset());
+
+  it('returns 403 FORBIDDEN when the current role is not allowed', async () => {
+    mockResolveSession.mockResolvedValue({ role: 'STUDENT' });
+    const res = await request(app).get('/teacher').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(403);
+    expect(res.body.error.code).toBe('FORBIDDEN');
+  });
+
+  it('uses the role from the database, not the stale JWT claim', async () => {
+    mockResolveSession.mockResolvedValue({ role: 'TEACHER' }); // token còn ghi STUDENT
+    const res = await request(app).get('/teacher').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ role: 'TEACHER' });
+  });
+
+  it('returns 401 when used without requireAuth / without a user', async () => {
+    const res = await request(app).get('/no-auth');
+    expect(res.status).toBe(401);
+  });
+});
+
 describe('rate limiter', () => {
   it('returns 429 RATE_LIMITED after the limit is exceeded', async () => {
     const limiter = createRateLimiter({ limit: 2, skip: false });
@@ -228,6 +266,27 @@ describe('rate limiter', () => {
     const blocked = await request(app).get('/limited');
     expect(blocked.status).toBe(429);
     expect(blocked.body.error.code).toBe('RATE_LIMITED');
+  });
+});
+
+describe('upload subDir', () => {
+  it('stores files in a sub-folder of the upload dir and rejects unsafe folder names', async () => {
+    const upload = createUpload({ allowedMimeTypes: ['text/plain'], subDir: 'unit-test-sub' });
+    const app = buildApp((r) =>
+      r.post('/upload', upload.single('file'), (req, res) => {
+        res.json({ filename: req.file?.filename, destination: req.file?.destination });
+      }),
+    );
+    const res = await request(app)
+      .post('/upload')
+      .attach('file', Buffer.from('hi'), { filename: 'a.txt', contentType: 'text/plain' });
+    expect(res.status).toBe(200);
+    expect(path.basename(String(res.body.destination))).toBe('unit-test-sub');
+    expect(res.body.filename).toMatch(/\.txt$/);
+    expect(uploadedFileUrl('x.png', 'courses')).toMatch(/\/uploads\/courses\/x\.png$/);
+    fs.rmSync(String(res.body.destination), { recursive: true, force: true });
+
+    expect(() => createUpload({ subDir: '../evil' })).toThrow();
   });
 });
 

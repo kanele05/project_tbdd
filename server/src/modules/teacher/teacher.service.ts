@@ -52,7 +52,7 @@ export function compareTeachers(a: TeacherSummaryDto, b: TeacherSummaryDto): num
  */
 async function rankTeachers(): Promise<TeacherSummaryDto[]> {
   const rows = await prisma.teacherProfile.findMany({
-    where: { courses: { some: { isPublished: true } } },
+    where: { courses: { some: { status: 'PUBLISHED' } } },
     select: teacherSummarySelect,
   });
   return rows.map(toTeacherSummary).sort(compareTeachers);
@@ -91,7 +91,7 @@ async function countDistinctStudents(teacherId: string): Promise<number> {
     SELECT COUNT(DISTINCT e."userId") AS count
     FROM "Enrollment" e
     JOIN "Course" c ON c."id" = e."courseId"
-    WHERE c."teacherId" = ${teacherId} AND c."isPublished" = true`;
+    WHERE c."teacherId" = ${teacherId} AND c."status" = 'PUBLISHED'`;
   return Number(rows[0]?.count ?? 0);
 }
 
@@ -107,7 +107,7 @@ export async function getTeacherDetail(
   if (!teacher) throw teacherNotFound();
 
   const [courseCount, studentCount, followerCount, follow] = await Promise.all([
-    prisma.course.count({ where: { teacherId, isPublished: true } }),
+    prisma.course.count({ where: { teacherId, status: 'PUBLISHED' } }),
     countDistinctStudents(teacherId),
     prisma.follow.count({ where: { teacherId } }),
     userId
@@ -175,7 +175,7 @@ export async function getTeacherCourses(
   if (!teacher) throw teacherNotFound();
 
   const rows = await prisma.course.findMany({
-    where: { teacherId, isPublished: true },
+    where: { teacherId, status: 'PUBLISHED' },
     orderBy: [{ category: { order: 'asc' } }, { enrollmentCount: 'desc' }, { id: 'asc' }],
     take: MAX_TEACHER_COURSES,
     select: { ...courseSummarySelect, category: { select: { id: true, name: true } } },
@@ -206,7 +206,7 @@ export async function listTeacherReviews(
   if (!teacher) throw teacherNotFound();
 
   const pagination = getPagination(query);
-  const where: Prisma.ReviewWhereInput = { course: { teacherId, isPublished: true } };
+  const where: Prisma.ReviewWhereInput = { course: { teacherId, status: 'PUBLISHED' } };
   const [total, rows] = await Promise.all([
     prisma.review.count({ where }),
     prisma.review.findMany({

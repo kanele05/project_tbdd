@@ -74,7 +74,7 @@ export async function runAi<T>(
 
 export async function loadCourseMaterial(courseId: string): Promise<CourseMaterial> {
   const course = await prisma.course.findFirst({
-    where: { id: courseId, isPublished: true },
+    where: { id: courseId, status: 'PUBLISHED' },
     select: {
       id: true,
       title: true,
@@ -275,7 +275,7 @@ export async function createLessonQuiz(
 
 async function loadCandidates(ids: readonly string[]): Promise<RecommendationCandidate[]> {
   const rows = await prisma.course.findMany({
-    where: { id: { in: [...ids] }, isPublished: true },
+    where: { id: { in: [...ids] }, status: 'PUBLISHED' },
     select: {
       id: true,
       title: true,

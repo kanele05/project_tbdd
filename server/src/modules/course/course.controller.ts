@@ -14,9 +14,12 @@ export async function list(req: Request, res: Response): Promise<void> {
 }
 
 export async function detail(req: Request, res: Response): Promise<void> {
-  ok(res, await courseService.getCourseDetail(String(req.params.id), req.user?.id));
+  ok(res, await courseService.getCourseDetail(String(req.params.id), req.user?.id, req.user?.role));
 }
 
 export async function similar(req: Request, res: Response): Promise<void> {
-  ok(res, await courseService.getSimilarCourses(String(req.params.id), req.user?.id));
+  ok(
+    res,
+    await courseService.getSimilarCourses(String(req.params.id), req.user?.id, req.user?.role),
+  );
 }

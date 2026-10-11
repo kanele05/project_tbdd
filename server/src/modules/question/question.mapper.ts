@@ -38,7 +38,10 @@ export const answerSelect = {
   id: true,
   content: true,
   createdAt: true,
+  isPinned: true,
   user: { select: userRefSelect },
+  // Để suy ra `isInstructor` (người trả lời là giảng viên của khóa) trong cùng query.
+  question: { select: { course: { select: { teacher: { select: { userId: true } } } } } },
 } satisfies Prisma.AnswerSelect;
 
 export type AnswerRow = Prisma.AnswerGetPayload<{ select: typeof answerSelect }>;
@@ -49,5 +52,7 @@ export function toAnswerDto(row: AnswerRow): AnswerDto {
     content: row.content,
     createdAt: row.createdAt.toISOString(),
     user: toUserRef(row.user),
+    isInstructor: row.user.id === row.question.course.teacher.userId,
+    isPinned: row.isPinned,
   };
 }

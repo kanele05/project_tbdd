@@ -29,6 +29,7 @@ async function tableCounts() {
   return {
     users: await prisma.user.count(),
     courses: await prisma.course.count(),
+    moderations: await prisma.courseModeration.count(),
     lessons: await prisma.lesson.count(),
     enrollments: await prisma.enrollment.count(),
     reviews: await prisma.review.count(),
@@ -77,6 +78,7 @@ describe('seed', () => {
     expect(teachers).toBeLessThanOrEqual(10);
 
     const courses = await prisma.course.findMany({
+      where: { status: 'PUBLISHED' },
       include: { sections: { include: { lessons: true } } },
     });
     expect(courses.length).toBeGreaterThanOrEqual(25);
@@ -100,8 +102,43 @@ describe('seed', () => {
     expect(await prisma.banner.count()).toBeGreaterThanOrEqual(2);
   });
 
+  it('seeds the teacher/admin workflow data (PLAN §2.4.5, BR-30)', async () => {
+    expect(await prisma.course.count({ where: { status: 'PUBLISHED' } })).toBe(30);
+    expect(await prisma.course.count({ where: { status: 'PUBLISHED', publishedAt: null } })).toBe(
+      0,
+    );
+
+    const admin = await prisma.user.findUnique({ where: { email: 'admin@example.com' } });
+    expect(admin).toMatchObject({ role: 'ADMIN' });
+    expect(admin?.emailVerifiedAt).not.toBeNull();
+
+    const draft = await prisma.course.findMany({
+      where: { status: 'DRAFT' },
+      include: { sections: { include: { lessons: true } }, teacher: true },
+    });
+    const pending = await prisma.course.findMany({
+      where: { status: 'PENDING_REVIEW' },
+      include: { sections: { include: { lessons: true } }, teacher: true },
+    });
+    expect(draft).toHaveLength(1);
+    expect(pending).toHaveLength(1);
+    for (const course of [...draft, ...pending]) {
+      const lessons = course.sections.flatMap((section) => section.lessons);
+      expect(course.sections.length).toBeGreaterThanOrEqual(1);
+      expect(lessons.length).toBeGreaterThanOrEqual(3);
+      expect(lessons.every((l) => l.videoUrl.startsWith('https://www.youtube.com/watch?v='))).toBe(
+        true,
+      );
+      expect(course.publishedAt).toBeNull();
+      expect(course.lessonCount).toBe(lessons.length);
+    }
+    expect(pending[0]?.submittedAt).not.toBeNull();
+    expect(await prisma.courseModeration.count({ where: { action: 'SUBMITTED' } })).toBe(1);
+  });
+
   it('keeps denormalized counters consistent with the source rows', async () => {
     const courses = await prisma.course.findMany({
+      where: { status: 'PUBLISHED' },
       include: {
         reviews: { select: { rating: true } },
         _count: { select: { enrollments: true, likes: true } },
@@ -217,7 +254,7 @@ describe('seed', () => {
       (s, c) => s + c.courseCount,
       0,
     );
-    expect(total).toBe(await prisma.course.count());
+    expect(total).toBe(await prisma.course.count({ where: { status: 'PUBLISHED' } }));
 
     const hot = await api.get(`${API}/tags/hot`);
     expect(hot.body.data).toHaveLength(7);

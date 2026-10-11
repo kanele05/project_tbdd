@@ -28,6 +28,43 @@ enum NotificationType {
   NEW_ANSWER
   COURSE_COMPLETED
   SYSTEM
+  COURSE_APPROVED
+  COURSE_REJECTED
+  NEW_COURSE
+  PROJECT_GRADED
+  REVIEW_REPLY
+}
+
+// Vòng đời khóa học (PLAN §2.4, BR-19).
+enum CourseStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+// Trạng thái bản sửa đổi của khóa đã xuất bản (BR-21). OPEN = đang soạn, chưa gửi duyệt.
+enum RevisionStatus {
+  OPEN
+  PENDING_REVIEW
+  REJECTED
+}
+
+// Hành động được ghi vào lịch sử duyệt (CourseModeration).
+enum ModerationAction {
+  SUBMITTED
+  WITHDRAWN
+  APPROVED
+  REJECTED
+  ARCHIVED
+  RESTORED
+}
+
+// Đối tượng của hành động duyệt: chính khóa học hay bản sửa đổi.
+enum ModerationTarget {
+  COURSE
+  REVISION
 }
 
 enum BannerTarget {
@@ -40,6 +77,8 @@ enum AiContentKind {
   LESSON_SUMMARY
   RECOMMENDATIONS
   QUIZ
+  COURSE_DRAFT
+  COURSE_REVIEW
 }
 
 enum AiChatRole {
@@ -100,6 +139,11 @@ model User {
   // Bước thời gian (unix / 30 s) của mã TOTP đã dùng gần nhất - chặn dùng lại cùng một mã.
   totpLastStep     Int?
 
+  // --- Khóa tài khoản bởi admin (BR-28) ---
+  // null = đang hoạt động. Khóa -> thu hồi mọi phiên; login/refresh trả 403 ACCOUNT_DISABLED.
+  disabledAt     DateTime?
+  disabledReason String?
+
   teacherProfile TeacherProfile?
   enrollments    Enrollment[]
   lessonProgress LessonProgress[]
@@ -119,6 +163,9 @@ model User {
   oneTimeCodes   OneTimeCode[]
   recoveryCodes  RecoveryCode[]
   authEvents     AuthEvent[]
+  moderations    CourseModeration[]
+
+  @@index([role])
 }
 
 model TeacherProfile {
@@ -174,7 +221,7 @@ model CourseTag {
 }
 
 model Course {
-  id                 String   @id @default(cuid())
+  id                 String       @id @default(cuid())
   title              String
   subtitle           String?
   description        String
@@ -184,20 +231,22 @@ model Course {
   originalPriceCents Int?
   benefits           String[]
   projectDescription String?
-  isBestSeller       Boolean  @default(false)
-  isFeatured         Boolean  @default(false)
-  isPublished        Boolean  @default(true)
-  ratingAvg          Float    @default(0)
-  ratingCount        Int      @default(0)
-  enrollmentCount    Int      @default(0)
-  likeCount          Int      @default(0)
-  shareCount         Int      @default(0)
-  lessonCount        Int      @default(0)
-  totalDurationSec   Int      @default(0)
+  isBestSeller       Boolean      @default(false)
+  isFeatured         Boolean      @default(false)
+  status             CourseStatus @default(DRAFT)
+  publishedAt        DateTime?
+  submittedAt        DateTime?
+  ratingAvg          Float        @default(0)
+  ratingCount        Int          @default(0)
+  enrollmentCount    Int          @default(0)
+  likeCount          Int          @default(0)
+  shareCount         Int          @default(0)
+  lessonCount        Int          @default(0)
+  totalDurationSec   Int          @default(0)
   categoryId         String
   teacherId          String
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   category       Category            @relation(fields: [categoryId], references: [id])
   teacher        TeacherProfile      @relation(fields: [teacherId], references: [id])
@@ -213,7 +262,10 @@ model Course {
   resources      Resource[]
   submissions    ProjectSubmission[]
   aiChatMessages AiChatMessage[]
+  revision       CourseRevision?
+  moderations    CourseModeration[]
 
+  @@index([status])
   @@index([categoryId])
   @@index([teacherId])
   @@index([enrollmentCount])
@@ -341,13 +393,16 @@ model OrderItem {
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  userId    String
-  courseId  String
-  rating    Int
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String    @id @default(cuid())
+  userId           String
+  courseId         String
+  rating           Int
+  content          String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  // Phản hồi của giảng viên (BR-25): tối đa 1 phản hồi / đánh giá.
+  teacherReply     String?
+  teacherRepliedAt DateTime?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -378,6 +433,8 @@ model Answer {
   questionId String
   userId     String
   content    String
+  // Giảng viên ghim (BR-24): tối đa 1 câu trả lời được ghim / câu hỏi. `isInstructor` tính khi trả DTO.
+  isPinned   Boolean  @default(false)
   createdAt  DateTime @default(now())
 
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
@@ -409,14 +466,18 @@ model Resource {
 }
 
 model ProjectSubmission {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   courseId    String
   userId      String
   title       String
   description String?
   imageUrl    String?
   fileUrl     String
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
+  // Chấm điểm của giảng viên (BR-26): điểm nguyên 0-100 + nhận xét.
+  grade       Int?
+  feedback    String?
+  gradedAt    DateTime?
 
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -564,4 +625,38 @@ model AuthEvent {
 
   @@index([userId, createdAt])
   @@index([type, createdAt])
+}
+
+// ---------------------------------------------------------------- Giảng viên & Quản trị (PLAN §2.4)
+
+// Bản sửa đổi của khóa đã xuất bản (BR-21): trường "lớn" chỉ sửa ở đây, chờ admin duyệt.
+// Mỗi khóa tối đa 1 bản chưa áp dụng (`courseId` unique). Duyệt xong thì xóa bản ghi (lịch sử ở CourseModeration).
+// `payload` = CourseRevisionPayload (title, priceCents, originalPriceCents, categoryId, tagIds, sections[...]).
+model CourseRevision {
+  id          String         @id @default(cuid())
+  courseId    String         @unique
+  payload     Json
+  status      RevisionStatus @default(OPEN)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  submittedAt DateTime?
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+// Lịch sử duyệt/ẩn khóa học (hiện cho teacher và admin). Giữ bản ghi khi khóa còn tồn tại.
+model CourseModeration {
+  id        String           @id @default(cuid())
+  courseId  String
+  actorId   String
+  action    ModerationAction
+  target    ModerationTarget @default(COURSE)
+  reason    String?
+  createdAt DateTime         @default(now())
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  actor  User   @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, createdAt])
+  @@index([actorId])
 }

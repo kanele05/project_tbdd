@@ -18,13 +18,16 @@ export type CreateSubmissionInput = {
   image?: UploadedFile;
 };
 
-const submissionSelect = {
+export const submissionSelect = {
   id: true,
   title: true,
   description: true,
   imageUrl: true,
   fileUrl: true,
   createdAt: true,
+  grade: true,
+  feedback: true,
+  gradedAt: true,
   user: { select: userRefSelect },
 } satisfies Prisma.ProjectSubmissionSelect;
 
@@ -39,6 +42,9 @@ export function toSubmissionDto(row: SubmissionRow): ProjectSubmissionDto {
     fileUrl: toAbsoluteUrl(row.fileUrl),
     createdAt: row.createdAt.toISOString(),
     user: toUserRef(row.user),
+    grade: row.grade,
+    feedback: row.feedback,
+    gradedAt: row.gradedAt?.toISOString() ?? null,
   };
 }
 

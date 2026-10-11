@@ -29,7 +29,7 @@ describe('GET /cart', () => {
     const user = await createUser();
     const a = await createCourse({ title: 'A', priceCents: 4900 });
     const b = await createCourse({ title: 'B', priceCents: 1900 });
-    const hidden = await createCourse({ title: 'Hidden', priceCents: 700, isPublished: false });
+    const hidden = await createCourse({ title: 'Hidden', priceCents: 700, status: 'ARCHIVED' });
     await createCartItem(user.id, a.id, new Date('2026-09-01T00:00:00Z'));
     await createCartItem(user.id, b.id, new Date('2026-09-02T00:00:00Z'));
     await createCartItem(user.id, hidden.id);
@@ -122,7 +122,7 @@ describe('POST /cart/items (BR-06)', () => {
 
   it('returns 404 COURSE_NOT_FOUND for unknown or unpublished courses', async () => {
     const user = await createUser();
-    const hidden = await createCourse({ isPublished: false });
+    const hidden = await createCourse({ status: 'ARCHIVED' });
 
     const missing = await api
       .post(`${API}/cart/items`)

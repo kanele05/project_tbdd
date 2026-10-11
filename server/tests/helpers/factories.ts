@@ -6,6 +6,7 @@
  *   const { course, lessons } = await createCourseWithLessons({ sections: 2, lessonsPerSection: 3 });
  *   await createEnrollment(user.id, course.id, { progressPercent: 30 });
  */
+import type { CourseStatus, NotificationType } from '@/generated/prisma/client';
 import { signAccessToken } from '@/lib/jwt';
 import { hashPassword } from '@/lib/password';
 import { prisma } from '@/lib/prisma';
@@ -133,7 +134,8 @@ export async function createCourse(
     originalPriceCents?: number | null;
     isBestSeller?: boolean;
     isFeatured?: boolean;
-    isPublished?: boolean;
+    /** Mặc định PUBLISHED (hiện ở danh mục). */
+    status?: CourseStatus;
     ratingAvg?: number;
     ratingCount?: number;
     enrollmentCount?: number;
@@ -143,6 +145,7 @@ export async function createCourse(
 ) {
   const teacherId = overrides.teacherId ?? (await createTeacher()).profile.id;
   const categoryId = overrides.categoryId ?? (await createCategory()).id;
+  const status = overrides.status ?? 'PUBLISHED';
   return prisma.course.create({
     data: {
       title: overrides.title ?? `Course ${uniq('c')}`,
@@ -154,7 +157,8 @@ export async function createCourse(
       benefits: ['Benefit one', 'Benefit two'],
       isBestSeller: overrides.isBestSeller ?? false,
       isFeatured: overrides.isFeatured ?? false,
-      isPublished: overrides.isPublished ?? true,
+      status,
+      publishedAt: status === 'PUBLISHED' || status === 'ARCHIVED' ? new Date() : null,
       ratingAvg: overrides.ratingAvg ?? 0,
       ratingCount: overrides.ratingCount ?? 0,
       enrollmentCount: overrides.enrollmentCount ?? 0,
@@ -348,7 +352,7 @@ export function createBanner(
 export function createNotification(
   userId: string,
   overrides: {
-    type?: 'ORDER_PAID' | 'NEW_ANSWER' | 'COURSE_COMPLETED' | 'SYSTEM';
+    type?: NotificationType;
     title?: string;
     isRead?: boolean;
     createdAt?: Date;

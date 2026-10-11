@@ -78,6 +78,8 @@ describe('reviewService.upsertMyReview (BR-08)', () => {
       content: 'Solid content and clear explanations.',
       createdAt: '2026-10-01T00:00:00.000Z',
       user: { id: 'u-1', fullName: 'Martha Rosie', avatarUrl: null },
+      teacherReply: null,
+      teacherRepliedAt: null,
     });
     expect(db.review.upsert).toHaveBeenCalledWith(
       expect.objectContaining({

@@ -83,7 +83,7 @@ describe('bookmarkService.listBookmarks', () => {
     expect(meta).toEqual({ page: 1, limit: 2, total: 5, totalPages: 3 });
     expect(db.bookmark.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { userId: 'u-1', course: { isPublished: true } },
+        where: { userId: 'u-1', course: { status: 'PUBLISHED' } },
         orderBy: [{ createdAt: 'desc' }, { courseId: 'asc' }],
         skip: 0,
         take: 2,

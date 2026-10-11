@@ -1,6 +1,7 @@
-import type { Prisma } from '@/generated/prisma/client';
+import type { Prisma, Role } from '@/generated/prisma/client';
 import { ApiError } from '@/lib/ApiError';
 import { getBookmarkedIds } from '@/lib/bookmarkedIds';
+import { visibleCourseWhere } from '@/lib/courseVisibility';
 import { courseSummarySelect, toCourseSummary } from '@/lib/mappers';
 import { buildPaginationMeta, getPagination, type PaginationMeta } from '@/lib/pagination';
 import { prisma } from '@/lib/prisma';
@@ -62,7 +63,7 @@ export function buildCourseWhere(filters: CourseFilters): Prisma.CourseWhereInpu
   if (filters.minRating !== undefined) and.push({ ratingAvg: { gte: filters.minRating } });
   if (filters.section === 'inspires') and.push({ isFeatured: true });
 
-  return { isPublished: true, AND: and };
+  return { status: 'PUBLISHED', AND: and };
 }
 
 const ORDER_BY: Record<CourseSort, Prisma.CourseOrderByWithRelationInput[]> = {
@@ -87,7 +88,7 @@ export async function findCourseSummariesByIds(
 ): Promise<CourseSummaryDto[]> {
   if (ids.length === 0) return [];
   const rows = await prisma.course.findMany({
-    where: { id: { in: [...ids] }, isPublished: true },
+    where: { id: { in: [...ids] }, status: 'PUBLISHED' },
     select: courseSummarySelect,
   });
   const bookmarkedIds = await getBookmarkedIds(
@@ -108,7 +109,7 @@ export async function findCourseSummariesByIds(
  */
 export async function getRecommendedCourseIds(
   userId: string | undefined,
-  where: Prisma.CourseWhereInput = { isPublished: true },
+  where: Prisma.CourseWhereInput = { status: 'PUBLISHED' },
 ): Promise<string[]> {
   const enrolledIds: string[] = [];
   const interestCategoryIds = new Set<string>();
@@ -187,6 +188,7 @@ export async function listCourses(
 
 const courseDetailSelect = {
   ...courseSummarySelect,
+  status: true,
   subtitle: true,
   description: true,
   bannerUrl: true,
@@ -264,9 +266,17 @@ async function findPreviewLessonId(courseId: string): Promise<string | null> {
   return lesson?.id ?? null;
 }
 
-export async function getCourseDetail(courseId: string, userId?: string): Promise<CourseDetailDto> {
+/**
+ * `GET /courses/:id`. Khóa không `PUBLISHED` (nháp, chờ duyệt, bị ẩn...) chỉ xem được bởi người đã ghi danh,
+ * chủ khóa hoặc ADMIN; người khác nhận 404 `COURSE_NOT_FOUND` (BR-22, BR-23).
+ */
+export async function getCourseDetail(
+  courseId: string,
+  userId?: string,
+  role?: Role,
+): Promise<CourseDetailDto> {
   const course = await prisma.course.findFirst({
-    where: { id: courseId, isPublished: true },
+    where: visibleCourseWhere(courseId, userId ? { id: userId, role } : undefined),
     select: courseDetailSelect,
   });
   if (!course) throw ApiError.of('COURSE_NOT_FOUND', 'Course not found');
@@ -281,6 +291,7 @@ export async function getCourseDetail(courseId: string, userId?: string): Promis
 
   return {
     ...summary,
+    status: course.status,
     subtitle: course.subtitle,
     description: course.description,
     bannerUrl: toAbsoluteUrlOrNull(course.bannerUrl),
@@ -308,15 +319,16 @@ export async function getCourseDetail(courseId: string, userId?: string): Promis
 export async function getSimilarCourses(
   courseId: string,
   userId?: string,
+  role?: Role,
 ): Promise<CourseSummaryDto[]> {
   const course = await prisma.course.findFirst({
-    where: { id: courseId, isPublished: true },
+    where: visibleCourseWhere(courseId, userId ? { id: userId, role } : undefined),
     select: { categoryId: true },
   });
   if (!course) throw ApiError.of('COURSE_NOT_FOUND', 'Course not found');
 
   const rows = await prisma.course.findMany({
-    where: { isPublished: true, categoryId: course.categoryId, id: { not: courseId } },
+    where: { status: 'PUBLISHED', categoryId: course.categoryId, id: { not: courseId } },
     orderBy: [{ ratingAvg: 'desc' }, { enrollmentCount: 'desc' }, { id: 'asc' }],
     take: SIMILAR_COURSES_LIMIT,
     select: courseSummarySelect,

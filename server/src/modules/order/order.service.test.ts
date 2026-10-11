@@ -63,7 +63,7 @@ function makeTx(overrides: { cart?: unknown[]; enrolled?: string[]; status?: 'PA
 
 const line = (courseId: string, priceCents: number) => ({
   courseId,
-  course: { title: courseId.toUpperCase(), priceCents },
+  course: { title: courseId.toUpperCase(), priceCents, teacher: { userId: 'teacher-u' } },
 });
 
 beforeEach(() => jest.clearAllMocks());
@@ -119,6 +119,15 @@ describe('checkout (BR-07)', () => {
     expect(invalidateHomeCache).not.toHaveBeenCalled();
   });
 
+  it('throws 422 OWN_COURSE when the cart holds the buyer own course (BR-23)', async () => {
+    const tx = makeTx({ cart: [line('a', 4900)] });
+    await expect(checkout('teacher-u', { paymentMethod: 'MOCK_CARD' })).rejects.toMatchObject({
+      status: 422,
+      code: 'OWN_COURSE',
+    });
+    expect(tx.order.create).not.toHaveBeenCalled();
+  });
+
   it('throws 422 CART_EMPTY for an empty cart and creates no order', async () => {
     const tx = makeTx({ cart: [] });
     await expect(checkout('u1', { paymentMethod: 'MOCK_CARD' })).rejects.toMatchObject({
@@ -153,10 +162,27 @@ describe('buildPaidNotification', () => {
 
 describe('enrollInFreeCourse', () => {
   it('throws 422 PAID_COURSE for a course with a price', async () => {
-    prisma.course.findFirst.mockResolvedValue({ id: 'c1', priceCents: 100 });
+    prisma.course.findFirst.mockResolvedValue({
+      id: 'c1',
+      priceCents: 100,
+      teacher: { userId: 'teacher-u' },
+    });
     await expect(enrollInFreeCourse('u1', 'c1')).rejects.toMatchObject({
       status: 422,
       code: 'PAID_COURSE',
+    });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('throws 422 OWN_COURSE when the teacher enrolls in their own course (BR-23)', async () => {
+    prisma.course.findFirst.mockResolvedValue({
+      id: 'c1',
+      priceCents: 0,
+      teacher: { userId: 'teacher-u' },
+    });
+    await expect(enrollInFreeCourse('teacher-u', 'c1')).rejects.toMatchObject({
+      status: 422,
+      code: 'OWN_COURSE',
     });
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });
@@ -168,7 +194,11 @@ describe('enrollInFreeCourse', () => {
 
   it('maps a duplicate enrollment (P2002) to 409 ALREADY_ENROLLED', async () => {
     const { Prisma } = jest.requireActual('@/generated/prisma/client');
-    prisma.course.findFirst.mockResolvedValue({ id: 'c1', priceCents: 0 });
+    prisma.course.findFirst.mockResolvedValue({
+      id: 'c1',
+      priceCents: 0,
+      teacher: { userId: 'teacher-u' },
+    });
     prisma.$transaction.mockRejectedValue(
       new Prisma.PrismaClientKnownRequestError('dup', { code: 'P2002', clientVersion: 'x' }),
     );
@@ -186,7 +216,11 @@ describe('enrollInFreeCourse (success and unexpected errors)', () => {
       enrollment: { create: jest.fn() },
       course: { update: jest.fn() },
     };
-    prisma.course.findFirst.mockResolvedValue({ id: 'c1', priceCents: 0 });
+    prisma.course.findFirst.mockResolvedValue({
+      id: 'c1',
+      priceCents: 0,
+      teacher: { userId: 'teacher-u' },
+    });
     prisma.$transaction.mockImplementation((fn: (t: unknown) => unknown) => fn(tx));
 
     await expect(enrollInFreeCourse('u1', 'c1')).resolves.toEqual({
@@ -205,7 +239,11 @@ describe('enrollInFreeCourse (success and unexpected errors)', () => {
 
   it('rethrows unexpected database errors unchanged', async () => {
     const boom = new Error('connection lost');
-    prisma.course.findFirst.mockResolvedValue({ id: 'c1', priceCents: 0 });
+    prisma.course.findFirst.mockResolvedValue({
+      id: 'c1',
+      priceCents: 0,
+      teacher: { userId: 'teacher-u' },
+    });
     prisma.$transaction.mockRejectedValue(boom);
     await expect(enrollInFreeCourse('u1', 'c1')).rejects.toBe(boom);
   });

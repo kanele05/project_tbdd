@@ -14,6 +14,9 @@ export type UserDto = {
   role: Role;
 };
 
+/** Vòng đời khóa học (PLAN §2.4, BR-19). Chỉ `PUBLISHED` hiện ở danh mục. */
+export type CourseStatus = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'REJECTED' | 'ARCHIVED';
+
 export type CourseBadge = 'BEST_SELLER' | 'DISCOUNT';
 
 export type CourseSummaryDto = {
@@ -67,6 +70,9 @@ export type ReviewDto = {
   createdAt: string;
   user: UserRefDto;
   course?: { id: string; title: string };
+  /** Phản hồi của giảng viên (BR-25); `null` nếu chưa có. */
+  teacherReply: string | null;
+  teacherRepliedAt: string | null;
 };
 
 /** `meta.summary` của `GET /courses/:id/reviews` (tính trên TẤT CẢ review của khóa, không phụ thuộc bộ lọc sao). */
@@ -91,6 +97,10 @@ export type AnswerDto = {
   content: string;
   createdAt: string;
   user: UserRefDto;
+  /** Người trả lời là giảng viên của khóa (huy hiệu "Giảng viên", BR-24). */
+  isInstructor: boolean;
+  /** Câu trả lời được ghim (xếp đầu danh sách). */
+  isPinned: boolean;
 };
 
 export type LessonStatus = 'COMPLETED' | 'IN_PROGRESS' | 'UNLOCKED' | 'LOCKED';
@@ -144,6 +154,8 @@ export type ShareDto = { shareCount: number };
 
 /** `GET /courses/:id` - PLAN §9.3 (`CourseSummary & {...}` với `teacher` mở rộng). */
 export type CourseDetailDto = Omit<CourseSummaryDto, 'teacher'> & {
+  /** Khóa không `PUBLISHED` chỉ trả cho học viên đã ghi danh, chủ khóa và ADMIN (BR-22). */
+  status: CourseStatus;
   subtitle: string | null;
   description: string;
   bannerUrl: string | null;
@@ -236,14 +248,33 @@ export type EnrollmentStateDto = {
 
 export type MeStatsDto = { savedCount: number; ongoingCount: number; completedCount: number };
 
-export type NotificationType = 'ORDER_PAID' | 'NEW_ANSWER' | 'COURSE_COMPLETED' | 'SYSTEM';
+export type NotificationType =
+  | 'ORDER_PAID'
+  | 'NEW_ANSWER'
+  | 'COURSE_COMPLETED'
+  | 'SYSTEM'
+  | 'COURSE_APPROVED'
+  | 'COURSE_REJECTED'
+  | 'NEW_COURSE'
+  | 'PROJECT_GRADED'
+  | 'REVIEW_REPLY';
+
+/** `NotificationDto.data` (PLAN §9.3 + §2.4): id để mobile mở đúng màn khi chạm thông báo. */
+export type NotificationDataDto = {
+  courseId?: string;
+  questionId?: string;
+  /** `PROJECT_GRADED`. */
+  submissionId?: string;
+  /** `REVIEW_REPLY`. */
+  reviewId?: string;
+};
 
 export type NotificationDto = {
   id: string;
   type: NotificationType;
   title: string;
   body: string;
-  data: { courseId?: string; questionId?: string } | null;
+  data: NotificationDataDto | null;
   isRead: boolean;
   createdAt: string;
 };
@@ -264,6 +295,10 @@ export type ProjectSubmissionDto = {
   fileUrl: string;
   createdAt: string;
   user: UserRefDto;
+  /** Điểm 0-100 giảng viên chấm (BR-26); `null` nếu chưa chấm. */
+  grade: number | null;
+  feedback: string | null;
+  gradedAt: string | null;
 };
 
 /** `GET /courses/:id/project` */
