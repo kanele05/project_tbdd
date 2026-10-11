@@ -36,7 +36,7 @@ function useStatsSpread() {
   return { ...useMeStats() };
 }
 
-const STATS: MeStatsDto = { savedCount: 1, ongoingCount: 2, completedCount: 3 };
+const STATS: MeStatsDto = { savedCount: 1, ongoingCount: 2, completedCount: 3, learningSec: 3600 };
 
 afterEach(async () => {
   await act(flushNotifications);

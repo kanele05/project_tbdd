@@ -17,6 +17,9 @@ const ITEM: MyCourseItem = {
   progressPercent: 40,
   lastLessonId: 'l1',
   lastAccessedAt: '2026-10-01T00:00:00.000Z',
+  lessonCount: 10,
+  completedLessonCount: 4,
+  lastLesson: { id: 'l1', title: 'Variables', number: 5 },
 };
 
 afterEach(async () => {

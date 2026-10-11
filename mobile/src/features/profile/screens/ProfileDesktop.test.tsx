@@ -72,7 +72,12 @@ describe('ProfileScreen on a wide window', () => {
     jest.clearAllMocks();
     setWidth(1280);
     signIn('STUDENT');
-    mockStats.mockResolvedValue({ savedCount: 25, ongoingCount: 24, completedCount: 98 });
+    mockStats.mockResolvedValue({
+      savedCount: 25,
+      ongoingCount: 24,
+      completedCount: 98,
+      learningSec: 22800,
+    });
     mockBookmarks.mockResolvedValue(makePage(SAVED));
   });
 

@@ -1,16 +1,19 @@
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { CourseCardDesktopSkeleton } from '@/components/course';
 import { DESKTOP_NAV_HEIGHT } from '@/components/layout/desktopLayout';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { ResponsiveGrid } from '@/components/layout/ResponsiveGrid';
-import { AppText, SegmentedTabs, type SegmentedTab } from '@/components/ui';
+import { AppText, Skeleton, type SegmentedTab } from '@/components/ui';
 import { useTranslation } from '@/i18n';
-import { spacing } from '@/theme';
+import { radius, spacing } from '@/theme';
 import type { MyCourseItem, MyCoursesStatus } from '@/types/api';
 
 import { CareerBanner } from './CareerBanner';
+import { ContinueHero } from './ContinueHero';
+import { MyCoursesPillTabs } from './MyCoursesPillTabs';
+import { MyCoursesStats } from './MyCoursesStats';
 import { OwnedCourseCard } from './OwnedCourseCard';
 
 export type MyCoursesDesktopViewProps = {
@@ -19,20 +22,24 @@ export type MyCoursesDesktopViewProps = {
   onChangeTab: (tab: MyCoursesStatus) => void;
   /** `undefined` while nothing has loaded yet. */
   items: readonly MyCourseItem[] | undefined;
-  /** Error / empty / loading message shown instead of the grid (computed by the screen). */
+  /** Error / empty message shown instead of the grid (computed by the screen). */
   message: ReactNode;
   isLoading: boolean;
+  /** Resume learning (hero button, card click). Keep stable (`useCallback`). */
   onOpenItem: (item: MyCourseItem) => void;
+  /** Open the course page (hero "Course details"). Keep stable (`useCallback`). */
+  onOpenDetails: (item: MyCourseItem) => void;
   onExplore: () => void;
 };
 
-const GRID_MIN_ITEM_WIDTH = 260;
-const SKELETON_COUNT = 6;
-const TABS_MAX_WIDTH = 480;
+const GRID_MIN_ITEM_WIDTH = 240;
+const SKELETON_COUNT = 10;
+const HERO_SKELETON_HEIGHT = 280;
 
 /**
- * My Courses on wide screens (PLAN §2.5): the title, the All | On going | Completed tabs and the
- * student's courses as a poster grid with progress; the career banner closes the page.
+ * My Courses on wide screens (PLAN §2.5), "continue watching" style: title + stat chips, the
+ * "Continue learning" hero, pill tabs, a grid of compact progress cards and the career banner. All
+ * blocks share the `PageContainer` gutters so their edges line up.
  */
 export function MyCoursesDesktopView({
   tabs,
@@ -42,10 +49,16 @@ export function MyCoursesDesktopView({
   message,
   isLoading,
   onOpenItem,
+  onOpenDetails,
   onExplore,
 }: MyCoursesDesktopViewProps) {
   const { t } = useTranslation('myCourses');
   const hasItems = (items?.length ?? 0) > 0;
+  // The newest unfinished course (the list is newest first); the Completed tab has none.
+  const heroItem = useMemo(
+    () => (tab === 'completed' ? undefined : items?.find((item) => item.progressPercent < 100)),
+    [items, tab],
+  );
 
   let body: ReactNode = message;
   if (isLoading) {
@@ -58,7 +71,7 @@ export function MyCoursesDesktopView({
     );
   } else if (hasItems && items) {
     body = (
-      <ResponsiveGrid minItemWidth={GRID_MIN_ITEM_WIDTH} liftOnHover testID="my-courses-grid">
+      <ResponsiveGrid minItemWidth={GRID_MIN_ITEM_WIDTH} testID="my-courses-grid">
         {items.map((item) => (
           <OwnedCourseCard key={item.course.id} item={item} onOpen={onOpenItem} />
         ))}
@@ -77,11 +90,19 @@ export function MyCoursesDesktopView({
           <AppText variant="h1" accessibilityRole="header">
             {t('title')}
           </AppText>
-          {items ? (
-            <AppText variant="caption">{t('subtitle', { count: items.length })}</AppText>
-          ) : null}
+          <MyCoursesStats />
         </View>
-        <SegmentedTabs tabs={tabs} value={tab} onChange={onChangeTab} style={styles.tabs} />
+        {isLoading && tab !== 'completed' ? (
+          <Skeleton height={HERO_SKELETON_HEIGHT} borderRadius={radius.xl} style={styles.section} />
+        ) : null}
+        {heroItem ? (
+          <View style={styles.section}>
+            <ContinueHero item={heroItem} onContinue={onOpenItem} onOpenDetails={onOpenDetails} />
+          </View>
+        ) : null}
+        <View style={styles.section}>
+          <MyCoursesPillTabs tabs={tabs} value={tab} onChange={onChangeTab} />
+        </View>
         <View style={styles.body}>{body}</View>
         {hasItems ? (
           <View style={styles.footer}>
@@ -95,8 +116,8 @@ export function MyCoursesDesktopView({
 
 const styles = StyleSheet.create({
   content: { paddingTop: DESKTOP_NAV_HEIGHT + spacing.xl, paddingBottom: spacing.huge },
-  header: { gap: spacing.xs, marginBottom: spacing.xl },
-  tabs: { maxWidth: TABS_MAX_WIDTH },
+  header: { gap: spacing.md },
+  section: { marginTop: spacing.xxl },
   body: { marginTop: spacing.xl },
   footer: { marginTop: spacing.huge },
 });

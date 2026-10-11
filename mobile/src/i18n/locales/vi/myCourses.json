@@ -29,5 +29,30 @@
       "message": "Hoàn thành tất cả bài học của một khóa và nó sẽ xuất hiện ở đây."
     }
   },
-  "explore": "Khám phá khóa học"
+  "explore": "Khám phá khóa học",
+  "stats": {
+    "ongoing": "Đang học",
+    "completed": "Hoàn thành",
+    "learning": "Thời gian đã học"
+  },
+  "learningTime": {
+    "lessThanMinute": "< 1 phút",
+    "hours": "{{count}} giờ",
+    "minutes": "{{count}} phút"
+  },
+  "hero": {
+    "label": "Tiếp tục học",
+    "lesson": "Bài {{number}}/{{total}} · {{title}}",
+    "lessons": "{{count}} bài học",
+    "resume": "Tiếp tục học",
+    "details": "Chi tiết khóa học"
+  },
+  "card": {
+    "progress": "{{percent}}% · {{done}}/{{total}} bài",
+    "completed": "Hoàn thành",
+    "review": "Xem lại",
+    "a11yProgress": "{{title}}, hoàn thành {{percent}}%, {{done}} trên {{total}} bài học",
+    "a11yCompleted": "{{title}}, đã hoàn thành, xem lại"
+  },
+  "bannerKicker": "Nâng tầm bản thân"
 }

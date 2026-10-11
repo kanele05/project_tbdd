@@ -93,6 +93,10 @@ export function MyCoursesScreen() {
     });
   }, []);
 
+  const handleOpenDetails = useCallback((item: MyCourseItem) => {
+    router.push({ pathname: '/course/[id]', params: { id: item.course.id } });
+  }, []);
+
   const renderItem = useCallback(
     ({ item }: { item: MyCourseItem }) => (
       <View style={styles.item}>
@@ -206,6 +210,7 @@ export function MyCoursesScreen() {
         message={message}
         isLoading={courses.isPending && !isOfflineWithoutData(courses)}
         onOpenItem={handleOpenCourse}
+        onOpenDetails={handleOpenDetails}
         onExplore={openSearchTab}
       />
     );

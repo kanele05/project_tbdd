@@ -57,6 +57,9 @@ const ITEMS: MyCourseItem[] = [
     progressPercent: 30,
     lastLessonId: 'lesson-7',
     lastAccessedAt: '2026-10-01T10:00:00.000Z',
+    lessonCount: 10,
+    completedLessonCount: 3,
+    lastLesson: { id: 'lesson-7', title: 'Wireframes', number: 4 },
   },
   {
     course: {
@@ -68,6 +71,9 @@ const ITEMS: MyCourseItem[] = [
     progressPercent: 100,
     lastLessonId: null,
     lastAccessedAt: '2026-09-30T10:00:00.000Z',
+    lessonCount: 12,
+    completedLessonCount: 12,
+    lastLesson: null,
   },
 ];
 

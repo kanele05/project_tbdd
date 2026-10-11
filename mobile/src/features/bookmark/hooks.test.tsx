@@ -143,6 +143,7 @@ describe('useToggleBookmark', () => {
       savedCount: 2,
       ongoingCount: 1,
       completedCount: 0,
+      learningSec: 0,
     });
     mockRemove.mockReturnValue(pendingRequest());
 
@@ -187,6 +188,7 @@ describe('useToggleBookmark', () => {
       savedCount: 1,
       ongoingCount: 0,
       completedCount: 0,
+      learningSec: 0,
     });
     mockRemove.mockRejectedValue(
       new AppError({ status: 0, code: 'OFFLINE', message: "You're offline" }),

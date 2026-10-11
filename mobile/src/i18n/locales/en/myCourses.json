@@ -30,5 +30,30 @@
       "message": "Finish all the lessons of a course and it will show up here."
     }
   },
-  "explore": "Explore courses"
+  "explore": "Explore courses",
+  "stats": {
+    "ongoing": "In progress",
+    "completed": "Completed",
+    "learning": "Time learned"
+  },
+  "learningTime": {
+    "lessThanMinute": "< 1 min",
+    "hours": "{{count}} h",
+    "minutes": "{{count}} min"
+  },
+  "hero": {
+    "label": "Continue learning",
+    "lesson": "Lesson {{number}}/{{total}} · {{title}}",
+    "lessons": "{{count}} lessons",
+    "resume": "Resume",
+    "details": "Course details"
+  },
+  "card": {
+    "progress": "{{percent}}% · {{done}}/{{total}} lessons",
+    "completed": "Completed",
+    "review": "Review",
+    "a11yProgress": "{{title}}, {{percent}}% complete, {{done}} of {{total}} lessons",
+    "a11yCompleted": "{{title}}, completed, review"
+  },
+  "bannerKicker": "Level up"
 }

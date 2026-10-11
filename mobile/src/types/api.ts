@@ -104,6 +104,12 @@ export type MyCourseItem = {
   progressPercent: number;
   lastLessonId: string | null;
   lastAccessedAt: string;
+  /** Lessons in the course. */
+  lessonCount: number;
+  /** Lessons the student has finished. */
+  completedLessonCount: number;
+  /** The lesson the student studied last (`number` = 1-based position); `null` before the first one. */
+  lastLesson: { id: string; title: string; number: number } | null;
 };
 
 export type TeacherSummary = {
@@ -291,7 +297,13 @@ export type OrderDto = {
 export type CheckoutResponse = { order: OrderDto; enrolledCourseIds: string[] };
 
 /** `GET /me/stats` (BR-15) */
-export type MeStatsDto = { savedCount: number; ongoingCount: number; completedCount: number };
+export type MeStatsDto = {
+  savedCount: number;
+  ongoingCount: number;
+  completedCount: number;
+  /** Total time spent learning, in seconds. */
+  learningSec: number;
+};
 
 /** One item of `GET /teachers/:id/courses` (grouped by category). */
 export type TeacherCoursesGroupDto = {
