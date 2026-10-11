@@ -37,13 +37,16 @@
   },
   "bar": {
     "progress": "Your progress",
-    "progressValue": "{{percent}}% complete"
+    "progressValue": "{{percent}}% complete",
+    "yourCourse": "Your course",
+    "manage": "Manage this course"
   },
   "action": {
     "CONTINUE": "Continue learning",
     "ENROLL_FREE": "Enroll for free",
     "GO_TO_CART": "Go to cart",
-    "ADD_TO_CART": "Add to cart"
+    "ADD_TO_CART": "Add to cart",
+    "OPEN_COURSE": "Open course"
   },
   "toast": {
     "addedToCart": "Added to cart",

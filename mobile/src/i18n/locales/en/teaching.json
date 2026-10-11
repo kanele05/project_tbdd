@@ -1,0 +1,113 @@
+{
+  "instructor": "Instructor",
+  "profile": {
+    "title": "Teacher profile",
+    "intro": "This information appears on your public teacher page.",
+    "jobTitle": "Job title",
+    "jobTitlePlaceholder": "e.g. Senior UX Designer",
+    "bio": "About you",
+    "bioPlaceholder": "Tell students about your experience and what you teach",
+    "organization": "Organization",
+    "organizationPlaceholder": "Company or school",
+    "location": "Location",
+    "locationPlaceholder": "City, country",
+    "timezone": "Time zone",
+    "timezonePlaceholder": "e.g. Asia/Ho_Chi_Minh",
+    "timezoneHelper": "Students see your local time on your profile.",
+    "useDeviceTimezone": "Use this device's time zone",
+    "counter": "{{count}}/{{max}}",
+    "saved": "Teacher profile updated",
+    "loadFailed": "Couldn't load your teacher profile",
+    "validation": {
+      "jobTitleRequired": "Enter your job title",
+      "jobTitleMax": "Job title can have at most {{max}} characters",
+      "bioMax": "About you can have at most {{max}} characters",
+      "organizationMax": "Organization can have at most {{max}} characters",
+      "locationMax": "Location can have at most {{max}} characters",
+      "timezoneInvalid": "Enter a valid time zone, e.g. Asia/Ho_Chi_Minh"
+    }
+  },
+  "stats": {
+    "title": "Course statistics",
+    "loadFailed": "Couldn't load the statistics",
+    "kpi": {
+      "students": "Students",
+      "revenue": "Revenue",
+      "revenueNote": "Simulated payments",
+      "avgProgress": "Avg. progress",
+      "completed": "{{count}} completed",
+      "rating": "Rating",
+      "ratingValue": "{{rating}}/5",
+      "reviews_one": "{{count}} review",
+      "reviews_other": "{{count}} reviews",
+      "noRating": "No ratings yet"
+    },
+    "distribution": {
+      "title": "Rating distribution",
+      "row": "{{star}} stars: {{count}}"
+    },
+    "chart": {
+      "title": "New students, last 30 days",
+      "total_one": "{{count}} new student",
+      "total_other": "{{count}} new students",
+      "empty": "No new students in the last 30 days.",
+      "a11y": "New students per day over the last 30 days: {{total}} in total, busiest day {{date}} with {{peak}}.",
+      "axisStart": "30 days ago",
+      "axisEnd": "Today"
+    },
+    "projects": {
+      "title": "Projects",
+      "value": "{{graded}} of {{total}} graded",
+      "open": "Open submissions"
+    }
+  },
+  "submissions": {
+    "title": "Submissions",
+    "loadFailed": "Couldn't load the submissions",
+    "summary": "{{graded}} graded, {{ungraded}} waiting",
+    "filter": {
+      "all": "All",
+      "ungraded": "To grade",
+      "graded": "Graded"
+    },
+    "empty": {
+      "allTitle": "No submissions yet",
+      "allMessage": "Projects your students submit will appear here.",
+      "ungradedTitle": "Everything is graded",
+      "ungradedMessage": "New submissions will show up here.",
+      "gradedTitle": "Nothing graded yet",
+      "gradedMessage": "Graded submissions will show up here."
+    },
+    "status": {
+      "graded": "Graded",
+      "ungraded": "Not graded"
+    },
+    "gradeValue": "{{grade}}/100",
+    "submittedAt": "Submitted {{time}}",
+    "gradedAt": "Graded {{time}}",
+    "openFile": "Open file",
+    "openImage": "View cover image",
+    "openFailed": "Couldn't open this file.",
+    "grade": "Grade",
+    "regrade": "Edit grade",
+    "gradeA11y": "Grade {{title}} by {{name}}",
+    "regradeA11y": "Edit the grade of {{title}} by {{name}}",
+    "sheet": {
+      "title": "Grade project",
+      "subtitle": "{{title}} by {{name}}",
+      "gradeLabel": "Grade (0-100)",
+      "gradePlaceholder": "0-100",
+      "feedbackLabel": "Feedback",
+      "feedbackPlaceholder": "Tell the student what went well and what to improve",
+      "counter": "{{count}}/{{max}}",
+      "save": "Save grade",
+      "saved": "Grade saved. The student was notified."
+    },
+    "validation": {
+      "gradeRequired": "Enter a grade from 0 to 100",
+      "gradeRange": "The grade must be a whole number from 0 to 100",
+      "feedbackRequired": "Write some feedback for the student",
+      "feedbackMax": "Feedback can have at most {{max}} characters"
+    }
+  }
+}

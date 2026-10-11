@@ -40,7 +40,7 @@ export function NotificationsScreen() {
   const handlePress = useCallback(
     (notification: NotificationDto) => {
       if (!notification.isRead) markRead(notification.id);
-      const href = getNotificationHref(notification.data);
+      const href = getNotificationHref(notification.data, notification.type);
       if (href) router.push(href);
     },
     [markRead],

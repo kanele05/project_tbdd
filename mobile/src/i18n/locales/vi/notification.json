@@ -6,5 +6,12 @@
   "unread": "Chưa đọc",
   "emptyTitle": "Chưa có thông báo nào",
   "emptyMessage": "Cập nhật về đơn hàng, câu trả lời và khóa học của bạn sẽ xuất hiện ở đây.",
-  "loadFailed": "Không tải được thông báo"
+  "loadFailed": "Không tải được thông báo",
+  "types": {
+    "COURSE_APPROVED": "Khóa học của bạn đã được duyệt",
+    "COURSE_REJECTED": "Khóa học của bạn chưa được duyệt",
+    "NEW_COURSE": "Khóa học mới từ giảng viên bạn theo dõi",
+    "PROJECT_GRADED": "Project của bạn đã được chấm điểm",
+    "REVIEW_REPLY": "Giảng viên đã phản hồi đánh giá của bạn"
+  }
 }

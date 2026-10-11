@@ -27,8 +27,8 @@ function keyExtractor(question: QuestionDto): string {
   return question.id;
 }
 
-function openQuestion(question: QuestionDto): void {
-  router.push({ pathname: '/question/[id]', params: { id: question.id } });
+function openQuestion(question: QuestionDto, courseId: string): void {
+  router.push({ pathname: '/question/[id]', params: { id: question.id, courseId } });
 }
 
 /**
@@ -52,6 +52,10 @@ export function QaTab({ courseId, header }: QaTabProps) {
     (question: QuestionDto) => toggleLike({ questionId: question.id, isLiked: question.isLiked }),
     [toggleLike],
   );
+  const handleOpen = useCallback(
+    (question: QuestionDto) => openQuestion(question, courseId),
+    [courseId],
+  );
   const handleRetry = useCallback(() => void refetch(), [refetch]);
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
@@ -68,10 +72,10 @@ export function QaTab({ courseId, header }: QaTabProps) {
   const renderItem = useCallback(
     ({ item }: { item: QuestionDto }) => (
       <View style={styles.item}>
-        <QuestionCard question={item} onToggleLike={handleToggleLike} onOpen={openQuestion} />
+        <QuestionCard question={item} onToggleLike={handleToggleLike} onOpen={handleOpen} />
       </View>
     ),
-    [handleToggleLike, styles],
+    [handleOpen, handleToggleLike, styles],
   );
 
   let empty;

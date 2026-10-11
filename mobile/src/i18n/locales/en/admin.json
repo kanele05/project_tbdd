@@ -1,0 +1,267 @@
+{
+  "title": "Admin",
+  "forbiddenTitle": "No access",
+  "forbidden": "Your account doesn't have administrator access. Sign in with an admin account to use this area.",
+  "actions": {
+    "approve": "Approve",
+    "reject": "Reject",
+    "archive": "Archive",
+    "restore": "Restore",
+    "cancel": "Cancel"
+  },
+  "roles": {
+    "STUDENT": "Student",
+    "TEACHER": "Teacher",
+    "ADMIN": "Admin"
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "PENDING_REVIEW": "Pending review",
+    "PUBLISHED": "Published",
+    "REJECTED": "Rejected",
+    "ARCHIVED": "Archived"
+  },
+  "revisionStatus": {
+    "OPEN": "Revision in progress",
+    "PENDING_REVIEW": "Revision pending",
+    "REJECTED": "Revision rejected"
+  },
+  "dashboard": {
+    "loadFailed": "Couldn't load the dashboard",
+    "pendingTitle": "Waiting for review",
+    "pendingBreakdown": "{{courses}} new courses · {{revisions}} revisions",
+    "pendingNone": "Nothing is waiting. You're all caught up.",
+    "reviewNow": "Open the review queue",
+    "kpi": {
+      "users": "Users",
+      "disabled": "{{count}} disabled",
+      "newUsers7": "New users (7 days)",
+      "newUsers30": "{{count}} in the last 30 days",
+      "revenue": "Revenue",
+      "orders": "Paid orders"
+    },
+    "usersByRole": "Users by role",
+    "coursesByStatus": "Courses by status",
+    "topCourses": "Top courses",
+    "noTopCourses": "No published courses with enrollments yet.",
+    "topCourseLabel": "Number {{rank}}: {{title}}. {{enrollments}}, revenue {{revenue}}",
+    "enrollments_one": "{{count}} enrollment",
+    "enrollments_other": "{{count}} enrollments",
+    "linkCourses": "Courses",
+    "linkCoursesHint": "Review new courses and revisions, hide or restore courses",
+    "linkUsers": "Users",
+    "linkUsersHint": "Search accounts, disable or enable them"
+  },
+  "queue": {
+    "title": "Review queue",
+    "loadFailed": "Couldn't load the queue",
+    "type": {
+      "course": "New courses",
+      "revision": "Revisions"
+    },
+    "typeWithCount": "{{label}} ({{count}})",
+    "typeBadge": {
+      "COURSE": "New course",
+      "REVISION": "Revision"
+    },
+    "itemLabel": "{{title}}. {{type}}, {{status}}. Teacher {{teacher}}",
+    "submitted": "Submitted {{when}}",
+    "notSubmitted": "Not submitted yet",
+    "lessons_one": "{{count}} lesson",
+    "lessons_other": "{{count}} lessons",
+    "emptyTitle": "Nothing here",
+    "emptyMessage": {
+      "PENDING_REVIEW": "No submissions are waiting for review.",
+      "PUBLISHED": "No published courses.",
+      "REJECTED": "No rejected submissions.",
+      "ARCHIVED": "No archived courses."
+    }
+  },
+  "detail": {
+    "title": "Review course",
+    "loadFailed": "Couldn't load this course",
+    "never": "Not submitted",
+    "coverOf": "Cover image of {{title}}",
+    "teacherDisabled": "Account disabled",
+    "category": "Category",
+    "price": "Price",
+    "lessons": "Lessons",
+    "duration": "Duration",
+    "enrollments": "Enrollments",
+    "submitted": "Submitted",
+    "description": "Description",
+    "noDescription": "No description.",
+    "benefits": "What learners get",
+    "project": "Course project",
+    "changesTitle": "Changes in this revision",
+    "curriculum": "Curriculum",
+    "curriculumProposed": "Proposed curriculum",
+    "noCurriculum": "No sections yet.",
+    "sectionTitle": "Section {{index}}: {{title}}",
+    "previewLesson": "Free preview",
+    "noVideo": "No valid video link",
+    "openVideo": "Open the video of {{title}}",
+    "openVideoFailed": "Couldn't open the video link.",
+    "showNotes": "Show lesson notes",
+    "hideNotes": "Hide lesson notes"
+  },
+  "diff": {
+    "before": "Before",
+    "after": "After",
+    "yes": "Yes",
+    "no": "No",
+    "none": "None",
+    "notesText": "Has notes",
+    "notesEmpty": "No notes",
+    "noChanges": "This revision doesn't change anything.",
+    "fields": {
+      "title": "Title",
+      "videoUrl": "Video link",
+      "durationSec": "Duration",
+      "isPreview": "Free preview",
+      "content": "Lesson notes",
+      "price": "Price",
+      "originalPrice": "Original price",
+      "category": "Category",
+      "tags": "Tags"
+    },
+    "sectionAdded": "Section added",
+    "sectionRemoved": "Section removed",
+    "sectionRenamed": "Section renamed",
+    "lessonAdded": "Lesson added",
+    "lessonRemoved": "Lesson removed",
+    "lessonChanged": "Lesson changed",
+    "progressLost_one": "{{count}} learner progress record will be lost",
+    "progressLost_other": "{{count}} learner progress records will be lost",
+    "reordered": "Order changed",
+    "reorderedHint": "Sections or lessons are in a different order."
+  },
+  "ai": {
+    "title": "AI pre-review",
+    "subtitle": "A second pair of eyes on the submission",
+    "run": "Run AI check",
+    "loading": "The AI is reading the course...",
+    "retry": "Try again",
+    "retryAfter": "You can try again in about {{seconds}} s.",
+    "advisory": "Advisory only. The AI can be wrong, so the decision is yours. The check never blocks approving or rejecting.",
+    "verdict": {
+      "LOOKS_OK": "Looks fine",
+      "NEEDS_ATTENTION": "Needs attention"
+    },
+    "noIssues": "The AI didn't find any issues.",
+    "issuesTitle_one": "{{count}} possible issue",
+    "issuesTitle_other": "{{count}} possible issues",
+    "severity": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "generatedAt": "Generated {{when}} by {{model}}"
+  },
+  "history": {
+    "title": "Moderation history",
+    "empty": "No moderation activity yet.",
+    "itemLabel": "{{actor}}: {{action}}, {{target}}, {{when}}",
+    "action": {
+      "SUBMITTED": "Submitted",
+      "WITHDRAWN": "Withdrawn",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "ARCHIVED": "Archived",
+      "RESTORED": "Restored"
+    },
+    "target": {
+      "COURSE": "course",
+      "REVISION": "revision"
+    }
+  },
+  "missing": {
+    "title": "Not ready to publish",
+    "hint": "The submission no longer meets the requirements, so approving it will fail.",
+    "lessonNumber": "lesson {{number}}",
+    "codes": {
+      "TITLE_LENGTH": "The title must be 5-120 characters long",
+      "DESCRIPTION_TOO_SHORT": "The description is too short (at least 100 characters)",
+      "NO_THUMBNAIL": "There is no cover image",
+      "NO_CATEGORY": "There is no category",
+      "NO_SECTION": "There is no section",
+      "NOT_ENOUGH_LESSONS": "At least 3 lessons are required",
+      "LESSON_VIDEO_INVALID": "A lesson has no valid YouTube link",
+      "LESSON_DURATION_INVALID": "A lesson's duration must be between 1 second and 6 hours",
+      "PREVIEW_COUNT": "Between 1 and 3 free preview lessons are required",
+      "PRICE_INVALID": "The price must be free or between $0.99 and $999.99",
+      "ORIGINAL_PRICE_INVALID": "The original price must be higher than the price"
+    }
+  },
+  "confirm": {
+    "approveCourseTitle": "Approve this course?",
+    "approveCourseMessage": "It will be published right away and the teacher will be notified.",
+    "approveRevisionTitle": "Approve this revision?",
+    "approveRevisionMessage": "The changes go live right away. Removed lessons lose their learners' progress. The teacher will be notified.",
+    "restoreTitle": "Restore this course?",
+    "restoreMessage": "It will be visible in the catalog again."
+  },
+  "toast": {
+    "courseApproved": "Course approved",
+    "revisionApproved": "Revision approved",
+    "courseRejected": "Course rejected",
+    "revisionRejected": "Revision rejected",
+    "archived": "Course archived",
+    "restored": "Course restored",
+    "userDisabled": "Account disabled",
+    "userEnabled": "Account enabled"
+  },
+  "reject": {
+    "courseTitle": "Reject this course",
+    "revisionTitle": "Reject this revision",
+    "message": "The teacher receives your reason by notification and e-mail.",
+    "label": "Reason"
+  },
+  "archive": {
+    "title": "Archive this course",
+    "message": "It disappears from the catalog. Learners who already bought it can keep learning.",
+    "label": "Reason (optional)"
+  },
+  "reason": {
+    "tooShort": "Enter at least {{min}} characters.",
+    "tooLong": "Use at most {{max}} characters.",
+    "counter": "{{count}}/{{max}}"
+  },
+  "users": {
+    "title": "Users",
+    "loadFailed": "Couldn't load users",
+    "searchPlaceholder": "Search name or e-mail",
+    "roleFilter": "Filter by role",
+    "statusFilter": "Filter by status",
+    "all": "All roles",
+    "status": {
+      "all": "All statuses",
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "emptyTitle": "No users found",
+    "emptyMessage": "Try another search or clear the filters.",
+    "courseCount_one": "{{count}} course",
+    "courseCount_other": "{{count}} courses",
+    "enrollmentCount_one": "{{count}} enrollment",
+    "enrollmentCount_other": "{{count}} enrollments",
+    "joined": "joined {{when}}",
+    "disabledBadge": "Disabled",
+    "unverified": "E-mail not verified",
+    "disabledReason": "Reason: {{reason}}",
+    "enable": "Enable",
+    "disable": "Disable",
+    "enableLabel": "Enable the account of {{name}}",
+    "disableLabel": "Disable the account of {{name}}",
+    "enableTitle": "Enable this account?",
+    "enableMessage": "{{name}} will be able to sign in again.",
+    "disableTitle": "Disable this account",
+    "disableMessage": "{{name}} is signed out of every device and can't sign in until you enable the account again.",
+    "reasonLabel": "Reason"
+  },
+  "errors": {
+    "CANNOT_DISABLE_ADMIN": "Administrator accounts, including yours, can't be disabled.",
+    "INVALID_COURSE_STATE": "The course is not in a state that allows this action. Refresh and check its current status.",
+    "COURSE_INCOMPLETE": "The course doesn't meet the publishing requirements yet."
+  }
+}

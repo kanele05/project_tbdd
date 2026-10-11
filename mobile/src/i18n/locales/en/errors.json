@@ -58,6 +58,14 @@
     "TWO_FACTOR_NOT_SETUP": "Start the two-step verification setup first.",
     "TWO_FACTOR_NOT_ENABLED": "Two-step verification is not turned on.",
     "TWO_FACTOR_ALREADY_ENABLED": "Two-step verification is already turned on.",
-    "SESSION_NOT_FOUND": "This device is no longer signed in."
+    "SESSION_NOT_FOUND": "This device is no longer signed in.",
+    "COURSE_INCOMPLETE": "This course isn't ready to submit yet. Check the list of missing items.",
+    "INVALID_COURSE_STATE": "That isn't possible in the course's current status. Refresh and try again.",
+    "REVISION_REQUIRED": "This course is published: major changes must go through a revision.",
+    "REVISION_EXISTS": "This course already has an open revision.",
+    "REVISION_NOT_FOUND": "This course has no open revision.",
+    "COURSE_HAS_ENROLLMENTS": "This course already has students, so it can only be hidden, not deleted.",
+    "OWN_COURSE": "You can't buy or enroll in your own course.",
+    "NOT_COURSE_TEACHER": "Only the teacher of this course can do that."
   }
 }

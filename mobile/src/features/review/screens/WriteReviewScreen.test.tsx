@@ -30,6 +30,8 @@ const EXISTING: ReviewDto = {
   content: 'Great course, I learned a lot from it.',
   createdAt: new Date().toISOString(),
   user: { id: 'user-1', fullName: 'Rosie', avatarUrl: null },
+  teacherReply: null,
+  teacherRepliedAt: null,
 };
 
 function setMyReview(overrides: Record<string, unknown>) {

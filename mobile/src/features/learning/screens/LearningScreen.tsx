@@ -39,6 +39,11 @@ export type LearningScreenProps = { courseId: string };
 
 type LearningTab = 'lessons' | 'projects' | 'qa';
 
+/** `?tab=projects` (a PROJECT_GRADED notification) opens that tab; anything else starts on Lessons. */
+function parseLearningTab(value: string | undefined): LearningTab {
+  return value === 'projects' || value === 'qa' ? value : 'lessons';
+}
+
 /**
  * SC-15 Learning (M-20): the video of the current lesson (resume + progress saving), the course
  * title with like/share, and the Lessons | Projects | Q&A tabs. The lesson is the `lessonId`
@@ -49,12 +54,15 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
   const { t } = useTranslation(['learning', 'ai']);
   const styles = useStyles();
   const insets = useSafeAreaInsets();
-  const { lessonId: paramLessonId } = useLocalSearchParams<{ lessonId?: string }>();
+  const { lessonId: paramLessonId, tab: paramTab } = useLocalSearchParams<{
+    lessonId?: string;
+    tab?: string;
+  }>();
   const course = useCourseDetail(courseId);
   const curriculum = useCurriculum(courseId);
   const { activeLessonId, selectLesson } = useActiveLesson({ paramLessonId, course, curriculum });
   const lesson = useLesson(activeLessonId);
-  const [tab, setTab] = useState<LearningTab>('lessons');
+  const [tab, setTab] = useState<LearningTab>(() => parseLearningTab(paramTab));
   // Typing in Q&A on a small phone: the video folds into a one-line bar (it stays mounted, so it keeps playing).
   const isPlayerCollapsed = useIsKeyboardVisible() && tab !== 'lessons';
 

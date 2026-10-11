@@ -6,5 +6,12 @@
   "unread": "Unread",
   "emptyTitle": "No notifications yet",
   "emptyMessage": "Updates about your orders, answers and courses will appear here.",
-  "loadFailed": "Couldn't load your notifications"
+  "loadFailed": "Couldn't load your notifications",
+  "types": {
+    "COURSE_APPROVED": "Your course was approved",
+    "COURSE_REJECTED": "Your course was not approved",
+    "NEW_COURSE": "New course from a teacher you follow",
+    "PROJECT_GRADED": "Your project was graded",
+    "REVIEW_REPLY": "The instructor replied to your review"
+  }
 }

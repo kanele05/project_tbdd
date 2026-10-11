@@ -12,6 +12,9 @@ type ProfileMenuProps = {
   onEditProfile: () => void;
   onNotifications: () => void;
   onSettings: () => void;
+  /** Teacher shortcuts (PLAN SC-30): only passed for TEACHER accounts. */
+  onTeacherProfile?: () => void;
+  onTeaching?: () => void;
   /** Called after the menu closed; the screen asks for confirmation. */
   onLogout: () => void;
 };
@@ -44,7 +47,7 @@ function MenuItem({ icon, label, onPress, isDanger = false }: MenuItemProps) {
 }
 
 /**
- * Overflow menu of the "⋮" button (SC-20): Edit profile, Notifications, Settings, Log out. Rendered as an
+ * Overflow menu of the "⋮" button (SC-20): Edit profile, (teachers: Teacher profile, Teaching), Notifications, Settings, Log out. Rendered as an
  * in-screen popover (not a native Modal) so a confirmation Alert can open right after it closes.
  */
 export function ProfileMenu({
@@ -52,6 +55,8 @@ export function ProfileMenu({
   onEditProfile,
   onNotifications,
   onSettings,
+  onTeacherProfile,
+  onTeaching,
   onLogout,
 }: ProfileMenuProps) {
   const { t } = useTranslation(['profile', 'auth']);
@@ -83,6 +88,12 @@ export function ProfileMenu({
         ]}
       >
         <MenuItem icon="edit-2" label={t('menu.editProfile')} onPress={onEditProfile} />
+        {onTeacherProfile ? (
+          <MenuItem icon="user" label={t('menu.teacherProfile')} onPress={onTeacherProfile} />
+        ) : null}
+        {onTeaching ? (
+          <MenuItem icon="briefcase" label={t('menu.teaching')} onPress={onTeaching} />
+        ) : null}
         <MenuItem icon="bell" label={t('menu.notifications')} onPress={onNotifications} />
         <MenuItem icon="settings" label={t('menu.settings')} onPress={onSettings} />
         <MenuItem icon="log-out" label={t('auth:logout')} onPress={onLogout} isDanger />

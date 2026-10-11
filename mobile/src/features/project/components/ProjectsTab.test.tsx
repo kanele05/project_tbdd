@@ -11,6 +11,7 @@ const mockRefetchProject = jest.fn();
 const mockRefetchSubmissions = jest.fn();
 let mockProject: Record<string, unknown> = {};
 let mockSubmissions: Record<string, unknown> = {};
+let mockMine: Record<string, unknown> = {};
 let mockDownloading: { resourceId: string; percent: number | null } | null = null;
 
 jest.mock('expo-router', () => ({
@@ -20,6 +21,7 @@ jest.mock('expo-router', () => ({
 jest.mock('../hooks', () => ({
   useCourseProject: () => mockProject,
   useLatestSubmissions: () => mockSubmissions,
+  useMySubmissions: () => mockMine,
   useResourceDownload: () => ({ download: mockDownload, downloading: mockDownloading }),
 }));
 
@@ -53,6 +55,9 @@ function makeSubmission(id: string, title: string, author: string): ProjectSubmi
     fileUrl: 'https://x/f.zip',
     createdAt: '2026-10-01T00:00:00Z',
     user: { id: `u-${id}`, fullName: author, avatarUrl: null },
+    grade: null,
+    feedback: null,
+    gradedAt: null,
   };
 }
 
@@ -73,6 +78,7 @@ describe('ProjectsTab', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockDownloading = null;
+    mockMine = { data: [] };
     loaded();
   });
 
@@ -159,5 +165,31 @@ describe('ProjectsTab', () => {
     await fireEvent.press(retries[1] as (typeof retries)[number]);
     expect(mockRefetchSubmissions).toHaveBeenCalled();
     expect(mockRefetchProject).toHaveBeenCalled();
+  });
+
+  it('shows the grade and the instructor feedback on the own submission of a student', async () => {
+    mockMine = {
+      data: [
+        {
+          ...makeSubmission('s9', 'My landing page', 'Me'),
+          grade: 85,
+          feedback: 'Nice layout, improve contrast.',
+          gradedAt: new Date().toISOString(),
+        },
+        makeSubmission('s10', 'Draft', 'Me'),
+      ],
+    };
+    await render(<ProjectsTab courseId="c1" />);
+
+    expect(screen.getByText('Your submissions')).toBeOnTheScreen();
+    expect(screen.getByText('85/100')).toBeOnTheScreen();
+    expect(screen.getByText('Nice layout, improve contrast.')).toBeOnTheScreen();
+    expect(screen.getByText('Waiting for the instructor')).toBeOnTheScreen();
+  });
+
+  it('hides the "Your submissions" section when the student has none', async () => {
+    await render(<ProjectsTab courseId="c1" />);
+
+    expect(screen.queryByText('Your submissions')).not.toBeOnTheScreen();
   });
 });

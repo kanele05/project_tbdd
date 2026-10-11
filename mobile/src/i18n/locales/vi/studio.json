@@ -1,0 +1,342 @@
+{
+  "title": "Giảng dạy",
+  "subtitle": "Tạo, xuất bản và theo dõi các khóa học của bạn.",
+  "newCourse": "Khóa học mới",
+  "loadFailed": "Không tải được các khóa học của bạn",
+  "retry": "Thử lại",
+  "actions": {
+    "cancel": "Hủy",
+    "delete": "Xóa"
+  },
+  "summary": {
+    "courses": "Khóa học",
+    "students": "Học viên",
+    "revenue": "Doanh thu"
+  },
+  "filter": {
+    "all": "Tất cả"
+  },
+  "status": {
+    "DRAFT": "Nháp",
+    "PENDING_REVIEW": "Chờ duyệt",
+    "PUBLISHED": "Đã xuất bản",
+    "REJECTED": "Bị từ chối",
+    "ARCHIVED": "Đã ẩn",
+    "revisionOPEN": "Bản sửa đổi nháp",
+    "revisionPENDING_REVIEW": "Sửa đổi chờ duyệt",
+    "revisionREJECTED": "Sửa đổi bị từ chối",
+    "title": "Trạng thái khóa học",
+    "checklistTitle": "Trước khi gửi duyệt",
+    "ready": "Mọi thứ đã sẵn sàng. Bạn có thể gửi khóa học này đi duyệt.",
+    "missingIntro_other": "Còn {{count}} mục cần hoàn thiện trước khi gửi duyệt:",
+    "fixMissing": "{{item}}. Mở để sửa.",
+    "submit": "Gửi duyệt",
+    "resubmit": "Gửi duyệt lại",
+    "delete": "Xóa khóa học",
+    "pendingMessage": "Quản trị viên đang xem xét khóa học này. Trong lúc đó bạn không sửa được; hãy rút lại nếu cần thay đổi.",
+    "withdraw": "Rút lại khỏi hàng chờ",
+    "publishedMessage": "Khóa học đang hiển thị. Học viên có thể tìm thấy, mua và học.",
+    "archive": "Ẩn khóa học",
+    "archivedMessage": "Khóa học đã ẩn khỏi danh mục và tìm kiếm. Học viên đã mua vẫn học được.",
+    "restore": "Hiển thị lại",
+    "rejectedTitle": "Quản trị viên đã từ chối khóa học này",
+    "links": {
+      "edit": "Sửa thông tin khóa học",
+      "curriculum": "Sửa chương trình học",
+      "stats": "Thống kê",
+      "submissions": "Bài nộp project"
+    }
+  },
+  "empty": {
+    "title": "Chưa có khóa học nào",
+    "message": "Tạo khóa học đầu tiên, thêm bài học rồi gửi duyệt.",
+    "filteredTitle": "Chưa có gì ở đây",
+    "filteredMessage": "Bạn chưa có khóa học nào ở trạng thái \"{{status}}\"."
+  },
+  "card": {
+    "label": "{{title}}, {{status}}, {{price}}, {{students}}",
+    "students_other": "{{count}} học viên",
+    "rejectedReason": "Bị từ chối: {{reason}}"
+  },
+  "cover": {
+    "label": "Ảnh bìa",
+    "change": "Đổi ảnh",
+    "choose": "Chọn ảnh",
+    "empty": "Chưa có ảnh bìa",
+    "uploading": "Đang tải lên {{percent}}%",
+    "hint": "PNG hoặc JPG, tối đa 5 MB. Tỉ lệ 16:9 đẹp nhất.",
+    "sizeError": "Ảnh quá lớn (tối đa 5 MB).",
+    "typeError": "Chỉ hỗ trợ ảnh PNG hoặc JPG."
+  },
+  "category": {
+    "loadFailed": "Không tải được danh mục."
+  },
+  "tags": {
+    "unknown": "Thẻ",
+    "count": "{{count}}/{{max}}",
+    "none": "Chưa có thẻ nào."
+  },
+  "benefits": {
+    "label": "Học viên sẽ học được gì",
+    "count": "{{count}}/{{max}}",
+    "empty": "Thêm tối đa 10 ý ngắn gọn.",
+    "placeholder": "VD: Xây dựng REST API từ đầu",
+    "itemLabel": "Ý học được số {{number}}",
+    "remove": "Xóa ý học được số {{number}}",
+    "add": "Thêm một ý"
+  },
+  "edit": {
+    "title": "Thông tin khóa học",
+    "createTitle": "Khóa học mới",
+    "created": "Đã tạo bản nháp. Giờ hãy thêm bài học.",
+    "saved": "Đã lưu thay đổi.",
+    "basic": "Thông tin cơ bản",
+    "details": "Chi tiết",
+    "aiSuggest": "Gợi ý bằng AI",
+    "createSubmit": "Tạo bản nháp",
+    "saveSubmit": "Lưu thay đổi",
+    "fields": {
+      "title": "Tiêu đề",
+      "titlePlaceholder": "VD: Khóa React Native từ cơ bản đến nâng cao",
+      "category": "Danh mục",
+      "tags": "Thẻ",
+      "tagsHelper": "Chọn tối đa 5 thẻ có sẵn.",
+      "price": "Giá (USD)",
+      "priceHelper": "0 hoặc để trống = miễn phí.",
+      "originalPrice": "Giá gốc (USD)",
+      "originalPriceHelper": "Không bắt buộc, hiển thị gạch ngang.",
+      "subtitle": "Phụ đề",
+      "subtitlePlaceholder": "Một dòng giới thiệu khóa học",
+      "description": "Mô tả",
+      "descriptionPlaceholder": "Khóa học dạy gì, dành cho ai, học viên cần chuẩn bị gì",
+      "descriptionHelper": "{{count}} ký tự. Cần ít nhất {{min}} ký tự để gửi duyệt.",
+      "project": "Project của khóa học",
+      "projectPlaceholder": "Mô tả project học viên cần nộp (không bắt buộc)"
+    },
+    "locked": {
+      "pending": {
+        "title": "Đang khóa vì chờ duyệt",
+        "message": "Quản trị viên đang xem xét khóa học này. Hãy rút lại ở màn trạng thái nếu muốn sửa."
+      },
+      "archived": {
+        "title": "Khóa học đã ẩn",
+        "message": "Hãy hiển thị lại khóa học ở màn trạng thái trước khi sửa."
+      }
+    },
+    "published": {
+      "title": "Khóa học đã xuất bản",
+      "message": "Phụ đề, mô tả, ý học được, project và ảnh bìa được lưu ngay. Tiêu đề, danh mục, thẻ, giá và chương trình học cần đi qua bản sửa đổi do quản trị viên duyệt.",
+      "revisionTitle": "Bạn đang sửa bản sửa đổi",
+      "revisionMessage": "Tiêu đề, danh mục, thẻ và giá được lưu trong bản sửa đổi và chỉ có hiệu lực sau khi được duyệt. Phụ đề, mô tả, ý học được, project và ảnh bìa vẫn áp dụng ngay.",
+      "pendingTitle": "Bản sửa đổi đang chờ duyệt",
+      "pendingMessage": "Tiêu đề, danh mục, thẻ và giá bị khóa cho đến khi quản trị viên quyết định. Các trường còn lại vẫn lưu ngay."
+    }
+  },
+  "revision": {
+    "title": "Bản sửa đổi",
+    "start": "Tạo bản sửa đổi",
+    "created": "Đã tạo bản sửa đổi. Giờ bạn sửa được các trường lớn.",
+    "noneMessage": "Muốn đổi tiêu đề, giá, danh mục, thẻ hoặc chương trình học của khóa đã xuất bản, hãy tạo bản sửa đổi. Học viên vẫn thấy bản hiện tại cho đến khi bản sửa đổi được duyệt.",
+    "updated": "Sửa lần cuối {{date}}",
+    "rejectedTitle": "Quản trị viên đã từ chối bản sửa đổi này",
+    "pendingMessage": "Quản trị viên đang xem xét bản sửa đổi của bạn. Học viên vẫn thấy bản đã xuất bản.",
+    "ready": "Bản sửa đổi đã đầy đủ và có thể gửi duyệt.",
+    "editInfo": "Sửa thông tin",
+    "editCurriculum": "Sửa chương trình",
+    "submit": "Gửi duyệt bản sửa đổi",
+    "withdraw": "Rút lại bản sửa đổi",
+    "discard": "Hủy bản sửa đổi"
+  },
+  "validation": {
+    "titleMin": "Tiêu đề cần ít nhất {{count}} ký tự.",
+    "titleMax": "Tiêu đề tối đa {{count}} ký tự.",
+    "subtitleMax": "Phụ đề tối đa {{count}} ký tự.",
+    "descriptionMax": "Mô tả tối đa {{count}} ký tự.",
+    "categoryRequired": "Hãy chọn một danh mục.",
+    "tagsMax": "Chỉ chọn được tối đa {{count}} thẻ.",
+    "priceInvalid": "Nhập giá dạng 29.99 (tối đa $999.99).",
+    "projectMax": "Project tối đa {{count}} ký tự.",
+    "lessonTitleRequired": "Hãy đặt tiêu đề cho bài học.",
+    "lessonTitleMax": "Tiêu đề tối đa {{count}} ký tự.",
+    "videoInvalid": "Hãy nhập link YouTube hợp lệ.",
+    "durationInvalid": "Dùng dạng mm:ss, từ 0:01 đến 6:00:00.",
+    "lessonContentMax": "Ghi chú tối đa {{count}} ký tự.",
+    "sectionTitleRequired": "Hãy đặt tiêu đề cho chương.",
+    "sectionTitleMax": "Tiêu đề tối đa {{count}} ký tự.",
+    "topicMin": "Mô tả chủ đề ít nhất {{count}} ký tự.",
+    "topicMax": "Chủ đề tối đa {{count}} ký tự."
+  },
+  "unsaved": {
+    "title": "Bỏ thay đổi?",
+    "message": "Bạn có thay đổi chưa lưu. Rời đi bây giờ sẽ mất chúng.",
+    "discard": "Bỏ thay đổi",
+    "keepEditing": "Tiếp tục sửa"
+  },
+  "missing": {
+    "TITLE_LENGTH": "Tiêu đề phải dài từ 5 đến 120 ký tự.",
+    "DESCRIPTION_TOO_SHORT": "Mô tả cần ít nhất 100 ký tự.",
+    "NO_THUMBNAIL": "Hãy tải lên ảnh bìa.",
+    "NO_CATEGORY": "Hãy chọn danh mục.",
+    "NO_SECTION": "Thêm ít nhất một chương.",
+    "NOT_ENOUGH_LESSONS": "Thêm ít nhất 3 bài học trong toàn khóa.",
+    "LESSON_VIDEO_INVALID": "Bài {{number}} cần link YouTube hợp lệ.",
+    "LESSON_DURATION_INVALID": "Bài {{number}} cần thời lượng từ 1 giây đến 6 giờ.",
+    "PREVIEW_COUNT": "Đánh dấu từ 1 đến 3 bài là xem thử miễn phí.",
+    "PRICE_INVALID": "Giá phải là miễn phí hoặc từ $0.99 đến $999.99.",
+    "ORIGINAL_PRICE_INVALID": "Giá gốc phải cao hơn giá bán."
+  },
+  "history": {
+    "title": "Lịch sử duyệt",
+    "empty": "Chưa có gì. Gửi duyệt khóa học để bắt đầu.",
+    "action": {
+      "SUBMITTED": "Đã gửi duyệt ({{target}})",
+      "WITHDRAWN": "Đã rút lại ({{target}})",
+      "APPROVED": "Đã được duyệt ({{target}})",
+      "REJECTED": "Bị từ chối ({{target}})",
+      "ARCHIVED": "Đã ẩn ({{target}})",
+      "RESTORED": "Đã hiển thị lại ({{target}})"
+    },
+    "target": {
+      "COURSE": "khóa học",
+      "REVISION": "bản sửa đổi"
+    },
+    "byOn": "{{name}} - {{date}}",
+    "reason": "Lý do: {{reason}}"
+  },
+  "curriculum": {
+    "title": "Chương trình học",
+    "empty": {
+      "title": "Chưa có chương nào",
+      "message": "Bắt đầu bằng một chương, rồi thêm bài học kèm link YouTube."
+    },
+    "sectionTitle": "Chương {{number}}: {{title}}",
+    "plannedTag": "AI đề xuất",
+    "plannedAdd": "Thêm",
+    "addLesson": "Thêm bài học",
+    "addSection": "Thêm chương",
+    "maxSections": "Một khóa học có tối đa {{max}} chương.",
+    "maxLessons": "Một khóa học có tối đa {{max}} bài học.",
+    "summary": "{{sections}} chương - {{lessons}} bài - {{duration}} - xem thử {{previews}}/{{maxPreviews}}",
+    "revisionSaved": "Đã lưu bản sửa đổi.",
+    "revisionTitle": "Đang sửa bản sửa đổi",
+    "revisionMessage": "Thay đổi chỉ nằm trên màn hình này cho đến khi bạn bấm \"Lưu bản sửa đổi\". Học viên vẫn thấy chương trình đã xuất bản cho đến khi quản trị viên duyệt.",
+    "saveRevision": "Lưu bản sửa đổi",
+    "needsRevisionTitle": "Tạo bản sửa đổi để sửa chương trình học",
+    "needsRevisionMessage": "Khóa học đã xuất bản nên chương và bài chỉ đổi được qua bản sửa đổi do quản trị viên duyệt.",
+    "lockedTitle": "Chương trình học đang bị khóa",
+    "lockedMessage": "Khóa học hoặc bản sửa đổi đang chờ duyệt, hoặc khóa học đã ẩn. Hãy rút lại hoặc hiển thị lại trước."
+  },
+  "section": {
+    "title": "Tiêu đề chương",
+    "titlePlaceholder": "VD: Bắt đầu",
+    "save": "Lưu chương",
+    "addTitle": "Chương mới",
+    "editTitle": "Đổi tên chương",
+    "moveUp": "Đưa chương {{title}} lên",
+    "moveDown": "Đưa chương {{title}} xuống",
+    "rename": "Đổi tên chương {{title}}",
+    "delete": "Xóa chương {{title}}",
+    "deleteConfirmTitle": "Xóa chương này?",
+    "deleteConfirmMessage": "\"{{title}}\" cùng mọi bài học trong chương sẽ bị xóa."
+  },
+  "lesson": {
+    "title": "Tiêu đề bài học",
+    "titlePlaceholder": "VD: Cài đặt công cụ",
+    "videoUrl": "Link YouTube",
+    "normalized": "Sẽ lưu thành: {{url}}",
+    "duration": "Thời lượng (mm:ss)",
+    "durationHelper": "Ví dụ 12:34, hoặc 1:02:05 nếu dài hơn một giờ.",
+    "preview": "Xem thử miễn phí",
+    "previewHelper": "{{count}}/{{max}} bài xem thử trong khóa học.",
+    "previewLimit": "Một khóa học có tối đa {{max}} bài xem thử miễn phí.",
+    "content": "Ghi chú bài học",
+    "contentPlaceholder": "Nội dung chữ của bài học",
+    "contentHelper": "Không bắt buộc. Các tính năng AI dùng phần ghi chú này.",
+    "save": "Lưu bài học",
+    "addTitle": "Bài học mới",
+    "editTitle": "Sửa bài học",
+    "previewTag": "Xem thử",
+    "moveUp": "Đưa bài {{title}} lên",
+    "moveDown": "Đưa bài {{title}} xuống",
+    "edit": "Sửa bài {{title}}",
+    "delete": "Xóa bài {{title}}",
+    "deleteConfirmTitle": "Xóa bài học này?",
+    "deleteConfirmMessage": "\"{{title}}\" sẽ bị xóa."
+  },
+  "confirm": {
+    "withdraw": {
+      "title": "Rút lại khỏi hàng chờ?",
+      "message": "Khóa học trở về trạng thái nháp và bạn sửa lại được.",
+      "confirm": "Rút lại"
+    },
+    "archive": {
+      "title": "Ẩn khóa học này?",
+      "message": "Khóa học biến mất khỏi danh mục và tìm kiếm. Học viên đã mua vẫn giữ quyền học.",
+      "confirm": "Ẩn"
+    },
+    "discardRevision": {
+      "title": "Hủy bản sửa đổi?",
+      "message": "Mọi thay đổi trong bản sửa đổi sẽ mất. Khóa học đã xuất bản không bị ảnh hưởng.",
+      "confirm": "Hủy bản sửa đổi"
+    },
+    "withdrawRevision": {
+      "title": "Rút lại bản sửa đổi?",
+      "message": "Bản sửa đổi bị gỡ khỏi hàng chờ và xóa. Khóa học đã xuất bản không bị ảnh hưởng.",
+      "confirm": "Rút lại"
+    },
+    "delete": {
+      "title": "Xóa khóa học này?",
+      "message": "Khóa học và các bài học sẽ bị xóa vĩnh viễn. Không thể hoàn tác.",
+      "confirm": "Xóa"
+    }
+  },
+  "toast": {
+    "submitted": "Đã gửi duyệt.",
+    "withdrawn": "Đã rút lại. Khóa học trở về bản nháp.",
+    "archived": "Đã ẩn khóa học.",
+    "restored": "Khóa học đã hiển thị lại.",
+    "revisionCreated": "Đã tạo bản sửa đổi.",
+    "revisionSubmitted": "Đã gửi duyệt bản sửa đổi.",
+    "revisionDiscarded": "Đã gỡ bản sửa đổi.",
+    "deleted": "Đã xóa khóa học."
+  },
+  "ai": {
+    "title": "AI soạn khóa học",
+    "close": "Đóng",
+    "intro": "Cho AI biết khóa học nói về gì. AI gợi ý phụ đề, mô tả, ý học được và dàn ý. Không có gì được lưu cho đến khi bạn áp dụng từng phần và lưu khóa học.",
+    "topic": "Chủ đề",
+    "topicPlaceholder": "VD: React Native cho người mới bắt đầu",
+    "level": "Trình độ",
+    "levels": {
+      "beginner": "Cơ bản",
+      "intermediate": "Trung cấp",
+      "advanced": "Nâng cao"
+    },
+    "language": "Ngôn ngữ của nội dung",
+    "langs": {
+      "vi": "Tiếng Việt",
+      "en": "English"
+    },
+    "generate": "Tạo gợi ý",
+    "regenerate": "Tạo lại",
+    "loading": "AI đang viết bản nháp cho bạn. Có thể mất vài giây.",
+    "parts": {
+      "subtitle": "Phụ đề",
+      "description": "Mô tả",
+      "benefits": "Ý học được",
+      "outline": "Dàn ý"
+    },
+    "apply": "Áp dụng",
+    "applyPart": "Áp dụng {{part}}",
+    "applied": "Đã áp dụng",
+    "appliedToast": "Đã đưa vào biểu mẫu. Hãy xem lại rồi lưu.",
+    "outlineNeedsDraft": "Chỉ áp dụng được dàn ý cho khóa học nháp hoặc bị từ chối.",
+    "outlineNeedsCourse": "Hãy lưu khóa học trước, rồi áp dụng dàn ý từ màn sửa của khóa.",
+    "outlineConfirm": {
+      "title": "Tạo các chương?",
+      "message": "{{count}} chương sẽ được thêm vào chương trình học. Các bài học hiện dưới dạng dòng \"AI đề xuất\": bạn bổ sung link YouTube và thời lượng.",
+      "confirm": "Tạo chương"
+    },
+    "outlineApplied": "Đã tạo các chương. Hãy hoàn thiện các bài học đề xuất."
+  }
+}

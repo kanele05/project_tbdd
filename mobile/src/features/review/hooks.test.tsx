@@ -32,6 +32,8 @@ function makeReview(overrides: Partial<ReviewDto> = {}): ReviewDto {
     content: 'Great course, learned a lot',
     createdAt: '2026-10-01T00:00:00.000Z',
     user: { id: 'u1', fullName: 'Jane', avatarUrl: null },
+    teacherReply: null,
+    teacherRepliedAt: null,
     ...overrides,
   };
 }

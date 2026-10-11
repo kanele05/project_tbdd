@@ -18,19 +18,12 @@ import { ReviewCardSkeleton } from '../components/ReviewCardSkeleton';
 import { ReviewSummary } from '../components/ReviewSummary';
 import { StarFilterChips } from '../components/StarFilterChips';
 import { useCourseReviews, useReviewSummary, type ReviewFilter } from '../hooks';
+import { useReviewReply } from '../useReviewReply';
 
 export type AllReviewsScreenProps = { courseId: string };
 
 function keyExtractor(review: ReviewDto): string {
   return review.id;
-}
-
-function renderReview({ item }: { item: ReviewDto }) {
-  return (
-    <View style={styles.item}>
-      <ReviewCard review={item} />
-    </View>
-  );
 }
 
 /**
@@ -42,6 +35,8 @@ export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
   const { colors } = useTheme();
   const themed = useStyles();
   const insets = useSafeAreaInsets();
+  const reply = useReviewReply(courseId);
+  const { instructorName, canReply, onReply, onDeleteReply } = reply;
   const [filter, setFilter] = useState<ReviewFilter>('all');
   const reviews = useCourseReviews(courseId, filter);
   const summary = useReviewSummary(courseId);
@@ -59,6 +54,21 @@ export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  const renderReview = useCallback(
+    ({ item }: { item: ReviewDto }) => (
+      <View style={styles.item}>
+        <ReviewCard
+          review={item}
+          instructorName={instructorName}
+          canReply={canReply}
+          onReply={onReply}
+          onDeleteReply={onDeleteReply}
+        />
+      </View>
+    ),
+    [canReply, instructorName, onDeleteReply, onReply],
+  );
 
   const header = useMemo(
     () => (
@@ -119,6 +129,7 @@ export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
         contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
         showsVerticalScrollIndicator={false}
       />
+      {reply.sheet}
     </View>
   );
 }

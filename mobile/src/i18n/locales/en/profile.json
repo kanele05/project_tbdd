@@ -12,7 +12,9 @@
     "close": "Close menu",
     "editProfile": "Edit profile",
     "notifications": "Notifications",
-    "settings": "Settings"
+    "settings": "Settings",
+    "teacherProfile": "Teacher profile",
+    "teaching": "Teaching"
   },
   "stats": {
     "saved": "Save",

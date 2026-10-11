@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 
 import { AppError } from '@/lib/appError';
 import type { ReviewDto, ReviewSummaryDto } from '@/types/api';
@@ -26,6 +26,16 @@ jest.mock('../hooks', () => ({
   useMyReview: () => mockMine,
 }));
 
+let mockIsOwner = false;
+const mockDeleteReply = jest.fn();
+jest.mock('@/features/teaching/hooks', () => ({
+  useCourseTeacherInfo: () => ({ teacherName: 'Dr. Teach', isOwner: mockIsOwner }),
+  useDeleteReviewReply: () => ({ mutate: mockDeleteReply }),
+  useReplyToReview: () => ({ mutateAsync: jest.fn(), isPending: false }),
+}));
+
+jest.mock('@/utils/confirmAction', () => ({ confirmAction: () => Promise.resolve(true) }));
+
 const SUMMARY: ReviewSummaryDto = {
   avg: 4.5,
   count: 1233,
@@ -39,6 +49,8 @@ function makeReviews(count: number): ReviewDto[] {
     content: `Review text ${index + 1}`,
     createdAt: new Date().toISOString(),
     user: { id: `user-${index + 1}`, fullName: `Reviewer ${index + 1}`, avatarUrl: null },
+    teacherReply: null,
+    teacherRepliedAt: null,
   }));
 }
 
@@ -57,6 +69,7 @@ function setReviews(reviews: ReviewDto[], overrides: Record<string, unknown> = {
 describe('CourseReviewsTab', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsOwner = false;
     mockSummary = { data: SUMMARY, refetch: mockRefetch };
     mockMine = { data: null };
     setReviews(makeReviews(8));
@@ -165,5 +178,53 @@ describe('CourseReviewsTab', () => {
     expect(screen.getByText("Couldn't load the reviews")).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: 'Retry' }));
     expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  describe('instructor replies (BR-25)', () => {
+    it('shows the teacher reply under the review with the Instructor badge', async () => {
+      setReviews([
+        {
+          ...makeReviews(1)[0]!,
+          teacherReply: 'Thanks for the kind words!',
+          teacherRepliedAt: new Date().toISOString(),
+        },
+      ]);
+
+      await render(<CourseReviewsTab courseId="course-1" canWriteReview={false} />);
+
+      expect(screen.getByTestId('review-reply-review-1')).toBeOnTheScreen();
+      expect(screen.getByText('Thanks for the kind words!')).toBeOnTheScreen();
+      expect(screen.getByText('Dr. Teach')).toBeOnTheScreen();
+      expect(screen.getByText('Instructor')).toBeOnTheScreen();
+    });
+
+    it('offers no reply actions to students', async () => {
+      await render(<CourseReviewsTab courseId="course-1" canWriteReview={false} />);
+
+      expect(screen.queryByTestId('reply-review-1')).not.toBeOnTheScreen();
+    });
+
+    it('lets the course teacher open the reply sheet and delete an existing reply', async () => {
+      mockIsOwner = true;
+      setReviews([
+        makeReviews(2)[0]!,
+        { ...makeReviews(2)[1]!, teacherReply: 'Thank you', teacherRepliedAt: null },
+      ]);
+
+      await render(<CourseReviewsTab courseId="course-1" canWriteReview={false} />);
+      expect(screen.queryByTestId('review-reply-sheet')).not.toBeOnTheScreen();
+
+      await fireEvent.press(screen.getByTestId('reply-review-1'));
+      expect(screen.getByTestId('review-reply-sheet')).toBeOnTheScreen();
+      expect(screen.getByText('Reply to review')).toBeOnTheScreen();
+
+      expect(
+        screen.getByRole('button', { name: 'Edit your reply to the review by Reviewer 2' }),
+      ).toBeOnTheScreen();
+      await fireEvent.press(screen.getByTestId('delete-reply-review-2'));
+      await waitFor(() =>
+        expect(mockDeleteReply).toHaveBeenCalledWith('review-2', expect.anything()),
+      );
+    });
   });
 });

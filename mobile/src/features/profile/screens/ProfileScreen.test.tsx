@@ -138,6 +138,27 @@ describe('ProfileScreen', () => {
     expect(mockPush).toHaveBeenLastCalledWith('/notifications');
   });
 
+  it('offers the teacher shortcuts only to teachers', async () => {
+    await renderWithClient(<ProfileScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'More options' }));
+    expect(screen.queryByRole('menuitem', { name: 'Teacher profile' })).not.toBeOnTheScreen();
+    expect(screen.queryByRole('menuitem', { name: 'Teaching' })).not.toBeOnTheScreen();
+  });
+
+  it('opens the teacher profile editor and the Teaching tab from the menu of a teacher', async () => {
+    const student = useAuthStore.getState().user;
+    if (student) useAuthStore.setState({ user: { ...student, role: 'TEACHER' } });
+    await renderWithClient(<ProfileScreen />);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'More options' }));
+    await fireEvent.press(screen.getByRole('menuitem', { name: 'Teacher profile' }));
+    expect(mockPush).toHaveBeenLastCalledWith('/profile/teacher-edit');
+
+    await fireEvent.press(screen.getByRole('button', { name: 'More options' }));
+    await fireEvent.press(screen.getByRole('menuitem', { name: 'Teaching' }));
+    expect(mockNavigate).toHaveBeenLastCalledWith('/studio');
+  });
+
   it('logs out only after the confirmation', async () => {
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     await renderWithClient(<ProfileScreen />);

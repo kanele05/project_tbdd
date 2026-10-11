@@ -14,6 +14,8 @@ const mockRefetch = jest.fn();
 const mockToggleLike = jest.fn();
 const mockCreateQuestion = jest.fn();
 const mockCreateAnswer = jest.fn();
+const mockPinAnswer = jest.fn();
+let mockIsOwner = false;
 let mockQuestions: Record<string, unknown> = {};
 let mockQuestion: Record<string, unknown> = {};
 let mockAnswers: Record<string, unknown> = {};
@@ -44,6 +46,11 @@ jest.mock('../hooks', () => ({
   useToggleQuestionLike: () => ({ mutate: mockToggleLike }),
 }));
 
+jest.mock('@/features/teaching/hooks', () => ({
+  useCourseTeacherInfo: () => ({ teacherName: 'Dr. Teach', isOwner: mockIsOwner }),
+  usePinAnswer: () => ({ mutate: mockPinAnswer }),
+}));
+
 function makeQuestion(id: string, overrides: Partial<QuestionDto> = {}): QuestionDto {
   return {
     id,
@@ -63,6 +70,8 @@ function makeAnswer(id: string): AnswerDto {
     content: `Answer ${id}`,
     createdAt: new Date().toISOString(),
     user: { id: 'user-2', fullName: 'Thomas', avatarUrl: null },
+    isInstructor: false,
+    isPinned: false,
   };
 }
 
@@ -114,7 +123,10 @@ describe('QaTab', () => {
     expect(mockToggleLike).toHaveBeenCalledWith({ questionId: 'q1', isLiked: false });
 
     await fireEvent.press(screen.getByTestId('question-comments-q2'));
-    expect(mockPush).toHaveBeenCalledWith({ pathname: '/question/[id]', params: { id: 'q2' } });
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/question/[id]',
+      params: { id: 'q2', courseId: 'course-1' },
+    });
   });
 
   it('posts a new question from the composer', async () => {
@@ -178,6 +190,7 @@ describe('QaTab', () => {
 describe('QuestionDetailScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsOwner = false;
     mockQuestion = {
       data: makeQuestion('q1'),
       isPending: false,
@@ -192,7 +205,7 @@ describe('QuestionDetailScreen', () => {
   async function renderScreen() {
     return render(
       <ToastProvider>
-        <QuestionDetailScreen questionId="q1" />
+        <QuestionDetailScreen questionId="q1" courseId="course-1" />
       </ToastProvider>,
     );
   }
@@ -259,5 +272,30 @@ describe('QuestionDetailScreen', () => {
 
     expect(screen.getByText("Couldn't load this question")).toBeOnTheScreen();
     expect(screen.queryByLabelText('Write a reply...')).not.toBeOnTheScreen();
+  });
+
+  it('marks the instructor reply with a badge and shows the pinned reply first', async () => {
+    mockAnswers = listState([
+      { ...makeAnswer('a1'), isInstructor: true, isPinned: true },
+      makeAnswer('a2'),
+    ]);
+    await renderScreen();
+
+    expect(screen.getByText('Instructor')).toBeOnTheScreen();
+    expect(screen.getByTestId('answer-pinned-a1')).toBeOnTheScreen();
+    expect(screen.queryByTestId('answer-pinned-a2')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('pin-a1')).not.toBeOnTheScreen();
+  });
+
+  it('lets the course teacher pin and unpin replies', async () => {
+    mockIsOwner = true;
+    mockAnswers = listState([{ ...makeAnswer('a1'), isPinned: true }, makeAnswer('a2')]);
+    await renderScreen();
+
+    await fireEvent.press(screen.getByTestId('pin-a2'));
+    expect(mockPinAnswer).toHaveBeenLastCalledWith({ answerId: 'a2', isPinned: false });
+
+    await fireEvent.press(screen.getByTestId('pin-a1'));
+    expect(mockPinAnswer).toHaveBeenLastCalledWith({ answerId: 'a1', isPinned: true });
   });
 });

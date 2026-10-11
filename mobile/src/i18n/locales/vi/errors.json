@@ -58,6 +58,14 @@
     "TWO_FACTOR_NOT_SETUP": "Hãy bắt đầu thiết lập xác minh hai bước trước.",
     "TWO_FACTOR_NOT_ENABLED": "Xác minh hai bước chưa được bật.",
     "TWO_FACTOR_ALREADY_ENABLED": "Xác minh hai bước đã được bật.",
-    "SESSION_NOT_FOUND": "Thiết bị này không còn đăng nhập."
+    "SESSION_NOT_FOUND": "Thiết bị này không còn đăng nhập.",
+    "COURSE_INCOMPLETE": "Khóa học chưa đủ điều kiện gửi duyệt. Hãy xem danh sách mục còn thiếu.",
+    "INVALID_COURSE_STATE": "Không thực hiện được ở trạng thái hiện tại của khóa học. Hãy làm mới và thử lại.",
+    "REVISION_REQUIRED": "Khóa học đã xuất bản: thay đổi lớn phải đi qua bản sửa đổi.",
+    "REVISION_EXISTS": "Khóa học này đã có một bản sửa đổi đang mở.",
+    "REVISION_NOT_FOUND": "Khóa học này chưa có bản sửa đổi nào đang mở.",
+    "COURSE_HAS_ENROLLMENTS": "Khóa học đã có học viên nên chỉ có thể ẩn, không thể xóa.",
+    "OWN_COURSE": "Bạn không thể mua hoặc đăng ký khóa học của chính mình.",
+    "NOT_COURSE_TEACHER": "Chỉ giảng viên của khóa học này mới làm được việc đó."
   }
 }

@@ -111,6 +111,8 @@ const REVIEW: ReviewDto = {
   content: 'Great teacher',
   createdAt: '2026-10-01T00:00:00.000Z',
   user: { id: 'u1', fullName: 'Rosie', avatarUrl: null },
+  teacherReply: null,
+  teacherRepliedAt: null,
   course: { id: 'c1', title: 'UX Foundation' },
 };
 

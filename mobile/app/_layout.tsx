@@ -87,6 +87,16 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
                 <Stack.Screen name="notifications" />
                 <Stack.Screen name="profile/edit" />
                 <Stack.Screen name="settings" />
+                <Stack.Screen name="studio/[id]/index" />
+                <Stack.Screen name="studio/[id]/edit" />
+                <Stack.Screen name="studio/[id]/curriculum" />
+                <Stack.Screen name="studio/ai-draft" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="studio/[id]/stats" />
+                <Stack.Screen name="studio/[id]/submissions" />
+                <Stack.Screen name="profile/teacher-edit" />
+                <Stack.Screen name="admin/courses" />
+                <Stack.Screen name="admin/courses/[id]" />
+                <Stack.Screen name="admin/users" />
               </Stack.Protected>
             </Stack>
           </AppFrame>

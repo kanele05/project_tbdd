@@ -9,6 +9,7 @@ import { CourseLessonsTab } from '@/features/learning/components/CourseLessonsTa
 import { useToggleCourseLike } from '@/features/learning/hooks';
 import { CourseReviewsTab } from '@/features/review/components/CourseReviewsTab';
 import { useToggleFollow } from '@/features/teacher/hooks';
+import { useIsCourseOwner } from '@/features/teaching/hooks';
 import { useIsLargeText } from '@/hooks/useFontScale';
 import { useTranslation } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
@@ -64,6 +65,8 @@ export function CourseDetailBody({
   const { toggleFollow } = useToggleFollow();
   const share = useShareCourse(course);
   const { perform, isLoading } = useCourseAction(course.id);
+  const isOwner = useIsCourseOwner(course.teacher.id);
+  const handleManage = useCallback(() => router.push(`/studio/${course.id}`), [course.id]);
   const [activeTab, setActiveTab] = useState<CourseTab>('overview');
   const [isAiRequested, setIsAiRequested] = useState(false);
 
@@ -197,6 +200,8 @@ export function CourseDetailBody({
         isLoading={isLoading}
         onAction={perform}
         onAskAi={isSignedIn ? handleAskAi : undefined}
+        isOwner={isOwner}
+        onManage={handleManage}
       />
     </>
   );

@@ -8,7 +8,13 @@ import { useTranslation } from '@/i18n';
 import { spacing } from '@/theme';
 import type { ResourceDto } from '@/types/api';
 
-import { useCourseProject, useLatestSubmissions, useResourceDownload } from '../hooks';
+import {
+  useCourseProject,
+  useLatestSubmissions,
+  useMySubmissions,
+  useResourceDownload,
+} from '../hooks';
+import { MySubmissionCard } from './MySubmissionCard';
 import { ResourceItem } from './ResourceItem';
 import { StudentProjectsSection } from './StudentProjectsSection';
 import { UploadBox } from './UploadBox';
@@ -38,6 +44,7 @@ export function ProjectsTab({ courseId }: ProjectsTabProps) {
   const { t } = useTranslation('project');
   const project = useCourseProject(courseId);
   const submissions = useLatestSubmissions(courseId);
+  const mine = useMySubmissions(courseId);
   const { download, downloading } = useResourceDownload();
 
   const handleUpload = useCallback(() => {
@@ -98,6 +105,16 @@ export function ProjectsTab({ courseId }: ProjectsTabProps) {
         </AppText>
         <UploadBox onPress={handleUpload} />
       </View>
+      {mine.data && mine.data.length > 0 ? (
+        <View style={styles.section} testID="my-submissions">
+          <AppText variant="h3" accessibilityRole="header">
+            {t('mine.title')}
+          </AppText>
+          {mine.data.map((submission) => (
+            <MySubmissionCard key={submission.id} submission={submission} />
+          ))}
+        </View>
+      ) : null}
       <StudentProjectsSection
         count={data?.submissionCount ?? submissions.data?.length ?? 0}
         submissions={submissions.data}

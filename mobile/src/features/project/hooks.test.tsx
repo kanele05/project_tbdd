@@ -4,10 +4,16 @@ import type { ReactNode } from 'react';
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { queryKeys } from '@/lib/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 import { createTestQueryClient } from '@/test/queryWrapper';
 import type { ProjectSubmissionDto, ResourceDto } from '@/types/api';
 
-import { useLatestSubmissions, useResourceDownload, useSubmitProject } from './hooks';
+import {
+  useLatestSubmissions,
+  useMySubmissions,
+  useResourceDownload,
+  useSubmitProject,
+} from './hooks';
 
 const mockSubmissions = jest.fn();
 const mockSubmit = jest.fn();
@@ -54,6 +60,9 @@ function makeSubmission(id: string): ProjectSubmissionDto {
     imageUrl: null,
     fileUrl: 'https://x/f',
     createdAt: '2026-10-01T00:00:00Z',
+    grade: null,
+    feedback: null,
+    gradedAt: null,
     user: { id: 'u', fullName: 'U', avatarUrl: null },
   };
 }
@@ -73,6 +82,40 @@ describe('useLatestSubmissions', () => {
     await waitFor(() => expect(result.current.data?.map((s) => s.id)).toEqual(['s1', 's2']));
     expect(mockSubmissions).toHaveBeenCalledWith('c1', 1, 10);
     expect(result.current.hasNextPage).toBe(false);
+  });
+});
+
+describe('useMySubmissions', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it("keeps only the signed-in student's submissions (with grade and feedback) from the newest 50", async () => {
+    useAuthStore.setState({
+      user: {
+        id: 'me',
+        email: 'me@x.y',
+        fullName: 'Me',
+        headline: null,
+        avatarUrl: null,
+        coverUrl: null,
+        role: 'STUDENT',
+      },
+    });
+    const mine = {
+      ...makeSubmission('mine'),
+      grade: 88,
+      feedback: 'Nice',
+      user: { id: 'me', fullName: 'Me', avatarUrl: null },
+    };
+    mockSubmissions.mockResolvedValue({
+      data: [makeSubmission('other'), mine],
+      meta: { page: 1, limit: 50, total: 2, totalPages: 1 },
+    });
+    const { wrapper } = setup();
+
+    const { result } = await renderHook(() => useMySubmissions('c1'), { wrapper });
+
+    await waitFor(() => expect(result.current.data).toEqual([mine]));
+    expect(mockSubmissions).toHaveBeenCalledWith('c1', 1, 50);
   });
 });
 
@@ -100,7 +143,11 @@ describe('useSubmitProject', () => {
     expect(result.current.progress).toBe(60);
     const keys = invalidate.mock.calls.map(([f]) => (f as { queryKey: unknown[] }).queryKey);
     expect(keys).toEqual(
-      expect.arrayContaining([queryKeys.courseSubmissions('c1'), queryKeys.courseProject('c1')]),
+      expect.arrayContaining([
+        queryKeys.courseSubmissions('c1'),
+        queryKeys.courseProject('c1'),
+        queryKeys.teachingMySubmissions('c1'),
+      ]),
     );
   });
 

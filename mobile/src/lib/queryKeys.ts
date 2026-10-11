@@ -1,4 +1,11 @@
-import type { AiLang, CourseListParams, MyCoursesStatus } from '@/types/api';
+import type {
+  AdminCourseListParams,
+  AdminUserListParams,
+  AiLang,
+  CourseListParams,
+  CourseStatus,
+  MyCoursesStatus,
+} from '@/types/api';
 
 /**
  * Central query-key factory (CLAUDE.md §7, PLAN.md §10). Never write key arrays inline.
@@ -100,11 +107,48 @@ export const queryKeys = {
   /** `GET /courses/:id/ai/chat` (infinite). */
   aiChat: (courseId: string) => ['ai', 'chat', courseId] as const,
 
+  /* ---- studio (teacher, PLAN §2.4) - never persisted ---- */
+  /** Prefix of every Studio key. */
+  studioAll: () => ['studio'] as const,
+  /** `GET /teacher/courses` (infinite). Prefix of every list: `studioCoursesAll()`. */
+  studioCourses: (status: CourseStatus | 'all' = 'all') => ['studio', 'courses', status] as const,
+  studioCoursesAll: () => ['studio', 'courses'] as const,
+  /** `GET /teacher/courses/:id` (also the cache every workflow response is written to). */
+  studioCourse: (id: string) => ['studio', 'course', id] as const,
+
+  /* ---- teaching (teacher stats / grading / own profile, PLAN §2.4) - NOT persisted ---- */
+  /** `GET /me/teacher-profile`: its `id` is the `course.teacher.id` of the teacher's own courses. */
+  teachingProfile: () => ['teaching', 'profile'] as const,
+  /** `GET /teacher/courses/:id/stats`. */
+  teachingStats: (courseId: string) => ['teaching', 'stats', courseId] as const,
+  /** `GET /teacher/courses/:id/submissions?status=` (infinite). Prefix: `teachingSubmissionsAll`. */
+  teachingSubmissions: (courseId: string, status: string = 'all') =>
+    ['teaching', 'submissions', courseId, status] as const,
+  teachingSubmissionsAll: (courseId: string) => ['teaching', 'submissions', courseId] as const,
+  /** The signed-in student's own submissions of a course (grade + feedback). */
+  teachingMySubmissions: (courseId: string) => ['teaching', 'my-submissions', courseId] as const,
+
   /* ---- notifications ---- */
   /** `GET /notifications`. */
   notifications: () => ['notifications'] as const,
   /** `GET /notifications/unread-count` (badge of the Home bell). Child of `notifications()`. */
   notificationsUnreadCount: () => ['notifications', 'unread-count'] as const,
+
+  /* ---- admin (PLAN §2.4) - never persisted ---- */
+  /** Prefix of every admin key. */
+  adminAll: () => ['admin'] as const,
+  /** `GET /admin/stats`. */
+  adminStats: () => ['admin', 'stats'] as const,
+  /** `GET /admin/courses` (infinite). Prefix of every queue key: `adminCoursesAll`. */
+  adminCourses: (params: AdminCourseListParams = {}) => ['admin', 'courses', params] as const,
+  adminCoursesAll: () => ['admin', 'courses'] as const,
+  /** `GET /admin/courses/:id`. */
+  adminCourse: (id: string) => ['admin', 'course', id] as const,
+  /** `GET /admin/courses/:id/ai-review` - kept apart from `adminCourse` so a refresh does not re-run the AI. */
+  adminAiReview: (id: string, lang: AiLang) => ['admin', 'ai-review', id, lang] as const,
+  /** `GET /admin/users` (infinite). Prefix: `adminUsersAll`. */
+  adminUsers: (params: AdminUserListParams = {}) => ['admin', 'users', params] as const,
+  adminUsersAll: () => ['admin', 'users'] as const,
 } as const;
 
 /**

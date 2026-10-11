@@ -168,7 +168,7 @@ describe('NotificationsScreen', () => {
     await fireEvent.press(screen.getByRole('button', { name: /New answer/ }));
 
     expect(mockMarkRead).toHaveBeenCalledWith('n1');
-    expect(mockPush).toHaveBeenCalledWith('/question/q1');
+    expect(mockPush).toHaveBeenCalledWith('/question/q1?courseId=c1');
   });
 
   it('opens the course for a course notification without re-marking a read one', async () => {
@@ -199,5 +199,26 @@ describe('NotificationsScreen', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Mark all as read' }));
 
     expect(mockMarkAllRead).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens the studio page of a rejected course with a localized title', async () => {
+    setQuery(
+      [
+        notification({
+          id: 'n3',
+          type: 'COURSE_REJECTED',
+          title: 'Your course was rejected',
+          body: 'Reason: add a thumbnail.',
+          data: { courseId: 'c7' },
+        }),
+      ],
+      1,
+    );
+    await render(<NotificationsScreen />);
+
+    expect(screen.getByText('Reason: add a thumbnail.')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: /Your course was not approved/ }));
+
+    expect(mockPush).toHaveBeenCalledWith('/studio/c7');
   });
 });

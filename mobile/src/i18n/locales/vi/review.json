@@ -37,5 +37,28 @@
     "rating": "Hãy chọn từ 1 đến 5 sao",
     "contentMin": "Hãy viết ít nhất {{min}} ký tự",
     "contentMax": "Nhận xét tối đa {{max}} ký tự"
+  },
+  "reply": {
+    "by": "Phản hồi từ {{name}}",
+    "byInstructor": "Phản hồi của giảng viên",
+    "action": "Phản hồi",
+    "edit": "Sửa phản hồi",
+    "delete": "Xóa phản hồi",
+    "actionA11y": "Phản hồi đánh giá của {{name}}",
+    "editA11y": "Sửa phản hồi của bạn cho đánh giá của {{name}}",
+    "deleteA11y": "Xóa phản hồi của bạn cho đánh giá của {{name}}",
+    "sheetTitle": "Phản hồi đánh giá",
+    "sheetSubtitle": "{{name}}, {{rating}} trên 5 sao",
+    "placeholder": "Cảm ơn học viên hoặc giải đáp góp ý của họ",
+    "save": "Đăng phản hồi",
+    "saved": "Đã đăng phản hồi",
+    "deleted": "Đã xóa phản hồi",
+    "deleteTitle": "Xóa phản hồi này?",
+    "deleteMessage": "Học viên sẽ không còn thấy phản hồi của bạn.",
+    "counter": "{{count}}/{{max}}",
+    "validation": {
+      "required": "Hãy viết phản hồi trước",
+      "max": "Phản hồi tối đa {{max}} ký tự"
+    }
   }
 }

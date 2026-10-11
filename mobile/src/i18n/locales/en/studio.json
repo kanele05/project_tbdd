@@ -1,0 +1,344 @@
+{
+  "title": "Teaching",
+  "subtitle": "Create, publish and track your courses.",
+  "newCourse": "New course",
+  "loadFailed": "Couldn't load your courses",
+  "retry": "Retry",
+  "actions": {
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "summary": {
+    "courses": "Courses",
+    "students": "Students",
+    "revenue": "Revenue"
+  },
+  "filter": {
+    "all": "All"
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "PENDING_REVIEW": "In review",
+    "PUBLISHED": "Published",
+    "REJECTED": "Rejected",
+    "ARCHIVED": "Hidden",
+    "revisionOPEN": "Revision draft",
+    "revisionPENDING_REVIEW": "Revision in review",
+    "revisionREJECTED": "Revision rejected",
+    "title": "Course status",
+    "checklistTitle": "Before you submit",
+    "ready": "Everything is in place. You can submit this course for review.",
+    "missingIntro_one": "{{count}} thing left to fix before you can submit:",
+    "missingIntro_other": "{{count}} things left to fix before you can submit:",
+    "fixMissing": "{{item}}. Open to fix it.",
+    "submit": "Submit for review",
+    "resubmit": "Submit again",
+    "delete": "Delete course",
+    "pendingMessage": "An admin is reviewing this course. You can't edit it meanwhile; withdraw it if you need to make changes.",
+    "withdraw": "Withdraw from review",
+    "publishedMessage": "This course is live. Students can find it, buy it and learn from it.",
+    "archive": "Hide course",
+    "archivedMessage": "This course is hidden from the catalog and search. Students who already bought it can still learn.",
+    "restore": "Make visible again",
+    "rejectedTitle": "The admin rejected this course",
+    "links": {
+      "edit": "Edit course info",
+      "curriculum": "Edit curriculum",
+      "stats": "Statistics",
+      "submissions": "Project submissions"
+    }
+  },
+  "empty": {
+    "title": "No courses yet",
+    "message": "Create your first course, add lessons and send it for review.",
+    "filteredTitle": "Nothing here",
+    "filteredMessage": "You have no courses with the status \"{{status}}\"."
+  },
+  "card": {
+    "label": "{{title}}, {{status}}, {{price}}, {{students}}",
+    "students_one": "{{count}} student",
+    "students_other": "{{count}} students",
+    "rejectedReason": "Rejected: {{reason}}"
+  },
+  "cover": {
+    "label": "Cover image",
+    "change": "Change image",
+    "choose": "Choose image",
+    "empty": "No cover yet",
+    "uploading": "Uploading {{percent}}%",
+    "hint": "PNG or JPG, up to 5 MB. 16:9 looks best.",
+    "sizeError": "This image is too large (max 5 MB).",
+    "typeError": "Only PNG or JPG images are supported."
+  },
+  "category": {
+    "loadFailed": "Couldn't load the categories."
+  },
+  "tags": {
+    "unknown": "Tag",
+    "count": "{{count}}/{{max}}",
+    "none": "No tags available."
+  },
+  "benefits": {
+    "label": "What students will learn",
+    "count": "{{count}}/{{max}}",
+    "empty": "Add up to 10 short points.",
+    "placeholder": "e.g. Build a REST API from scratch",
+    "itemLabel": "Learning point {{number}}",
+    "remove": "Remove learning point {{number}}",
+    "add": "Add a point"
+  },
+  "edit": {
+    "title": "Course info",
+    "createTitle": "New course",
+    "created": "Draft created. Now add the lessons.",
+    "saved": "Changes saved.",
+    "basic": "Basic info",
+    "details": "Details",
+    "aiSuggest": "Suggest with AI",
+    "createSubmit": "Create draft",
+    "saveSubmit": "Save changes",
+    "fields": {
+      "title": "Title",
+      "titlePlaceholder": "e.g. Complete React Native Bootcamp",
+      "category": "Category",
+      "tags": "Tags",
+      "tagsHelper": "Pick up to 5 from the available tags.",
+      "price": "Price (USD)",
+      "priceHelper": "0 or empty = free.",
+      "originalPrice": "Original price (USD)",
+      "originalPriceHelper": "Optional, shown crossed out.",
+      "subtitle": "Subtitle",
+      "subtitlePlaceholder": "One line that sells the course",
+      "description": "Description",
+      "descriptionPlaceholder": "What the course covers, who it is for, what students need",
+      "descriptionHelper": "{{count}} characters. At least {{min}} are needed to submit.",
+      "project": "Course project",
+      "projectPlaceholder": "Describe the project students submit (optional)"
+    },
+    "locked": {
+      "pending": {
+        "title": "Locked while in review",
+        "message": "An admin is reviewing this course. Withdraw it from the status screen to edit it."
+      },
+      "archived": {
+        "title": "Hidden course",
+        "message": "Make the course visible again from the status screen before editing it."
+      }
+    },
+    "published": {
+      "title": "This course is published",
+      "message": "Subtitle, description, learning points, project and cover save right away. Title, category, tags, price and the curriculum need a revision that an admin approves.",
+      "revisionTitle": "You are editing a revision",
+      "revisionMessage": "Title, category, tags and price are saved in the revision and go live only after approval. Subtitle, description, learning points, project and cover still apply immediately.",
+      "pendingTitle": "Revision in review",
+      "pendingMessage": "Title, category, tags and price are locked until the admin decides. The other fields still save right away."
+    }
+  },
+  "revision": {
+    "title": "Revision",
+    "start": "Create a revision",
+    "created": "Revision created. Edit the major fields now.",
+    "noneMessage": "To change the title, price, category, tags or the curriculum of a published course, create a revision. Students keep seeing the current version until it is approved.",
+    "updated": "Last edited {{date}}",
+    "rejectedTitle": "The admin rejected this revision",
+    "pendingMessage": "An admin is reviewing your revision. Students still see the published version.",
+    "ready": "The revision is complete and can be submitted.",
+    "editInfo": "Edit info",
+    "editCurriculum": "Edit curriculum",
+    "submit": "Submit revision",
+    "withdraw": "Withdraw revision",
+    "discard": "Discard revision"
+  },
+  "validation": {
+    "titleMin": "Title needs at least {{count}} characters.",
+    "titleMax": "Title can have at most {{count}} characters.",
+    "subtitleMax": "Subtitle can have at most {{count}} characters.",
+    "descriptionMax": "Description can have at most {{count}} characters.",
+    "categoryRequired": "Pick a category.",
+    "tagsMax": "You can pick at most {{count}} tags.",
+    "priceInvalid": "Enter a price like 29.99 (max $999.99).",
+    "projectMax": "The project can have at most {{count}} characters.",
+    "lessonTitleRequired": "Give the lesson a title.",
+    "lessonTitleMax": "Title can have at most {{count}} characters.",
+    "videoInvalid": "Enter a valid YouTube link.",
+    "durationInvalid": "Use mm:ss between 0:01 and 6:00:00.",
+    "lessonContentMax": "Notes can have at most {{count}} characters.",
+    "sectionTitleRequired": "Give the section a title.",
+    "sectionTitleMax": "Title can have at most {{count}} characters.",
+    "topicMin": "Describe the topic in at least {{count}} characters.",
+    "topicMax": "The topic can have at most {{count}} characters."
+  },
+  "unsaved": {
+    "title": "Discard changes?",
+    "message": "You have unsaved changes. If you leave now they will be lost.",
+    "discard": "Discard",
+    "keepEditing": "Keep editing"
+  },
+  "missing": {
+    "TITLE_LENGTH": "The title must be 5 to 120 characters.",
+    "DESCRIPTION_TOO_SHORT": "The description needs at least 100 characters.",
+    "NO_THUMBNAIL": "Upload a cover image.",
+    "NO_CATEGORY": "Pick a category.",
+    "NO_SECTION": "Add at least one section.",
+    "NOT_ENOUGH_LESSONS": "Add at least 3 lessons in total.",
+    "LESSON_VIDEO_INVALID": "Lesson {{number}} needs a valid YouTube link.",
+    "LESSON_DURATION_INVALID": "Lesson {{number}} needs a length between 1 second and 6 hours.",
+    "PREVIEW_COUNT": "Mark 1 to 3 lessons as free previews.",
+    "PRICE_INVALID": "The price must be free or between $0.99 and $999.99.",
+    "ORIGINAL_PRICE_INVALID": "The original price must be higher than the price."
+  },
+  "history": {
+    "title": "Review history",
+    "empty": "Nothing yet. Submit the course to start the review.",
+    "action": {
+      "SUBMITTED": "Submitted for review ({{target}})",
+      "WITHDRAWN": "Withdrawn ({{target}})",
+      "APPROVED": "Approved ({{target}})",
+      "REJECTED": "Rejected ({{target}})",
+      "ARCHIVED": "Hidden ({{target}})",
+      "RESTORED": "Made visible again ({{target}})"
+    },
+    "target": {
+      "COURSE": "course",
+      "REVISION": "revision"
+    },
+    "byOn": "{{name}} - {{date}}",
+    "reason": "Reason: {{reason}}"
+  },
+  "curriculum": {
+    "title": "Curriculum",
+    "empty": {
+      "title": "No sections yet",
+      "message": "Start with a section, then add lessons with a YouTube link."
+    },
+    "sectionTitle": "Section {{number}}: {{title}}",
+    "plannedTag": "Planned by AI",
+    "plannedAdd": "Add",
+    "addLesson": "Add lesson",
+    "addSection": "Add section",
+    "maxSections": "A course can have at most {{max}} sections.",
+    "maxLessons": "A course can have at most {{max}} lessons.",
+    "summary": "{{sections}} sections - {{lessons}} lessons - {{duration}} - previews {{previews}}/{{maxPreviews}}",
+    "revisionSaved": "Revision saved.",
+    "revisionTitle": "Editing the revision",
+    "revisionMessage": "Changes stay on this screen until you tap \"Save revision\". Students keep the published curriculum until an admin approves it.",
+    "saveRevision": "Save revision",
+    "needsRevisionTitle": "Create a revision to edit the curriculum",
+    "needsRevisionMessage": "This course is published, so its sections and lessons change through a revision that an admin approves.",
+    "lockedTitle": "Curriculum is locked",
+    "lockedMessage": "The course or its revision is in review, or the course is hidden. Withdraw it or make it visible first."
+  },
+  "section": {
+    "title": "Section title",
+    "titlePlaceholder": "e.g. Getting started",
+    "save": "Save section",
+    "addTitle": "New section",
+    "editTitle": "Rename section",
+    "moveUp": "Move section {{title}} up",
+    "moveDown": "Move section {{title}} down",
+    "rename": "Rename section {{title}}",
+    "delete": "Delete section {{title}}",
+    "deleteConfirmTitle": "Delete this section?",
+    "deleteConfirmMessage": "\"{{title}}\" and all its lessons will be removed."
+  },
+  "lesson": {
+    "title": "Lesson title",
+    "titlePlaceholder": "e.g. Installing the tools",
+    "videoUrl": "YouTube link",
+    "normalized": "Saved as: {{url}}",
+    "duration": "Length (mm:ss)",
+    "durationHelper": "For example 12:34, or 1:02:05 for over an hour.",
+    "preview": "Free preview",
+    "previewHelper": "{{count}}/{{max}} previews in this course.",
+    "previewLimit": "A course can have at most {{max}} free previews.",
+    "content": "Lesson notes",
+    "contentPlaceholder": "Text notes of the lesson",
+    "contentHelper": "Optional. The AI features use these notes.",
+    "save": "Save lesson",
+    "addTitle": "New lesson",
+    "editTitle": "Edit lesson",
+    "previewTag": "Preview",
+    "moveUp": "Move lesson {{title}} up",
+    "moveDown": "Move lesson {{title}} down",
+    "edit": "Edit lesson {{title}}",
+    "delete": "Delete lesson {{title}}",
+    "deleteConfirmTitle": "Delete this lesson?",
+    "deleteConfirmMessage": "\"{{title}}\" will be removed."
+  },
+  "confirm": {
+    "withdraw": {
+      "title": "Withdraw from review?",
+      "message": "The course goes back to draft and you can edit it again.",
+      "confirm": "Withdraw"
+    },
+    "archive": {
+      "title": "Hide this course?",
+      "message": "It disappears from the catalog and search. Students who already bought it keep access.",
+      "confirm": "Hide"
+    },
+    "discardRevision": {
+      "title": "Discard the revision?",
+      "message": "All changes in the revision are lost. The published course is not touched.",
+      "confirm": "Discard"
+    },
+    "withdrawRevision": {
+      "title": "Withdraw the revision?",
+      "message": "The revision is removed from review and deleted. The published course is not touched.",
+      "confirm": "Withdraw"
+    },
+    "delete": {
+      "title": "Delete this course?",
+      "message": "The course and its lessons are deleted for good. This can't be undone.",
+      "confirm": "Delete"
+    }
+  },
+  "toast": {
+    "submitted": "Submitted for review.",
+    "withdrawn": "Withdrawn. The course is a draft again.",
+    "archived": "The course is hidden.",
+    "restored": "The course is visible again.",
+    "revisionCreated": "Revision created.",
+    "revisionSubmitted": "Revision submitted for review.",
+    "revisionDiscarded": "Revision removed.",
+    "deleted": "Course deleted."
+  },
+  "ai": {
+    "title": "AI course draft",
+    "close": "Close",
+    "intro": "Tell the AI what the course is about. It suggests a subtitle, description, learning points and an outline. Nothing is saved until you apply a part and save the course.",
+    "topic": "Topic",
+    "topicPlaceholder": "e.g. React Native for beginners",
+    "level": "Level",
+    "levels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "language": "Language of the text",
+    "langs": {
+      "vi": "Tiếng Việt",
+      "en": "English"
+    },
+    "generate": "Generate suggestions",
+    "regenerate": "Generate again",
+    "loading": "The AI is writing your draft. This can take a few seconds.",
+    "parts": {
+      "subtitle": "Subtitle",
+      "description": "Description",
+      "benefits": "Learning points",
+      "outline": "Outline"
+    },
+    "apply": "Apply",
+    "applyPart": "Apply {{part}}",
+    "applied": "Applied",
+    "appliedToast": "Added to the form. Review it, then save.",
+    "outlineNeedsDraft": "The outline can only be applied to a draft or rejected course.",
+    "outlineNeedsCourse": "Save the course first, then apply the outline from its editor.",
+    "outlineConfirm": {
+      "title": "Create the sections?",
+      "message": "{{count}} sections will be added to the curriculum. Their lessons appear as \"planned\" rows: you add the YouTube link and the length.",
+      "confirm": "Create sections"
+    },
+    "outlineApplied": "Sections created. Fill in the planned lessons."
+  }
+}

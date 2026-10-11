@@ -10,6 +10,7 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { useNotEnrolledGuard } from '@/features/learning/accessGuard';
 import { flattenPages } from '@/features/learning/pages';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
+import { useCourseTeacherInfo, usePinAnswer } from '@/features/teaching/hooks';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { AnswerDto, QuestionDto } from '@/types/api';
@@ -20,7 +21,11 @@ import { QuestionCard } from '../components/QuestionCard';
 import { QuestionCardSkeleton } from '../components/QuestionCardSkeleton';
 import { useCreateAnswer, useQuestion, useQuestionAnswers, useToggleQuestionLike } from '../hooks';
 
-export type QuestionDetailScreenProps = { questionId: string };
+export type QuestionDetailScreenProps = {
+  questionId: string;
+  /** Course of the question (the question response carries none): lets the course teacher pin replies. */
+  courseId?: string;
+};
 
 function keyExtractor(answer: AnswerDto): string {
   return answer.id;
@@ -36,7 +41,7 @@ function goBack(): void {
  * reply..." composer pinned to the bottom. The question response carries no course id, so a 403
  * (not enrolled) simply goes back.
  */
-export function QuestionDetailScreen({ questionId }: QuestionDetailScreenProps) {
+export function QuestionDetailScreen({ questionId, courseId }: QuestionDetailScreenProps) {
   const { t } = useTranslation('qa');
   const { colors } = useTheme();
   const styles = useStyles();
@@ -45,6 +50,8 @@ export function QuestionDetailScreen({ questionId }: QuestionDetailScreenProps) 
   const answers = useQuestionAnswers(questionId);
   const createAnswer = useCreateAnswer(questionId);
   const toggleLike = useToggleQuestionLike().mutate;
+  const { isOwner } = useCourseTeacherInfo(courseId);
+  const pinAnswer = usePinAnswer(questionId).mutate;
   useNotEnrolledGuard([question.error, answers.error], goBack);
 
   const items = useMemo(() => flattenPages(answers.data?.pages), [answers.data]);
@@ -52,13 +59,17 @@ export function QuestionDetailScreen({ questionId }: QuestionDetailScreenProps) 
   const { refetch: refetchQuestion } = question;
   const { refetch: refetchAnswers } = answers;
 
+  const handleTogglePin = useCallback(
+    (answer: AnswerDto) => pinAnswer({ answerId: answer.id, isPinned: answer.isPinned }),
+    [pinAnswer],
+  );
   const renderAnswer = useCallback(
     ({ item }: { item: AnswerDto }) => (
       <View style={styles.item}>
-        <AnswerItem answer={item} />
+        <AnswerItem answer={item} canPin={isOwner} onTogglePin={handleTogglePin} />
       </View>
     ),
-    [styles],
+    [handleTogglePin, isOwner, styles],
   );
   const handleToggleLike = useCallback(
     (target: QuestionDto) => toggleLike({ questionId: target.id, isLiked: target.isLiked }),

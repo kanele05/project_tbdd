@@ -37,13 +37,16 @@
   },
   "bar": {
     "progress": "Tiến độ của bạn",
-    "progressValue": "Hoàn thành {{percent}}%"
+    "progressValue": "Hoàn thành {{percent}}%",
+    "yourCourse": "Khóa học của bạn",
+    "manage": "Quản lý khóa học này"
   },
   "action": {
     "CONTINUE": "Tiếp tục học",
     "ENROLL_FREE": "Đăng ký miễn phí",
     "GO_TO_CART": "Đến giỏ hàng",
-    "ADD_TO_CART": "Thêm vào giỏ"
+    "ADD_TO_CART": "Thêm vào giỏ",
+    "OPEN_COURSE": "Mở khóa học"
   },
   "toast": {
     "addedToCart": "Đã thêm vào giỏ hàng",

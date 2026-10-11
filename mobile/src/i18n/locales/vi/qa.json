@@ -15,5 +15,12 @@
   "comments_other": "{{count}} bình luận",
   "repliesTitle_other": "{{count}} câu trả lời",
   "openDiscussion": "{{comments}}, mở cuộc thảo luận",
-  "insertEmoji": "Chèn {{emoji}}"
+  "insertEmoji": "Chèn {{emoji}}",
+  "pin": {
+    "pinned": "Đã ghim",
+    "pin": "Ghim",
+    "unpin": "Bỏ ghim",
+    "pinA11y": "Ghim câu trả lời này lên đầu",
+    "unpinA11y": "Bỏ ghim câu trả lời này"
+  }
 }

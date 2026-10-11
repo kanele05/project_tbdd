@@ -1,0 +1,111 @@
+{
+  "instructor": "Giảng viên",
+  "profile": {
+    "title": "Hồ sơ giảng viên",
+    "intro": "Thông tin này hiển thị trên trang giảng viên công khai của bạn.",
+    "jobTitle": "Chức danh",
+    "jobTitlePlaceholder": "VD: Chuyên gia thiết kế UX cấp cao",
+    "bio": "Giới thiệu",
+    "bioPlaceholder": "Chia sẻ kinh nghiệm và nội dung bạn giảng dạy",
+    "organization": "Tổ chức",
+    "organizationPlaceholder": "Công ty hoặc trường học",
+    "location": "Địa điểm",
+    "locationPlaceholder": "Thành phố, quốc gia",
+    "timezone": "Múi giờ",
+    "timezonePlaceholder": "VD: Asia/Ho_Chi_Minh",
+    "timezoneHelper": "Học viên thấy giờ địa phương của bạn trên hồ sơ.",
+    "useDeviceTimezone": "Dùng múi giờ của thiết bị này",
+    "counter": "{{count}}/{{max}}",
+    "saved": "Đã cập nhật hồ sơ giảng viên",
+    "loadFailed": "Không tải được hồ sơ giảng viên",
+    "validation": {
+      "jobTitleRequired": "Hãy nhập chức danh",
+      "jobTitleMax": "Chức danh tối đa {{max}} ký tự",
+      "bioMax": "Phần giới thiệu tối đa {{max}} ký tự",
+      "organizationMax": "Tên tổ chức tối đa {{max}} ký tự",
+      "locationMax": "Địa điểm tối đa {{max}} ký tự",
+      "timezoneInvalid": "Hãy nhập múi giờ hợp lệ, ví dụ Asia/Ho_Chi_Minh"
+    }
+  },
+  "stats": {
+    "title": "Thống kê khóa học",
+    "loadFailed": "Không tải được thống kê",
+    "kpi": {
+      "students": "Học viên",
+      "revenue": "Doanh thu",
+      "revenueNote": "Thanh toán giả lập",
+      "avgProgress": "Tiến độ trung bình",
+      "completed": "{{count}} đã hoàn thành",
+      "rating": "Đánh giá",
+      "ratingValue": "{{rating}}/5",
+      "reviews_other": "{{count}} đánh giá",
+      "noRating": "Chưa có đánh giá"
+    },
+    "distribution": {
+      "title": "Phân bố số sao",
+      "row": "{{star}} sao: {{count}}"
+    },
+    "chart": {
+      "title": "Học viên mới 30 ngày qua",
+      "total_other": "{{count}} học viên mới",
+      "empty": "Chưa có học viên mới trong 30 ngày qua.",
+      "a11y": "Học viên mới mỗi ngày trong 30 ngày qua: tổng {{total}}, ngày cao nhất {{date}} với {{peak}}.",
+      "axisStart": "30 ngày trước",
+      "axisEnd": "Hôm nay"
+    },
+    "projects": {
+      "title": "Project",
+      "value": "Đã chấm {{graded}} trên {{total}}",
+      "open": "Mở bài nộp"
+    }
+  },
+  "submissions": {
+    "title": "Bài nộp",
+    "loadFailed": "Không tải được các bài nộp",
+    "summary": "{{graded}} đã chấm, {{ungraded}} đang chờ",
+    "filter": {
+      "all": "Tất cả",
+      "ungraded": "Cần chấm",
+      "graded": "Đã chấm"
+    },
+    "empty": {
+      "allTitle": "Chưa có bài nộp nào",
+      "allMessage": "Project mà học viên nộp sẽ xuất hiện ở đây.",
+      "ungradedTitle": "Đã chấm hết",
+      "ungradedMessage": "Bài nộp mới sẽ xuất hiện ở đây.",
+      "gradedTitle": "Chưa chấm bài nào",
+      "gradedMessage": "Các bài đã chấm sẽ xuất hiện ở đây."
+    },
+    "status": {
+      "graded": "Đã chấm",
+      "ungraded": "Chưa chấm"
+    },
+    "gradeValue": "{{grade}}/100",
+    "submittedAt": "Nộp {{time}}",
+    "gradedAt": "Chấm {{time}}",
+    "openFile": "Mở tệp",
+    "openImage": "Xem ảnh bìa",
+    "openFailed": "Không mở được tệp này.",
+    "grade": "Chấm điểm",
+    "regrade": "Sửa điểm",
+    "gradeA11y": "Chấm điểm {{title}} của {{name}}",
+    "regradeA11y": "Sửa điểm của {{title}} do {{name}} nộp",
+    "sheet": {
+      "title": "Chấm điểm project",
+      "subtitle": "{{title}} của {{name}}",
+      "gradeLabel": "Điểm (0-100)",
+      "gradePlaceholder": "0-100",
+      "feedbackLabel": "Nhận xét",
+      "feedbackPlaceholder": "Cho học viên biết điểm tốt và điểm cần cải thiện",
+      "counter": "{{count}}/{{max}}",
+      "save": "Lưu điểm",
+      "saved": "Đã lưu điểm. Học viên đã nhận thông báo."
+    },
+    "validation": {
+      "gradeRequired": "Hãy nhập điểm từ 0 đến 100",
+      "gradeRange": "Điểm phải là số nguyên từ 0 đến 100",
+      "feedbackRequired": "Hãy viết nhận xét cho học viên",
+      "feedbackMax": "Nhận xét tối đa {{max}} ký tự"
+    }
+  }
+}

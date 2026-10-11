@@ -4,7 +4,9 @@
     "home": "Trang chủ",
     "search": "Tìm kiếm",
     "myCourses": "Khóa của tôi",
-    "profile": "Hồ sơ"
+    "profile": "Hồ sơ",
+    "studio": "Giảng dạy",
+    "admin": "Quản trị"
   },
   "actions": {
     "retry": "Thử lại",

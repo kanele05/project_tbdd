@@ -12,7 +12,9 @@
     "close": "Đóng menu",
     "editProfile": "Chỉnh sửa hồ sơ",
     "notifications": "Thông báo",
-    "settings": "Cài đặt"
+    "settings": "Cài đặt",
+    "teacherProfile": "Hồ sơ giảng viên",
+    "teaching": "Giảng dạy"
   },
   "stats": {
     "saved": "Đã lưu",

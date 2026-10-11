@@ -18,6 +18,7 @@ const mockEnroll = jest.fn();
 const mockRefetch = jest.fn();
 let mockDetailState: Record<string, unknown> = {};
 let mockPreviewState: Record<string, unknown> = {};
+let mockIsOwner = false;
 
 jest.mock('expo-router', () => ({
   router: {
@@ -59,6 +60,10 @@ jest.mock('@/features/bookmark/hooks', () => ({
 
 jest.mock('@/features/teacher/hooks', () => ({
   useToggleFollow: () => ({ toggleFollow: mockToggleFollow, isPending: false }),
+}));
+
+jest.mock('@/features/teaching/hooks', () => ({
+  useIsCourseOwner: () => mockIsOwner,
 }));
 
 jest.mock('@/features/learning/hooks', () => ({
@@ -115,6 +120,7 @@ const SIGNED_IN_USER = {
 
 function makeDetail(overrides: Partial<CourseDetail> = {}): CourseDetail {
   return {
+    status: 'PUBLISHED',
     id: 'course-1',
     title: 'UX Foundation: Introduction to User Experience Design',
     thumbnailUrl: 'https://example.com/thumb.png',
@@ -171,6 +177,7 @@ async function renderScreen() {
 describe('CourseDetailScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsOwner = false;
     mockPreviewState = { data: undefined, isPending: true, error: null, refetch: jest.fn() };
     mockAiSummary.mockReturnValue({ data: undefined, isError: false, isFetching: false });
     useAuthStore.setState({ user: SIGNED_IN_USER, status: 'authenticated' });
@@ -341,6 +348,30 @@ describe('CourseDetailScreen', () => {
       expect(screen.queryByText('$59')).not.toBeOnTheScreen();
       await fireEvent.press(screen.getByRole('button', { name: 'Continue learning' }));
       expect(mockPush).toHaveBeenCalledWith('/learn/course-1');
+    });
+
+    it('lets the course teacher open or manage the course instead of buying it (BR-23)', async () => {
+      mockIsOwner = true;
+      loaded(makeDetail());
+      await renderScreen();
+
+      expect(screen.getByText('Your course')).toBeOnTheScreen();
+      expect(screen.queryByRole('button', { name: 'Add to cart' })).not.toBeOnTheScreen();
+      expect(screen.queryByText('$59')).not.toBeOnTheScreen();
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Open course' }));
+      expect(mockPush).toHaveBeenCalledWith('/learn/course-1');
+
+      await fireEvent.press(screen.getByRole('button', { name: 'Manage this course' }));
+      expect(mockPush).toHaveBeenLastCalledWith('/studio/course-1');
+      expect(mockAddToCart).not.toHaveBeenCalled();
+    });
+
+    it('does not show the Manage button to students', async () => {
+      loaded(makeDetail());
+      await renderScreen();
+
+      expect(screen.queryByTestId('course-manage-button')).not.toBeOnTheScreen();
     });
   });
 

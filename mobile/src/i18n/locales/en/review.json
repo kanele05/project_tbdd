@@ -41,5 +41,28 @@
     "rating": "Select a rating from 1 to 5 stars",
     "contentMin": "Write at least {{min}} characters",
     "contentMax": "Your review can have at most {{max}} characters"
+  },
+  "reply": {
+    "by": "Reply from {{name}}",
+    "byInstructor": "Instructor reply",
+    "action": "Reply",
+    "edit": "Edit reply",
+    "delete": "Delete reply",
+    "actionA11y": "Reply to the review by {{name}}",
+    "editA11y": "Edit your reply to the review by {{name}}",
+    "deleteA11y": "Delete your reply to the review by {{name}}",
+    "sheetTitle": "Reply to review",
+    "sheetSubtitle": "{{name}}, {{rating}} out of 5 stars",
+    "placeholder": "Thank the student or answer their feedback",
+    "save": "Post reply",
+    "saved": "Reply posted",
+    "deleted": "Reply deleted",
+    "deleteTitle": "Delete this reply?",
+    "deleteMessage": "The student will no longer see your reply.",
+    "counter": "{{count}}/{{max}}",
+    "validation": {
+      "required": "Write a reply first",
+      "max": "A reply can have at most {{max}} characters"
+    }
   }
 }

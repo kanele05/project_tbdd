@@ -30,6 +30,7 @@ function makeTeacher(overrides: Partial<TeacherDetail> = {}): TeacherDetail {
 
 function makeCourseDetail(id: string, teacherId: string): CourseDetail {
   return {
+    status: 'PUBLISHED',
     ...makeCourse({ id, teacher: { id: teacherId, fullName: 'Sara Weise' } }),
     subtitle: null,
     description: '',

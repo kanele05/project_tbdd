@@ -17,5 +17,12 @@
   "repliesTitle_one": "{{count}} reply",
   "repliesTitle_other": "{{count}} replies",
   "openDiscussion": "{{comments}}, open the discussion",
-  "insertEmoji": "Insert {{emoji}}"
+  "insertEmoji": "Insert {{emoji}}",
+  "pin": {
+    "pinned": "Pinned",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "pinA11y": "Pin this reply to the top",
+    "unpinA11y": "Unpin this reply"
+  }
 }

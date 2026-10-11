@@ -4,7 +4,8 @@ import { calcDiscountPercent } from '@/utils/discount';
 import { formatTotalHours } from '@/utils/formatDuration';
 
 /** The single primary action of the course-details bottom bar (BR-17). */
-export type CourseAction = 'CONTINUE' | 'ENROLL_FREE' | 'GO_TO_CART' | 'ADD_TO_CART';
+export type CourseAction =
+  'CONTINUE' | 'OPEN_COURSE' | 'ENROLL_FREE' | 'GO_TO_CART' | 'ADD_TO_CART';
 
 /** Translated label of the bottom-bar button ("Add to cart", "Thêm vào giỏ"...). */
 export function getCourseActionLabel(action: CourseAction): string {
@@ -12,13 +13,15 @@ export function getCourseActionLabel(action: CourseAction): string {
 }
 
 /**
- * BR-17: enrolled -> "Continue learning"; price 0 -> "Enroll for free"; already in the cart ->
- * "Go to cart"; otherwise "Add to cart".
+ * BR-17: enrolled -> "Continue learning"; the course's own teacher (BR-23: cannot buy it) -> "Open
+ * course"; price 0 -> "Enroll for free"; already in the cart -> "Go to cart"; otherwise "Add to cart".
  */
 export function getCourseAction(
   course: Pick<CourseDetail, 'enrollment' | 'priceCents' | 'isInCart'>,
+  isOwner = false,
 ): CourseAction {
   if (course.enrollment) return 'CONTINUE';
+  if (isOwner) return 'OPEN_COURSE';
   if (course.priceCents <= 0) return 'ENROLL_FREE';
   if (course.isInCart) return 'GO_TO_CART';
   return 'ADD_TO_CART';

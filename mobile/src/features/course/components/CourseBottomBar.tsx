@@ -1,3 +1,4 @@
+import Feather from '@expo/vector-icons/Feather';
 import { memo } from 'react';
 import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,6 +25,9 @@ export type CourseBottomBarProps = {
   onAction: (action: CourseAction) => void;
   /** Shows the round AI button (signed-in users): jumps to the AI summary. */
   onAskAi?: () => void;
+  /** The signed-in user teaches this course (BR-23): "Open course" instead of buying, and a Manage button. */
+  isOwner?: boolean;
+  onManage?: () => void;
 };
 
 /** The round AI button is a full 48 dp target. */
@@ -39,13 +43,20 @@ export const COURSE_BOTTOM_BAR_LARGE_TEXT_EXTRA = 64;
  * Glass CTA bar pinned to the bottom of SC-09: stacked price (or the learning progress when
  * enrolled), the one neon button that follows BR-17 and the round AI button.
  */
-function CourseBottomBarBase({ course, isLoading, onAction, onAskAi }: CourseBottomBarProps) {
+function CourseBottomBarBase({
+  course,
+  isLoading,
+  onAction,
+  onAskAi,
+  isOwner = false,
+  onManage,
+}: CourseBottomBarProps) {
   const { t } = useTranslation('course');
   const { colors } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const isLargeText = useIsLargeText();
-  const action = getCourseAction(course);
+  const action = getCourseAction(course, isOwner);
   const discountPercent = getDiscountPercent(course);
 
   return (
@@ -64,7 +75,11 @@ function CourseBottomBarBase({ course, isLoading, onAction, onAskAi }: CourseBot
         style={[styles.price, isLargeText ? styles.priceRow : null]}
         testID="course-bottom-bar-price"
       >
-        {course.enrollment ? (
+        {isOwner && !course.enrollment ? (
+          <AppText variant="label" testID="course-bottom-bar-owner">
+            {t('bar.yourCourse')}
+          </AppText>
+        ) : course.enrollment ? (
           <>
             <AppText variant="caption">{t('bar.progress')}</AppText>
             <AppText variant="h3">
@@ -87,6 +102,17 @@ function CourseBottomBarBase({ course, isLoading, onAction, onAskAi }: CourseBot
         style={styles.button}
         testID="course-action-button"
       />
+      {isOwner && onManage ? (
+        <Pressable
+          onPress={onManage}
+          accessibilityRole="button"
+          accessibilityLabel={t('bar.manage')}
+          style={({ pressed }) => [styles.ai, pressed ? styles.pressed : null]}
+          testID="course-manage-button"
+        >
+          <Feather name="edit-3" size={20} color={colors.primaryText} />
+        </Pressable>
+      ) : null}
       {onAskAi ? (
         <Pressable
           onPress={onAskAi}

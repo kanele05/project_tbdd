@@ -28,6 +28,16 @@ jest.mock('../hooks', () => ({
   },
 }));
 
+let mockIsOwner = false;
+const mockDeleteReply = jest.fn();
+jest.mock('@/features/teaching/hooks', () => ({
+  useCourseTeacherInfo: () => ({ teacherName: 'Dr. Teach', isOwner: mockIsOwner }),
+  useDeleteReviewReply: () => ({ mutate: mockDeleteReply }),
+  useReplyToReview: () => ({ mutateAsync: jest.fn(), isPending: false }),
+}));
+
+jest.mock('@/utils/confirmAction', () => ({ confirmAction: () => Promise.resolve(true) }));
+
 const SUMMARY: ReviewSummaryDto = {
   avg: 4.5,
   count: 3,
@@ -41,6 +51,8 @@ function makeReviews(count: number, offset = 0): ReviewDto[] {
     content: `Review text ${offset + index + 1}`,
     createdAt: new Date().toISOString(),
     user: { id: `user-${index}`, fullName: `Reviewer ${offset + index + 1}`, avatarUrl: null },
+    teacherReply: null,
+    teacherRepliedAt: null,
   }));
 }
 
@@ -63,6 +75,7 @@ function setReviews(pages: ReviewDto[][], overrides: Record<string, unknown> = {
 describe('AllReviewsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsOwner = false;
     mockSummary = { data: SUMMARY, refetch: mockRefetch };
     setReviews([makeReviews(3)]);
   });
@@ -144,5 +157,25 @@ describe('AllReviewsScreen', () => {
     await render(<AllReviewsScreen courseId="course-1" />);
 
     expect(screen.getByText(/No internet connection/)).toBeOnTheScreen();
+  });
+
+  it('shows the instructor reply and, for the course teacher, the Reply action', async () => {
+    mockIsOwner = true;
+    setReviews([
+      [
+        {
+          ...makeReviews(1)[0]!,
+          teacherReply: 'Glad you liked it',
+          teacherRepliedAt: new Date().toISOString(),
+        },
+      ],
+    ]);
+
+    await render(<AllReviewsScreen courseId="course-1" />);
+
+    expect(screen.getByText('Glad you liked it')).toBeOnTheScreen();
+    expect(screen.getByText('Instructor')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('reply-review-1'));
+    expect(screen.getByTestId('review-reply-sheet')).toBeOnTheScreen();
   });
 });

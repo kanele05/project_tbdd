@@ -9,10 +9,16 @@ import { FloatingTabBar, TAB_BAR_OVERLAYS_CONTENT, useTabBarClearance } from './
 
 const LABELS = ['Home', 'Search', 'My courses', 'Profile'] as const;
 
-function makeProps(index: number, overrides: { defaultPrevented?: boolean } = {}) {
+function makeProps(
+  index: number,
+  overrides: { defaultPrevented?: boolean; labels?: readonly string[] } = {},
+) {
   const emit = jest.fn(() => ({ defaultPrevented: overrides.defaultPrevented ?? false }));
   const navigate = jest.fn();
-  const routes = LABELS.map((label) => ({ key: `${label}-key`, name: label }));
+  const routes = (overrides.labels ?? LABELS).map((label) => ({
+    key: `${label}-key`,
+    name: label,
+  }));
   const descriptors = Object.fromEntries(
     routes.map((route) => [
       route.key,
@@ -100,6 +106,37 @@ describe('FloatingTabBar', () => {
     expect(screen.getByRole('tab', { name: 'Home' })).toHaveStyle({
       backgroundColor: lightPalette.primary,
     });
+  });
+});
+
+describe('FloatingTabBar role-based tabs', () => {
+  const ALL = [...LABELS, 'Studio', 'Admin'] as const;
+
+  it('draws only the routes named in visibleRouteNames (a student has no Studio / Admin tab)', async () => {
+    const { props } = makeProps(0, { labels: ALL });
+    await renderWithProviders(<FloatingTabBar {...props} visibleRouteNames={LABELS} />);
+
+    expect(screen.getAllByRole('tab')).toHaveLength(4);
+    expect(screen.queryByRole('tab', { name: 'Studio' })).not.toBeOnTheScreen();
+    expect(screen.queryByRole('tab', { name: 'Admin' })).not.toBeOnTheScreen();
+  });
+
+  it('shows a fifth tab for a teacher and still selects by the real route index', async () => {
+    const { props, navigate } = makeProps(4, { labels: ALL });
+    await renderWithProviders(
+      <FloatingTabBar {...props} visibleRouteNames={[...LABELS, 'Studio']} />,
+    );
+
+    expect(screen.getAllByRole('tab')).toHaveLength(5);
+    expect(screen.getByRole('tab', { name: 'Studio' })).toBeSelected();
+    await fireEvent.press(screen.getByRole('tab', { name: 'Home' }));
+    expect(navigate).toHaveBeenCalledWith('Home', undefined);
+  });
+
+  it('draws every route when visibleRouteNames is omitted', async () => {
+    const { props } = makeProps(0, { labels: ALL });
+    await renderWithProviders(<FloatingTabBar {...props} />);
+    expect(screen.getAllByRole('tab')).toHaveLength(6);
   });
 });
 

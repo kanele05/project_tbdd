@@ -45,5 +45,15 @@
     "tooLarge": "This file is too large. The maximum size is 10 MB.",
     "unsupported": "Unsupported file type. Choose a PNG, JPG, PDF or ZIP file.",
     "coverUnsupported": "The cover image must be a PNG or JPG."
+  },
+  "mine": {
+    "title": "Your submissions",
+    "graded": "Graded",
+    "waiting": "Waiting for the instructor",
+    "grade": "{{grade}}/100",
+    "feedback": "Instructor feedback",
+    "gradedAt": "Graded {{time}}",
+    "a11yGraded": "{{title}}, graded {{grade}} out of 100",
+    "a11yWaiting": "{{title}}, not graded yet"
   }
 }

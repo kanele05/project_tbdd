@@ -14,6 +14,8 @@ function makeReview(overrides: Partial<ReviewDto> = {}): ReviewDto {
     content: 'Deserunt minim incididunt cillum nostrud do voluptate excepteur.',
     createdAt: new Date(Date.now() - DAY_MS).toISOString(),
     user: { id: 'user-1', fullName: 'Jane Barry', avatarUrl: null },
+    teacherReply: null,
+    teacherRepliedAt: null,
     ...overrides,
   };
 }

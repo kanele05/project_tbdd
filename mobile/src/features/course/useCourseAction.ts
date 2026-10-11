@@ -26,6 +26,7 @@ export function useCourseAction(courseId: string) {
       try {
         switch (action) {
           case 'CONTINUE':
+          case 'OPEN_COURSE':
             router.push(`/learn/${courseId}`);
             break;
           case 'GO_TO_CART':

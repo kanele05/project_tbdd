@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/Toast';
 import { STALE_TIME } from '@/constants/config';
 import { i18n } from '@/i18n';
 import { queryKeys } from '@/lib/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 import type { ProjectSubmissionDto, ResourceDto } from '@/types/api';
 
 import { projectApi, type SubmissionInput } from './api';
@@ -45,6 +46,24 @@ export function useLatestSubmissions(courseId: string) {
   });
 }
 
+/** The server's page-size cap: how many recent submissions are scanned for the user's own. */
+const MY_SUBMISSIONS_SCAN_LIMIT = 50;
+
+/**
+ * The signed-in student's own submissions of the course, newest first, with the instructor's grade and
+ * feedback (BR-26). There is no "mine" endpoint, so the newest 50 of the course are filtered by author.
+ */
+export function useMySubmissions(courseId: string) {
+  const userId = useAuthStore((state) => state.user?.id);
+  return useQuery({
+    queryKey: queryKeys.teachingMySubmissions(courseId),
+    queryFn: () => projectApi.submissions(courseId, 1, MY_SUBMISSIONS_SCAN_LIMIT),
+    enabled: userId !== undefined,
+    staleTime: STALE_TIME.submissions,
+    select: (page): ProjectSubmissionDto[] => page.data.filter((item) => item.user.id === userId),
+  });
+}
+
 /**
  * `POST /courses/:id/submissions` (multipart) with upload progress (0-100).
  * Success refreshes the submissions list and the project (submission count).
@@ -61,6 +80,7 @@ export function useSubmitProject(courseId: string) {
       const keys: QueryKey[] = [
         queryKeys.courseSubmissions(courseId),
         queryKeys.courseProject(courseId),
+        queryKeys.teachingMySubmissions(courseId),
       ];
       for (const queryKey of keys) void queryClient.invalidateQueries({ queryKey });
     },

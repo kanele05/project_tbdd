@@ -12,6 +12,7 @@ import { useTranslation } from '@/i18n';
 import { layout, spacing } from '@/theme';
 
 import { useCourseReviews, useMyReview, useReviewSummary, type ReviewFilter } from '../hooks';
+import { useReviewReply } from '../useReviewReply';
 import { ReviewCard } from './ReviewCard';
 import { ReviewCardSkeleton } from './ReviewCardSkeleton';
 import { ReviewsHeadline } from './ReviewsHeadline';
@@ -44,6 +45,7 @@ export function CourseReviewsTab({ courseId, canWriteReview }: CourseReviewsTabP
   const summary = useReviewSummary(courseId);
   const reviews = useCourseReviews(courseId, filter);
   const myReview = useMyReview(courseId, canWriteReview);
+  const reply = useReviewReply(courseId);
 
   const handleViewAll = useCallback(() => openAllReviews(courseId), [courseId]);
   const handleWrite = useCallback(() => openWriteReview(courseId), [courseId]);
@@ -87,7 +89,14 @@ export function CourseReviewsTab({ courseId, canWriteReview }: CourseReviewsTabP
     body = (
       <View style={styles.list}>
         {items.map((review) => (
-          <ReviewCard key={review.id} review={review} />
+          <ReviewCard
+            key={review.id}
+            review={review}
+            instructorName={reply.instructorName}
+            canReply={reply.canReply}
+            onReply={reply.onReply}
+            onDeleteReply={reply.onDeleteReply}
+          />
         ))}
       </View>
     );
@@ -115,6 +124,7 @@ export function CourseReviewsTab({ courseId, canWriteReview }: CourseReviewsTabP
           />
         </View>
       ) : null}
+      {reply.sheet}
     </View>
   );
 }

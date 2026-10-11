@@ -43,19 +43,34 @@ function useIsKeyboardVisible(): boolean {
   return isVisible;
 }
 
+export type FloatingTabBarProps = BottomTabBarProps & {
+  /**
+   * Route names that get a button. Omitted = every route. The tab layout passes the role-based
+   * list (Teacher: + studio, Admin: + admin) so tabs the user must not see are never drawn.
+   */
+  visibleRouteNames?: readonly string[];
+};
+
 /**
  * Concept B floating tab bar: a frosted pill with 16 dp margins, icons only, and the active tab as
  * a neon pill with its label. Text/icon contrast is guaranteed by the glass fill (`GLASS_ALPHA`),
  * not by the blur, so it also holds on Android where `BlurView` draws no real blur.
  * Hidden while the keyboard is open (it would sit on top of the input).
  */
-export function FloatingTabBar({ state, descriptors, navigation, insets }: BottomTabBarProps) {
+export function FloatingTabBar({
+  state,
+  descriptors,
+  navigation,
+  insets,
+  visibleRouteNames,
+}: FloatingTabBarProps) {
   const { colors } = useTheme();
   const styles = useStyles();
   const reportHeight = useContext(BottomTabBarHeightCallbackContext);
   const isKeyboardVisible = useIsKeyboardVisible();
 
   if (isKeyboardVisible) return null;
+  const isDense = (visibleRouteNames?.length ?? state.routes.length) >= 5;
 
   return (
     <View
@@ -69,6 +84,7 @@ export function FloatingTabBar({ state, descriptors, navigation, insets }: Botto
     >
       <GlassSurface hasShadow radius={radius.bar} contentStyle={styles.bar} style={styles.glass}>
         {state.routes.map((route, index) => {
+          if (visibleRouteNames && !visibleRouteNames.includes(route.name)) return null;
           const { options } = descriptors[route.key] ?? { options: {} };
           const label = options.title ?? route.name;
           const isFocused = state.index === index;
@@ -97,6 +113,7 @@ export function FloatingTabBar({ state, descriptors, navigation, insets }: Botto
               style={({ pressed }) => [
                 styles.tab,
                 isFocused ? styles.tabActive : styles.tabIdle,
+                isFocused && isDense ? styles.tabActiveDense : null,
                 pressed && !isFocused ? styles.pressed : null,
               ]}
             >
@@ -140,6 +157,8 @@ const useStyles = makeStyles((t) => ({
   // active tab keeps room on a 360 dp phone with a large system font ("Khóa của tôi" at 130 %).
   tabIdle: { width: layout.minTouchTarget },
   tabActive: { backgroundColor: t.colors.primary, paddingHorizontal: spacing.md, flexShrink: 1 },
+  // Five tabs (Teacher / Admin) leave less room for the active label on a 360 dp phone.
+  tabActiveDense: { paddingHorizontal: spacing.sm },
   pressed: { opacity: 0.6 },
   label: { color: t.colors.onPrimary, flexShrink: 1 },
 }));

@@ -44,5 +44,15 @@
     "tooLarge": "Tệp này quá lớn. Dung lượng tối đa là 10 MB.",
     "unsupported": "Loại tệp không được hỗ trợ. Hãy chọn tệp PNG, JPG, PDF hoặc ZIP.",
     "coverUnsupported": "Ảnh bìa phải là PNG hoặc JPG."
+  },
+  "mine": {
+    "title": "Bài nộp của bạn",
+    "graded": "Đã chấm",
+    "waiting": "Đang chờ giảng viên chấm",
+    "grade": "{{grade}}/100",
+    "feedback": "Nhận xét của giảng viên",
+    "gradedAt": "Chấm {{time}}",
+    "a11yGraded": "{{title}}, đã chấm {{grade}} trên 100",
+    "a11yWaiting": "{{title}}, chưa được chấm"
   }
 }

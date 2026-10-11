@@ -82,6 +82,7 @@ jest.mock('../hooks', () => ({
 
 const COURSE: CourseDetail = {
   id: 'course-1',
+  status: 'PUBLISHED',
   title: 'UX Foundation: Introduction to User Experience Design',
   thumbnailUrl: 'https://example.com/a.png',
   teacher: {
@@ -305,6 +306,22 @@ describe('LearningScreen', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Save course' }));
 
     expect(mockToggleBookmark).toHaveBeenCalledWith('course-1', false);
+  });
+
+  it('opens the Projects tab when the tab param says so (PROJECT_GRADED notification)', async () => {
+    mockParams = { tab: 'projects' };
+
+    await renderScreen();
+
+    expect(screen.getByText('projects course-1')).toBeOnTheScreen();
+  });
+
+  it('ignores an unknown tab param', async () => {
+    mockParams = { tab: 'nope' };
+
+    await renderScreen();
+
+    expect(screen.getByText('I - Introduction')).toBeOnTheScreen();
   });
 
   it('switches between the LESSONS, PROJECTS and Q&A tabs', async () => {

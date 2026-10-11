@@ -1,3 +1,4 @@
+import enAdmin from './locales/en/admin.json';
 import enAi from './locales/en/ai.json';
 import enAuth from './locales/en/auth.json';
 import enCart from './locales/en/cart.json';
@@ -14,7 +15,10 @@ import enQa from './locales/en/qa.json';
 import enReview from './locales/en/review.json';
 import enSearch from './locales/en/search.json';
 import enSettings from './locales/en/settings.json';
+import enStudio from './locales/en/studio.json';
 import enTeacher from './locales/en/teacher.json';
+import enTeaching from './locales/en/teaching.json';
+import viAdmin from './locales/vi/admin.json';
 import viAi from './locales/vi/ai.json';
 import viAuth from './locales/vi/auth.json';
 import viCart from './locales/vi/cart.json';
@@ -31,7 +35,9 @@ import viQa from './locales/vi/qa.json';
 import viReview from './locales/vi/review.json';
 import viSearch from './locales/vi/search.json';
 import viSettings from './locales/vi/settings.json';
+import viStudio from './locales/vi/studio.json';
 import viTeacher from './locales/vi/teacher.json';
+import viTeaching from './locales/vi/teaching.json';
 
 /**
  * One namespace per feature so several people can edit translations in parallel without touching
@@ -56,6 +62,9 @@ export const NAMESPACES = [
   'myCourses',
   'settings',
   'ai',
+  'studio',
+  'admin',
+  'teaching',
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];
@@ -81,6 +90,9 @@ export const resources = {
     myCourses: enMyCourses,
     settings: enSettings,
     ai: enAi,
+    studio: enStudio,
+    admin: enAdmin,
+    teaching: enTeaching,
   },
   vi: {
     common: viCommon,
@@ -100,5 +112,8 @@ export const resources = {
     myCourses: viMyCourses,
     settings: viSettings,
     ai: viAi,
+    studio: viStudio,
+    admin: viAdmin,
+    teaching: viTeaching,
   },
 } as const;

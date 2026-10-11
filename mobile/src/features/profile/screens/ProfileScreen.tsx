@@ -90,6 +90,14 @@ export function ProfileScreen() {
     setIsMenuOpen(false);
     router.push('/profile/edit');
   }, []);
+  const handleTeacherProfile = useCallback(() => {
+    setIsMenuOpen(false);
+    router.push('/profile/teacher-edit');
+  }, []);
+  const handleTeaching = useCallback(() => {
+    setIsMenuOpen(false);
+    router.navigate('/studio');
+  }, []);
   const handleNotifications = useCallback(() => {
     setIsMenuOpen(false);
     router.push('/notifications');
@@ -164,6 +172,8 @@ export function ProfileScreen() {
           onEditProfile={handleEditProfile}
           onNotifications={handleNotifications}
           onSettings={handleSettings}
+          onTeacherProfile={user?.role === 'TEACHER' ? handleTeacherProfile : undefined}
+          onTeaching={user?.role === 'TEACHER' ? handleTeaching : undefined}
           onLogout={handleLogout}
         />
       ) : null}

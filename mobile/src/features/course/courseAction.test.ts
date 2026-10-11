@@ -26,6 +26,13 @@ describe('getCourseAction (BR-17)', () => {
     expect(getCourseActionLabel(action)).toBe('Enroll for free');
   });
 
+  it('returns "Open course" for the teacher of the course, who cannot buy it (BR-23)', () => {
+    const action = getCourseAction(NOT_ENROLLED, true);
+    expect(action).toBe('OPEN_COURSE');
+    expect(getCourseActionLabel(action)).toBe('Open course');
+    expect(getCourseAction({ ...NOT_ENROLLED, priceCents: 0 }, true)).toBe('OPEN_COURSE');
+  });
+
   it('returns "Continue learning" when enrolled, whatever the price or cart state', () => {
     const enrollment = { progressPercent: 30, lastLessonId: null };
     const action = getCourseAction({ enrollment, priceCents: 5900, isInCart: true });

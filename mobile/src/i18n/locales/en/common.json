@@ -4,7 +4,9 @@
     "home": "Home",
     "search": "Search",
     "myCourses": "My Courses",
-    "profile": "Profile"
+    "profile": "Profile",
+    "studio": "Teaching",
+    "admin": "Admin"
   },
   "actions": {
     "retry": "Retry",

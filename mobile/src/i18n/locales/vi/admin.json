@@ -1,0 +1,261 @@
+{
+  "title": "Quản trị",
+  "forbiddenTitle": "Không có quyền truy cập",
+  "forbidden": "Tài khoản của bạn không có quyền quản trị. Hãy đăng nhập bằng tài khoản quản trị viên để dùng khu vực này.",
+  "actions": {
+    "approve": "Duyệt",
+    "reject": "Từ chối",
+    "archive": "Ẩn khóa học",
+    "restore": "Khôi phục",
+    "cancel": "Hủy"
+  },
+  "roles": {
+    "STUDENT": "Học viên",
+    "TEACHER": "Giảng viên",
+    "ADMIN": "Quản trị viên"
+  },
+  "status": {
+    "DRAFT": "Bản nháp",
+    "PENDING_REVIEW": "Chờ duyệt",
+    "PUBLISHED": "Đã xuất bản",
+    "REJECTED": "Bị từ chối",
+    "ARCHIVED": "Đã ẩn"
+  },
+  "revisionStatus": {
+    "OPEN": "Đang soạn bản sửa đổi",
+    "PENDING_REVIEW": "Bản sửa đổi chờ duyệt",
+    "REJECTED": "Bản sửa đổi bị từ chối"
+  },
+  "dashboard": {
+    "loadFailed": "Không tải được bảng điều khiển",
+    "pendingTitle": "Đang chờ duyệt",
+    "pendingBreakdown": "{{courses}} khóa học mới · {{revisions}} bản sửa đổi",
+    "pendingNone": "Không có gì đang chờ. Bạn đã xử lý hết.",
+    "reviewNow": "Mở hàng chờ duyệt",
+    "kpi": {
+      "users": "Người dùng",
+      "disabled": "{{count}} bị khóa",
+      "newUsers7": "Người dùng mới (7 ngày)",
+      "newUsers30": "{{count}} trong 30 ngày qua",
+      "revenue": "Doanh thu",
+      "orders": "Đơn đã thanh toán"
+    },
+    "usersByRole": "Người dùng theo vai trò",
+    "coursesByStatus": "Khóa học theo trạng thái",
+    "topCourses": "Khóa học nổi bật",
+    "noTopCourses": "Chưa có khóa học đã xuất bản nào có người ghi danh.",
+    "topCourseLabel": "Hạng {{rank}}: {{title}}. {{enrollments}}, doanh thu {{revenue}}",
+    "enrollments_other": "{{count}} lượt ghi danh",
+    "linkCourses": "Khóa học",
+    "linkCoursesHint": "Duyệt khóa học mới và bản sửa đổi, ẩn hoặc khôi phục khóa học",
+    "linkUsers": "Người dùng",
+    "linkUsersHint": "Tìm tài khoản, khóa hoặc mở khóa"
+  },
+  "queue": {
+    "title": "Hàng chờ duyệt",
+    "loadFailed": "Không tải được hàng chờ",
+    "type": {
+      "course": "Khóa học mới",
+      "revision": "Bản sửa đổi"
+    },
+    "typeWithCount": "{{label}} ({{count}})",
+    "typeBadge": {
+      "COURSE": "Khóa học mới",
+      "REVISION": "Bản sửa đổi"
+    },
+    "itemLabel": "{{title}}. {{type}}, {{status}}. Giảng viên {{teacher}}",
+    "submitted": "Gửi {{when}}",
+    "notSubmitted": "Chưa gửi duyệt",
+    "lessons_other": "{{count}} bài học",
+    "emptyTitle": "Chưa có gì ở đây",
+    "emptyMessage": {
+      "PENDING_REVIEW": "Không có bài nào đang chờ duyệt.",
+      "PUBLISHED": "Chưa có khóa học nào được xuất bản.",
+      "REJECTED": "Không có bài nào bị từ chối.",
+      "ARCHIVED": "Không có khóa học nào bị ẩn."
+    }
+  },
+  "detail": {
+    "title": "Duyệt khóa học",
+    "loadFailed": "Không tải được khóa học này",
+    "never": "Chưa gửi duyệt",
+    "coverOf": "Ảnh bìa của {{title}}",
+    "teacherDisabled": "Tài khoản bị khóa",
+    "category": "Danh mục",
+    "price": "Giá",
+    "lessons": "Bài học",
+    "duration": "Thời lượng",
+    "enrollments": "Lượt ghi danh",
+    "submitted": "Gửi duyệt",
+    "description": "Mô tả",
+    "noDescription": "Chưa có mô tả.",
+    "benefits": "Học viên nhận được",
+    "project": "Project của khóa",
+    "changesTitle": "Thay đổi của bản sửa đổi",
+    "curriculum": "Chương trình học",
+    "curriculumProposed": "Chương trình học đề xuất",
+    "noCurriculum": "Chưa có chương nào.",
+    "sectionTitle": "Chương {{index}}: {{title}}",
+    "previewLesson": "Xem thử miễn phí",
+    "noVideo": "Link video không hợp lệ",
+    "openVideo": "Mở video của bài {{title}}",
+    "openVideoFailed": "Không mở được link video.",
+    "showNotes": "Xem ghi chú bài học",
+    "hideNotes": "Ẩn ghi chú bài học"
+  },
+  "diff": {
+    "before": "Trước",
+    "after": "Sau",
+    "yes": "Có",
+    "no": "Không",
+    "none": "Không có",
+    "notesText": "Có ghi chú",
+    "notesEmpty": "Không có ghi chú",
+    "noChanges": "Bản sửa đổi này không thay đổi gì.",
+    "fields": {
+      "title": "Tiêu đề",
+      "videoUrl": "Link video",
+      "durationSec": "Thời lượng",
+      "isPreview": "Xem thử miễn phí",
+      "content": "Ghi chú bài học",
+      "price": "Giá",
+      "originalPrice": "Giá gốc",
+      "category": "Danh mục",
+      "tags": "Thẻ"
+    },
+    "sectionAdded": "Thêm chương",
+    "sectionRemoved": "Xóa chương",
+    "sectionRenamed": "Đổi tên chương",
+    "lessonAdded": "Thêm bài học",
+    "lessonRemoved": "Xóa bài học",
+    "lessonChanged": "Sửa bài học",
+    "progressLost_other": "Sẽ mất {{count}} bản ghi tiến độ của học viên",
+    "reordered": "Đổi thứ tự",
+    "reorderedHint": "Các chương hoặc bài học được sắp xếp theo thứ tự khác."
+  },
+  "ai": {
+    "title": "AI kiểm duyệt sơ bộ",
+    "subtitle": "Thêm một lớp kiểm tra cho bài gửi duyệt",
+    "run": "Chạy kiểm tra AI",
+    "loading": "AI đang đọc khóa học...",
+    "retry": "Thử lại",
+    "retryAfter": "Bạn có thể thử lại sau khoảng {{seconds}} giây.",
+    "advisory": "Chỉ mang tính tham khảo. AI có thể sai nên quyết định là của bạn. Kết quả này không chặn việc duyệt hay từ chối.",
+    "verdict": {
+      "LOOKS_OK": "Có vẻ ổn",
+      "NEEDS_ATTENTION": "Cần chú ý"
+    },
+    "noIssues": "AI không phát hiện vấn đề nào.",
+    "issuesTitle_other": "{{count}} vấn đề có thể có",
+    "severity": {
+      "high": "Cao",
+      "medium": "Trung bình",
+      "low": "Thấp"
+    },
+    "generatedAt": "Tạo {{when}} bởi {{model}}"
+  },
+  "history": {
+    "title": "Lịch sử duyệt",
+    "empty": "Chưa có hoạt động duyệt nào.",
+    "itemLabel": "{{actor}}: {{action}}, {{target}}, {{when}}",
+    "action": {
+      "SUBMITTED": "Gửi duyệt",
+      "WITHDRAWN": "Rút lại",
+      "APPROVED": "Đã duyệt",
+      "REJECTED": "Từ chối",
+      "ARCHIVED": "Đã ẩn",
+      "RESTORED": "Khôi phục"
+    },
+    "target": {
+      "COURSE": "khóa học",
+      "REVISION": "bản sửa đổi"
+    }
+  },
+  "missing": {
+    "title": "Chưa đủ điều kiện xuất bản",
+    "hint": "Bài gửi duyệt không còn đạt yêu cầu nên việc duyệt sẽ thất bại.",
+    "lessonNumber": "bài {{number}}",
+    "codes": {
+      "TITLE_LENGTH": "Tiêu đề phải dài 5-120 ký tự",
+      "DESCRIPTION_TOO_SHORT": "Mô tả quá ngắn (tối thiểu 100 ký tự)",
+      "NO_THUMBNAIL": "Chưa có ảnh bìa",
+      "NO_CATEGORY": "Chưa có danh mục",
+      "NO_SECTION": "Chưa có chương nào",
+      "NOT_ENOUGH_LESSONS": "Cần ít nhất 3 bài học",
+      "LESSON_VIDEO_INVALID": "Có bài học chưa có link YouTube hợp lệ",
+      "LESSON_DURATION_INVALID": "Thời lượng bài học phải từ 1 giây đến 6 giờ",
+      "PREVIEW_COUNT": "Cần từ 1 đến 3 bài xem thử miễn phí",
+      "PRICE_INVALID": "Giá phải là miễn phí hoặc từ $0,99 đến $999,99",
+      "ORIGINAL_PRICE_INVALID": "Giá gốc phải cao hơn giá bán"
+    }
+  },
+  "confirm": {
+    "approveCourseTitle": "Duyệt khóa học này?",
+    "approveCourseMessage": "Khóa học sẽ được xuất bản ngay và giảng viên sẽ nhận thông báo.",
+    "approveRevisionTitle": "Duyệt bản sửa đổi này?",
+    "approveRevisionMessage": "Thay đổi có hiệu lực ngay. Bài học bị xóa sẽ mất tiến độ của học viên. Giảng viên sẽ nhận thông báo.",
+    "restoreTitle": "Khôi phục khóa học này?",
+    "restoreMessage": "Khóa học sẽ hiện lại trong danh mục."
+  },
+  "toast": {
+    "courseApproved": "Đã duyệt khóa học",
+    "revisionApproved": "Đã duyệt bản sửa đổi",
+    "courseRejected": "Đã từ chối khóa học",
+    "revisionRejected": "Đã từ chối bản sửa đổi",
+    "archived": "Đã ẩn khóa học",
+    "restored": "Đã khôi phục khóa học",
+    "userDisabled": "Đã khóa tài khoản",
+    "userEnabled": "Đã mở khóa tài khoản"
+  },
+  "reject": {
+    "courseTitle": "Từ chối khóa học này",
+    "revisionTitle": "Từ chối bản sửa đổi này",
+    "message": "Giảng viên sẽ nhận lý do của bạn qua thông báo và email.",
+    "label": "Lý do"
+  },
+  "archive": {
+    "title": "Ẩn khóa học này",
+    "message": "Khóa học biến mất khỏi danh mục. Học viên đã mua vẫn học được.",
+    "label": "Lý do (không bắt buộc)"
+  },
+  "reason": {
+    "tooShort": "Nhập ít nhất {{min}} ký tự.",
+    "tooLong": "Tối đa {{max}} ký tự.",
+    "counter": "{{count}}/{{max}}"
+  },
+  "users": {
+    "title": "Người dùng",
+    "loadFailed": "Không tải được danh sách người dùng",
+    "searchPlaceholder": "Tìm theo tên hoặc email",
+    "roleFilter": "Lọc theo vai trò",
+    "statusFilter": "Lọc theo trạng thái",
+    "all": "Mọi vai trò",
+    "status": {
+      "all": "Mọi trạng thái",
+      "active": "Đang hoạt động",
+      "disabled": "Bị khóa"
+    },
+    "emptyTitle": "Không tìm thấy người dùng",
+    "emptyMessage": "Hãy thử từ khóa khác hoặc xóa bộ lọc.",
+    "courseCount_other": "{{count}} khóa học",
+    "enrollmentCount_other": "{{count}} lượt ghi danh",
+    "joined": "tham gia {{when}}",
+    "disabledBadge": "Bị khóa",
+    "unverified": "Chưa xác minh email",
+    "disabledReason": "Lý do: {{reason}}",
+    "enable": "Mở khóa",
+    "disable": "Khóa",
+    "enableLabel": "Mở khóa tài khoản của {{name}}",
+    "disableLabel": "Khóa tài khoản của {{name}}",
+    "enableTitle": "Mở khóa tài khoản này?",
+    "enableMessage": "{{name}} sẽ đăng nhập lại được.",
+    "disableTitle": "Khóa tài khoản này",
+    "disableMessage": "{{name}} sẽ bị đăng xuất khỏi mọi thiết bị và không đăng nhập được cho đến khi bạn mở khóa.",
+    "reasonLabel": "Lý do"
+  },
+  "errors": {
+    "CANNOT_DISABLE_ADMIN": "Không thể khóa tài khoản quản trị viên, kể cả tài khoản của bạn.",
+    "INVALID_COURSE_STATE": "Khóa học đang ở trạng thái không cho phép thao tác này. Hãy làm mới và kiểm tra trạng thái hiện tại.",
+    "COURSE_INCOMPLETE": "Khóa học chưa đạt yêu cầu xuất bản."
+  }
+}

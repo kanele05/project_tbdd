@@ -63,6 +63,8 @@ function makeAnswer(id: string): AnswerDto {
     content: 'Try this',
     createdAt: '2026-10-01T00:00:00.000Z',
     user: { id: 'u2', fullName: 'Tom', avatarUrl: null },
+    isInstructor: false,
+    isPinned: false,
   };
 }
 
