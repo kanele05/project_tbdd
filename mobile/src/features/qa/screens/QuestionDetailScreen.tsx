@@ -3,6 +3,8 @@ import { router } from 'expo-router';
 import { useCallback, useMemo, useRef } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, View } from 'react-native';
 
+import { DESKTOP_NAV_HEIGHT } from '@/components/layout/desktopLayout';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { AppText } from '@/components/ui/AppText';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -11,6 +13,7 @@ import { useNotEnrolledGuard } from '@/features/learning/accessGuard';
 import { flattenPages } from '@/features/learning/pages';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
 import { useCourseTeacherInfo, usePinAnswer } from '@/features/teaching/hooks';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { AnswerDto, QuestionDto } from '@/types/api';
@@ -20,6 +23,9 @@ import { Composer } from '../components/Composer';
 import { QuestionCard } from '../components/QuestionCard';
 import { QuestionCardSkeleton } from '../components/QuestionCardSkeleton';
 import { useCreateAnswer, useQuestion, useQuestionAnswers, useToggleQuestionLike } from '../hooks';
+
+/** Readable column of the question page on a wide window (PLAN §2.5). */
+const WIDE_MAX_WIDTH = 800;
 
 export type QuestionDetailScreenProps = {
   questionId: string;
@@ -45,6 +51,7 @@ export function QuestionDetailScreen({ questionId, courseId }: QuestionDetailScr
   const { t } = useTranslation('qa');
   const { colors } = useTheme();
   const styles = useStyles();
+  const { isWide } = useBreakpoint();
   const listRef = useRef<FlashListRef<AnswerDto>>(null);
   const question = useQuestion(questionId);
   const answers = useQuestionAnswers(questionId);
@@ -162,18 +169,25 @@ export function QuestionDetailScreen({ questionId, courseId }: QuestionDetailScr
   }
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior="padding">
-      <ScreenHeader title={t('questionTitle')} />
-      <View style={styles.body}>{body}</View>
-      {isBlocked || question.isPending ? null : (
-        <Composer placeholder={t('replyPlaceholder')} onSubmit={handleSubmit} />
-      )}
+    <KeyboardAvoidingView
+      style={[styles.screen, isWide ? styles.belowNav : null]}
+      behavior="padding"
+    >
+      <PageContainer maxWidth={WIDE_MAX_WIDTH} style={styles.screen} testID="question-column">
+        <ScreenHeader title={t('questionTitle')} />
+        <View style={styles.body}>{body}</View>
+        {isBlocked || question.isPending ? null : (
+          <Composer placeholder={t('replyPlaceholder')} onSubmit={handleSubmit} />
+        )}
+      </PageContainer>
     </KeyboardAvoidingView>
   );
 }
 
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },
+  // The fixed nav bar covers the top DESKTOP_NAV_HEIGHT dp on a wide window.
+  belowNav: { paddingTop: DESKTOP_NAV_HEIGHT },
   body: { flex: 1 },
   content: { paddingBottom: spacing.lg },
   header: { gap: spacing.lg, paddingBottom: spacing.lg, paddingHorizontal: layout.screenPaddingX },

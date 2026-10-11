@@ -18,6 +18,10 @@ jest.mock('expo-router', () => ({
   useIsFocused: () => true,
 }));
 jest.mock('expo-status-bar', () => ({ StatusBar: () => null }));
+// The wide layout imports the preview player (expo-video); it is never rendered on a phone.
+jest.mock('@/features/course/components/PreviewPlayerModal', () => ({
+  PreviewPlayerModal: () => null,
+}));
 jest.mock('../api', () => ({ homeApi: { get: jest.fn() } }));
 jest.mock('@/features/ai/api', () => ({ aiApi: { recommendations: jest.fn() } }));
 jest.mock('@/features/my-courses/api', () => ({ myCoursesApi: { list: jest.fn() } }));

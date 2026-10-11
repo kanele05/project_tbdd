@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DialogFrame } from '@/components/layout/DialogFrame';
 import {
   AppText,
   Button,
@@ -16,6 +17,7 @@ import {
 } from '@/components/ui';
 import { FormError } from '@/features/auth/components/FormError';
 import { getCachedCourseImage } from '@/features/course/cachedCourseImage';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { getFieldErrors } from '@/lib/appError';
 import { layout, makeStyles, spacing } from '@/theme';
@@ -37,6 +39,7 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
   const styles = useStyles();
   const toast = useToast();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const { submit, isPending, progress } = useSubmitProject(courseId);
   const files = useSubmissionFiles();
   const [formError, setFormError] = useState<string | null>(null);
@@ -72,6 +75,85 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
 
   const handleClose = useCallback(() => router.back(), []);
 
+  const fields = (
+    <>
+      <FormTextField
+        control={control}
+        name="title"
+        label={t('project:submit.titleLabel')}
+        placeholder={t('project:submit.titlePlaceholder')}
+        maxLength={100}
+        returnKeyType="next"
+        editable={!isPending}
+      />
+      <FormTextField
+        control={control}
+        name="description"
+        label={t('project:submit.descriptionLabel')}
+        placeholder={t('project:submit.descriptionPlaceholder')}
+        multiline
+        numberOfLines={4}
+        maxLength={1000}
+        textAlignVertical="top"
+        editable={!isPending}
+      />
+      <FilePickerField
+        label={t('project:submit.fileLabel')}
+        hint={t('project:submit.fileHint')}
+        file={files.file}
+        error={files.fileError}
+        onPick={() => void files.pickFile()}
+        onClear={files.clearFile}
+        disabled={isPending}
+        testID="project-file-field"
+      />
+      <FilePickerField
+        label={t('project:submit.coverLabel')}
+        hint={t('project:submit.coverHint')}
+        file={files.cover}
+        error={files.coverError}
+        showPreview
+        onPick={() => void files.pickCover()}
+        onClear={files.clearCover}
+        disabled={isPending}
+        testID="cover-image-field"
+      />
+      <FormError message={formError} />
+      {isPending ? (
+        <View style={styles.progress} accessibilityLiveRegion="polite">
+          <AppText variant="caption" color="textSecondary">
+            {t('project:submit.uploading', { percent: progress })}
+          </AppText>
+          <ProgressBar percent={progress} />
+        </View>
+      ) : null}
+    </>
+  );
+  const submitButton = (
+    <Button
+      title={t('project:submit.action')}
+      fullWidth
+      loading={isPending}
+      onPress={() => void onSubmit()}
+      testID="submit-project-button"
+    />
+  );
+
+  if (isWide) {
+    return (
+      <DialogFrame
+        title={t('project:submit.title')}
+        closeLabel={t('common:actions.close')}
+        onClose={handleClose}
+        width={640}
+        footer={submitButton}
+        testID="submit-project-dialog"
+      >
+        {fields}
+      </DialogFrame>
+    );
+  }
+
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
       <CinematicHeader
@@ -91,63 +173,8 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xxl }]}
         keyboardShouldPersistTaps="handled"
       >
-        <FormTextField
-          control={control}
-          name="title"
-          label={t('project:submit.titleLabel')}
-          placeholder={t('project:submit.titlePlaceholder')}
-          maxLength={100}
-          returnKeyType="next"
-          editable={!isPending}
-        />
-        <FormTextField
-          control={control}
-          name="description"
-          label={t('project:submit.descriptionLabel')}
-          placeholder={t('project:submit.descriptionPlaceholder')}
-          multiline
-          numberOfLines={4}
-          maxLength={1000}
-          textAlignVertical="top"
-          editable={!isPending}
-        />
-        <FilePickerField
-          label={t('project:submit.fileLabel')}
-          hint={t('project:submit.fileHint')}
-          file={files.file}
-          error={files.fileError}
-          onPick={() => void files.pickFile()}
-          onClear={files.clearFile}
-          disabled={isPending}
-          testID="project-file-field"
-        />
-        <FilePickerField
-          label={t('project:submit.coverLabel')}
-          hint={t('project:submit.coverHint')}
-          file={files.cover}
-          error={files.coverError}
-          showPreview
-          onPick={() => void files.pickCover()}
-          onClear={files.clearCover}
-          disabled={isPending}
-          testID="cover-image-field"
-        />
-        <FormError message={formError} />
-        {isPending ? (
-          <View style={styles.progress} accessibilityLiveRegion="polite">
-            <AppText variant="caption" color="textSecondary">
-              {t('project:submit.uploading', { percent: progress })}
-            </AppText>
-            <ProgressBar percent={progress} />
-          </View>
-        ) : null}
-        <Button
-          title={t('project:submit.action')}
-          fullWidth
-          loading={isPending}
-          onPress={() => void onSubmit()}
-          testID="submit-project-button"
-        />
+        {fields}
+        {submitButton}
       </ScrollView>
     </KeyboardAvoidingView>
   );

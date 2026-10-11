@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Pressable, View, type TextInput } from 'react-native';
+import { View, type TextInput } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
@@ -17,6 +17,7 @@ import { applyAuthError, getAuthErrorDetails } from '../authErrors';
 import { useAuthFlowStore } from '../authFlowStore';
 import { nowMs } from '../clock';
 import { AuthLayout } from '../components/AuthLayout';
+import { AuthLink } from '../components/AuthLink';
 import { CaptchaWidget } from '../components/CaptchaWidget';
 import { FormError } from '../components/FormError';
 import { FormNotice } from '../components/FormNotice';
@@ -125,16 +126,11 @@ export function LoginScreen() {
           <AppText variant="body" color="textSecondary">
             {t('noAccount')}
           </AppText>
-          <Pressable
+          <AuthLink
+            label={t('signUp')}
             onPress={() => router.push('/register')}
             hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
-            accessibilityRole="link"
-            accessibilityLabel={t('signUp')}
-          >
-            <AppText variant="label" color="primaryText">
-              {t('signUp')}
-            </AppText>
-          </Pressable>
+          />
         </>
       }
     >
@@ -168,18 +164,14 @@ export function LoginScreen() {
           returnKeyType="go"
           onSubmitEditing={onSubmit}
         />
-        <Pressable
-          onPress={() => router.push('/forgot-password')}
-          hitSlop={{ top: 14, bottom: 14, left: 12, right: 12 }}
-          accessibilityRole="link"
-          accessibilityLabel={t('loginScreen.forgotPassword')}
-          style={styles.forgot}
-          testID="login-forgot"
-        >
-          <AppText variant="label" color="primaryText">
-            {t('loginScreen.forgotPassword')}
-          </AppText>
-        </Pressable>
+        <View style={styles.forgot}>
+          <AuthLink
+            label={t('loginScreen.forgotPassword')}
+            onPress={() => router.push('/forgot-password')}
+            hitSlop={{ top: 14, bottom: 14, left: 12, right: 12 }}
+            testID="login-forgot"
+          />
+        </View>
       </View>
       {isCaptchaRequired && !isLocked ? (
         <CaptchaWidget

@@ -1,19 +1,19 @@
-import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CourseCardHorizontalSkeleton } from '@/components/course';
-import { EmptyState, ErrorState, ScreenHeader, useToast } from '@/components/ui';
+import { EmptyState, ErrorState, ScreenHeader } from '@/components/ui';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
-import { getErrorMessage } from '@/lib/appError';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { CartItemDto, CourseSummary } from '@/types/api';
-import { confirmAction } from '@/utils/confirmAction';
 
 import { CartItemCard } from '../components/CartItemCard';
 import { CART_SUMMARY_BAR_CLEARANCE, CartSummaryBar } from '../components/CartSummaryBar';
-import { useCart, useRemoveFromCart } from '../hooks';
+import { useCart } from '../hooks';
+import { useCartActions } from '../useCartActions';
+import { CartDesktopScreen } from './CartDesktopScreen';
 
 function keyOf(item: CartItemDto): string {
   return item.course.id;
@@ -37,39 +37,18 @@ function CartSkeleton() {
 }
 
 /**
- * SC-12 Cart: course rows (remove with confirmation), glass total bar and Checkout. Empty cart ->
- * EmptyState "Your cart is empty" + "Explore courses".
+ * SC-12 Cart on a phone: course rows (remove with confirmation), glass total bar and Checkout.
+ * Empty cart -> EmptyState "Your cart is empty" + "Explore courses".
  */
-export function CartScreen() {
+function CartPhoneScreen() {
   const { t } = useTranslation(['cart', 'common']);
   const { colors } = useTheme();
   const themed = useStyles();
   const insets = useSafeAreaInsets();
-  const toast = useToast();
   const { data: cart, isPending, isError, error, refetch } = useCart();
-  const { mutate: removeFromCart, isPending: isRemovePending, variables } = useRemoveFromCart();
+  const { removingId, handleOpenCourse, handleRemove, handleExplore, handleCheckout } =
+    useCartActions();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const removingId = isRemovePending ? variables : null;
-
-  const handleOpenCourse = useCallback((course: CourseSummary) => {
-    router.push(`/course/${course.id}`);
-  }, []);
-
-  const handleRemove = useCallback(
-    async (course: CourseSummary) => {
-      const isConfirmed = await confirmAction({
-        title: t('cart:remove.title'),
-        message: t('cart:remove.message', { title: course.title }),
-        confirmLabel: t('cart:remove.confirm'),
-        cancelLabel: t('common:actions.cancel'),
-        isDestructive: true,
-      });
-      if (isConfirmed) {
-        removeFromCart(course.id, { onError: (e) => toast.error(getErrorMessage(e)) });
-      }
-    },
-    [removeFromCart, t, toast],
-  );
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -83,14 +62,11 @@ export function CartScreen() {
         course={item.course}
         isRemoving={removingId === item.course.id}
         onPress={handleOpenCourse}
-        onRemove={(course) => void handleRemove(course)}
+        onRemove={(course: CourseSummary) => void handleRemove(course)}
       />
     ),
     [handleOpenCourse, handleRemove, removingId],
   );
-
-  const handleExplore = useCallback(() => router.dismissTo('/search'), []);
-  const handleCheckout = useCallback(() => router.push('/checkout'), []);
 
   const items = cart?.items ?? [];
   let content;
@@ -146,6 +122,12 @@ export function CartScreen() {
       {content}
     </View>
   );
+}
+
+/** SC-12 Cart: the phone list below 768 dp, the two-column PC page from 768 dp (PLAN §2.5). */
+export function CartScreen() {
+  const { isWide } = useBreakpoint();
+  return isWide ? <CartDesktopScreen /> : <CartPhoneScreen />;
 }
 
 const useStyles = makeStyles((t) => ({

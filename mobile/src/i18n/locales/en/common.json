@@ -80,5 +80,36 @@
   "priceTag": {
     "was": "{{price}}, was {{original}}",
     "discShort": "{{percent}}% Disc."
+  },
+  "nav": {
+    "main": "Main navigation",
+    "brandHome": "elearn, go to Home",
+    "openSearch": "Open search",
+    "closeSearch": "Close search",
+    "searchPlaceholder": "Search courses",
+    "searchLabel": "Search courses",
+    "clearSearch": "Clear search",
+    "cart": "Cart",
+    "cartWithCount_one": "Cart, {{count}} item",
+    "cartWithCount_other": "Cart, {{count}} items",
+    "notifications": "Notifications",
+    "notificationsUnread_one": "Notifications, {{count}} unread",
+    "notificationsUnread_other": "Notifications, {{count}} unread",
+    "accountMenu": "Account menu",
+    "accountMenuOf": "Account menu of {{name}}",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "rail": {
+    "scrollLeft": "Scroll left",
+    "scrollRight": "Scroll right"
+  },
+  "desktopCard": {
+    "ownedLabel": "{{title}}, {{percent}}% complete",
+    "percentDone": "{{percent}}% done",
+    "continue": "Continue {{title}}",
+    "addToCart": "Add {{title}} to cart",
+    "details": "Details of {{title}}"
   }
 }

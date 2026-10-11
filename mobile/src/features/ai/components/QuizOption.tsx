@@ -2,6 +2,8 @@ import Feather from '@expo/vector-icons/Feather';
 import { memo } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { useHover } from '@/components/layout/useHover';
+import { pointerStyle } from '@/components/layout/work/workStyles';
 import { AppText } from '@/components/ui/AppText';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
@@ -29,10 +31,12 @@ function QuizOptionBase({ letter, text, state, isLocked, onPress, testID }: Quiz
   const { t } = useTranslation('ai');
   const { colors } = useTheme();
   const styles = useStyles();
+  const { isHovered, hoverProps } = useHover();
   const rowStyle =
     state === 'correct' ? styles.correct : state === 'wrong' ? styles.wrong : styles.idle;
   return (
     <Pressable
+      {...hoverProps}
       onPress={onPress}
       disabled={isLocked}
       accessibilityRole="button"
@@ -46,7 +50,9 @@ function QuizOptionBase({ letter, text, state, isLocked, onPress, testID }: Quiz
         styles.row,
         rowStyle,
         state === 'dim' ? styles.dim : null,
+        isHovered && !isLocked ? styles.hover : null,
         pressed && !isLocked ? styles.pressed : null,
+        isLocked ? null : styles.clickable,
       ]}
     >
       <View style={styles.letter}>
@@ -81,7 +87,9 @@ const useStyles = makeStyles((t) => ({
   correct: { borderColor: t.colors.success, backgroundColor: t.colors.card },
   wrong: { borderColor: t.colors.danger, backgroundColor: t.colors.dangerSoft },
   dim: { opacity: 0.6 },
+  hover: { borderColor: t.colors.primaryText },
   pressed: { backgroundColor: t.colors.surfaceAlt },
+  clickable: pointerStyle,
   letter: {
     width: LETTER_SIZE,
     height: LETTER_SIZE,

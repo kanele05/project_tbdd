@@ -1,6 +1,6 @@
 import { i18n } from '@/i18n';
 
-import { describeMissing, getMissingFromError, getMissingTarget } from './missingItems';
+import { describeMissing, getMissingFromError, getMissingStep } from './missingItems';
 
 describe('describeMissing', () => {
   it('writes a readable sentence, in the current language, with the lesson number', async () => {
@@ -13,12 +13,16 @@ describe('describeMissing', () => {
   });
 });
 
-describe('getMissingTarget', () => {
-  it('sends curriculum problems to the curriculum and the rest to the info form', () => {
-    expect(getMissingTarget('NOT_ENOUGH_LESSONS')).toBe('curriculum');
-    expect(getMissingTarget('PREVIEW_COUNT')).toBe('curriculum');
-    expect(getMissingTarget('TITLE_LENGTH')).toBe('edit');
-    expect(getMissingTarget('PRICE_INVALID')).toBe('edit');
+describe('getMissingStep', () => {
+  it('sends every requirement to the wizard step that fixes it', () => {
+    expect(getMissingStep('TITLE_LENGTH')).toBe('idea');
+    expect(getMissingStep('NO_CATEGORY')).toBe('idea');
+    expect(getMissingStep('NO_THUMBNAIL')).toBe('intro');
+    expect(getMissingStep('DESCRIPTION_TOO_SHORT')).toBe('intro');
+    expect(getMissingStep('PRICE_INVALID')).toBe('price');
+    expect(getMissingStep('ORIGINAL_PRICE_INVALID')).toBe('price');
+    expect(getMissingStep('NOT_ENOUGH_LESSONS')).toBe('lessons');
+    expect(getMissingStep('PREVIEW_COUNT')).toBe('lessons');
   });
 });
 

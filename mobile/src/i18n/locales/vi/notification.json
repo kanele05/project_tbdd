@@ -7,6 +7,11 @@
   "emptyTitle": "Chưa có thông báo nào",
   "emptyMessage": "Cập nhật về đơn hàng, câu trả lời và khóa học của bạn sẽ xuất hiện ở đây.",
   "loadFailed": "Không tải được thông báo",
+  "groups": {
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "earlier": "Trước đó"
+  },
   "types": {
     "COURSE_APPROVED": "Khóa học của bạn đã được duyệt",
     "COURSE_REJECTED": "Khóa học của bạn chưa được duyệt",

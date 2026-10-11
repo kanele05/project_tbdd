@@ -1,44 +1,29 @@
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useTabBarClearance } from '@/components/FloatingTabBar';
-import { EmptyState } from '@/components/ui';
 import { SEARCH_DEBOUNCE_MS } from '@/constants/config';
-import { useTranslation } from '@/i18n';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { countActiveFilters } from '@/stores/searchFilterStore';
-import { layout, makeStyles, spacing } from '@/theme';
+import { makeStyles, spacing } from '@/theme';
 import type { TagDto } from '@/types/api';
 
 import { CourseResults } from '../components/CourseResults';
-import { HotTopics } from '../components/HotTopics';
+import { NoResults } from '../components/NoResults';
 import { SearchDiscovery } from '../components/SearchDiscovery';
 import { SearchTopBar } from '../components/SearchTopBar';
 import { SortChips } from '../components/SortChips';
-import { buildSearchParams, useAppliedFilters, useHotTags } from '../hooks';
+import { buildSearchParams, useAppliedFilters } from '../hooks';
 import { useRecentSearches } from '../recentSearches';
-
-/** "No courses found" + hot-topic suggestions (PLAN.md SC-06). */
-function NoResults({ onPressTag }: { onPressTag: (tag: TagDto) => void }) {
-  const { t } = useTranslation('search');
-  const { data: tags } = useHotTags();
-  return (
-    <View style={styles.empty}>
-      <EmptyState icon="search" title={t('empty.title')} message={t('empty.message')} />
-      {tags && tags.length > 0 ? (
-        <View style={styles.suggestions}>
-          <HotTopics tags={tags} onPressTag={onPressTag} />
-        </View>
-      ) : null}
-    </View>
-  );
-}
+import { SearchDesktopScreen } from './SearchDesktopScreen';
 
 /**
- * SC-05/06 Search tab: "discovery" mode while there is no keyword and no filter, otherwise the
- * "results" mode. Typing is debounced 400 ms; the keyboard's search key searches immediately.
+ * SC-05/06 Search tab on phones: "discovery" mode while there is no keyword and no filter,
+ * otherwise the "results" mode. Typing is debounced 400 ms; the keyboard's search key searches
+ * immediately.
  */
-export function SearchScreen() {
+function SearchPhoneScreen() {
   const themed = useStyles();
   const clearance = useTabBarClearance();
   const [text, setText] = useState('');
@@ -105,10 +90,11 @@ export function SearchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  empty: { gap: spacing.sm },
-  suggestions: { paddingHorizontal: layout.screenPaddingX },
-});
+/** SC-05/06 Search: the phone layout below 768 dp wide, the poster grid on the wide web layout. */
+export function SearchScreen() {
+  const { isWide } = useBreakpoint();
+  return isWide ? <SearchDesktopScreen /> : <SearchPhoneScreen />;
+}
 
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },

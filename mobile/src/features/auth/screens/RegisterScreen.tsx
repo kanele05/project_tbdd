@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Pressable, type TextInput } from 'react-native';
+import type { TextInput } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
@@ -12,6 +12,7 @@ import { useTranslation } from '@/i18n';
 import { applyAuthError } from '../authErrors';
 import { useAuthFlowStore } from '../authFlowStore';
 import { AuthLayout } from '../components/AuthLayout';
+import { AuthLink } from '../components/AuthLink';
 import { CaptchaWidget } from '../components/CaptchaWidget';
 import { FormError } from '../components/FormError';
 import { RegistrationRolePicker } from '../components/RegistrationRolePicker';
@@ -84,16 +85,11 @@ export function RegisterScreen() {
           <AppText variant="body" color="textSecondary">
             {t('haveAccount')}
           </AppText>
-          <Pressable
+          <AuthLink
+            label={t('login')}
             onPress={goToLogin}
             hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
-            accessibilityRole="link"
-            accessibilityLabel={t('login')}
-          >
-            <AppText variant="label" color="primaryText">
-              {t('login')}
-            </AppText>
-          </Pressable>
+          />
         </>
       }
     >

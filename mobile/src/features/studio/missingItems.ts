@@ -1,19 +1,25 @@
 import { tr } from '@/i18n';
 import type { CourseMissingCode, CourseMissingItemDto } from '@/types/api';
 
-/** Where the teacher fixes an unmet submit requirement. */
-export type MissingTarget = 'edit' | 'curriculum';
+import type { WizardStep } from './wizardSteps';
 
-const CURRICULUM_CODES: ReadonlySet<CourseMissingCode> = new Set([
-  'NO_SECTION',
-  'NOT_ENOUGH_LESSONS',
-  'LESSON_VIDEO_INVALID',
-  'LESSON_DURATION_INVALID',
-  'PREVIEW_COUNT',
-]);
+const STEP_OF_CODE: Record<CourseMissingCode, WizardStep> = {
+  TITLE_LENGTH: 'idea',
+  NO_CATEGORY: 'idea',
+  DESCRIPTION_TOO_SHORT: 'intro',
+  NO_THUMBNAIL: 'intro',
+  PRICE_INVALID: 'price',
+  ORIGINAL_PRICE_INVALID: 'price',
+  NO_SECTION: 'lessons',
+  NOT_ENOUGH_LESSONS: 'lessons',
+  LESSON_VIDEO_INVALID: 'lessons',
+  LESSON_DURATION_INVALID: 'lessons',
+  PREVIEW_COUNT: 'lessons',
+};
 
-export function getMissingTarget(code: CourseMissingCode): MissingTarget {
-  return CURRICULUM_CODES.has(code) ? 'curriculum' : 'edit';
+/** The wizard step (SC-24) where an unmet submit requirement is fixed. */
+export function getMissingStep(code: CourseMissingCode): WizardStep {
+  return STEP_OF_CODE[code];
 }
 
 /** Human-readable sentence (current language) for one item of the BR-20 checklist. */

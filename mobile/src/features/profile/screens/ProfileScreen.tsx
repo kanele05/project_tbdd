@@ -16,6 +16,7 @@ import { useConfirmLogout } from '@/features/auth/useConfirmLogout';
 import { useToggleBookmark } from '@/features/bookmark/hooks';
 import { CourseResultList } from '@/features/search/components/CourseResultList';
 import { openCourse, openSearchTab } from '@/features/search/navigation';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
 import { makeStyles, spacing } from '@/theme';
@@ -25,6 +26,7 @@ import { ProfileInfo } from '../components/ProfileInfo';
 import { ProfileMenu } from '../components/ProfileMenu';
 import { ProfileStats } from '../components/ProfileStats';
 import { useBookmarks, useMeStats } from '../hooks';
+import { ProfileDesktopScreen } from './ProfileDesktopScreen';
 
 function goToMyCourses(status: 'ongoing' | 'completed'): void {
   router.navigate({ pathname: '/my-courses', params: { tab: status } });
@@ -47,8 +49,8 @@ function SavedSkeleton() {
   );
 }
 
-/** SC-20 User profile: cover, avatar, name, stats, Saved courses and the "⋮" menu. */
-export function ProfileScreen() {
+/** SC-20 User profile on a phone: cover, avatar, name, stats, Saved courses and the "⋮" menu. */
+function ProfilePhoneScreen() {
   const { t } = useTranslation(['profile', 'common']);
   const styles = useStyles();
   const clearance = useTabBarClearance();
@@ -179,6 +181,12 @@ export function ProfileScreen() {
       ) : null}
     </View>
   );
+}
+
+/** SC-20 User profile: the phone page below 768 dp, the PC account page from 768 dp (PLAN §2.5). */
+export function ProfileScreen() {
+  const { isWide } = useBreakpoint();
+  return isWide ? <ProfileDesktopScreen /> : <ProfilePhoneScreen />;
 }
 
 const useStyles = makeStyles((t) => ({

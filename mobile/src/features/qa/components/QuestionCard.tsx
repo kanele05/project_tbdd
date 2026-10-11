@@ -5,6 +5,7 @@ import { Pressable, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Avatar } from '@/components/ui/Avatar';
+import { pointerStyle } from '@/features/course/webStyles';
 import { useTranslation } from '@/i18n';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { QuestionDto } from '@/types/api';
@@ -112,7 +113,7 @@ const useStyles = makeStyles((t) => ({
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   author: { flex: 1, gap: spacing.xxs },
   actions: { flexDirection: 'row', alignItems: 'center', gap: spacing.xxl, minHeight: 24 },
-  action: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  action: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, ...pointerStyle },
 }));
 
 export const QuestionCard = memo(QuestionCardBase);

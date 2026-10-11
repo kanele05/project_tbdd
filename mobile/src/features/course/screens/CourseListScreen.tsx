@@ -3,10 +3,12 @@ import { useMemo } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { EmptyState, ScreenHeader } from '@/components/ui';
+import { AppText, EmptyState, ScreenHeader } from '@/components/ui';
 import { CourseResults } from '@/features/search/components/CourseResults';
+import { DesktopCourseResults } from '@/features/search/components/DesktopCourseResults';
 import { useCategories, type CoursesInfiniteParams } from '@/features/search/hooks';
 import { openSearchTab } from '@/features/search/navigation';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { makeStyles, spacing } from '@/theme';
 import type { CourseSection } from '@/types/api';
@@ -35,6 +37,7 @@ export function CourseListScreen() {
   const { t } = useTranslation(['search', 'common']);
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const routeParams = useLocalSearchParams<CourseListRouteParams>();
   const categoryId = firstParam(routeParams.categoryId);
   const teacherId = firstParam(routeParams.teacherId);
@@ -54,21 +57,39 @@ export function CourseListScreen() {
     return next;
   }, [categoryId, teacherId, section]);
 
+  const emptyState = (
+    <EmptyState
+      icon="book-open"
+      title={t('empty.title')}
+      message={t('list.emptyMessage')}
+      actionLabel={t('common:actions.exploreCourses')}
+      onAction={openSearchTab}
+    />
+  );
+
+  if (isWide) {
+    return (
+      <View style={styles.screen}>
+        <DesktopCourseResults
+          params={params}
+          topContent={
+            <AppText variant="h1" accessibilityRole="header" style={styles.desktopTitle}>
+              {title}
+            </AppText>
+          }
+          emptyState={emptyState}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.screen}>
       <ScreenHeader title={title} />
       <CourseResults
         params={params}
         contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
-        emptyState={
-          <EmptyState
-            icon="book-open"
-            title={t('empty.title')}
-            message={t('list.emptyMessage')}
-            actionLabel={t('common:actions.exploreCourses')}
-            onAction={openSearchTab}
-          />
-        }
+        emptyState={emptyState}
       />
     </View>
   );
@@ -76,4 +97,5 @@ export function CourseListScreen() {
 
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },
+  desktopTitle: { marginBottom: spacing.xl },
 }));

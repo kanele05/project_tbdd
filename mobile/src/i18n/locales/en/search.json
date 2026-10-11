@@ -70,5 +70,6 @@
     "recommended": "Recommended for you",
     "inspires": "Course that inspires",
     "emptyMessage": "There are no courses here yet. Try exploring other topics."
-  }
+  },
+  "loadMore": "Load more"
 }

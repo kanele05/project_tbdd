@@ -7,6 +7,11 @@
   "emptyTitle": "No notifications yet",
   "emptyMessage": "Updates about your orders, answers and courses will appear here.",
   "loadFailed": "Couldn't load your notifications",
+  "groups": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "earlier": "Earlier"
+  },
   "types": {
     "COURSE_APPROVED": "Your course was approved",
     "COURSE_REJECTED": "Your course was not approved",

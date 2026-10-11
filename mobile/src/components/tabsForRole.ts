@@ -11,28 +11,29 @@ export type TabConfig = {
   icon: FeatherIconName;
 };
 
-/** The four tabs every signed-in user has. */
-const BASE_TABS: readonly TabConfig[] = [
+/** The tabs every signed-in user has, before the role tab. */
+const LEADING_TABS: readonly TabConfig[] = [
   { name: 'index', titleKey: 'home', icon: 'home' },
   { name: 'search', titleKey: 'search', icon: 'search' },
   { name: 'my-courses', titleKey: 'myCourses', icon: 'book-open' },
-  { name: 'profile', titleKey: 'profile', icon: 'user' },
 ];
 
 const STUDIO_TAB: TabConfig = { name: 'studio', titleKey: 'studio', icon: 'edit-3' };
 const ADMIN_TAB: TabConfig = { name: 'admin', titleKey: 'admin', icon: 'shield' };
+/** Profile is always the last tab. */
+const PROFILE_TAB: TabConfig = { name: 'profile', titleKey: 'profile', icon: 'user' };
 
 /** Every tab route that exists (the navigator registers all of them; the bar shows a subset). */
-export const ALL_TABS: readonly TabConfig[] = [...BASE_TABS, STUDIO_TAB, ADMIN_TAB];
+export const ALL_TABS: readonly TabConfig[] = [...LEADING_TABS, STUDIO_TAB, ADMIN_TAB, PROFILE_TAB];
 
 /**
- * Tabs a role sees (PLAN §2.4.7): a Student the four base tabs, a Teacher + "Teaching" (Studio),
- * an Admin + "Admin" as the fifth tab. The order matches `ALL_TABS`, which is the order the
- * navigator registers the screens in.
+ * Tabs a role sees (PLAN §2.4.7): a Student Home, Search, My Courses, Profile; a Teacher also
+ * "Teaching" (Studio) and an Admin also "Admin", placed right before Profile, which stays last.
+ * The order matches `ALL_TABS`, which is the order the navigator registers the screens in.
  */
 export function getTabsForRole(role: Role | null | undefined): readonly TabConfig[] {
   const extra = role === 'TEACHER' ? STUDIO_TAB : role === 'ADMIN' ? ADMIN_TAB : null;
-  return extra ? [...BASE_TABS, extra] : BASE_TABS;
+  return extra ? [...LEADING_TABS, extra, PROFILE_TAB] : [...LEADING_TABS, PROFILE_TAB];
 }
 
 /** Role-only routes under `(tabs)`: pathname -> the one role that may open it. */

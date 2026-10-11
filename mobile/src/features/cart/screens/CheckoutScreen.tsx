@@ -1,24 +1,14 @@
-import { router } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { AccessibilityInfo, BackHandler, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { CinematicHeader, EmptyState, ErrorState, Skeleton, useToast } from '@/components/ui';
+import { CinematicHeader, EmptyState, ErrorState, Skeleton } from '@/components/ui';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
-import { getErrorMessage, isAppError } from '@/lib/appError';
 import { layout, makeStyles, spacing } from '@/theme';
-import type { CheckoutResponse, PaymentMethod } from '@/types/api';
 
 import { CheckoutForm } from '../components/CheckoutForm';
 import { PaymentFailedView, PaymentSuccessView } from '../components/PaymentResultView';
-import { useCart, useCheckout } from '../hooks';
-
-type Phase = { kind: 'form' } | { kind: 'success'; result: CheckoutResponse } | { kind: 'failed' };
-
-const PAYMENT_FAILED_CODE = 'PAYMENT_FAILED';
-
-function isPaymentFailure(error: unknown): boolean {
-  return isAppError(error) && (error.status === 402 || error.code === PAYMENT_FAILED_CODE);
-}
+import { useCheckoutFlow } from '../useCheckoutFlow';
+import { CheckoutDesktopScreen } from './CheckoutDesktopScreen';
 
 function CheckoutSkeleton() {
   const { t } = useTranslation('cart');
@@ -40,79 +30,39 @@ function CheckoutSkeleton() {
 }
 
 /**
- * SC-13 Checkout: order summary, mock payment method (radio), "Pay $X", then a result view:
- * success (Start learning / Go to My Courses) or failure (402 -> Try again, cart untouched).
+ * SC-13 Checkout on a phone: order summary, mock payment method (radio), "Pay $X", then a result
+ * view: success (Start learning / Go to My Courses) or failure (402 -> Try again, cart untouched).
  */
-export function CheckoutScreen() {
+function CheckoutPhoneScreen() {
   const { t } = useTranslation(['cart', 'common']);
   const themed = useStyles();
-  const toast = useToast();
-  const { data: cart, isError, error, refetch } = useCart();
-  const { mutateAsync: payAsync, isPending: isPaying } = useCheckout();
-  const [method, setMethod] = useState<PaymentMethod>('MOCK_CARD');
-  const [simulateFailure, setSimulateFailure] = useState(false);
-  const [phase, setPhase] = useState<Phase>({ kind: 'form' });
-
-  const handlePay = useCallback(async () => {
-    try {
-      const result = await payAsync({
-        paymentMethod: method,
-        // The failure switch only exists in dev builds (BR-07 test hook).
-        ...(__DEV__ && simulateFailure ? { simulateFailure: true } : null),
-      });
-      setPhase({ kind: 'success', result });
-    } catch (e) {
-      if (isPaymentFailure(e)) setPhase({ kind: 'failed' });
-      else toast.error(getErrorMessage(e));
-    }
-  }, [method, payAsync, simulateFailure, toast]);
-
-  const isSuccess = phase.kind === 'success';
-  useEffect(() => {
-    if (!isSuccess) return undefined;
-    AccessibilityInfo.announceForAccessibility(t('cart:result.successAnnouncement'));
-    // The cart is empty after a successful payment: system Back goes to My Courses, not back to
-    // an empty checkout form / cart.
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      router.dismissTo('/my-courses');
-      return true;
-    });
-    return () => subscription.remove();
-  }, [isSuccess, t]);
-
-  const handleStartLearning = useCallback(() => {
-    if (phase.kind !== 'success') return;
-    const firstId = phase.result.enrolledCourseIds[0] ?? phase.result.order.items[0]?.courseId;
-    router.dismissTo('/my-courses');
-    if (firstId) router.push(`/learn/${firstId}`);
-  }, [phase]);
-
-  const handleGoToMyCourses = useCallback(() => router.dismissTo('/my-courses'), []);
-  const handleTryAgain = useCallback(() => setPhase({ kind: 'form' }), []);
-  const handleBackToCart = useCallback(() => router.back(), []);
-  const handleExplore = useCallback(() => router.dismissTo('/search'), []);
+  const flow = useCheckoutFlow();
+  const { data: cart, isError, error, refetch } = flow.cartQuery;
+  const { phase } = flow;
 
   let body;
   if (phase.kind === 'success') {
     body = (
       <PaymentSuccessView
         courseCount={phase.result.enrolledCourseIds.length || phase.result.order.items.length}
-        onStartLearning={handleStartLearning}
-        onGoToMyCourses={handleGoToMyCourses}
+        onStartLearning={flow.handleStartLearning}
+        onGoToMyCourses={flow.handleGoToMyCourses}
       />
     );
   } else if (phase.kind === 'failed') {
-    body = <PaymentFailedView onTryAgain={handleTryAgain} onBackToCart={handleBackToCart} />;
+    body = (
+      <PaymentFailedView onTryAgain={flow.handleTryAgain} onBackToCart={flow.handleBackToCart} />
+    );
   } else if (cart && cart.items.length > 0) {
     body = (
       <CheckoutForm
         cart={cart}
-        method={method}
-        onChangeMethod={setMethod}
-        simulateFailure={simulateFailure}
-        onChangeSimulateFailure={setSimulateFailure}
-        isPaying={isPaying}
-        onPay={() => void handlePay()}
+        method={flow.method}
+        onChangeMethod={flow.setMethod}
+        simulateFailure={flow.simulateFailure}
+        onChangeSimulateFailure={flow.setSimulateFailure}
+        isPaying={flow.isPaying}
+        onPay={() => void flow.handlePay()}
       />
     );
   } else if (cart) {
@@ -121,7 +71,7 @@ export function CheckoutScreen() {
         icon="shopping-cart"
         title={t('cart:empty.title')}
         actionLabel={t('common:actions.exploreCourses')}
-        onAction={handleExplore}
+        onAction={flow.handleExplore}
         style={styles.empty}
       />
     );
@@ -142,6 +92,12 @@ export function CheckoutScreen() {
       {body}
     </View>
   );
+}
+
+/** SC-13 Checkout: the phone page below 768 dp, the two-column PC page from 768 dp (PLAN §2.5). */
+export function CheckoutScreen() {
+  const { isWide } = useBreakpoint();
+  return isWide ? <CheckoutDesktopScreen /> : <CheckoutPhoneScreen />;
 }
 
 const useStyles = makeStyles((t) => ({

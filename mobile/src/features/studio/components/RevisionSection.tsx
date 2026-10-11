@@ -9,6 +9,7 @@ import { makeStyles, spacing } from '@/theme';
 import type { StudioCourseDetailDto } from '@/types/api';
 
 import type { useCourseStatusActions } from '../useCourseStatusActions';
+import type { WizardStep } from '../wizardSteps';
 import { MissingList } from './MissingList';
 import { Notice } from './Notice';
 import { StatusChip } from './StatusChip';
@@ -18,8 +19,8 @@ export type RevisionSectionProps = {
   actions: ReturnType<typeof useCourseStatusActions>;
 };
 
-function openEditor(path: '/studio/[id]/edit' | '/studio/[id]/curriculum', id: string): void {
-  router.push({ pathname: path, params: { id } });
+function openStep(id: string, step: WizardStep): void {
+  router.push({ pathname: '/studio/[id]/edit', params: { id, step } });
 }
 
 /**
@@ -94,14 +95,14 @@ export function RevisionSection({ detail, actions }: RevisionSectionProps) {
               variant="secondary"
               size="sm"
               leftIcon="edit-2"
-              onPress={() => openEditor('/studio/[id]/edit', detail.id)}
+              onPress={() => openStep(detail.id, 'idea')}
             />
             <Button
               title={t('revision.editCurriculum')}
               variant="secondary"
               size="sm"
               leftIcon="list"
-              onPress={() => openEditor('/studio/[id]/curriculum', detail.id)}
+              onPress={() => openStep(detail.id, 'lessons')}
             />
           </View>
           <Button

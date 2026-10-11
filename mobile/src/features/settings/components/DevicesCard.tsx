@@ -6,27 +6,17 @@ import { AppText } from '@/components/ui/AppText';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { useToast } from '@/components/ui/Toast';
-import { getAuthErrorMessage } from '@/features/auth/authErrors';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { formatDate } from '@/i18n/format';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { SessionDto } from '@/types/api';
-import { confirmAction } from '@/utils/confirmAction';
 
-import { useRevokeOtherSessions, useRevokeSession, useSessions } from '../hooks';
+import { getDeviceIcon, LAST_ACTIVE_FORMAT } from '../deviceFormat';
+import { useSessions } from '../hooks';
+import { useDeviceActions } from '../useDeviceActions';
+import { DevicesTable } from './DevicesTable';
 import { SecurityCard } from './SecurityCard';
-
-const LAST_ACTIVE_FORMAT: Intl.DateTimeFormatOptions = {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-};
-
-/** Browser names / OSes the server reports for web sessions ("Chrome on Windows"). */
-const DESKTOP_PATTERN = /windows|macos|linux|chrome|edge|firefox|safari|opera|browser/i;
 
 type SessionRowProps = {
   session: SessionDto;
@@ -42,7 +32,7 @@ const SessionRow = memo(function SessionRow({ session, isBusy, onSignOut }: Sess
     date: formatDate(session.lastUsedAt, LAST_ACTIVE_FORMAT),
   });
   const details = [session.ipAddress, lastActive].filter(Boolean).join(' · ');
-  const icon = DESKTOP_PATTERN.test(session.deviceName) ? 'monitor' : 'smartphone';
+  const icon = getDeviceIcon(session.deviceName);
   return (
     <View style={styles.row} testID={`session-${session.id}`}>
       <Feather name={icon} size={22} color={colors.textSecondary} />
@@ -75,47 +65,11 @@ const SessionRow = memo(function SessionRow({ session, isBusy, onSignOut }: Sess
 /** "Devices": every signed-in session, with remote sign-out of one or all of the others. */
 export function DevicesCard() {
   const { t } = useTranslation(['settings', 'common']);
-  const toast = useToast();
+  const { isDesktop } = useBreakpoint();
   const styles = useStyles();
   const sessions = useSessions();
-  const revoke = useRevokeSession();
-  const revokeOthers = useRevokeOtherSessions();
-  const isBusy = revoke.isPending || revokeOthers.isPending;
+  const { signOutDevice, signOutOthers, isBusy, isRevokingOthers } = useDeviceActions();
   const hasOthers = (sessions.data ?? []).some((session) => !session.isCurrent);
-
-  const signOutDevice = async (session: SessionDto) => {
-    const isConfirmed = await confirmAction({
-      title: t('settings:security.devices.confirmTitle'),
-      message: t('settings:security.devices.confirmMessage', { name: session.deviceName }),
-      confirmLabel: t('settings:security.devices.signOut'),
-      cancelLabel: t('common:actions.cancel'),
-      isDestructive: true,
-    });
-    if (!isConfirmed) return;
-    try {
-      await revoke.mutateAsync(session.id);
-      toast.success(t('settings:security.devices.revoked'));
-    } catch (error) {
-      toast.error(getAuthErrorMessage(error));
-    }
-  };
-
-  const signOutOthers = async () => {
-    const isConfirmed = await confirmAction({
-      title: t('settings:security.devices.confirmOthersTitle'),
-      message: t('settings:security.devices.confirmOthersMessage'),
-      confirmLabel: t('settings:security.devices.signOutOthers'),
-      cancelLabel: t('common:actions.cancel'),
-      isDestructive: true,
-    });
-    if (!isConfirmed) return;
-    try {
-      const { revokedCount } = await revokeOthers.mutateAsync();
-      toast.success(t('settings:security.devices.revokedOthers', { count: revokedCount }));
-    } catch (error) {
-      toast.error(getAuthErrorMessage(error));
-    }
-  };
 
   return (
     <SecurityCard
@@ -144,20 +98,28 @@ export function DevicesCard() {
         </View>
       ) : (
         <View style={styles.list}>
-          {sessions.data.map((session) => (
-            <SessionRow
-              key={session.id}
-              session={session}
+          {isDesktop ? (
+            <DevicesTable
+              sessions={sessions.data}
               isBusy={isBusy}
               onSignOut={(target) => void signOutDevice(target)}
             />
-          ))}
+          ) : (
+            sessions.data.map((session) => (
+              <SessionRow
+                key={session.id}
+                session={session}
+                isBusy={isBusy}
+                onSignOut={(target) => void signOutDevice(target)}
+              />
+            ))
+          )}
           {hasOthers ? (
             <Button
               title={t('settings:security.devices.signOutOthers')}
               variant="secondary"
               leftIcon="log-out"
-              loading={revokeOthers.isPending}
+              loading={isRevokingOthers}
               disabled={isBusy}
               onPress={() => void signOutOthers()}
               testID="devices-signout-others"

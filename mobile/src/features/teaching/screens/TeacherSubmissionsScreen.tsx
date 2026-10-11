@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Linking, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { TableLoadMore, WorkHeader, WorkShell } from '@/components/layout/work';
 import { AppText } from '@/components/ui/AppText';
 import { Chip } from '@/components/ui/Chip';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -11,6 +12,7 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { showToast } from '@/components/ui/Toast';
 import { flattenPages } from '@/features/learning/pages';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { TeacherSubmissionDto } from '@/types/api';
@@ -18,6 +20,7 @@ import type { TeacherSubmissionDto } from '@/types/api';
 import type { SubmissionFilter } from '../api';
 import { GradeSheet } from '../components/GradeSheet';
 import { SubmissionRow, SubmissionRowSkeleton } from '../components/SubmissionRow';
+import { SubmissionsTable } from '../components/SubmissionsTable';
 import { useCourseSubmissions } from '../hooks';
 
 export type TeacherSubmissionsScreenProps = { courseId: string };
@@ -37,6 +40,7 @@ export function TeacherSubmissionsScreen({ courseId }: TeacherSubmissionsScreenP
   const { colors } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const [filter, setFilter] = useState<SubmissionFilter>('all');
   const [gradeTarget, setGradeTarget] = useState<TeacherSubmissionDto | null>(null);
   const query = useCourseSubmissions(courseId, filter);
@@ -66,6 +70,20 @@ export function TeacherSubmissionsScreen({ courseId }: TeacherSubmissionsScreenP
     [handleOpenFile, styles],
   );
 
+  const chips = (
+    <View style={styles.chips}>
+      {FILTERS.map((value) => (
+        <Chip
+          key={value}
+          label={t(`submissions.filter.${value}`)}
+          selected={filter === value}
+          size="sm"
+          onPress={() => setFilter(value)}
+          testID={`submission-filter-${value}`}
+        />
+      ))}
+    </View>
+  );
   const header = (
     <View style={styles.header}>
       {summary ? (
@@ -76,18 +94,7 @@ export function TeacherSubmissionsScreen({ courseId }: TeacherSubmissionsScreenP
           })}
         </AppText>
       ) : null}
-      <View style={styles.chips}>
-        {FILTERS.map((value) => (
-          <Chip
-            key={value}
-            label={t(`submissions.filter.${value}`)}
-            selected={filter === value}
-            size="sm"
-            onPress={() => setFilter(value)}
-            testID={`submission-filter-${value}`}
-          />
-        ))}
-      </View>
+      {chips}
     </View>
   );
 
@@ -96,7 +103,7 @@ export function TeacherSubmissionsScreen({ courseId }: TeacherSubmissionsScreenP
     empty = <ErrorState error={OFFLINE_QUERY_ERROR} onRetry={handleRetry} />;
   } else if (query.isPending) {
     empty = (
-      <View style={styles.skeletons}>
+      <View style={[styles.skeletons, isWide ? styles.flush : null]}>
         <SubmissionRowSkeleton />
         <SubmissionRowSkeleton />
         <SubmissionRowSkeleton />
@@ -113,6 +120,39 @@ export function TeacherSubmissionsScreen({ courseId }: TeacherSubmissionsScreenP
         title={t(`submissions.empty.${filter}Title`)}
         message={t(`submissions.empty.${filter}Message`)}
       />
+    );
+  }
+
+  if (isWide) {
+    return (
+      <WorkShell testID="teacher-submissions-screen">
+        <WorkHeader
+          title={t('submissions.title')}
+          hasBack
+          subtitle={
+            summary
+              ? t('submissions.summary', {
+                  graded: summary.gradedCount,
+                  ungraded: summary.ungradedCount,
+                })
+              : undefined
+          }
+        />
+        <View style={styles.wide}>
+          {chips}
+          {items.length > 0 ? (
+            <SubmissionsTable items={items} onGrade={setGradeTarget} onOpenFile={handleOpenFile} />
+          ) : (
+            empty
+          )}
+          <TableLoadMore
+            hasMore={hasNextPage}
+            isLoading={isFetchingNextPage}
+            onPress={handleEndReached}
+          />
+        </View>
+        <GradeSheet submission={gradeTarget} courseId={courseId} onClose={handleCloseSheet} />
+      </WorkShell>
     );
   }
 
@@ -149,5 +189,7 @@ const useStyles = makeStyles((t) => ({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   item: { paddingHorizontal: layout.screenPaddingX, paddingBottom: spacing.md },
   skeletons: { gap: spacing.md, paddingHorizontal: layout.screenPaddingX },
+  wide: { gap: spacing.lg },
+  flush: { paddingHorizontal: 0 },
   footer: { paddingVertical: spacing.lg },
 }));

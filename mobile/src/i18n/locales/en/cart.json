@@ -7,7 +7,8 @@
   "loading": "Loading your cart",
   "item": {
     "open": "{{title}}, by {{teacher}}. Open course",
-    "remove": "Remove {{title}} from cart"
+    "remove": "Remove {{title}} from cart",
+    "removeShort": "Remove"
   },
   "remove": {
     "title": "Remove from cart?",
@@ -19,10 +20,20 @@
     "total_other": "Total ({{count}} courses)",
     "a11y_one": "Total {{price}} for {{count}} course",
     "a11y_other": "Total {{price}} for {{count}} courses",
-    "checkout": "Checkout"
+    "checkout": "Checkout",
+    "subtotal": "Subtotal",
+    "discount": "Discounts"
+  },
+  "desktop": {
+    "subtitle_one": "{{count}} course ready to check out",
+    "subtitle_other": "{{count}} courses ready to check out"
+  },
+  "recommendations": {
+    "title": "You might also like"
   },
   "checkout": {
     "title": "Checkout",
+    "billedTo": "Billed to",
     "loading": "Loading checkout",
     "orderSummary": "Order summary",
     "total": "Total",

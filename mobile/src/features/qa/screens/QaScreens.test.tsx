@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { useWindowDimensions } from 'react-native';
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { AppError } from '@/lib/appError';
@@ -19,6 +20,11 @@ let mockIsOwner = false;
 let mockQuestions: Record<string, unknown> = {};
 let mockQuestion: Record<string, unknown> = {};
 let mockAnswers: Record<string, unknown> = {};
+
+jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({ width: 390, height: 844, scale: 1, fontScale: 1 })),
+}));
 
 jest.mock('@shopify/flash-list', () => {
   const { forwardRef } = jest.requireActual('react');
@@ -50,6 +56,8 @@ jest.mock('@/features/teaching/hooks', () => ({
   useCourseTeacherInfo: () => ({ teacherName: 'Dr. Teach', isOwner: mockIsOwner }),
   usePinAnswer: () => ({ mutate: mockPinAnswer }),
 }));
+
+const mockWindow = useWindowDimensions as jest.Mock;
 
 function makeQuestion(id: string, overrides: Partial<QuestionDto> = {}): QuestionDto {
   return {
@@ -190,6 +198,7 @@ describe('QaTab', () => {
 describe('QuestionDetailScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockWindow.mockReturnValue({ width: 390, height: 844, scale: 1, fontScale: 1 });
     mockIsOwner = false;
     mockQuestion = {
       data: makeQuestion('q1'),
@@ -297,5 +306,21 @@ describe('QuestionDetailScreen', () => {
 
     await fireEvent.press(screen.getByTestId('pin-a1'));
     expect(mockPinAnswer).toHaveBeenLastCalledWith({ answerId: 'a1', isPinned: true });
+  });
+
+  it('centers the question in a readable 800 dp column on a PC window', async () => {
+    mockWindow.mockReturnValue({ width: 1440, height: 900, scale: 1, fontScale: 1 });
+    await renderScreen();
+
+    expect(screen.getByTestId('question-column')).toHaveStyle({ maxWidth: 800 });
+    expect(screen.getByText('Question q1')).toBeOnTheScreen();
+    expect(screen.getByText('Answer a1')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Write a reply...')).toBeOnTheScreen();
+  });
+
+  it('does not limit the width on a phone', async () => {
+    await renderScreen();
+
+    expect(screen.getByTestId('question-column')).not.toHaveStyle({ maxWidth: 800 });
   });
 });

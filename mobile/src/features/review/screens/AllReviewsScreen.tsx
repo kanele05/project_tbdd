@@ -3,12 +3,15 @@ import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DESKTOP_NAV_HEIGHT } from '@/components/layout/desktopLayout';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { flattenPages } from '@/features/learning/pages';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { ReviewDto } from '@/types/api';
@@ -19,6 +22,10 @@ import { ReviewSummary } from '../components/ReviewSummary';
 import { StarFilterChips } from '../components/StarFilterChips';
 import { useCourseReviews, useReviewSummary, type ReviewFilter } from '../hooks';
 import { useReviewReply } from '../useReviewReply';
+
+/** Reviews page on a wide window: a readable two-column grid of cards. */
+const WIDE_MAX_WIDTH = 1100;
+const WIDE_COLUMNS = 2;
 
 export type AllReviewsScreenProps = { courseId: string };
 
@@ -35,6 +42,7 @@ export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
   const { colors } = useTheme();
   const themed = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const reply = useReviewReply(courseId);
   const { instructorName, canReply, onReply, onDeleteReply } = reply;
   const [filter, setFilter] = useState<ReviewFilter>('all');
@@ -57,7 +65,7 @@ export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
 
   const renderReview = useCallback(
     ({ item }: { item: ReviewDto }) => (
-      <View style={styles.item}>
+      <View style={isWide ? styles.itemWide : styles.item}>
         <ReviewCard
           review={item}
           instructorName={instructorName}
@@ -67,19 +75,19 @@ export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
         />
       </View>
     ),
-    [canReply, instructorName, onDeleteReply, onReply],
+    [canReply, instructorName, isWide, onDeleteReply, onReply],
   );
 
   const header = useMemo(
     () => (
       <View style={styles.header}>
-        <View style={styles.summary}>
+        <View style={isWide ? styles.summaryWide : styles.summary}>
           {summary.data ? <ReviewSummary summary={summary.data} /> : <Skeleton height={112} />}
         </View>
         <StarFilterChips value={filter} onChange={setFilter} />
       </View>
     ),
-    [filter, summary.data],
+    [filter, isWide, summary.data],
   );
 
   let empty = null;
@@ -108,27 +116,30 @@ export function AllReviewsScreen({ courseId }: AllReviewsScreenProps) {
   }
 
   return (
-    <View style={themed.screen}>
-      <ScreenHeader title={t('allTitle')} />
-      <FlashList
-        testID="all-reviews-list"
-        data={items}
-        renderItem={renderReview}
-        keyExtractor={keyExtractor}
-        ListHeaderComponent={header}
-        ListEmptyComponent={empty}
-        ListFooterComponent={
-          isFetchingNextPage ? (
-            <ActivityIndicator style={styles.footer} color={colors.primaryText} />
-          ) : null
-        }
-        onEndReached={handleEndReached}
-        onEndReachedThreshold={0.5}
-        refreshing={reviews.isRefetching && !isFetchingNextPage}
-        onRefresh={handleRefresh}
-        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
-        showsVerticalScrollIndicator={false}
-      />
+    <View style={[themed.screen, isWide ? styles.belowNav : null]}>
+      <PageContainer maxWidth={WIDE_MAX_WIDTH} style={styles.fill}>
+        <ScreenHeader title={t('allTitle')} />
+        <FlashList
+          testID="all-reviews-list"
+          numColumns={isWide ? WIDE_COLUMNS : 1}
+          data={items}
+          renderItem={renderReview}
+          keyExtractor={keyExtractor}
+          ListHeaderComponent={header}
+          ListEmptyComponent={empty}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator style={styles.footer} color={colors.primaryText} />
+            ) : null
+          }
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
+          refreshing={reviews.isRefetching && !isFetchingNextPage}
+          onRefresh={handleRefresh}
+          contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
+          showsVerticalScrollIndicator={false}
+        />
+      </PageContainer>
       {reply.sheet}
     </View>
   );
@@ -140,8 +151,13 @@ const useStyles = makeStyles((t) => ({
 
 const styles = StyleSheet.create({
   header: { gap: spacing.xl, paddingTop: spacing.sm, paddingBottom: spacing.lg },
+  fill: { flex: 1 },
+  // The fixed nav bar covers the top DESKTOP_NAV_HEIGHT dp on a wide window.
+  belowNav: { paddingTop: DESKTOP_NAV_HEIGHT },
   summary: { paddingHorizontal: layout.screenPaddingX },
+  summaryWide: { paddingHorizontal: spacing.sm },
   item: { paddingHorizontal: layout.screenPaddingX, paddingBottom: spacing.md },
+  itemWide: { paddingHorizontal: spacing.sm, paddingBottom: spacing.lg },
   skeletons: { gap: spacing.md, paddingHorizontal: layout.screenPaddingX },
   footer: { paddingVertical: spacing.lg },
 });

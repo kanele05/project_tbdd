@@ -46,7 +46,8 @@
       "curriculum": "Edit curriculum",
       "stats": "Statistics",
       "submissions": "Project submissions"
-    }
+    },
+    "linksTitle": "Shortcuts"
   },
   "empty": {
     "title": "No courses yet",
@@ -90,13 +91,8 @@
   "edit": {
     "title": "Course info",
     "createTitle": "New course",
-    "created": "Draft created. Now add the lessons.",
-    "saved": "Changes saved.",
-    "basic": "Basic info",
-    "details": "Details",
+    "created": "Draft created.",
     "aiSuggest": "Suggest with AI",
-    "createSubmit": "Create draft",
-    "saveSubmit": "Save changes",
     "fields": {
       "title": "Title",
       "titlePlaceholder": "e.g. Complete React Native Bootcamp",
@@ -104,7 +100,7 @@
       "tags": "Tags",
       "tagsHelper": "Pick up to 5 from the available tags.",
       "price": "Price (USD)",
-      "priceHelper": "0 or empty = free.",
+      "priceHelper": "Between $0.99 and $999.99.",
       "originalPrice": "Original price (USD)",
       "originalPriceHelper": "Optional, shown crossed out.",
       "subtitle": "Subtitle",
@@ -132,7 +128,8 @@
       "revisionMessage": "Title, category, tags and price are saved in the revision and go live only after approval. Subtitle, description, learning points, project and cover still apply immediately.",
       "pendingTitle": "Revision in review",
       "pendingMessage": "Title, category, tags and price are locked until the admin decides. The other fields still save right away."
-    }
+    },
+    "aiHint": "Tell the AI your topic and it drafts the subtitle, description and learning points for the next steps."
   },
   "revision": {
     "title": "Revision",
@@ -166,7 +163,9 @@
     "sectionTitleRequired": "Give the section a title.",
     "sectionTitleMax": "Title can have at most {{count}} characters.",
     "topicMin": "Describe the topic in at least {{count}} characters.",
-    "topicMax": "The topic can have at most {{count}} characters."
+    "topicMax": "The topic can have at most {{count}} characters.",
+    "pricePaidMin": "A paid course costs at least $0.99.",
+    "originalPriceLow": "The original price must be higher than the price."
   },
   "unsaved": {
     "title": "Discard changes?",
@@ -331,14 +330,69 @@
     "apply": "Apply",
     "applyPart": "Apply {{part}}",
     "applied": "Applied",
-    "appliedToast": "Added to the form. Review it, then save.",
+    "appliedToast": "Added to the form. Review it, then press Next.",
     "outlineNeedsDraft": "The outline can only be applied to a draft or rejected course.",
-    "outlineNeedsCourse": "Save the course first, then apply the outline from its editor.",
+    "outlineNeedsCourse": "Press Next on the first step to create the draft, then apply the outline from the Lessons step.",
     "outlineConfirm": {
       "title": "Create the sections?",
       "message": "{{count}} sections will be added to the curriculum. Their lessons appear as \"planned\" rows: you add the YouTube link and the length.",
       "confirm": "Create sections"
     },
     "outlineApplied": "Sections created. Fill in the planned lessons."
+  },
+  "wizard": {
+    "stepsLabel": "Course steps",
+    "stepLabel": "Step {{current}} of {{total}}: {{name}}",
+    "steps": {
+      "idea": "Idea",
+      "intro": "Intro",
+      "price": "Price & tags",
+      "lessons": "Lessons",
+      "review": "Review"
+    },
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "invalid": "Some information needs fixing. Check the earlier steps.",
+    "idea": {
+      "title": "What is your course about?",
+      "hint": "Start with a title and a category. You can change them later."
+    },
+    "intro": {
+      "title": "Introduce your course",
+      "hint": "This is what learners read before they decide to join.",
+      "helpWrite": "Help me write"
+    },
+    "price": {
+      "title": "Price and tags",
+      "hint": "Tags help learners find the course.",
+      "free": "Free",
+      "paid": "Paid",
+      "freeNote": "Anyone can enroll at no cost."
+    },
+    "lessons": {
+      "title": "Add the lessons",
+      "hint": "Sections and lessons with a YouTube link. A course needs at least 3 lessons.",
+      "aiOutline": "Suggest an outline with AI"
+    },
+    "review": {
+      "title": "Review and submit",
+      "preview": "How learners will see it",
+      "untitled": "Untitled course",
+      "meta": "{{lessons}} - {{duration}}",
+      "previewLabel": "Preview: {{title}}, {{price}}, {{meta}}"
+    }
+  },
+  "desktop": {
+    "table": {
+      "course": "Course",
+      "status": "Status",
+      "price": "Price",
+      "students": "Students",
+      "updated": "Updated"
+    },
+    "summaryLabel": "Totals",
+    "filtersLabel": "Filter by status",
+    "stepsLabel": "Steps"
   }
 }

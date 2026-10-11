@@ -20,7 +20,16 @@ export type PlayerStageProps = {
 export function PlayerStage({ children, maxHeight, minHeight, testID }: PlayerStageProps) {
   const styles = useStyles();
   return (
-    <View style={[styles.stage, { minHeight, maxHeight }]} testID={testID}>
+    <View
+      style={[
+        styles.stage,
+        { minHeight, maxHeight },
+        // When the height is capped (PC: 70% of the window) keep the box 16:9 and centered, so the
+        // video is not left-aligned inside a wider dark box.
+        maxHeight === undefined ? null : { maxWidth: (maxHeight * 16) / 9, alignSelf: 'center' },
+      ]}
+      testID={testID}
+    >
       {children}
     </View>
   );

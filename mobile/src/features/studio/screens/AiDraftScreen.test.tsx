@@ -89,6 +89,17 @@ describe('AiDraftScreen', () => {
     expect(screen.getByText('Build mobile apps fast')).toBeOnTheScreen();
   });
 
+  it('offers only the subtitle and the description when opened by "Help me write"', async () => {
+    await renderWithProviders(<AiDraftScreen courseId="course-1" topic="x" scope="text" />);
+    await generate();
+    await screen.findByTestId('ai-draft-result');
+
+    expect(screen.getByTestId('ai-part-subtitle')).toBeOnTheScreen();
+    expect(screen.getByTestId('ai-part-description')).toBeOnTheScreen();
+    expect(screen.queryByTestId('ai-part-benefits')).not.toBeOnTheScreen();
+    expect(screen.queryByTestId('ai-part-outline')).not.toBeOnTheScreen();
+  });
+
   it('defaults the language to the one the app is shown in', async () => {
     await renderWithProviders(<AiDraftScreen courseId="course-1" />, { language: 'vi' });
     await fireEvent.changeText(screen.getByLabelText('Chủ đề'), 'Lập trình mobile');
@@ -137,10 +148,9 @@ describe('AiDraftScreen', () => {
     expect(confirm).toHaveBeenCalled();
     expect(mockAddSection).toHaveBeenNthCalledWith(1, { title: 'Intro' });
     expect(useAiDraftStore.getState().plannedLessons['s-core']).toHaveLength(2);
-    expect(mockReplace).toHaveBeenCalledWith({
-      pathname: '/studio/[id]/curriculum',
-      params: { id: 'course-1' },
-    });
+    // The sheet closes; the wizard under it shows the Lessons step.
+    expect(mockBack).toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it('creates nothing when the outline confirmation is declined', async () => {
@@ -160,7 +170,9 @@ describe('AiDraftScreen', () => {
     await screen.findByTestId('ai-draft-result');
     expect(screen.getByTestId('ai-apply-outline')).toBeDisabled();
     expect(
-      screen.getByText('Save the course first, then apply the outline from its editor.'),
+      screen.getByText(
+        'Press Next on the first step to create the draft, then apply the outline from the Lessons step.',
+      ),
     ).toBeOnTheScreen();
     first.unmount();
 

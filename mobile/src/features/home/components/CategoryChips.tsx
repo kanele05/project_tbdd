@@ -16,6 +16,8 @@ type CategoryChipsProps = {
   onPressCategory: (category: CategoryDto) => void;
   /** "All topics" chip at the end of the row: opens the Search tab. */
   onPressAll: () => void;
+  /** Horizontal padding before the first chip; the desktop web layout passes the page gutter. */
+  gutter?: number;
 };
 
 type CategoryChipProps = { category: CategoryDto; onPress: (category: CategoryDto) => void };
@@ -75,7 +77,12 @@ function keyExtractor(category: CategoryDto): string {
 }
 
 /** Horizontal row of category chips (concept B "topics"); the last chip leads to Search. */
-export function CategoryChips({ categories, onPressCategory, onPressAll }: CategoryChipsProps) {
+export function CategoryChips({
+  categories,
+  onPressCategory,
+  onPressAll,
+  gutter = layout.screenPaddingX,
+}: CategoryChipsProps) {
   const { t } = useTranslation('home');
   const renderItem = useCallback(
     ({ item }: { item: CategoryDto }) => <CategoryChip category={item} onPress={onPressCategory} />,
@@ -98,7 +105,7 @@ export function CategoryChips({ categories, onPressCategory, onPressAll }: Categ
       ItemSeparatorComponent={Separator}
       ListFooterComponent={renderFooter}
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={rail.content}
+      contentContainerStyle={[rail.content, { paddingHorizontal: gutter }]}
       accessibilityLabel={t('categories.title')}
     />
   );

@@ -4,13 +4,17 @@ import { useCallback, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DESKTOP_NAV_HEIGHT } from '@/components/layout/desktopLayout';
 import { ErrorState, GlassIconButton, ScreenHeader } from '@/components/ui';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { AppError } from '@/lib/appError';
 import { layout, makeStyles, spacing } from '@/theme';
 
 import { CourseDetailBody } from '../components/CourseDetailBody';
 import { CourseDetailSkeleton } from '../components/CourseDetailSkeleton';
+import { CourseDesktopBody } from '../components/desktop/CourseDesktopBody';
+import { CourseDesktopSkeleton } from '../components/desktop/CourseDesktopSkeleton';
 import { PreviewPlayerModal } from '../components/PreviewPlayerModal';
 import { useCourseDetail } from '../hooks';
 
@@ -30,6 +34,7 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
   const { t } = useTranslation(['course', 'common', 'errors']);
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const { data: course, isError, error, fetchStatus, refetch } = useCourseDetail(courseId);
   const [previewLessonId, setPreviewLessonId] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -48,7 +53,9 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
     : error;
 
   let body;
-  if (course) {
+  if (course && isWide) {
+    body = <CourseDesktopBody course={course} onPlayPreview={setPreviewLessonId} />;
+  } else if (course) {
     body = (
       <CourseDetailBody
         course={course}
@@ -58,11 +65,18 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
       />
     );
   } else if (isError || isOfflineWithoutData) {
-    body = (
+    const failed = (
       <>
         <ScreenHeader />
         <ErrorState error={failure} onRetry={handleRetry} />
       </>
+    );
+    body = isWide ? <View style={styles.belowNav}>{failed}</View> : failed;
+  } else if (isWide) {
+    body = (
+      <View style={styles.belowNav}>
+        <CourseDesktopSkeleton />
+      </View>
     );
   } else {
     body = (
@@ -93,5 +107,7 @@ export function CourseDetailScreen({ courseId }: CourseDetailScreenProps) {
 
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },
+  // On a wide window the fixed nav bar covers the top DESKTOP_NAV_HEIGHT dp of the page.
+  belowNav: { flex: 1, paddingTop: DESKTOP_NAV_HEIGHT },
   floatingBack: { position: 'absolute', left: layout.screenPaddingX },
 }));

@@ -2,9 +2,10 @@ import { memo } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { useTranslation } from '@/i18n';
-import { layout, makeStyles, spacing } from '@/theme';
+import { layout, makeStyles, radius, spacing } from '@/theme';
 import type { CourseStatus, ModerationTarget } from '@/types/api';
 
 export type CourseActionBarProps = {
@@ -17,6 +18,8 @@ export type CourseActionBarProps = {
   onReject: () => void;
   onArchive: () => void;
   onRestore: () => void;
+  /** `panel` = vertical buttons in a card for the side column of the PC layout (default `bar`). */
+  variant?: 'bar' | 'panel';
 };
 
 /** Whether the bar has any action for this course (nothing for drafts or an already decided course). */
@@ -29,7 +32,8 @@ export function hasCourseActions(
 
 /**
  * Decision bar of SC-33: Approve / Reject while a submission waits, Archive for a published course,
- * Restore for a hidden one. Sits below the scroll area so it never covers the content.
+ * Restore for a hidden one. Sits below the scroll area so it never covers the content. The `panel`
+ * variant is the same decision as a card with stacked buttons (side column on a PC window).
  */
 function CourseActionBarBase({
   status,
@@ -40,22 +44,33 @@ function CourseActionBarBase({
   onReject,
   onArchive,
   onRestore,
+  variant = 'bar',
 }: CourseActionBarProps) {
   const { t } = useTranslation('admin');
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   if (!hasCourseActions(status, reviewTarget)) return null;
+  const isPanel = variant === 'panel';
+  const buttonFlex = isPanel ? null : styles.flex;
   return (
-    <View style={[styles.bar, { paddingBottom: insets.bottom + spacing.md }]} testID="action-bar">
+    <View
+      style={isPanel ? styles.panel : [styles.bar, { paddingBottom: insets.bottom + spacing.md }]}
+      testID="action-bar"
+    >
+      {isPanel ? (
+        <AppText variant="h3" accessibilityRole="header">
+          {t('detail.decisionTitle')}
+        </AppText>
+      ) : null}
       {reviewTarget ? (
-        <View style={styles.row}>
+        <View style={isPanel ? styles.column : styles.row}>
           <Button
             title={t('actions.reject')}
             variant="outline"
             leftIcon="x"
             onPress={onReject}
             disabled={isApproving}
-            style={styles.flex}
+            style={buttonFlex}
             testID="action-reject"
           />
           <Button
@@ -63,7 +78,7 @@ function CourseActionBarBase({
             leftIcon="check"
             onPress={onApprove}
             loading={isApproving}
-            style={styles.flex}
+            style={buttonFlex}
             testID="action-approve"
           />
         </View>
@@ -102,6 +117,15 @@ const useStyles = makeStyles((t) => ({
     backgroundColor: t.colors.background,
   },
   row: { flexDirection: 'row', gap: spacing.md },
+  column: { gap: spacing.sm },
+  panel: {
+    gap: spacing.md,
+    padding: spacing.xl,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: t.colors.borderSubtle,
+    backgroundColor: t.colors.card,
+  },
   flex: { flex: 1 },
 }));
 

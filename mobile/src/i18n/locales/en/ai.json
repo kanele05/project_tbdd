@@ -47,7 +47,13 @@
     "notEnrolledTitle": "Enroll to use the AI Tutor",
     "notEnrolledMessage": "The AI Tutor answers questions about courses you are enrolled in.",
     "openCourse": "Open the course",
-    "offlineHint": "You're offline. Connect to the internet to ask the AI Tutor."
+    "offlineHint": "You're offline. Connect to the internet to ask the AI Tutor.",
+    "side": {
+      "course": "Course",
+      "hint": "The AI Tutor answers using this course's content and remembers your conversation.",
+      "openCourse": "Open the course",
+      "try": "Suggested questions"
+    }
   },
   "summary": {
     "title": "Lesson summary",
@@ -60,6 +66,7 @@
   },
   "quiz": {
     "headerTitle": "Lesson quiz",
+    "keyHint": "Tip: press 1-4 to choose an answer, then Enter to continue.",
     "introTitle": "Test what you learned",
     "introMessage": "5 multiple-choice questions about this lesson, created by AI.",
     "start": "Start quiz",

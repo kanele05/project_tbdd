@@ -9,6 +9,8 @@ import { makeStyles, radius, spacing, useTheme } from '@/theme';
 
 export type CourseInfoProps = {
   title: string;
+  /** Size of the title: `h2` (default, phone) or the smaller `title` (under the PC lesson heading). */
+  titleVariant?: 'h2' | 'title';
   likeCount: number;
   shareCount: number;
   isLiked: boolean;
@@ -22,6 +24,7 @@ export type CourseInfoProps = {
  */
 function CourseInfoBase({
   title,
+  titleVariant = 'h2',
   likeCount,
   shareCount,
   isLiked,
@@ -35,7 +38,7 @@ function CourseInfoBase({
   const shareLabel = t('shares', { count: shareCount });
   return (
     <View style={styles.container}>
-      <AppText variant="h2" numberOfLines={3} accessibilityRole="header">
+      <AppText variant={titleVariant} numberOfLines={3} accessibilityRole="header">
         {title}
       </AppText>
       <View style={styles.row}>

@@ -12,6 +12,8 @@ export type OtpInputProps = {
   onChange: (value: string) => void;
   /** Called once with the full code as soon as the last digit is in (typed or pasted). */
   onComplete?: (code: string) => void;
+  /** Enter on a physical keyboard (web): called with the code when it is complete. */
+  onSubmit?: (code: string) => void;
   /** Screen-reader label of the field ("Verification code"). */
   label: string;
   length?: number;
@@ -31,6 +33,7 @@ export function OtpInput({
   value,
   onChange,
   onComplete,
+  onSubmit,
   label,
   length = OTP_LENGTH,
   autoFocus = false,
@@ -83,6 +86,9 @@ export function OtpInput({
         ref={inputRef}
         value={digits}
         onChangeText={handleChange}
+        onSubmitEditing={() => {
+          if (digits.length === length) onSubmit?.(digits);
+        }}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         editable={!disabled}

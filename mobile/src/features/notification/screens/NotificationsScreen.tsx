@@ -1,5 +1,4 @@
 import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
-import { router } from 'expo-router';
 import { useCallback, useMemo, type ReactNode } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,42 +8,36 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { NotificationDto } from '@/types/api';
 
 import { NotificationItem, NotificationSkeleton } from '../components/NotificationItem';
-import { useMarkAllRead, useMarkRead, useNotificationsInfinite } from '../hooks';
-import { getNotificationHref } from '../notificationMeta';
+import { useMarkAllRead, useNotificationsInfinite } from '../hooks';
+import { useOpenNotification } from '../useOpenNotification';
+import { NotificationsDesktopScreen } from './NotificationsDesktopScreen';
 
 const SKELETON_KEYS = [0, 1, 2, 3, 4, 5] as const;
 const keyExtractor = (item: NotificationDto): string => item.id;
 
 /**
- * SC-22 Notifications (FR-23): newest first, infinite. Tapping an item marks it read (optimistic,
- * the Home badge drops at once) and opens its target; "Mark all as read" clears the list.
+ * SC-22 Notifications (FR-23) on a phone: newest first, infinite. Tapping an item marks it read
+ * (optimistic, the Home badge drops at once) and opens its target; "Mark all as read" clears the list.
  */
-export function NotificationsScreen() {
+function NotificationsPhoneScreen() {
   const { t } = useTranslation('notification');
   const { colors } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const query = useNotificationsInfinite();
-  const { mutate: markRead } = useMarkRead();
   const { mutate: markAllRead } = useMarkAllRead();
   const { data, hasNextPage, isFetchingNextPage, isRefetching, fetchNextPage, refetch } = query;
 
   const items = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
   const unreadCount = data?.pages[0]?.meta.unreadCount ?? 0;
 
-  const handlePress = useCallback(
-    (notification: NotificationDto) => {
-      if (!notification.isRead) markRead(notification.id);
-      const href = getNotificationHref(notification.data, notification.type);
-      if (href) router.push(href);
-    },
-    [markRead],
-  );
+  const handlePress = useOpenNotification();
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<NotificationDto>) => (
@@ -115,6 +108,12 @@ export function NotificationsScreen() {
       {body}
     </View>
   );
+}
+
+/** SC-22 Notifications: the phone list below 768 dp, the centred PC column from 768 dp (PLAN §2.5). */
+export function NotificationsScreen() {
+  const { isWide } = useBreakpoint();
+  return isWide ? <NotificationsDesktopScreen /> : <NotificationsPhoneScreen />;
 }
 
 const useStyles = makeStyles((t) => ({

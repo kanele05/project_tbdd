@@ -50,7 +50,9 @@
     "linkCourses": "Courses",
     "linkCoursesHint": "Review new courses and revisions, hide or restore courses",
     "linkUsers": "Users",
-    "linkUsersHint": "Search accounts, disable or enable them"
+    "linkUsersHint": "Search accounts, disable or enable them",
+    "subtitle": "Review submissions and keep an eye on the platform.",
+    "shortcuts": "Shortcuts"
   },
   "queue": {
     "title": "Review queue",
@@ -75,6 +77,16 @@
       "PUBLISHED": "No published courses.",
       "REJECTED": "No rejected submissions.",
       "ARCHIVED": "No archived courses."
+    },
+    "subtitle": "Oldest submissions first.",
+    "columns": {
+      "course": "Course",
+      "teacher": "Teacher",
+      "type": "Type",
+      "status": "Status",
+      "price": "Price",
+      "lessons": "Lessons",
+      "submitted": "Submitted"
     }
   },
   "detail": {
@@ -103,7 +115,9 @@
     "openVideo": "Open the video of {{title}}",
     "openVideoFailed": "Couldn't open the video link.",
     "showNotes": "Show lesson notes",
-    "hideNotes": "Hide lesson notes"
+    "hideNotes": "Hide lesson notes",
+    "decisionTitle": "Decision",
+    "noDecision": "No decision is needed for this course right now."
   },
   "diff": {
     "before": "Before",
@@ -257,7 +271,16 @@
     "enableMessage": "{{name}} will be able to sign in again.",
     "disableTitle": "Disable this account",
     "disableMessage": "{{name}} is signed out of every device and can't sign in until you enable the account again.",
-    "reasonLabel": "Reason"
+    "reasonLabel": "Reason",
+    "subtitle": "Search accounts and lock or unlock them.",
+    "columns": {
+      "user": "User",
+      "role": "Role",
+      "usage": "Activity",
+      "joined": "Joined",
+      "status": "Status",
+      "actions": "Action"
+    }
   },
   "errors": {
     "CANNOT_DISABLE_ADMIN": "Administrator accounts, including yours, can't be disabled.",

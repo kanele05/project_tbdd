@@ -45,7 +45,8 @@
       "curriculum": "Sửa chương trình học",
       "stats": "Thống kê",
       "submissions": "Bài nộp project"
-    }
+    },
+    "linksTitle": "Lối tắt"
   },
   "empty": {
     "title": "Chưa có khóa học nào",
@@ -88,13 +89,8 @@
   "edit": {
     "title": "Thông tin khóa học",
     "createTitle": "Khóa học mới",
-    "created": "Đã tạo bản nháp. Giờ hãy thêm bài học.",
-    "saved": "Đã lưu thay đổi.",
-    "basic": "Thông tin cơ bản",
-    "details": "Chi tiết",
+    "created": "Đã tạo bản nháp.",
     "aiSuggest": "Gợi ý bằng AI",
-    "createSubmit": "Tạo bản nháp",
-    "saveSubmit": "Lưu thay đổi",
     "fields": {
       "title": "Tiêu đề",
       "titlePlaceholder": "VD: Khóa React Native từ cơ bản đến nâng cao",
@@ -102,7 +98,7 @@
       "tags": "Thẻ",
       "tagsHelper": "Chọn tối đa 5 thẻ có sẵn.",
       "price": "Giá (USD)",
-      "priceHelper": "0 hoặc để trống = miễn phí.",
+      "priceHelper": "Từ $0.99 đến $999.99.",
       "originalPrice": "Giá gốc (USD)",
       "originalPriceHelper": "Không bắt buộc, hiển thị gạch ngang.",
       "subtitle": "Phụ đề",
@@ -130,7 +126,8 @@
       "revisionMessage": "Tiêu đề, danh mục, thẻ và giá được lưu trong bản sửa đổi và chỉ có hiệu lực sau khi được duyệt. Phụ đề, mô tả, ý học được, project và ảnh bìa vẫn áp dụng ngay.",
       "pendingTitle": "Bản sửa đổi đang chờ duyệt",
       "pendingMessage": "Tiêu đề, danh mục, thẻ và giá bị khóa cho đến khi quản trị viên quyết định. Các trường còn lại vẫn lưu ngay."
-    }
+    },
+    "aiHint": "Cho AI biết chủ đề, AI sẽ soạn sẵn phụ đề, mô tả và ý học được cho các bước tiếp theo."
   },
   "revision": {
     "title": "Bản sửa đổi",
@@ -164,7 +161,9 @@
     "sectionTitleRequired": "Hãy đặt tiêu đề cho chương.",
     "sectionTitleMax": "Tiêu đề tối đa {{count}} ký tự.",
     "topicMin": "Mô tả chủ đề ít nhất {{count}} ký tự.",
-    "topicMax": "Chủ đề tối đa {{count}} ký tự."
+    "topicMax": "Chủ đề tối đa {{count}} ký tự.",
+    "pricePaidMin": "Khóa học có phí có giá tối thiểu $0.99.",
+    "originalPriceLow": "Giá gốc phải cao hơn giá bán."
   },
   "unsaved": {
     "title": "Bỏ thay đổi?",
@@ -329,14 +328,69 @@
     "apply": "Áp dụng",
     "applyPart": "Áp dụng {{part}}",
     "applied": "Đã áp dụng",
-    "appliedToast": "Đã đưa vào biểu mẫu. Hãy xem lại rồi lưu.",
+    "appliedToast": "Đã đưa vào biểu mẫu. Hãy xem lại rồi bấm Tiếp.",
     "outlineNeedsDraft": "Chỉ áp dụng được dàn ý cho khóa học nháp hoặc bị từ chối.",
-    "outlineNeedsCourse": "Hãy lưu khóa học trước, rồi áp dụng dàn ý từ màn sửa của khóa.",
+    "outlineNeedsCourse": "Hãy bấm Tiếp ở bước đầu để tạo bản nháp, rồi áp dụng dàn ý ở bước Bài học.",
     "outlineConfirm": {
       "title": "Tạo các chương?",
       "message": "{{count}} chương sẽ được thêm vào chương trình học. Các bài học hiện dưới dạng dòng \"AI đề xuất\": bạn bổ sung link YouTube và thời lượng.",
       "confirm": "Tạo chương"
     },
     "outlineApplied": "Đã tạo các chương. Hãy hoàn thiện các bài học đề xuất."
+  },
+  "wizard": {
+    "stepsLabel": "Các bước soạn khóa học",
+    "stepLabel": "Bước {{current}}/{{total}}: {{name}}",
+    "steps": {
+      "idea": "Ý tưởng",
+      "intro": "Giới thiệu",
+      "price": "Giá & thẻ",
+      "lessons": "Bài học",
+      "review": "Xem lại"
+    },
+    "back": "Quay lại",
+    "next": "Tiếp",
+    "done": "Xong",
+    "invalid": "Có thông tin cần sửa. Hãy kiểm tra các bước trước.",
+    "idea": {
+      "title": "Khóa học của bạn nói về gì?",
+      "hint": "Bắt đầu với một tiêu đề và một danh mục. Bạn có thể đổi lại sau."
+    },
+    "intro": {
+      "title": "Giới thiệu khóa học",
+      "hint": "Đây là phần học viên đọc trước khi quyết định tham gia.",
+      "helpWrite": "Viết giúp"
+    },
+    "price": {
+      "title": "Giá và thẻ",
+      "hint": "Thẻ giúp học viên tìm thấy khóa học.",
+      "free": "Miễn phí",
+      "paid": "Có phí",
+      "freeNote": "Ai cũng có thể ghi danh miễn phí."
+    },
+    "lessons": {
+      "title": "Thêm bài học",
+      "hint": "Các chương và bài học kèm link YouTube. Khóa học cần ít nhất 3 bài.",
+      "aiOutline": "Gợi ý dàn ý bằng AI"
+    },
+    "review": {
+      "title": "Xem lại và gửi duyệt",
+      "preview": "Học viên sẽ thấy khóa học như thế này",
+      "untitled": "Khóa học chưa đặt tên",
+      "meta": "{{lessons}} - {{duration}}",
+      "previewLabel": "Xem trước: {{title}}, {{price}}, {{meta}}"
+    }
+  },
+  "desktop": {
+    "table": {
+      "course": "Khóa học",
+      "status": "Trạng thái",
+      "price": "Giá",
+      "students": "Học viên",
+      "updated": "Cập nhật"
+    },
+    "summaryLabel": "Tổng quan",
+    "filtersLabel": "Lọc theo trạng thái",
+    "stepsLabel": "Các bước"
   }
 }

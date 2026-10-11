@@ -1,48 +1,26 @@
-import Feather from '@expo/vector-icons/Feather';
-import { Image } from 'expo-image';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppText } from '@/components/ui/AppText';
-import { Avatar } from '@/components/ui/Avatar';
-import { Button } from '@/components/ui/Button';
 import { CinematicHeader } from '@/components/ui/CinematicHeader';
-import { FormTextField } from '@/components/ui/FormTextField';
-import { TextField } from '@/components/ui/TextField';
-import { FormError } from '@/features/auth/components/FormError';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
-import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
+import { layout, makeStyles, spacing } from '@/theme';
 
+import { AvatarPicker } from '../components/AvatarPicker';
+import { EditProfileForm } from '../components/EditProfileForm';
 import { useEditProfile } from '../useEditProfile';
+import { EditProfileDesktopScreen } from './EditProfileDesktopScreen';
 
 const AVATAR_SIZE = 96;
 
 /**
- * SC-21 Edit profile (FR-22): tap the avatar to pick a square-cropped photo, edit Full name and
- * Headline, email is read-only. Save uploads the photo (with progress) then PATCHes the profile.
+ * SC-21 Edit profile (FR-22) on a phone: tap the avatar to pick a square-cropped photo, edit Full
+ * name and Headline, email is read-only. Save uploads the photo (with progress) then PATCHes the profile.
  */
-export function EditProfileScreen() {
-  const {
-    control,
-    user,
-    avatarUri,
-    uploadProgress,
-    isUploadingAvatar,
-    isSaving,
-    hasChanges,
-    formError,
-    pickAvatar,
-    save,
-  } = useEditProfile();
-  const { t } = useTranslation(['profile', 'auth', 'common']);
-  const { colors } = useTheme();
+function EditProfilePhoneScreen() {
+  const edit = useEditProfile();
+  const { user, avatarUri, uploadProgress, isUploadingAvatar, isSaving, pickAvatar } = edit;
+  const { t } = useTranslation('profile');
   const styles = useStyles();
   const insets = useSafeAreaInsets();
 
@@ -59,78 +37,25 @@ export function EditProfileScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Pressable
-          onPress={() => void pickAvatar()}
-          disabled={isSaving}
-          accessibilityRole="button"
-          accessibilityLabel={t('edit.changePhoto')}
-          style={styles.avatarButton}
-        >
-          {avatarUri ? (
-            <View style={styles.avatarCircle}>
-              <Image
-                source={{ uri: avatarUri }}
-                style={StyleSheet.absoluteFill}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-                accessibilityIgnoresInvertColors
-              />
-            </View>
-          ) : (
-            <Avatar name={user?.fullName} size={AVATAR_SIZE} />
-          )}
-          {isUploadingAvatar ? (
-            <View style={styles.progress} testID="avatar-progress">
-              <ActivityIndicator color={colors.white} />
-              <AppText variant="caption" color="white" family="bodyMedium">
-                {t('edit.uploadProgress', { percent: uploadProgress ?? 0 })}
-              </AppText>
-            </View>
-          ) : null}
-          <View style={styles.cameraBadge}>
-            <Feather name="camera" size={16} color={colors.onPrimary} />
-          </View>
-        </Pressable>
-
-        <View style={styles.form}>
-          <FormTextField
-            control={control}
-            name="fullName"
-            label={t('auth:fullName')}
-            placeholder={t('auth:placeholders.fullName')}
-            autoCapitalize="words"
-            autoComplete="name"
-            textContentType="name"
-            returnKeyType="next"
-            maxLength={60}
-          />
-          <FormTextField
-            control={control}
-            name="headline"
-            label={t('edit.headline')}
-            placeholder={t('edit.headlinePlaceholder')}
-            returnKeyType="done"
-            maxLength={80}
-          />
-          <TextField
-            label={t('auth:email')}
-            value={user?.email ?? ''}
-            editable={false}
-            helperText={t('edit.emailHelper')}
-          />
-          <FormError message={formError} />
-          <Button
-            title={t('common:actions.save')}
-            onPress={() => void save()}
-            loading={isSaving}
-            disabled={!hasChanges}
-            fullWidth
-            testID="edit-profile-save"
-          />
-        </View>
+        <AvatarPicker
+          avatarUri={avatarUri}
+          name={user?.fullName}
+          size={AVATAR_SIZE}
+          isSaving={isSaving}
+          isUploading={isUploadingAvatar}
+          uploadProgress={uploadProgress}
+          onPick={() => void pickAvatar()}
+        />
+        <EditProfileForm edit={edit} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
+}
+
+/** SC-21 Edit profile: the phone form below 768 dp, a centred form card from 768 dp (PLAN §2.5). */
+export function EditProfileScreen() {
+  const { isWide } = useBreakpoint();
+  return isWide ? <EditProfileDesktopScreen /> : <EditProfilePhoneScreen />;
 }
 
 const useStyles = makeStyles((t) => ({
@@ -140,34 +65,4 @@ const useStyles = makeStyles((t) => ({
     paddingVertical: spacing.xl,
     gap: spacing.xxl,
   },
-  avatarButton: { alignSelf: 'center', width: AVATAR_SIZE, height: AVATAR_SIZE },
-  avatarCircle: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    overflow: 'hidden',
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: t.colors.secondarySoft,
-  },
-  progress: {
-    ...StyleSheet.absoluteFill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xxs,
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: t.colors.overlay,
-  },
-  cameraBadge: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.pill,
-    borderWidth: 2,
-    borderColor: t.colors.background,
-    backgroundColor: t.colors.primary,
-  },
-  form: { gap: spacing.lg },
 }));

@@ -1,33 +1,36 @@
 import { router } from 'expo-router';
-import { useCallback, useMemo, type ReactNode } from 'react';
+import { useCallback, type ReactNode } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 
 import { useTabBarClearance } from '@/components/FloatingTabBar';
+import { WorkHeader, WorkShell } from '@/components/layout/work';
 import { AppText } from '@/components/ui/AppText';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
-import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
+import { layout, makeStyles, radius, spacing } from '@/theme';
 import type { AdminStatsDto } from '@/types/api';
 import { formatPrice } from '@/utils/formatPrice';
 
-import { COURSE_STATUS_ORDER, ROLE_ORDER } from '../adminMeta';
 import { AdminErrorState } from '../components/AdminErrorState';
-import { DistributionBar, type DistributionItem } from '../components/DistributionBar';
+import { AdminDashboardWide } from '../components/desktop/AdminDashboardWide';
+import { DistributionBar } from '../components/DistributionBar';
 import { KpiTile } from '../components/KpiTile';
 import { PendingCard } from '../components/PendingCard';
 import { QuickLink } from '../components/QuickLink';
 import { TopCoursesList } from '../components/TopCoursesList';
 import { useAdminStats } from '../hooks';
+import { useDashboardDistributions } from '../useDashboardDistributions';
 
 const openQueue = (): void => router.push('/admin/courses');
 const openUsers = (): void => router.push('/admin/users');
 const openCourse = (courseId: string): void => router.push(`/admin/courses/${courseId}`);
 
-function DashboardSkeleton() {
+function DashboardSkeleton({ isFlush }: { isFlush: boolean }) {
   const styles = useStyles();
   return (
-    <View style={styles.section} testID="admin-dashboard-skeleton">
+    <View style={[styles.section, isFlush ? styles.flush : null]} testID="admin-dashboard-skeleton">
       <Skeleton height={96} borderRadius={radius.card} />
       <View style={styles.grid}>
         <Skeleton height={112} borderRadius={radius.card} style={styles.skeletonTile} />
@@ -42,34 +45,8 @@ function DashboardSkeleton() {
 
 function DashboardBody({ stats }: { stats: AdminStatsDto }) {
   const { t } = useTranslation('admin');
-  const { colors } = useTheme();
   const styles = useStyles();
-
-  const roleItems = useMemo<DistributionItem[]>(() => {
-    const roleColors = { STUDENT: colors.primary, TEACHER: colors.secondary, ADMIN: colors.gold };
-    return ROLE_ORDER.map((role) => ({
-      key: role,
-      label: t(`roles.${role}`),
-      value: stats.users.byRole[role] ?? 0,
-      color: roleColors[role],
-    }));
-  }, [stats.users.byRole, colors, t]);
-
-  const statusItems = useMemo<DistributionItem[]>(() => {
-    const statusColors = {
-      PUBLISHED: colors.success,
-      PENDING_REVIEW: colors.gold,
-      DRAFT: colors.iconMuted,
-      REJECTED: colors.danger,
-      ARCHIVED: colors.secondary,
-    };
-    return COURSE_STATUS_ORDER.map((status) => ({
-      key: status,
-      label: t(`status.${status}`),
-      value: stats.courses.byStatus[status] ?? 0,
-      color: statusColors[status],
-    }));
-  }, [stats.courses.byStatus, colors, t]);
+  const { roleItems, statusItems } = useDashboardDistributions(stats);
 
   return (
     <View style={styles.section}>
@@ -149,21 +126,36 @@ function DashboardBody({ stats }: { stats: AdminStatsDto }) {
   );
 }
 
-/** SC-31 Admin dashboard (FR-53): pending reviews, KPIs, distributions, top courses and shortcuts. */
+/**
+ * SC-31 Admin dashboard (FR-53): pending reviews, KPIs, distributions, top courses and shortcuts.
+ * On a PC window the KPIs form one row and the charts sit side by side (`AdminDashboardWide`).
+ */
 export function AdminDashboardScreen() {
   const { t } = useTranslation('admin');
   const styles = useStyles();
   const clearance = useTabBarClearance();
+  const { isWide } = useBreakpoint();
   const { data, error, isPending, isError, isRefetching, refetch } = useAdminStats();
   const handleRefresh = useCallback(() => void refetch(), [refetch]);
 
   let body: ReactNode = null;
-  if (isPending) body = <DashboardSkeleton />;
+  if (isPending) body = <DashboardSkeleton isFlush={isWide} />;
   else if (isError && !data) {
     body = (
       <AdminErrorState error={error} title={t('dashboard.loadFailed')} onRetry={handleRefresh} />
     );
-  } else if (data) body = <DashboardBody stats={data} />;
+  } else if (data) {
+    body = isWide ? <AdminDashboardWide stats={data} /> : <DashboardBody stats={data} />;
+  }
+
+  if (isWide) {
+    return (
+      <WorkShell testID="admin-dashboard-screen">
+        <WorkHeader title={t('title')} subtitle={t('dashboard.subtitle')} />
+        {body}
+      </WorkShell>
+    );
+  }
 
   return (
     <View style={styles.screen}>
@@ -186,6 +178,7 @@ const useStyles = makeStyles((t) => ({
     paddingHorizontal: layout.screenPaddingX,
     paddingTop: spacing.sm,
   },
+  flush: { paddingHorizontal: 0, paddingTop: 0 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   skeletonTile: { flexGrow: 1, flexBasis: '45%' },
   block: { gap: spacing.md },

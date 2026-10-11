@@ -7,11 +7,14 @@ import { AppText } from '@/components/ui/AppText';
 import { CinematicHeader } from '@/components/ui/CinematicHeader';
 import { API_URL, APP_VERSION } from '@/constants/config';
 import { useConfirmLogout } from '@/features/auth/useConfirmLogout';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation, type LanguagePreference } from '@/i18n';
 import { useLanguage } from '@/i18n/useLanguage';
 import { useAuthStore } from '@/stores/authStore';
 import { layout, makeStyles, spacing, useTheme, type ThemeMode } from '@/theme';
 
+import { SettingsDesktop } from '../components/desktop/SettingsDesktop';
+import { InfoRow } from '../components/InfoRow';
 import { NavRow } from '../components/NavRow';
 import { OptionRow } from '../components/OptionRow';
 import { SettingsSection } from '../components/SettingsSection';
@@ -19,37 +22,8 @@ import { SettingsSection } from '../components/SettingsSection';
 const LANGUAGE_OPTIONS: readonly LanguagePreference[] = ['system', 'vi', 'en'];
 const THEME_OPTIONS: readonly ThemeMode[] = ['system', 'light', 'dark'];
 
-type InfoRowProps = {
-  label: string;
-  value: string;
-  /** Long values (email): label on its own line, value below it and allowed to wrap. */
-  isStacked?: boolean;
-};
-
-function InfoRow({ label, value, isStacked = false }: InfoRowProps) {
-  const styles = useStyles();
-  return (
-    <View
-      style={[styles.infoRow, isStacked ? styles.infoRowStacked : null]}
-      accessible
-      accessibilityLabel={`${label}: ${value}`}
-    >
-      <AppText variant="body">{label}</AppText>
-      <AppText
-        variant="body"
-        color="textSecondary"
-        numberOfLines={isStacked ? 2 : 1}
-        ellipsizeMode={isStacked ? 'middle' : 'tail'}
-        style={isStacked ? styles.infoValueStacked : styles.infoValue}
-      >
-        {value}
-      </AppText>
-    </View>
-  );
-}
-
 /** UI-05 Settings: language, appearance (system / light / dark), app info and log out. */
-export function SettingsScreen() {
+function SettingsPhoneScreen() {
   const { t } = useTranslation(['settings', 'common', 'auth']);
   const { colors, mode, setMode } = useTheme();
   const { preference, setPreference } = useLanguage();
@@ -123,6 +97,12 @@ export function SettingsScreen() {
   );
 }
 
+/** UI-05 Settings; on a PC window (PLAN §2.5) an account-settings layout with a section menu. */
+export function SettingsScreen() {
+  const { isWide } = useBreakpoint();
+  return isWide ? <SettingsDesktop /> : <SettingsPhoneScreen />;
+}
+
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },
   content: {
@@ -131,23 +111,6 @@ const useStyles = makeStyles((t) => ({
     paddingTop: spacing.sm,
     paddingBottom: spacing.xxxl,
   },
-  infoRow: {
-    minHeight: layout.minTouchTarget,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  infoRowStacked: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    gap: spacing.xxs,
-  },
-  infoValue: { flexShrink: 1 },
-  infoValueStacked: { alignSelf: 'stretch' },
   logoutRow: {
     minHeight: layout.minTouchTarget,
     flexDirection: 'row',

@@ -11,6 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppFrame } from '@/components/AppFrame';
 import { ErrorBoundary as AppErrorBoundary, ErrorFallback } from '@/components/ErrorBoundary';
 import { AppIntro, getIntroFreezeMs } from '@/components/intro';
+import { DesktopTopNav } from '@/components/layout/DesktopTopNav';
 import { ToastProvider } from '@/components/ui/Toast';
 import { useAppBootstrap } from '@/hooks/useAppBootstrap';
 import { persistOptions } from '@/lib/persister';
@@ -49,7 +50,7 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
     <>
       {isReady ? (
         <NavigationThemeProvider value={navigationTheme}>
-          <AppFrame>
+          <AppFrame topNav={<DesktopTopNav />}>
             <StatusBar style={statusBarStyle} />
             <Stack
               screenOptions={{

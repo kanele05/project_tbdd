@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { useWindowDimensions } from 'react-native';
 
 import { AppError } from '@/lib/appError';
 import type { ReviewDto, ReviewSummaryDto } from '@/types/api';
@@ -10,10 +11,22 @@ const mockFetchNextPage = jest.fn();
 const mockUseCourseReviews = jest.fn();
 let mockReviews: Record<string, unknown> = {};
 let mockSummary: Record<string, unknown> = {};
+let mockNumColumns: number | undefined;
 
-jest.mock('@shopify/flash-list', () => ({
-  FlashList: jest.requireActual('react-native').FlatList,
+jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({ width: 390, height: 844, scale: 1, fontScale: 1 })),
 }));
+
+jest.mock('@shopify/flash-list', () => {
+  const { FlatList } = jest.requireActual('react-native');
+  return {
+    FlashList: (props: { numColumns?: number }) => {
+      mockNumColumns = props.numColumns;
+      return <FlatList {...props} />;
+    },
+  };
+});
 
 jest.mock('expo-router', () => ({
   router: { back: jest.fn(), replace: jest.fn(), canGoBack: () => true },
@@ -37,6 +50,8 @@ jest.mock('@/features/teaching/hooks', () => ({
 }));
 
 jest.mock('@/utils/confirmAction', () => ({ confirmAction: () => Promise.resolve(true) }));
+
+const mockWindow = useWindowDimensions as jest.Mock;
 
 const SUMMARY: ReviewSummaryDto = {
   avg: 4.5,
@@ -75,6 +90,7 @@ function setReviews(pages: ReviewDto[][], overrides: Record<string, unknown> = {
 describe('AllReviewsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockWindow.mockReturnValue({ width: 390, height: 844, scale: 1, fontScale: 1 });
     mockIsOwner = false;
     mockSummary = { data: SUMMARY, refetch: mockRefetch };
     setReviews([makeReviews(3)]);
@@ -177,5 +193,23 @@ describe('AllReviewsScreen', () => {
     expect(screen.getByText('Instructor')).toBeOnTheScreen();
     await fireEvent.press(screen.getByTestId('reply-review-1'));
     expect(screen.getByTestId('review-reply-sheet')).toBeOnTheScreen();
+  });
+
+  describe('layout by window width', () => {
+    it('lists the reviews in one column on a phone', async () => {
+      await render(<AllReviewsScreen courseId="course-1" />);
+
+      expect(mockNumColumns).toBe(1);
+    });
+
+    it('lists the reviews as a two-column grid on a PC window', async () => {
+      mockWindow.mockReturnValue({ width: 1280, height: 800, scale: 1, fontScale: 1 });
+
+      await render(<AllReviewsScreen courseId="course-1" />);
+
+      expect(mockNumColumns).toBe(2);
+      expect(screen.getByText('Review text 1')).toBeOnTheScreen();
+      expect(screen.getByText('Review text 3')).toBeOnTheScreen();
+    });
   });
 });

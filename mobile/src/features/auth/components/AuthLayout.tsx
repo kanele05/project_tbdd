@@ -1,46 +1,36 @@
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
-import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
 import { GlassIconButton } from '@/components/ui/GlassIconButton';
 import { GlassSurface } from '@/components/ui/GlassSurface';
-import type { FeatherIconName } from '@/components/ui/icons';
 import { PosterWall } from '@/components/ui/PosterWall';
 import { Wordmark } from '@/components/ui/Wordmark';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { darkPalette, layout, makeStyles, radius, spacing, withAlpha } from '@/theme';
 
-type AuthLayoutProps = {
-  title: string;
-  subtitle: string;
-  children: ReactNode;
-  /** Link row under the form ("Don't have an account? Sign up"). */
-  footer?: ReactNode;
-  /**
-   * Icon of the step screens (verify email, 2FA, forgot / reset password): puts the title over the
-   * poster wall (blurred) with an icon disc and adds a back button.
-   */
-  icon?: FeatherIconName;
-  /** Custom back handler (default: previous screen, or Login when there is no history). */
-  onBack?: () => void;
-};
+import { goBack, type AuthLayoutProps } from './authLayoutShared';
+import { DesktopAuthLayout } from './DesktopAuthLayout';
 
-function goBack(): void {
-  if (router.canGoBack()) router.back();
-  else router.replace('/login');
+/**
+ * Shared frame of the auth screens. Below 768 dp it is the phone layout (`PhoneAuthLayout`); on a
+ * wide window (web, PLAN §2.5) it is the Netflix-style centered card (`DesktopAuthLayout`).
+ */
+export function AuthLayout(props: AuthLayoutProps) {
+  const { isWide } = useBreakpoint();
+  return isWide ? <DesktopAuthLayout {...props} /> : <PhoneAuthLayout {...props} />;
 }
 
 /**
- * Shared frame of the auth screens, "cinematic" like a streaming app's sign-in: a tilted wall of
+ * Phone frame of the auth screens, "cinematic" like a streaming app's sign-in: a tilted wall of
  * course posters drifting behind a dark scrim, the wordmark on top, a serif tagline (sign in / sign
  * up) or the step title (OTP, 2FA, forgot / reset password) in white, and the form on a frosted
  * glass sheet. The keyboard never covers the inputs: KeyboardAvoidingView (iOS) + scrollable
  * content, and Android uses `softwareKeyboardLayoutMode: "resize"` from app.json.
  */
-export function AuthLayout({ title, subtitle, children, footer, icon, onBack }: AuthLayoutProps) {
+function PhoneAuthLayout({ title, subtitle, children, footer, icon, onBack }: AuthLayoutProps) {
   const { t } = useTranslation();
   const { t: tAuth } = useTranslation('auth');
   const styles = useStyles();

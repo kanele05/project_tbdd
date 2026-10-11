@@ -77,7 +77,7 @@ const ContinueCard = memo(function ContinueCard({ item, onPress }: ContinueCardP
   );
 });
 
-function openLesson(item: MyCourseItem): void {
+export function openLesson(item: MyCourseItem): void {
   router.push({
     pathname: '/learn/[courseId]',
     params: {

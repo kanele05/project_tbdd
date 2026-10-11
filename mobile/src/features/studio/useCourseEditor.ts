@@ -1,51 +1,36 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { showToast } from '@/components/ui/Toast';
 import { i18n } from '@/i18n';
-import { getErrorMessage, getFieldErrors, toAppError } from '@/lib/appError';
-import type { StudioCourseDetailDto } from '@/types/api';
+import { getErrorMessage } from '@/lib/appError';
 
 import { useAiDraftStore } from './aiDraftStore';
 import {
   courseFormSchema,
   EMPTY_COURSE_FORM,
-  getInfoChanges,
-  mapServerFieldErrors,
-  toCreateRequest,
-  toRevisionInput,
+  hasInfoChanges,
+  mergeUntouched,
   valuesFromDetail,
   type CourseFormValues,
 } from './courseForm';
-import { CREATE_MODE, getCourseEditMode, type CourseEditMode } from './editMode';
-import {
-  useCourseWorkflow,
-  useCreateCourse,
-  useSaveRevision,
-  useStudioCourse,
-  useUpdateCourse,
-} from './hooks';
+import { CREATE_MODE, getCourseEditMode, NEW_COURSE_ID, type CourseEditMode } from './editMode';
+import { useCourseWorkflow, useStudioCourse } from './hooks';
+import { parseUsdToCents } from './money';
+import { useCourseSave } from './useCourseSave';
 import { useUnsavedChangesGuard } from './useUnsavedChangesGuard';
 
-export const NEW_COURSE_ID = 'new';
-
-function goBack(): void {
-  if (router.canGoBack()) router.back();
-  else router.replace('/(tabs)/studio');
-}
-
 /**
- * Logic of SC-24 (course info editor). It loads the course (unless it is a new one), works out
- * which fields may be edited (`mode`, BR-21), keeps the form in sync with the server, and saves:
- * - new course: `POST /teacher/courses`, then opens its status screen;
- * - DRAFT / REJECTED: `PATCH` with the changed fields;
- * - PUBLISHED: minor fields by `PATCH`, major fields by `PUT .../revision` (the stored revision
- *   payload with the major fields replaced).
- * AI suggestions queued by SC-27 are poured into the form as soon as they arrive.
+ * Data side of the course wizard (SC-24): loads the course (unless it is a new one), works out
+ * which fields may be edited (`mode`, BR-21), keeps one form for all steps in sync with the
+ * server, and exposes `saveFields` (see `useCourseSave`). AI suggestions queued by SC-27 are
+ * poured into the form as soon as they arrive; nothing is saved until the teacher presses Next.
  */
-export function useCourseEditor(courseId: string) {
+export function useCourseEditor(routeCourseId: string) {
+  // `new` becomes the real id once the first step created the draft (the route param follows).
+  const [createdId, setCreatedId] = useState<string | null>(null);
+  const courseId = routeCourseId === NEW_COURSE_ID && createdId ? createdId : routeCourseId;
   const isCreate = courseId === NEW_COURSE_ID;
   const detailQuery = useStudioCourse(courseId, { enabled: !isCreate });
   const detail = detailQuery.data;
@@ -56,29 +41,43 @@ export function useCourseEditor(courseId: string) {
       ? getCourseEditMode(detail)
       : null;
 
+  // Errors appear after the teacher leaves a field or presses Next, never on the first render.
   const form = useForm<CourseFormValues>({
     resolver: zodResolver(courseFormSchema),
     defaultValues: EMPTY_COURSE_FORM,
+    mode: 'onTouched',
   });
-  const { isDirty } = form.formState;
-  const { allowLeave } = useUnsavedChangesGuard(isDirty);
-  const [formError, setFormError] = useState<string | null>(null);
+  const watched = useWatch({ control: form.control });
+  const values = useMemo<CourseFormValues>(() => ({ ...EMPTY_COURSE_FORM, ...watched }), [watched]);
+  const saved = detail ? valuesFromDetail(detail) : EMPTY_COURSE_FORM;
+  const isDirty = hasInfoChanges(saved, values);
+  useUnsavedChangesGuard(isDirty);
 
-  const createCourse = useCreateCourse();
-  const updateCourse = useUpdateCourse(courseId);
-  const saveRevision = useSaveRevision(courseId);
+  // Free / Paid is a UI choice; until the teacher picks one it follows the price in the form.
+  const [paidChoice, setPaidChoice] = useState<boolean | null>(null);
+  const isPaid = paidChoice ?? parseUsdToCents(values.price, 0) > 0;
+  const setPaid = (isNowPaid: boolean) => {
+    setPaidChoice(isNowPaid);
+    if (isNowPaid) return;
+    form.setValue('price', '');
+    form.setValue('originalPrice', '');
+    form.clearErrors(['price', 'originalPrice']);
+  };
+
+  const save = useCourseSave({ courseId, detail, mode, form, isPaid, onCreated: setCreatedId });
   const workflow = useCourseWorkflow(courseId);
-  const isSaving = createCourse.isPending || updateCourse.isPending || saveRevision.isPending;
 
   // Load the server values into the form when the course arrives or changes underneath us,
-  // but never over the teacher's unsaved edits.
+  // but keep every field the teacher edited since the last load.
   const loadedKey = detail ? `${detail.id}:${detail.updatedAt}:${detail.revision?.updatedAt}` : '';
   const lastLoadedKey = useRef('');
+  const lastLoaded = useRef<CourseFormValues>(EMPTY_COURSE_FORM);
   useEffect(() => {
     if (!detail || loadedKey === lastLoadedKey.current) return;
-    if (lastLoadedKey.current !== '' && form.formState.isDirty) return;
     lastLoadedKey.current = loadedKey;
-    form.reset(valuesFromDetail(detail));
+    const next = valuesFromDetail(detail);
+    form.reset(mergeUntouched(lastLoaded.current, form.getValues(), next), { keepErrors: true });
+    lastLoaded.current = next;
   }, [detail, form, loadedKey]);
 
   // Pour AI suggestions (SC-27) into the form.
@@ -88,90 +87,40 @@ export function useCourseEditor(courseId: string) {
     if (!pendingFields) return;
     const fields = takeFields();
     if (!fields) return;
-    const options = { shouldDirty: true, shouldValidate: true } as const;
-    if (fields.subtitle !== undefined) form.setValue('subtitle', fields.subtitle, options);
-    if (fields.description !== undefined) form.setValue('description', fields.description, options);
-    if (fields.benefits !== undefined) form.setValue('benefits', fields.benefits, options);
+    if (fields.subtitle !== undefined) form.setValue('subtitle', fields.subtitle);
+    if (fields.description !== undefined) form.setValue('description', fields.description);
+    if (fields.benefits !== undefined) form.setValue('benefits', fields.benefits);
   }, [form, pendingFields, takeFields]);
 
-  const handleSaveError = (error: unknown) => {
-    const mapped = mapServerFieldErrors(getFieldErrors(error));
-    const keys = Object.keys(mapped) as (keyof CourseFormValues)[];
-    for (const key of keys) form.setError(key, { message: mapped[key] });
-    setFormError(
-      toAppError(error).code === 'VALIDATION_ERROR' && keys.length > 0
-        ? null
-        : getErrorMessage(error),
-    );
-  };
-
-  const save = form.handleSubmit(async (values) => {
-    setFormError(null);
-    try {
-      if (isCreate) {
-        const created = await createCourse.mutateAsync(toCreateRequest(values));
-        allowLeave();
-        showToast(i18n.t('studio:edit.created'), { type: 'success' });
-        router.replace({ pathname: '/studio/[id]', params: { id: created.id } });
-        return;
-      }
-      if (!detail || !mode) return;
-      const saved = await saveExisting(detail, mode, values);
-      form.reset(valuesFromDetail(saved));
-      allowLeave();
-      showToast(i18n.t('studio:edit.saved'), { type: 'success' });
-      goBack();
-    } catch (error) {
-      handleSaveError(error);
-    }
-  });
-
-  async function saveExisting(
-    current: StudioCourseDetailDto,
-    editMode: CourseEditMode,
-    values: CourseFormValues,
-  ): Promise<StudioCourseDetailDto> {
-    const initial = valuesFromDetail(current);
-    if (editMode.kind === 'direct') {
-      const changes = getInfoChanges(initial, values);
-      return Object.keys(changes).length > 0 ? updateCourse.mutateAsync(changes) : current;
-    }
-    let latest = current;
-    if (editMode.kind !== 'published') return latest;
-    const minor = getInfoChanges(initial, values, 'minor');
-    if (Object.keys(minor).length > 0) latest = await updateCourse.mutateAsync(minor);
-    const revision = latest.revision ?? current.revision;
-    const hasMajor = Object.keys(getInfoChanges(initial, values, 'major')).length > 0;
-    if (editMode.revisionState === 'editable' && revision && hasMajor) {
-      latest = await saveRevision.mutateAsync(toRevisionInput(revision.payload, values));
-    }
-    return latest;
-  }
-
   const startRevision = async () => {
-    setFormError(null);
+    save.setFormError(null);
     try {
       await workflow.mutateAsync('createRevision');
       showToast(i18n.t('studio:revision.created'), { type: 'success' });
     } catch (error) {
-      setFormError(getErrorMessage(error));
+      save.setFormError(getErrorMessage(error));
     }
   };
 
   const knownTags = useMemo(() => detail?.tags ?? [], [detail]);
 
   return {
+    courseId,
     isCreate,
     detailQuery,
     detail,
     mode,
     form,
+    values,
     isDirty,
-    isSaving,
+    isPaid,
+    setPaid,
+    isSaving: save.isSaving,
     isStartingRevision: workflow.isPending,
-    formError,
+    formError: save.formError,
+    setFormError: save.setFormError,
     knownTags,
-    save,
+    saveFields: save.saveFields,
     startRevision,
   };
 }

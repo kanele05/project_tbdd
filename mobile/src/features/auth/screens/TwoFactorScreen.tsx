@@ -119,6 +119,7 @@ export function TwoFactorScreen() {
           value={code}
           onChange={setCode}
           onComplete={submit}
+          onSubmit={(value) => void submit(value)}
           label={t('twoFactor.codeLabel')}
           autoFocus
           hasError={error !== null}

@@ -14,7 +14,11 @@
     "notifications": "Thông báo",
     "settings": "Cài đặt",
     "teacherProfile": "Hồ sơ giảng viên",
-    "teaching": "Giảng dạy"
+    "teaching": "Giảng dạy",
+    "admin": "Quản trị"
+  },
+  "account": {
+    "title": "Tài khoản"
   },
   "stats": {
     "saved": "Đã lưu",
@@ -26,6 +30,7 @@
   "edit": {
     "title": "Chỉnh sửa hồ sơ",
     "changePhoto": "Đổi ảnh đại diện",
+    "photoHint": "Bấm vào ảnh để chọn ảnh PNG hoặc JPG, tối đa 5 MB.",
     "headline": "Giới thiệu ngắn",
     "headlinePlaceholder": "VD: Nhà thiết kế UX/UI",
     "emailHelper": "Không thể thay đổi email của bạn.",

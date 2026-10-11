@@ -1,9 +1,11 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Pressable, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DialogFrame } from '@/components/layout/DialogFrame';
 import { AppText, Button, CinematicHeader, GlassIconButton } from '@/components/ui';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import {
   INITIAL_SEARCH_FILTERS,
@@ -13,6 +15,7 @@ import {
 } from '@/stores/searchFilterStore';
 import { layout, makeStyles, spacing } from '@/theme';
 import type { CourseSort } from '@/types/api';
+import { confirmAction } from '@/utils/confirmAction';
 
 import { FilterForm } from '../components/FilterForm';
 import {
@@ -44,6 +47,7 @@ export function SearchFilterScreen() {
   const { t } = useTranslation(['search', 'common']);
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const { q } = useLocalSearchParams<{ q?: string }>();
   const applied = useAppliedFilters();
   const applyFilters = useSearchFilterStore((state) => state.apply);
@@ -102,10 +106,16 @@ export function SearchFilterScreen() {
       closeModal();
       return;
     }
-    Alert.alert(t('filter.discardTitle'), t('filter.discardMessage'), [
-      { text: t('filter.keepEditing'), style: 'cancel' },
-      { text: t('filter.discard'), style: 'destructive', onPress: closeModal },
-    ]);
+    // `Alert.alert` does nothing on the web: confirmAction uses a browser dialog there.
+    void confirmAction({
+      title: t('filter.discardTitle'),
+      message: t('filter.discardMessage'),
+      confirmLabel: t('filter.discard'),
+      cancelLabel: t('filter.keepEditing'),
+      isDestructive: true,
+    }).then((isConfirmed) => {
+      if (isConfirmed) closeModal();
+    });
   }, [hasChanges, t]);
   const handleApply = useCallback(() => {
     applyFilters(values);
@@ -114,6 +124,55 @@ export function SearchFilterScreen() {
 
   const applyLabel =
     total == null || hasRangeError ? t('filter.apply') : t('filter.applyCount', { count: total });
+
+  const form = (
+    <FilterForm
+      draft={values}
+      minText={minText}
+      maxText={maxText}
+      hasRangeError={hasRangeError}
+      onToggleCategory={handleToggleCategory}
+      onChangePrice={handleChangePrice}
+      onChangeMin={handleChangeMin}
+      onChangeMax={handleChangeMax}
+      onChangeRating={handleChangeRating}
+      onChangeSort={handleChangeSort}
+    />
+  );
+
+  if (isWide) {
+    return (
+      <DialogFrame
+        title={t('filter.title')}
+        closeLabel={t('common:actions.close')}
+        onClose={handleClose}
+        width={600}
+        headerRight={
+          <Button
+            title={t('filter.reset')}
+            accessibilityLabel={t('filter.resetLabel')}
+            variant="ghost"
+            size="sm"
+            disabled={isDefault}
+            onPress={handleReset}
+            testID="filter-reset"
+          />
+        }
+        footer={
+          <Button
+            title={applyLabel}
+            onPress={handleApply}
+            disabled={hasRangeError}
+            fullWidth
+            testID="filter-apply"
+          />
+        }
+        testID="search-filter-dialog"
+      >
+        {form}
+      </DialogFrame>
+    );
+  }
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">
@@ -150,18 +209,7 @@ export function SearchFilterScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <FilterForm
-          draft={values}
-          minText={minText}
-          maxText={maxText}
-          hasRangeError={hasRangeError}
-          onToggleCategory={handleToggleCategory}
-          onChangePrice={handleChangePrice}
-          onChangeMin={handleChangeMin}
-          onChangeMax={handleChangeMax}
-          onChangeRating={handleChangeRating}
-          onChangeSort={handleChangeSort}
-        />
+        {form}
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>

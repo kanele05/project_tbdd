@@ -2,7 +2,7 @@ import { FlashList, type ListRenderItemInfo } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Share, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -10,6 +10,7 @@ import { GlassIconButton } from '@/components/ui/GlassIconButton';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SegmentedTabs, type SegmentedTab } from '@/components/ui/SegmentedTabs';
 import { ReviewCard } from '@/features/review/components/ReviewCard';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
@@ -34,6 +35,8 @@ import {
   type TeacherRow,
   type TeacherTab,
 } from '../teacherRows';
+import { useShareTeacher } from '../useShareTeacher';
+import { TeacherProfileDesktopScreen } from './TeacherProfileDesktopScreen';
 
 export type TeacherProfileScreenProps = { teacherId: string };
 
@@ -43,11 +46,11 @@ function goBack(): void {
 }
 
 /**
- * SC-18 Teacher profile (FR-20): hero header (cover, avatar, numbers, Follow), then OVERVIEW |
+ * SC-18 Teacher profile (FR-20) on a phone: hero header (cover, avatar, numbers, Follow), then OVERVIEW |
  * COURSES | REVIEWS tabs. One FlashList serves all tabs (the header scrolls with the content and
  * the Reviews tab paginates infinitely), so there is no nested vertical scrolling.
  */
-export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
+function TeacherProfilePhoneScreen({ teacherId }: TeacherProfileScreenProps) {
   const { t } = useTranslation(['teacher', 'common']);
   const { colors } = useTheme();
   const themed = useStyles();
@@ -77,15 +80,7 @@ export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
     if (!isFollowPending) toggleFollow(teacherId, isFollowed);
   }, [isFollowPending, toggleFollow, teacherId, isFollowed]);
 
-  const handleShare = useCallback(() => {
-    if (!teacher) return;
-    const message = t('teacher:share.message', {
-      name: teacher.fullName,
-      job: teacher.jobTitle,
-      app: t('common:appName'),
-    });
-    void Share.share({ message }).catch(() => undefined);
-  }, [teacher, t]);
+  const handleShare = useShareTeacher(teacher);
 
   const handlePressCourse = useCallback((course: CourseSummary) => {
     router.push(`/course/${course.id}`);
@@ -218,6 +213,16 @@ export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
       <StatusBar style={teacher ? 'light' : 'auto'} />
       {body}
     </View>
+  );
+}
+
+/** SC-18 Teacher profile: the phone list below 768 dp, the PC page from 768 dp (PLAN §2.5). */
+export function TeacherProfileScreen({ teacherId }: TeacherProfileScreenProps) {
+  const { isWide } = useBreakpoint();
+  return isWide ? (
+    <TeacherProfileDesktopScreen teacherId={teacherId} />
+  ) : (
+    <TeacherProfilePhoneScreen teacherId={teacherId} />
   );
 }
 

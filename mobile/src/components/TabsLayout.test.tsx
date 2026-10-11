@@ -74,9 +74,9 @@ describe('TabsLayout', () => {
       'index',
       'search',
       'my-courses',
-      'profile',
       'studio',
       'admin',
+      'profile',
     ]);
     expect(mockTabBarProps[0]?.visibleRouteNames).toEqual([
       'index',

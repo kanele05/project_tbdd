@@ -1,5 +1,14 @@
 {
   "title": "Settings",
+  "desktop": {
+    "subtitle": "Manage how the app looks, your language and your account security.",
+    "menuLabel": "Settings sections",
+    "appearanceHint": "Choose a light or dark look, or follow your device.",
+    "languageHint": "Pick the language of the app. Course content stays in English.",
+    "aboutHint": "Information about this app and the account you are signed in with.",
+    "securityHint": "Two-step verification, your password and the devices signed in to your account.",
+    "setupHint": "Link an authenticator app, then enter the code it shows."
+  },
   "language": {
     "title": "Language",
     "system": "System default",
@@ -97,6 +106,12 @@
     "devices": {
       "title": "Devices",
       "description": "Where you are logged in. Log out of any device you don't recognize.",
+      "columns": {
+        "device": "Device",
+        "ip": "IP address",
+        "lastActive": "Last active",
+        "action": "Action"
+      },
       "thisDevice": "This device",
       "lastActive": "Last active {{date}}",
       "signOut": "Log out",

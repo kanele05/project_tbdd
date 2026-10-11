@@ -15,7 +15,11 @@ import { formatRelativeTime } from '@/utils/formatRelativeTime';
 
 import { CourseStatusBadge } from './CourseStatusBadge';
 
-export type CourseInfoCardProps = { detail: AdminCourseDetailDto };
+export type CourseInfoCardProps = {
+  detail: AdminCourseDetailDto;
+  /** PC layout: a wide, short cover instead of the 16:9 one. */
+  isWide?: boolean;
+};
 
 function Fact({ label, value }: { label: string; value: string }) {
   const styles = useStyles();
@@ -30,7 +34,7 @@ function Fact({ label, value }: { label: string; value: string }) {
 }
 
 /** Course overview for the reviewer: cover, status, teacher, key facts and the written content. */
-function CourseInfoCardBase({ detail }: CourseInfoCardProps) {
+function CourseInfoCardBase({ detail, isWide = false }: CourseInfoCardProps) {
   const { t } = useTranslation('admin');
   const styles = useStyles();
   const priceText =
@@ -44,14 +48,14 @@ function CourseInfoCardBase({ detail }: CourseInfoCardProps) {
       {detail.thumbnailUrl ? (
         <Image
           source={{ uri: detail.thumbnailUrl }}
-          style={styles.cover}
+          style={[styles.cover, isWide ? styles.coverWide : null]}
           contentFit="cover"
           cachePolicy="memory-disk"
           recyclingKey={detail.thumbnailUrl}
           accessibilityLabel={t('detail.coverOf', { title: detail.title })}
         />
       ) : (
-        <View style={styles.cover} />
+        <View style={[styles.cover, isWide ? styles.coverWide : null]} />
       )}
       <View style={styles.badges}>
         <CourseStatusBadge status={detail.status} />
@@ -147,6 +151,7 @@ const useStyles = makeStyles((t) => ({
     overflow: 'hidden',
   },
   cover: { width: '100%', aspectRatio: 16 / 9, backgroundColor: t.colors.surface },
+  coverWide: { aspectRatio: 3 },
   badges: {
     flexDirection: 'row',
     flexWrap: 'wrap',

@@ -1,5 +1,14 @@
 {
   "title": "Cài đặt",
+  "desktop": {
+    "subtitle": "Quản lý giao diện, ngôn ngữ và bảo mật tài khoản của bạn.",
+    "menuLabel": "Các mục cài đặt",
+    "appearanceHint": "Chọn giao diện sáng hoặc tối, hoặc theo thiết bị của bạn.",
+    "languageHint": "Chọn ngôn ngữ của ứng dụng. Nội dung khóa học vẫn giữ tiếng Anh.",
+    "aboutHint": "Thông tin về ứng dụng và tài khoản bạn đang đăng nhập.",
+    "securityHint": "Xác minh hai bước, mật khẩu và các thiết bị đang đăng nhập vào tài khoản của bạn.",
+    "setupHint": "Liên kết ứng dụng xác thực, rồi nhập mã mà ứng dụng hiển thị."
+  },
   "language": {
     "title": "Ngôn ngữ",
     "system": "Theo hệ thống",
@@ -96,6 +105,12 @@
     "devices": {
       "title": "Thiết bị",
       "description": "Nơi bạn đang đăng nhập. Hãy đăng xuất thiết bị bạn không nhận ra.",
+      "columns": {
+        "device": "Thiết bị",
+        "ip": "Địa chỉ IP",
+        "lastActive": "Hoạt động lần cuối",
+        "action": "Thao tác"
+      },
       "thisDevice": "Thiết bị này",
       "lastActive": "Hoạt động lần cuối {{date}}",
       "signOut": "Đăng xuất",

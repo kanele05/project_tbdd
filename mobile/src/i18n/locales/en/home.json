@@ -52,5 +52,12 @@
   },
   "refresh": "Refresh",
   "emptyTitle": "No courses to show yet",
-  "emptyMessage": "New courses are added regularly. Pull down to refresh or check back soon."
+  "emptyMessage": "New courses are added regularly. Pull down to refresh or check back soon.",
+  "billboard": {
+    "preview": "Preview",
+    "previewLabel": "Preview {{title}}",
+    "details": "Details",
+    "detailsLabel": "Details of {{title}}",
+    "pick": "Show featured {{number}}"
+  }
 }

@@ -49,7 +49,9 @@
     "linkCourses": "Khóa học",
     "linkCoursesHint": "Duyệt khóa học mới và bản sửa đổi, ẩn hoặc khôi phục khóa học",
     "linkUsers": "Người dùng",
-    "linkUsersHint": "Tìm tài khoản, khóa hoặc mở khóa"
+    "linkUsersHint": "Tìm tài khoản, khóa hoặc mở khóa",
+    "subtitle": "Duyệt khóa học và theo dõi hoạt động của nền tảng.",
+    "shortcuts": "Lối tắt"
   },
   "queue": {
     "title": "Hàng chờ duyệt",
@@ -73,6 +75,16 @@
       "PUBLISHED": "Chưa có khóa học nào được xuất bản.",
       "REJECTED": "Không có bài nào bị từ chối.",
       "ARCHIVED": "Không có khóa học nào bị ẩn."
+    },
+    "subtitle": "Bài gửi cũ nhất hiện lên trước.",
+    "columns": {
+      "course": "Khóa học",
+      "teacher": "Giảng viên",
+      "type": "Loại",
+      "status": "Trạng thái",
+      "price": "Giá",
+      "lessons": "Bài học",
+      "submitted": "Gửi duyệt"
     }
   },
   "detail": {
@@ -101,7 +113,9 @@
     "openVideo": "Mở video của bài {{title}}",
     "openVideoFailed": "Không mở được link video.",
     "showNotes": "Xem ghi chú bài học",
-    "hideNotes": "Ẩn ghi chú bài học"
+    "hideNotes": "Ẩn ghi chú bài học",
+    "decisionTitle": "Quyết định",
+    "noDecision": "Khóa học này hiện chưa cần quyết định nào."
   },
   "diff": {
     "before": "Trước",
@@ -251,7 +265,16 @@
     "enableMessage": "{{name}} sẽ đăng nhập lại được.",
     "disableTitle": "Khóa tài khoản này",
     "disableMessage": "{{name}} sẽ bị đăng xuất khỏi mọi thiết bị và không đăng nhập được cho đến khi bạn mở khóa.",
-    "reasonLabel": "Lý do"
+    "reasonLabel": "Lý do",
+    "subtitle": "Tìm tài khoản, khóa hoặc mở khóa.",
+    "columns": {
+      "user": "Người dùng",
+      "role": "Vai trò",
+      "usage": "Hoạt động",
+      "joined": "Tham gia",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    }
   },
   "errors": {
     "CANNOT_DISABLE_ADMIN": "Không thể khóa tài khoản quản trị viên, kể cả tài khoản của bạn.",

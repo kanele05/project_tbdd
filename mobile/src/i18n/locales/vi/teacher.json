@@ -34,7 +34,8 @@
   },
   "top": {
     "emptyTitle": "Chưa có giảng viên nào",
-    "emptyMessage": "Các giảng viên được đánh giá cao sẽ xuất hiện ở đây."
+    "emptyMessage": "Các giảng viên được đánh giá cao sẽ xuất hiện ở đây.",
+    "loadMore": "Xem thêm"
   },
   "card": {
     "label": "{{name}}, {{organization}}, đánh giá {{rating}}",

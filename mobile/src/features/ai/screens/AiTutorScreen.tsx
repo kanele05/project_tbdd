@@ -1,9 +1,8 @@
 import { router } from 'expo-router';
 import { useCallback, useMemo } from 'react';
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, View } from 'react-native';
+import { KeyboardAvoidingView, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { IconButton } from '@/components/ui/IconButton';
@@ -14,6 +13,7 @@ import { useCourseDetail } from '@/features/course/hooks';
 import { isNotEnrolledError, useCourseAccessGuard } from '@/features/learning/accessGuard';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
 import { getShortCourseTitle } from '@/features/learning/videoUtils';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { getErrorMessage } from '@/lib/appError';
 import { layout, makeStyles, spacing } from '@/theme';
@@ -21,21 +21,16 @@ import type { AiChatMessageDto } from '@/types/api';
 import { confirmAction } from '@/utils/confirmAction';
 
 import { toChronological } from '../chatMessages';
-import { ChatBubble } from '../components/ChatBubble';
+import { TutorDesktop } from '../components/desktop/TutorDesktop';
+import { TutorSidePanel } from '../components/desktop/TutorSidePanel';
 import { TutorComposer } from '../components/TutorComposer';
 import { TutorEmpty } from '../components/TutorEmpty';
-import { TutorTurnView } from '../components/TutorTurnView';
+import { TutorMessageList } from '../components/TutorMessageList';
 import { useAiChatHistory, useClearAiChat } from '../hooks';
 import { useAiTutorChat } from '../useAiTutorChat';
 import { useStickToBottom } from '../useStickToBottom';
 
 export type AiTutorScreenProps = { courseId: string };
-
-const keyExtractor = (message: AiChatMessageDto): string => message.id;
-
-function renderMessage({ item }: { item: AiChatMessageDto }) {
-  return <ChatBubble role={item.role === 'USER' ? 'user' : 'assistant'} text={item.content} />;
-}
 
 function HistorySkeleton() {
   const styles = useStyles();
@@ -56,6 +51,7 @@ function HistorySkeleton() {
  */
 export function AiTutorScreen({ courseId }: AiTutorScreenProps) {
   const { t } = useTranslation(['ai', 'common']);
+  const { isWide } = useBreakpoint();
   const styles = useStyles();
   const toast = useToast();
   const course = useCourseDetail(courseId);
@@ -135,42 +131,42 @@ export function AiTutorScreen({ courseId }: AiTutorScreenProps) {
     );
   } else {
     body = (
-      <FlatList
-        ref={listRef}
-        testID="tutor-list"
-        data={messages}
-        keyExtractor={keyExtractor}
-        renderItem={renderMessage}
+      <TutorMessageList
+        listRef={listRef}
+        messages={messages}
+        turn={shownTurn}
+        cooldownSec={chat.cooldownSec}
+        onRetry={chat.retry}
         onScroll={onScroll}
-        scrollEventThrottle={100}
         onContentSizeChange={onContentSizeChange}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
-        contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={Separator}
-        ListHeaderComponent={
-          hasNextPage ? (
-            <View style={styles.loadMore}>
-              {isFetchingNextPage ? (
-                <ActivityIndicator />
-              ) : (
-                <Button
-                  title={t('ai:tutor.loadMore')}
-                  variant="ghost"
-                  size="sm"
-                  onPress={handleLoadMore}
-                />
-              )}
-            </View>
-          ) : null
-        }
-        ListFooterComponent={
-          shownTurn ? (
-            <View style={styles.turn}>
-              <TutorTurnView turn={shownTurn} cooldownSec={chat.cooldownSec} onRetry={chat.retry} />
-            </View>
-          ) : null
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={handleLoadMore}
+      />
+    );
+  }
+
+  const composer = (
+    <TutorComposer onSend={handleSend} isBusy={chat.isStreaming} cooldownSec={chat.cooldownSec} />
+  );
+  const isClearDisabled = messages.length === 0 || chat.isStreaming;
+
+  if (isWide) {
+    return (
+      <TutorDesktop
+        courseTitle={course.data ? getShortCourseTitle(course.data.title) : undefined}
+        body={body}
+        composer={composer}
+        onClear={() => void handleClear()}
+        isClearDisabled={isClearDisabled}
+        side={
+          <TutorSidePanel
+            courseTitle={course.data?.title}
+            hasConversation={messages.length > 0 || shownTurn !== null}
+            onAsk={(question) => void handleSend(question)}
+            isDisabled={chat.cooldownSec > 0 || chat.isStreaming}
+            onOpenCourse={handleOpenCourse}
+          />
         }
       />
     );
@@ -184,7 +180,7 @@ export function AiTutorScreen({ courseId }: AiTutorScreenProps) {
           <IconButton
             icon="trash-2"
             onPress={() => void handleClear()}
-            disabled={messages.length === 0 || chat.isStreaming}
+            disabled={isClearDisabled}
             accessibilityLabel={t('ai:tutor.clear')}
             color="textSecondary"
           />
@@ -196,14 +192,9 @@ export function AiTutorScreen({ courseId }: AiTutorScreenProps) {
         </AppText>
       ) : null}
       <View style={styles.body}>{body}</View>
-      <TutorComposer onSend={handleSend} isBusy={chat.isStreaming} cooldownSec={chat.cooldownSec} />
+      {composer}
     </KeyboardAvoidingView>
   );
-}
-
-function Separator() {
-  const styles = useStyles();
-  return <View style={styles.separator} />;
 }
 
 const useStyles = makeStyles((t) => ({
@@ -214,10 +205,6 @@ const useStyles = makeStyles((t) => ({
     paddingBottom: spacing.sm,
     textAlign: 'center',
   },
-  listContent: { padding: layout.screenPaddingX, paddingBottom: spacing.xl },
-  separator: { height: spacing.md },
-  turn: { marginTop: spacing.md },
-  loadMore: { alignItems: 'center', marginBottom: spacing.md },
   skeletons: { gap: spacing.md, padding: layout.screenPaddingX },
   skeletonRight: { alignSelf: 'flex-end' },
 }));

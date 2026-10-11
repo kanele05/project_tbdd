@@ -3,10 +3,14 @@ import {
   courseFormSchema,
   EMPTY_COURSE_FORM,
   getInfoChanges,
+  getPriceErrors,
+  hasInfoChanges,
   mapServerFieldErrors,
+  mergeUntouched,
   toCreateRequest,
   toRevisionInput,
   valuesFromDetail,
+  withFields,
   type CourseFormValues,
 } from './courseForm';
 import { makeDetail, makeRevision } from './studioFixtures';
@@ -149,5 +153,50 @@ describe('mapServerFieldErrors', () => {
     expect(
       mapServerFieldErrors({ priceCents: 'bad', 'benefits.2': 'long', foo: 'x', title: 't' }),
     ).toEqual({ price: 'bad', benefits: 'long', title: 't' });
+  });
+});
+
+describe('withFields', () => {
+  it('takes only the named fields from the source', () => {
+    const saved = { ...VALID, subtitle: 'saved' };
+    const edited = { ...VALID, title: 'Edited title', subtitle: 'edited' };
+    expect(withFields(saved, edited, ['title'])).toEqual({ ...saved, title: 'Edited title' });
+  });
+});
+
+describe('mergeUntouched', () => {
+  it('keeps what the teacher edited and refreshes everything else', () => {
+    const previous = { ...VALID, subtitle: 'old', description: 'old description' };
+    const current = { ...previous, description: 'typed by the teacher' };
+    const next = { ...previous, subtitle: 'new from server', description: 'server description' };
+    expect(mergeUntouched(previous, current, next)).toEqual({
+      ...next,
+      description: 'typed by the teacher',
+    });
+  });
+});
+
+describe('hasInfoChanges', () => {
+  it('is false for an untouched form and true after an edit', () => {
+    expect(hasInfoChanges(VALID, { ...VALID, title: ' React Native Bootcamp ' })).toBe(false);
+    expect(hasInfoChanges(EMPTY_COURSE_FORM, EMPTY_COURSE_FORM)).toBe(false);
+    expect(hasInfoChanges(VALID, { ...VALID, subtitle: 'x' })).toBe(true);
+  });
+});
+
+describe('getPriceErrors', () => {
+  it('needs a price of at least $0.99 for a paid course', () => {
+    expect(getPriceErrors({ ...VALID, price: '' }, true).price).toBeDefined();
+    expect(getPriceErrors({ ...VALID, price: '0.5' }, true).price).toBeDefined();
+    expect(getPriceErrors({ ...VALID, price: '0.99' }, true)).toEqual({});
+  });
+
+  it('needs an original price above the price', () => {
+    expect(getPriceErrors({ ...VALID, originalPrice: '29.99' }, true).originalPrice).toBeDefined();
+    expect(getPriceErrors({ ...VALID, originalPrice: '49' }, true)).toEqual({});
+  });
+
+  it('checks nothing for a free course', () => {
+    expect(getPriceErrors({ ...VALID, price: '', originalPrice: '5' }, false)).toEqual({});
   });
 });

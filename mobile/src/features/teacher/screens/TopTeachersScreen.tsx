@@ -7,12 +7,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
 import type { TeacherSummary } from '@/types/api';
 
 import { TeacherCard } from '../components/TeacherCard';
 import { TeacherCardSkeleton } from '../components/TeacherSkeletons';
+import { TopTeachersGrid } from '../components/TopTeachersGrid';
 import { useTeachersInfinite } from '../hooks';
 
 const SKELETON_KEYS = [0, 1, 2, 3, 4, 5] as const;
@@ -55,6 +57,7 @@ export function TopTeachersScreen() {
   const { colors } = useTheme();
   const themed = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const query = useTeachersInfinite();
   const { data, hasNextPage, isFetchingNextPage, isRefetching, fetchNextPage, refetch } = query;
 
@@ -76,6 +79,23 @@ export function TopTeachersScreen() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleRefresh = useCallback(() => void refetch(), [refetch]);
+
+  if (isWide) {
+    return (
+      <View style={themed.screen}>
+        <TopTeachersGrid
+          teachers={teachers}
+          isPending={query.isPending}
+          error={query.isError ? query.error : null}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          onLoadMore={handleEndReached}
+          onRetry={handleRefresh}
+          onOpenTeacher={handleOpen}
+        />
+      </View>
+    );
+  }
 
   let body: ReactNode;
   if (query.isPending) {

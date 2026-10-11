@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { Keyboard } from 'react-native';
+import { Keyboard, useWindowDimensions } from 'react-native';
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { AppError } from '@/lib/appError';
@@ -18,6 +18,12 @@ let mockCourse: Record<string, unknown> = {};
 let mockCurriculum: Record<string, unknown> = {};
 let mockLessons: Record<string, Record<string, unknown>> = {};
 let mockOnEnded: ((nextLessonId: string | null) => void) | undefined;
+let mockPlayerMounts = 0;
+
+jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
+  __esModule: true,
+  default: jest.fn(() => ({ width: 390, height: 844, scale: 1, fontScale: 1 })),
+}));
 
 jest.mock('expo-router', () => ({
   router: {
@@ -59,6 +65,9 @@ jest.mock('../components/LessonPlayer', () => ({
   }) => {
     mockOnEnded = onEnded;
     const { Text: MockText } = jest.requireActual('react-native');
+    jest.requireActual('react').useEffect(() => {
+      mockPlayerMounts += 1;
+    }, []);
     return <MockText>{`playing ${lesson.id}`}</MockText>;
   },
 }));
@@ -79,6 +88,10 @@ jest.mock('../hooks', () => ({
   useToggleCourseLike: () => ({ mutate: mockToggleLike }),
   useShareCourse: () => ({ share: mockShare }),
 }));
+
+const mockWindow = useWindowDimensions as jest.Mock;
+const PHONE = { width: 390, height: 844, scale: 1, fontScale: 1 };
+const DESKTOP = { width: 1280, height: 800, scale: 1, fontScale: 1 };
 
 const COURSE: CourseDetail = {
   id: 'course-1',
@@ -194,6 +207,8 @@ async function renderScreen() {
 describe('LearningScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockWindow.mockReturnValue(PHONE);
+    mockPlayerMounts = 0;
     mockParams = {};
     mockOnEnded = undefined;
     mockCourse = {
@@ -489,6 +504,65 @@ describe('LearningScreen', () => {
 
       expect(screen.queryByTestId('mini-player-bar')).not.toBeOnTheScreen();
       expect(screen.getByText('playing lesson-2')).toBeOnTheScreen();
+    });
+  });
+
+  describe('PC window (>= 768 dp)', () => {
+    beforeEach(() => mockWindow.mockReturnValue(DESKTOP));
+
+    it('puts the lesson title and the course info under the player and the tabs in a side panel', async () => {
+      await renderScreen();
+
+      const info = screen.getByTestId('desktop-lesson-info');
+      expect(info).toBeOnTheScreen();
+      expect(screen.getByText('231 Likes')).toBeOnTheScreen();
+      expect(screen.getByText('playing lesson-2')).toBeOnTheScreen();
+      expect(screen.getByRole('tab', { name: 'Lessons' })).toBeOnTheScreen();
+      expect(screen.getByText('First lesson')).toBeOnTheScreen();
+    });
+
+    it('shows the course title once, not again above the tabs', async () => {
+      await renderScreen();
+
+      expect(
+        screen.getAllByText('UX Foundation: Introduction to User Experience Design'),
+      ).toHaveLength(1);
+    });
+
+    it('never folds the video into the mini bar while typing', async () => {
+      const handlers: Record<string, () => void> = {};
+      jest.spyOn(Keyboard, 'addListener').mockImplementation(((
+        event: string,
+        handler: () => void,
+      ) => {
+        handlers[event] = handler;
+        return { remove: jest.fn() };
+      }) as never);
+      await renderScreen();
+      await fireEvent.press(screen.getByRole('tab', { name: 'Q&A' }));
+
+      await act(async () => void handlers.keyboardDidShow?.());
+
+      expect(screen.queryByTestId('mini-player-bar')).not.toBeOnTheScreen();
+      expect(screen.getByText('playing lesson-2')).toBeOnTheScreen();
+      jest.restoreAllMocks();
+    });
+
+    it('keeps the same player mounted when the window is resized between phone and PC', async () => {
+      mockWindow.mockReturnValue(PHONE);
+      const { rerender } = await renderScreen();
+      expect(screen.queryByTestId('desktop-lesson-info')).not.toBeOnTheScreen();
+      expect(mockPlayerMounts).toBe(1);
+
+      mockWindow.mockReturnValue(DESKTOP);
+      await rerender(
+        <ToastProvider>
+          <LearningScreen courseId="course-1" />
+        </ToastProvider>,
+      );
+
+      expect(screen.getByTestId('desktop-lesson-info')).toBeOnTheScreen();
+      expect(mockPlayerMounts).toBe(1);
     });
   });
 });

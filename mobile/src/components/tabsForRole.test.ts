@@ -9,9 +9,9 @@ describe('getTabsForRole', () => {
     expect(names(undefined)).toEqual(['index', 'search', 'my-courses', 'profile']);
   });
 
-  it('adds the Teaching tab for a teacher and the Admin tab for an admin as the fifth tab', () => {
-    expect(names('TEACHER')).toEqual(['index', 'search', 'my-courses', 'profile', 'studio']);
-    expect(names('ADMIN')).toEqual(['index', 'search', 'my-courses', 'profile', 'admin']);
+  it('puts the Teaching / Admin tab right before Profile, which stays last', () => {
+    expect(names('TEACHER')).toEqual(['index', 'search', 'my-courses', 'studio', 'profile']);
+    expect(names('ADMIN')).toEqual(['index', 'search', 'my-courses', 'admin', 'profile']);
   });
 
   it('keeps the visible tabs in the order the navigator registers them', () => {

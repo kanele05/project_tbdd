@@ -241,3 +241,60 @@ export function mapServerFieldErrors(
   }
   return result;
 }
+
+const FORM_FIELDS = Object.keys(EMPTY_COURSE_FORM) as (keyof CourseFormValues)[];
+
+/** `base` with the given fields taken from `source` (a step saves only the fields it owns). */
+export function withFields(
+  base: CourseFormValues,
+  source: CourseFormValues,
+  fields: readonly (keyof CourseFormValues)[],
+): CourseFormValues {
+  const result: CourseFormValues = { ...base };
+  for (const field of fields) Object.assign(result, { [field]: source[field] });
+  return result;
+}
+
+/**
+ * New server values for the form, keeping what the teacher changed since `previous` was loaded:
+ * a field the teacher did not touch (`current` equals `previous`) takes the `next` server value.
+ */
+export function mergeUntouched(
+  previous: CourseFormValues,
+  current: CourseFormValues,
+  next: CourseFormValues,
+): CourseFormValues {
+  const merged: CourseFormValues = { ...next };
+  for (const field of FORM_FIELDS) {
+    if (JSON.stringify(previous[field]) !== JSON.stringify(current[field])) {
+      Object.assign(merged, { [field]: current[field] });
+    }
+  }
+  return merged;
+}
+
+type PriceErrors = Partial<Record<'price' | 'originalPrice', string>>;
+
+/**
+ * Extra rules of the price step (BR-20): a paid course costs $0.99 - $999.99 and its original
+ * price (optional) is higher than the price. The zod schema only checks the format; "paid" is a
+ * UI choice, so this runs when the teacher leaves the step.
+ */
+export function getPriceErrors(values: CourseFormValues, isPaid: boolean): PriceErrors {
+  const errors: PriceErrors = {};
+  if (!isPaid) return errors;
+  const price = parseUsdToCents(values.price, 0);
+  if (price < STUDIO_LIMITS.priceMinPaidCents) {
+    errors.price = tr('studio:validation.pricePaidMin');
+  }
+  const original = originalCents(values);
+  if (original !== null && Number.isFinite(original) && original <= price) {
+    errors.originalPrice = tr('studio:validation.originalPriceLow');
+  }
+  return errors;
+}
+
+/** Has the teacher changed anything compared to what is saved (or to an empty form)? */
+export function hasInfoChanges(saved: CourseFormValues, values: CourseFormValues): boolean {
+  return Object.keys(getInfoChanges(saved, values)).length > 0;
+}

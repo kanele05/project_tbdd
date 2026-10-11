@@ -19,6 +19,9 @@ export type CourseEditMode =
     }
   | { kind: 'locked'; canEditMinor: false; canEditMajor: false; reason: 'pending' | 'archived' };
 
+/** Route id of the wizard while the draft does not exist yet. */
+export const NEW_COURSE_ID = 'new';
+
 export const CREATE_MODE: CourseEditMode = {
   kind: 'create',
   canEditMinor: true,

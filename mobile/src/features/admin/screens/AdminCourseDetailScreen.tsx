@@ -1,9 +1,11 @@
 import { useState, type ReactNode } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 
+import { WorkHeader, WorkShell } from '@/components/layout/work';
 import { AppText } from '@/components/ui/AppText';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, radius, spacing } from '@/theme';
 import type { AdminCourseDetailDto } from '@/types/api';
@@ -13,6 +15,7 @@ import { AiReviewPanel } from '../components/AiReviewPanel';
 import { CourseActionBar } from '../components/CourseActionBar';
 import { CourseInfoCard } from '../components/CourseInfoCard';
 import { CurriculumPreview } from '../components/CurriculumPreview';
+import { AdminCourseDetailWide } from '../components/desktop/AdminCourseDetailWide';
 import { MissingNotice } from '../components/MissingNotice';
 import { ModerationHistory } from '../components/ModerationHistory';
 import { ReasonModal } from '../components/ReasonModal';
@@ -24,10 +27,10 @@ import { useModerationFlow } from '../useModerationFlow';
 
 export type AdminCourseDetailScreenProps = { courseId: string };
 
-function DetailSkeleton() {
+function DetailSkeleton({ isFlush }: { isFlush: boolean }) {
   const styles = useStyles();
   return (
-    <View style={styles.content} testID="admin-course-skeleton">
+    <View style={[styles.content, isFlush ? styles.flush : null]} testID="admin-course-skeleton">
       <Skeleton height={190} borderRadius={radius.card} />
       <Skeleton height={28} width="70%" />
       <Skeleton height={64} borderRadius={radius.card} />
@@ -88,12 +91,13 @@ function DetailBody({ detail }: { detail: AdminCourseDetailDto }) {
 export function AdminCourseDetailScreen({ courseId }: AdminCourseDetailScreenProps) {
   const { t } = useTranslation('admin');
   const styles = useStyles();
+  const { isWide } = useBreakpoint();
   const query = useAdminCourse(courseId);
   const { data: detail } = query;
   const flow = useModerationFlow(courseId, detail);
 
   let body: ReactNode = null;
-  if (query.isPending) body = <DetailSkeleton />;
+  if (query.isPending) body = <DetailSkeleton isFlush={isWide} />;
   else if (query.isError && !detail) {
     body = (
       <AdminErrorState
@@ -104,31 +108,22 @@ export function AdminCourseDetailScreen({ courseId }: AdminCourseDetailScreenPro
     );
   } else if (detail) body = <DetailBody detail={detail} />;
 
-  return (
-    <View style={styles.screen}>
-      <ScreenHeader title={detail?.title ?? t('detail.title')} />
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} />
-        }
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {body}
-      </ScrollView>
-      {detail ? (
-        <CourseActionBar
-          status={detail.status}
-          reviewTarget={detail.reviewTarget}
-          isApproving={flow.approve.isPending}
-          isRestoring={flow.restore.isPending}
-          onApprove={() => void flow.approve.run()}
-          onReject={flow.reject.open}
-          onArchive={flow.archive.open}
-          onRestore={() => void flow.restore.run()}
-        />
-      ) : null}
+  const renderActions = (variant: 'bar' | 'panel'): ReactNode =>
+    detail ? (
+      <CourseActionBar
+        status={detail.status}
+        reviewTarget={detail.reviewTarget}
+        isApproving={flow.approve.isPending}
+        isRestoring={flow.restore.isPending}
+        onApprove={() => void flow.approve.run()}
+        onReject={flow.reject.open}
+        onArchive={flow.archive.open}
+        onRestore={() => void flow.restore.run()}
+        variant={variant}
+      />
+    ) : null;
+  const modals = (
+    <>
       <ReasonModal
         isVisible={flow.reject.isOpen}
         title={t(flow.isRevision ? 'reject.revisionTitle' : 'reject.courseTitle')}
@@ -153,6 +148,38 @@ export function AdminCourseDetailScreen({ courseId }: AdminCourseDetailScreenPro
         onSubmit={flow.archive.submit}
         onClose={flow.archive.close}
       />
+    </>
+  );
+
+  if (isWide) {
+    return (
+      <WorkShell testID="admin-course-detail-desktop">
+        <WorkHeader title={detail?.title ?? t('detail.title')} hasBack />
+        {detail ? (
+          <AdminCourseDetailWide detail={detail} decision={renderActions('panel')} />
+        ) : (
+          body
+        )}
+        {modals}
+      </WorkShell>
+    );
+  }
+
+  return (
+    <View style={styles.screen}>
+      <ScreenHeader title={detail?.title ?? t('detail.title')} />
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={query.isRefetching} onRefresh={() => void query.refetch()} />
+        }
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {body}
+      </ScrollView>
+      {renderActions('bar')}
+      {modals}
     </View>
   );
 }
@@ -166,4 +193,5 @@ const useStyles = makeStyles((t) => ({
     paddingTop: spacing.sm,
   },
   section: { gap: spacing.md },
+  flush: { paddingHorizontal: 0, paddingTop: 0 },
 }));

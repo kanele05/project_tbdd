@@ -96,12 +96,12 @@ describe('CourseStatusScreen', () => {
     await fireEvent.press(screen.getByText('Upload a cover image.'));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/studio/[id]/edit',
-      params: { id: 'course-1' },
+      params: { id: 'course-1', step: 'intro' },
     });
     await fireEvent.press(screen.getByText('Add at least 3 lessons in total.'));
     expect(mockPush).toHaveBeenLastCalledWith({
-      pathname: '/studio/[id]/curriculum',
-      params: { id: 'course-1' },
+      pathname: '/studio/[id]/edit',
+      params: { id: 'course-1', step: 'lessons' },
     });
   });
 
@@ -196,8 +196,8 @@ describe('CourseStatusScreen', () => {
     await waitFor(() => expect(mockWorkflow).toHaveBeenCalledWith('submitRevision'));
     await fireEvent.press(screen.getAllByText('Edit curriculum')[0] as never);
     expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/studio/[id]/curriculum',
-      params: { id: 'course-1' },
+      pathname: '/studio/[id]/edit',
+      params: { id: 'course-1', step: 'lessons' },
     });
     await fireEvent.press(screen.getByTestId('revision-discard'));
     await waitFor(() => expect(mockDiscard).toHaveBeenCalled());

@@ -50,5 +50,12 @@
   },
   "refresh": "Làm mới",
   "emptyTitle": "Chưa có khóa học nào",
-  "emptyMessage": "Khóa học mới được thêm thường xuyên. Kéo xuống để làm mới hoặc quay lại sau nhé."
+  "emptyMessage": "Khóa học mới được thêm thường xuyên. Kéo xuống để làm mới hoặc quay lại sau nhé.",
+  "billboard": {
+    "preview": "Xem thử",
+    "previewLabel": "Xem thử {{title}}",
+    "details": "Chi tiết",
+    "detailsLabel": "Chi tiết {{title}}",
+    "pick": "Xem nổi bật số {{number}}"
+  }
 }

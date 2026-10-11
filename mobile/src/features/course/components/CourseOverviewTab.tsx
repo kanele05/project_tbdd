@@ -20,6 +20,8 @@ export type CourseOverviewTabProps = {
   onRequestAi: () => void;
   /** Reports the y of the AI block inside this tab so the bottom bar's AI button can scroll to it. */
   onAiLayout?: (y: number) => void;
+  /** Show the "Similar courses" rail at the bottom (the PC layout renders it elsewhere). Default true. */
+  showSimilar?: boolean;
 };
 
 /**
@@ -32,6 +34,7 @@ export function CourseOverviewTab({
   isAiRequested,
   onRequestAi,
   onAiLayout,
+  showSimilar = true,
 }: CourseOverviewTabProps) {
   const { t } = useTranslation('course');
   const benefits = useMemo(
@@ -65,7 +68,7 @@ export function CourseOverviewTab({
           />
         </View>
       ) : null}
-      <SimilarCourses courseId={course.id} />
+      {showSimilar ? <SimilarCourses courseId={course.id} /> : null}
     </View>
   );
 }

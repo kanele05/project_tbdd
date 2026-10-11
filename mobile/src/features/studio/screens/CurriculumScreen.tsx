@@ -1,113 +1,27 @@
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button } from '@/components/ui/Button';
+import { WorkHeader, WorkShell } from '@/components/layout/work';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { showToast } from '@/components/ui/Toast';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
-import { getErrorMessage } from '@/lib/appError';
 import { layout, makeStyles, spacing } from '@/theme';
-import type { StudioCourseDetailDto, StudioRevisionDto } from '@/types/api';
 
-import { CurriculumBody } from '../components/CurriculumBody';
-import { Notice } from '../components/Notice';
-import { getCurriculumTarget } from '../editMode';
-import { useCourseWorkflow, useStudioCourse } from '../hooks';
-import { useDirectCurriculum, useRevisionCurriculum } from '../useCurriculumEditor';
-import { useUnsavedChangesGuard } from '../useUnsavedChangesGuard';
-
-function DirectCurriculum({ detail }: { detail: StudioCourseDetailDto }) {
-  const { sections, actions, isBusy } = useDirectCurriculum(detail);
-  return <CurriculumBody sections={sections} actions={actions} isBusy={isBusy} />;
-}
-
-function RevisionCurriculum({
-  courseId,
-  revision,
-}: {
-  courseId: string;
-  revision: StudioRevisionDto;
-}) {
-  const { t } = useTranslation('studio');
-  const { sections, actions, isDirty, isSaving, save } = useRevisionCurriculum(courseId, revision);
-  const { allowLeave } = useUnsavedChangesGuard(isDirty);
-  const styles = useStyles();
-
-  const handleSave = async () => {
-    try {
-      await save();
-      allowLeave();
-      showToast(t('curriculum.revisionSaved'), { type: 'success' });
-    } catch (error) {
-      showToast(getErrorMessage(error), { type: 'error' });
-    }
-  };
-
-  return (
-    <View style={styles.stack}>
-      <Notice
-        tone="info"
-        icon="edit-3"
-        title={t('curriculum.revisionTitle')}
-        message={t('curriculum.revisionMessage')}
-        testID="curriculum-revision-notice"
-      />
-      <CurriculumBody sections={sections} actions={actions} isBusy={isSaving} />
-      <Button
-        title={t('curriculum.saveRevision')}
-        onPress={() => void handleSave()}
-        loading={isSaving}
-        disabled={!isDirty}
-        fullWidth
-        testID="curriculum-save-revision"
-      />
-    </View>
-  );
-}
-
-function NeedsRevision({ courseId }: { courseId: string }) {
-  const { t } = useTranslation('studio');
-  const workflow = useCourseWorkflow(courseId);
-  const start = async () => {
-    try {
-      await workflow.mutateAsync('createRevision');
-      showToast(t('revision.created'), { type: 'success' });
-    } catch (error) {
-      showToast(getErrorMessage(error), { type: 'error' });
-    }
-  };
-  return (
-    <Notice
-      tone="info"
-      title={t('curriculum.needsRevisionTitle')}
-      message={t('curriculum.needsRevisionMessage')}
-      testID="curriculum-needs-revision"
-    >
-      <Button
-        title={t('revision.start')}
-        variant="outline"
-        size="sm"
-        leftIcon="edit-3"
-        loading={workflow.isPending}
-        onPress={() => void start()}
-        testID="curriculum-start-revision"
-      />
-    </Notice>
-  );
-}
+import { CurriculumContent } from '../components/CurriculumContent';
+import { useStudioCourse } from '../hooks';
 
 /**
- * SC-25 Curriculum editor (FR-40). Sections and lessons are edited on the course itself while it
- * is a DRAFT / REJECTED; on a PUBLISHED course they live in the open revision (BR-21), which is
- * created from here if needed. A course in review or hidden is read-only.
+ * SC-25 Curriculum editor (FR-40): the standalone screen around `CurriculumContent`, which the
+ * course wizard embeds as its Lessons step.
  */
 export function CurriculumScreen({ courseId }: { courseId: string }) {
   const { t } = useTranslation('studio');
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const query = useStudioCourse(courseId);
   const detail = query.data;
 
@@ -131,28 +45,17 @@ export function CurriculumScreen({ courseId }: { courseId: string }) {
       />
     );
   } else if (detail) {
-    const target = getCurriculumTarget(detail);
-    if (target === 'course') body = <DirectCurriculum detail={detail} />;
-    else if (target === 'revision' && detail.revision) {
-      body = (
-        <RevisionCurriculum
-          key={detail.revision.id}
-          courseId={detail.id}
-          revision={detail.revision}
-        />
-      );
-    } else if (target === 'needsRevision') body = <NeedsRevision courseId={detail.id} />;
-    else {
-      body = (
-        <Notice
-          tone="warning"
-          icon="lock"
-          title={t('curriculum.lockedTitle')}
-          message={t('curriculum.lockedMessage')}
-          testID="curriculum-locked"
-        />
-      );
-    }
+    body = <CurriculumContent detail={detail} />;
+  }
+
+  if (isWide) {
+    // PC: one centered column under a page header (the editor itself is a single list).
+    return (
+      <WorkShell maxWidth={CURRICULUM_MAX_WIDTH} testID="curriculum-desktop">
+        <WorkHeader title={t('curriculum.title')} hasBack />
+        {body}
+      </WorkShell>
+    );
   }
 
   return (
@@ -168,6 +71,8 @@ export function CurriculumScreen({ courseId }: { courseId: string }) {
     </View>
   );
 }
+
+const CURRICULUM_MAX_WIDTH = 900;
 
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },

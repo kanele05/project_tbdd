@@ -73,5 +73,9 @@
     "outcomes": "Kết quả đạt được",
     "empty": "Chưa có bản tóm tắt cho khóa học này.",
     "retryAfter": "Hãy thử lại sau {{seconds}} giây."
+  },
+  "desktop": {
+    "by": "Bởi {{name}}",
+    "preview": "Xem thử"
   }
 }

@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { memo } from 'react';
-import { View } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import type { FeatherIconName } from '@/components/ui/icons';
@@ -12,16 +12,18 @@ export type KpiTileProps = {
   value: string;
   /** Small line under the value ("3 disabled"). */
   hint?: string;
+  /** Extra style, e.g. a fixed basis for the 4-up row of the PC layout. */
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 };
 
 /** One number of the dashboard: icon, big value, label (+ optional hint). Read as a single sentence by screen readers. */
-function KpiTileBase({ icon, label, value, hint, testID }: KpiTileProps) {
+function KpiTileBase({ icon, label, value, hint, style, testID }: KpiTileProps) {
   const { colors } = useTheme();
   const styles = useStyles();
   return (
     <View
-      style={styles.tile}
+      style={[styles.tile, style]}
       accessible
       accessibilityLabel={hint ? `${label}: ${value}. ${hint}` : `${label}: ${value}`}
       testID={testID}

@@ -10,6 +10,7 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useCourseAccessGuard } from '@/features/learning/accessGuard';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { useLanguage } from '@/i18n/useLanguage';
 import { queryKeys } from '@/lib/queryKeys';
@@ -17,6 +18,7 @@ import { layout, makeStyles, spacing } from '@/theme';
 import type { AiQuizDto } from '@/types/api';
 
 import { AiBadge } from '../components/AiBadge';
+import { QuizDesktop } from '../components/desktop/QuizDesktop';
 import { QuizQuestionView } from '../components/QuizQuestionView';
 import { QuizResult } from '../components/QuizResult';
 import { useAiLessonQuiz } from '../hooks';
@@ -95,6 +97,7 @@ export function LessonQuizScreen({ courseId, lessonId }: LessonQuizScreenProps) 
   const { t } = useTranslation('ai');
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const { language } = useLanguage();
   const queryClient = useQueryClient();
   const quizMutation = useAiLessonQuiz(lessonId ?? '');
@@ -128,6 +131,8 @@ export function LessonQuizScreen({ courseId, lessonId }: LessonQuizScreenProps) 
   } else {
     body = <QuizSkeleton />;
   }
+
+  if (isWide) return <QuizDesktop hasQuiz={Boolean(quiz)}>{body}</QuizDesktop>;
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior="padding">

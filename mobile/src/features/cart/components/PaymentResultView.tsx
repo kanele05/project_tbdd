@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { AppText, Button } from '@/components/ui';
 import { useTranslation } from '@/i18n';
@@ -10,11 +10,14 @@ export type PaymentSuccessViewProps = {
   courseCount: number;
   onStartLearning: () => void;
   onGoToMyCourses: () => void;
+  /** Overrides the full-screen centring (the PC page puts the view inside a card). */
+  style?: StyleProp<ViewStyle>;
 };
 
 export type PaymentFailedViewProps = {
   onTryAgain: () => void;
   onBackToCart: () => void;
+  style?: StyleProp<ViewStyle>;
 };
 
 /** Result screen of a successful (mock) payment: accent check, serif title, two actions. */
@@ -22,12 +25,13 @@ export function PaymentSuccessView({
   courseCount,
   onStartLearning,
   onGoToMyCourses,
+  style,
 }: PaymentSuccessViewProps) {
   const { t } = useTranslation('cart');
   const { colors } = useTheme();
   const themed = useStyles();
   return (
-    <View style={styles.container} testID="payment-success">
+    <View style={[styles.container, style]} testID="payment-success">
       <View style={[styles.iconWrap, themed.successBg]}>
         <Feather name="check" size={40} color={colors.primaryText} />
       </View>
@@ -53,12 +57,12 @@ export function PaymentSuccessView({
 }
 
 /** Result screen of a failed payment (402 `PAYMENT_FAILED`): the cart is untouched. */
-export function PaymentFailedView({ onTryAgain, onBackToCart }: PaymentFailedViewProps) {
+export function PaymentFailedView({ onTryAgain, onBackToCart, style }: PaymentFailedViewProps) {
   const { t } = useTranslation('cart');
   const { colors } = useTheme();
   const themed = useStyles();
   return (
-    <View style={styles.container} testID="payment-failed" accessibilityRole="alert">
+    <View style={[styles.container, style]} testID="payment-failed" accessibilityRole="alert">
       <View style={[styles.iconWrap, themed.failedBg]}>
         <Feather name="x" size={40} color={colors.dangerText} />
       </View>

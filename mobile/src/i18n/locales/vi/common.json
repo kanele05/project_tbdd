@@ -72,5 +72,34 @@
   "priceTag": {
     "was": "{{price}}, giá gốc {{original}}",
     "discShort": "Giảm {{percent}}%"
+  },
+  "nav": {
+    "main": "Điều hướng chính",
+    "brandHome": "elearn, về Trang chủ",
+    "openSearch": "Mở tìm kiếm",
+    "closeSearch": "Đóng tìm kiếm",
+    "searchPlaceholder": "Tìm khóa học",
+    "searchLabel": "Tìm khóa học",
+    "clearSearch": "Xóa nội dung tìm kiếm",
+    "cart": "Giỏ hàng",
+    "cartWithCount_other": "Giỏ hàng, {{count}} khóa học",
+    "notifications": "Thông báo",
+    "notificationsUnread_other": "Thông báo, {{count}} chưa đọc",
+    "accountMenu": "Menu tài khoản",
+    "accountMenuOf": "Menu tài khoản của {{name}}",
+    "profile": "Hồ sơ",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất"
+  },
+  "rail": {
+    "scrollLeft": "Cuộn sang trái",
+    "scrollRight": "Cuộn sang phải"
+  },
+  "desktopCard": {
+    "ownedLabel": "{{title}}, đã học {{percent}}%",
+    "percentDone": "Đã học {{percent}}%",
+    "continue": "Học tiếp {{title}}",
+    "addToCart": "Thêm {{title}} vào giỏ",
+    "details": "Chi tiết {{title}}"
   }
 }

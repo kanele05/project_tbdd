@@ -34,7 +34,8 @@
   },
   "top": {
     "emptyTitle": "No teachers yet",
-    "emptyMessage": "Top-rated teachers will show up here."
+    "emptyMessage": "Top-rated teachers will show up here.",
+    "loadMore": "Load more"
   },
   "card": {
     "label": "{{name}}, {{organization}}, rated {{rating}}",

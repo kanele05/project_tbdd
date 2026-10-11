@@ -31,6 +31,7 @@ async function confirmStep(kind: Confirmation): Promise<boolean> {
  * Every button of the status screen (SC-26): submit / withdraw / archive / restore, the revision
  * create / submit / discard, and delete. Destructive ones ask first. A 422 `COURSE_INCOMPLETE`
  * keeps its `details.missing` so the checklist can show what is left; other errors become `error`.
+ * Every action resolves to `true` when it went through (the wizard leaves the editor then).
  */
 export function useCourseStatusActions(detail: StudioCourseDetailDto) {
   const workflow = useCourseWorkflow(detail.id);
@@ -39,19 +40,25 @@ export function useCourseStatusActions(detail: StudioCourseDetailDto) {
   const [error, setError] = useState<string | null>(null);
   const [missingFromError, setMissingFromError] = useState<CourseMissingItemDto[] | null>(null);
 
-  const guarded = useCallback(async (task: () => Promise<void>, successKey: string) => {
-    setError(null);
-    try {
-      await task();
-      setMissingFromError(null);
-      if (successKey) showToast(tr(`studio:toast.${successKey}`), { type: 'success' });
-    } catch (caught) {
-      const appError = toAppError(caught);
-      const missing = getMissingFromError(appError.details);
-      if (appError.code === 'COURSE_INCOMPLETE' && missing.length > 0) setMissingFromError(missing);
-      setError(getErrorMessage(caught));
-    }
-  }, []);
+  const guarded = useCallback(
+    async (task: () => Promise<void>, successKey: string): Promise<boolean> => {
+      setError(null);
+      try {
+        await task();
+        setMissingFromError(null);
+        if (successKey) showToast(tr(`studio:toast.${successKey}`), { type: 'success' });
+        return true;
+      } catch (caught) {
+        const appError = toAppError(caught);
+        const missing = getMissingFromError(appError.details);
+        if (appError.code === 'COURSE_INCOMPLETE' && missing.length > 0)
+          setMissingFromError(missing);
+        setError(getErrorMessage(caught));
+        return false;
+      }
+    },
+    [],
+  );
 
   const run = useCallback(
     (action: CourseWorkflowAction, successKey: string, confirmation?: Confirmation) =>

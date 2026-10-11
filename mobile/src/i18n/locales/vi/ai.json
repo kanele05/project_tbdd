@@ -47,7 +47,13 @@
     "notEnrolledTitle": "Hãy ghi danh để dùng AI Tutor",
     "notEnrolledMessage": "AI Tutor chỉ trả lời về những khóa học bạn đã ghi danh.",
     "openCourse": "Mở khóa học",
-    "offlineHint": "Bạn đang ngoại tuyến. Hãy kết nối mạng để hỏi AI Tutor."
+    "offlineHint": "Bạn đang ngoại tuyến. Hãy kết nối mạng để hỏi AI Tutor.",
+    "side": {
+      "course": "Khóa học",
+      "hint": "AI Tutor trả lời dựa trên nội dung khóa học này và nhớ cuộc trò chuyện của bạn.",
+      "openCourse": "Mở khóa học",
+      "try": "Câu hỏi gợi ý"
+    }
   },
   "summary": {
     "title": "Tóm tắt bài học",
@@ -60,6 +66,7 @@
   },
   "quiz": {
     "headerTitle": "Quiz bài học",
+    "keyHint": "Mẹo: nhấn phím 1-4 để chọn đáp án, rồi Enter để tiếp tục.",
     "introTitle": "Kiểm tra điều bạn đã học",
     "introMessage": "5 câu trắc nghiệm về bài học này, do AI tạo.",
     "start": "Bắt đầu quiz",

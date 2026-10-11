@@ -114,7 +114,7 @@ function Message({ text, actionLabel, onAction, isAlert = false }: MessageProps)
  * (`GET /me/ai/recommendations`, cached on the server). Only requested when signed in; a busy or
  * unavailable AI (429 / 503) shows a polite message with a Retry button and never blocks Home.
  */
-export function AiRecommendationsCard() {
+export function AiRecommendationsCard({ gutter = layout.screenPaddingX }: { gutter?: number }) {
   const { t } = useTranslation('home');
   const styles = useStyles();
   const isSignedIn = useAuthStore((state) => state.user != null);
@@ -162,7 +162,7 @@ export function AiRecommendationsCard() {
   }
 
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, { paddingHorizontal: gutter }]}>
       <AiCard title={t('ai.title')} subtitle={t('ai.subtitle')} variant="panel" testID="ai-card">
         {body}
       </AiCard>

@@ -106,6 +106,13 @@
       "gradeRange": "Điểm phải là số nguyên từ 0 đến 100",
       "feedbackRequired": "Hãy viết nhận xét cho học viên",
       "feedbackMax": "Nhận xét tối đa {{max}} ký tự"
+    },
+    "columns": {
+      "student": "Học viên",
+      "project": "Project",
+      "submitted": "Đã nộp",
+      "grade": "Điểm",
+      "actions": "Thao tác"
     }
   }
 }

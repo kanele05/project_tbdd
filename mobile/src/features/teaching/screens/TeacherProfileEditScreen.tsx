@@ -5,6 +5,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { WorkHeader, WorkShell } from '@/components/layout/work';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
@@ -16,8 +17,9 @@ import { showToast } from '@/components/ui/Toast';
 import { applyAuthError } from '@/features/auth/authErrors';
 import { FormError } from '@/features/auth/components/FormError';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
-import { layout, makeStyles, spacing } from '@/theme';
+import { layout, makeStyles, radius, spacing } from '@/theme';
 import type { TeacherProfileDto, TeacherProfileInput } from '@/types/api';
 
 import { useTeacherProfile, useUpdateTeacherProfile } from '../hooks';
@@ -79,6 +81,7 @@ function ProfileForm({ profile }: { profile: TeacherProfileDto }) {
   const { t } = useTranslation(['teaching', 'common']);
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const update = useUpdateTeacherProfile();
   const [formError, setFormError] = useState<string | null>(null);
   const {
@@ -114,12 +117,8 @@ function ProfileForm({ profile }: { profile: TeacherProfileDto }) {
     }
   });
 
-  return (
-    <ScrollView
-      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
+  const fields = (
+    <>
       <AppText variant="body" color="textSecondary">
         {t('teaching:profile.intro')}
       </AppText>
@@ -204,6 +203,24 @@ function ProfileForm({ profile }: { profile: TeacherProfileDto }) {
         fullWidth
         testID="teacher-profile-save"
       />
+    </>
+  );
+
+  // PC: the form is a bordered card; the page (WorkShell) scrolls, there is no inner ScrollView.
+  if (isWide) {
+    return (
+      <View style={styles.card} testID="teacher-profile-card">
+        {fields}
+      </View>
+    );
+  }
+  return (
+    <ScrollView
+      contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.xl }]}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      {fields}
     </ScrollView>
   );
 }
@@ -215,6 +232,7 @@ function ProfileForm({ profile }: { profile: TeacherProfileDto }) {
 export function TeacherProfileEditScreen() {
   const { t } = useTranslation('teaching');
   const styles = useStyles();
+  const { isWide } = useBreakpoint();
   const query = useTeacherProfile();
   const { refetch } = query;
   const handleRetry = useCallback(() => void refetch(), [refetch]);
@@ -228,13 +246,25 @@ export function TeacherProfileEditScreen() {
     body = <ErrorState error={query.error} title={t('profile.loadFailed')} onRetry={handleRetry} />;
   } else {
     body = (
-      <View style={styles.content} testID="teacher-profile-skeleton">
+      <View
+        style={[styles.content, isWide ? styles.flush : null]}
+        testID="teacher-profile-skeleton"
+      >
         <Skeleton height={52} />
         <Skeleton height={140} />
         <Skeleton height={52} />
         <Skeleton height={52} />
         <Skeleton height={52} />
       </View>
+    );
+  }
+
+  if (isWide) {
+    return (
+      <WorkShell maxWidth={FORM_MAX_WIDTH} testID="teacher-profile-desktop">
+        <WorkHeader title={t('profile.title')} hasBack />
+        {body}
+      </WorkShell>
     );
   }
 
@@ -246,9 +276,20 @@ export function TeacherProfileEditScreen() {
   );
 }
 
+const FORM_MAX_WIDTH = 720;
+
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },
   content: { gap: spacing.lg, padding: layout.screenPaddingX },
+  flush: { padding: 0 },
+  card: {
+    gap: spacing.lg,
+    padding: spacing.xxl,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: t.colors.borderSubtle,
+    backgroundColor: t.colors.card,
+  },
   counter: { marginTop: spacing.xs },
   zone: { gap: spacing.sm },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },

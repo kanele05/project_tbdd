@@ -1,27 +1,26 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, ScrollView, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BookmarkButton } from '@/components/course/BookmarkButton';
-import { ErrorState } from '@/components/ui/ErrorState';
+import { DESKTOP_NAV_HEIGHT } from '@/components/layout/desktopLayout';
 import { IconButton } from '@/components/ui/IconButton';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SegmentedTabs, type SegmentedTab } from '@/components/ui/SegmentedTabs';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { LessonAiPanel } from '@/features/ai/components/LessonAiPanel';
 import { useToggleBookmark } from '@/features/bookmark/hooks';
 import { useCourseDetail } from '@/features/course/hooks';
-import { ProjectsTab } from '@/features/project/components/ProjectsTab';
-import { QaTab } from '@/features/qa/components/QaTab';
+import { autoScrollStyle } from '@/features/course/webStyles';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing } from '@/theme';
 import type { CurriculumLesson } from '@/types/api';
 
 import { useCourseAccessGuard } from '../accessGuard';
 import { CourseInfo } from '../components/CourseInfo';
-import { CurriculumList } from '../components/CurriculumList';
-import { LessonListSkeleton } from '../components/LessonListSkeleton';
+import { DesktopLessonInfo } from '../components/DesktopLessonInfo';
+import { LearningTabBody, type LearningTab } from '../components/LearningTabBody';
 import { MiniPlayerBar } from '../components/MiniPlayerBar';
 import { PlayerSlot } from '../components/PlayerSlot';
 import {
@@ -32,12 +31,13 @@ import {
   useToggleCourseLike,
 } from '../hooks';
 import { useIsKeyboardVisible } from '../playerLayout';
-import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '../queryStatus';
 import { getShortCourseTitle } from '../videoUtils';
 
-export type LearningScreenProps = { courseId: string };
+/** Width of the Lessons / Q&A / Projects panel on a PC window (PLAN §2.5). */
+const PANEL_WIDTH_DESKTOP = 400;
+const PANEL_WIDTH_TABLET = 340;
 
-type LearningTab = 'lessons' | 'projects' | 'qa';
+export type LearningScreenProps = { courseId: string };
 
 /** `?tab=projects` (a PROJECT_GRADED notification) opens that tab; anything else starts on Lessons. */
 function parseLearningTab(value: string | undefined): LearningTab {
@@ -54,6 +54,7 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
   const { t } = useTranslation(['learning', 'ai']);
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide, isDesktop } = useBreakpoint();
   const { lessonId: paramLessonId, tab: paramTab } = useLocalSearchParams<{
     lessonId?: string;
     tab?: string;
@@ -64,7 +65,8 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
   const lesson = useLesson(activeLessonId);
   const [tab, setTab] = useState<LearningTab>(() => parseLearningTab(paramTab));
   // Typing in Q&A on a small phone: the video folds into a one-line bar (it stays mounted, so it keeps playing).
-  const isPlayerCollapsed = useIsKeyboardVisible() && tab !== 'lessons';
+  // Never on a PC window: the video and the tabs sit side by side there.
+  const isPlayerCollapsed = useIsKeyboardVisible() && tab !== 'lessons' && !isWide;
 
   useCourseAccessGuard(courseId, [lesson.error, curriculum.error]);
 
@@ -98,15 +100,14 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
     [selectLesson],
   );
   const { refetch: refetchCourse } = course;
-  const { refetch: refetchCurriculum } = curriculum;
   const { refetch: refetchLesson } = lesson;
   const handleRetryLesson = useCallback(() => {
     if (activeLessonId) void refetchLesson();
     else {
       void refetchCourse();
-      void refetchCurriculum();
+      void curriculum.refetch();
     }
-  }, [activeLessonId, refetchCourse, refetchCurriculum, refetchLesson]);
+  }, [activeLessonId, curriculum, refetchCourse, refetchLesson]);
 
   const tabs = useMemo<SegmentedTab<LearningTab>[]>(
     () => [
@@ -116,55 +117,41 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
     ],
     [t],
   );
-  const header = useMemo(
-    () => (
+  const header = useMemo(() => {
+    // A PC window shows the course info under the video instead (DesktopLessonInfo).
+    let info = null;
+    if (!isWide && courseData) {
+      info = (
+        <CourseInfo
+          title={courseData.title}
+          likeCount={courseData.likeCount}
+          shareCount={courseData.shareCount}
+          isLiked={courseData.isLiked}
+          onToggleLike={handleToggleLike}
+          onShare={handleShare}
+        />
+      );
+    } else if (!isWide) {
+      info = (
+        <View style={styles.infoSkeleton}>
+          <Skeleton width="85%" height={26} />
+          <Skeleton width="40%" height={20} />
+        </View>
+      );
+    }
+    return (
       <View style={styles.headerBlock}>
-        {courseData ? (
-          <CourseInfo
-            title={courseData.title}
-            likeCount={courseData.likeCount}
-            shareCount={courseData.shareCount}
-            isLiked={courseData.isLiked}
-            onToggleLike={handleToggleLike}
-            onShare={handleShare}
-          />
-        ) : (
-          <View style={styles.infoSkeleton}>
-            <Skeleton width="85%" height={26} />
-            <Skeleton width="40%" height={20} />
-          </View>
-        )}
+        {info}
         <SegmentedTabs tabs={tabs} value={tab} onChange={setTab} />
       </View>
-    ),
-    [courseData, handleShare, handleToggleLike, styles, tab, tabs],
-  );
-
-  let lessons;
-  if (isOfflineWithoutData(curriculum)) {
-    lessons = <ErrorState error={OFFLINE_QUERY_ERROR} onRetry={() => void refetchCurriculum()} />;
-  } else if (curriculum.isPending) {
-    lessons = <LessonListSkeleton />;
-  } else if (curriculum.isError && !curriculum.data) {
-    lessons = (
-      <ErrorState
-        error={curriculum.error}
-        title={t('learning:loadLessonsFailed')}
-        onRetry={() => void refetchCurriculum()}
-      />
     );
-  } else {
-    lessons = (
-      <CurriculumList
-        sections={curriculum.data ?? []}
-        activeLessonId={activeLessonId}
-        onLessonPress={handleLessonPress}
-      />
-    );
-  }
+  }, [courseData, handleShare, handleToggleLike, isWide, styles, tab, tabs]);
 
   return (
-    <KeyboardAvoidingView style={styles.screen} behavior="padding">
+    <KeyboardAvoidingView
+      style={[styles.screen, isWide ? styles.belowNav : null]}
+      behavior="padding"
+    >
       <ScreenHeader
         title={courseData ? getShortCourseTitle(courseData.title) : undefined}
         right={
@@ -186,54 +173,67 @@ export function LearningScreen({ courseId }: LearningScreenProps) {
       {isPlayerCollapsed ? (
         <MiniPlayerBar title={lesson.data?.title} onExpand={handleExpandPlayer} />
       ) : null}
-      <View
-        style={[styles.player, isPlayerCollapsed ? styles.playerCollapsed : null]}
-        accessibilityElementsHidden={isPlayerCollapsed}
-        importantForAccessibility={isPlayerCollapsed ? 'no-hide-descendants' : 'auto'}
-        testID="player-region"
-      >
-        <PlayerSlot
-          courseId={courseId}
-          activeLessonId={activeLessonId}
-          lesson={lesson}
-          course={course}
-          curriculum={curriculum}
-          onEnded={handleEnded}
-          onRetry={handleRetryLesson}
-        />
-      </View>
-      {tab === 'qa' ? (
-        <QaTab courseId={courseId} header={header} />
-      ) : (
-        <ScrollView
-          style={styles.flex}
-          contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
-          showsVerticalScrollIndicator={false}
-        >
-          {header}
-          <View style={styles.tabContent}>
-            {tab === 'lessons' ? (
-              <>
-                <LessonAiPanel
-                  courseId={courseId}
-                  lessonId={activeLessonId}
-                  lessonTitle={lesson.data?.title}
-                />
-                {lessons}
-              </>
-            ) : (
-              <ProjectsTab courseId={courseId} />
-            )}
+      {/* One tree for every width (column on a phone, row on a PC): the player never remounts when the window is resized. */}
+      <View style={isWide ? styles.bodyWide : styles.body}>
+        <View style={isWide ? [styles.mainWide, autoScrollStyle()] : null}>
+          <View
+            style={[styles.player, isPlayerCollapsed ? styles.playerCollapsed : null]}
+            accessibilityElementsHidden={isPlayerCollapsed}
+            importantForAccessibility={isPlayerCollapsed ? 'no-hide-descendants' : 'auto'}
+            testID="player-region"
+          >
+            <PlayerSlot
+              courseId={courseId}
+              activeLessonId={activeLessonId}
+              lesson={lesson}
+              course={course}
+              curriculum={curriculum}
+              onEnded={handleEnded}
+              onRetry={handleRetryLesson}
+            />
           </View>
-        </ScrollView>
-      )}
+          {isWide ? (
+            <DesktopLessonInfo
+              lessonTitle={lesson.data?.title}
+              course={courseData}
+              onToggleLike={handleToggleLike}
+              onShare={handleShare}
+            />
+          ) : null}
+        </View>
+        <View
+          style={isWide ? [styles.panelWide, isDesktop ? styles.panelDesktop : null] : styles.panel}
+        >
+          <LearningTabBody
+            courseId={courseId}
+            tab={tab}
+            header={header}
+            curriculum={curriculum}
+            activeLessonId={activeLessonId}
+            lessonTitle={lesson.data?.title}
+            onLessonPress={handleLessonPress}
+            bottomPadding={insets.bottom + spacing.xxl}
+          />
+        </View>
+      </View>
     </KeyboardAvoidingView>
   );
 }
 
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },
-  flex: { flex: 1 },
+  belowNav: { paddingTop: DESKTOP_NAV_HEIGHT },
+  body: { flex: 1 },
+  bodyWide: { flex: 1, flexDirection: 'row' },
+  mainWide: { flex: 1, minWidth: 0 },
+  panel: { flex: 1 },
+  // Right-hand panel of the PC layout: the tabs scroll on their own, the video stays put.
+  panelWide: {
+    width: PANEL_WIDTH_TABLET,
+    borderLeftWidth: 1,
+    borderLeftColor: t.colors.border,
+  },
+  panelDesktop: { width: PANEL_WIDTH_DESKTOP },
   // No fixed height here: the MP4 player, the placeholder and the loading/error states are 16:9
   // boxes (capped at 35% of the window height), while the YouTube player is 16:9 plus its
   // source/attribution row - a fixed 16:9 slot made that row overlap the tabs.
@@ -248,5 +248,4 @@ const useStyles = makeStyles((t) => ({
     paddingTop: spacing.xl,
   },
   infoSkeleton: { gap: spacing.md },
-  tabContent: { gap: spacing.xl, paddingHorizontal: layout.screenPaddingX, paddingTop: spacing.xl },
 }));

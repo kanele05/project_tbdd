@@ -2,12 +2,14 @@ import { router } from 'expo-router';
 import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DialogFrame } from '@/components/layout/DialogFrame';
 import { CinematicHeader } from '@/components/ui/CinematicHeader';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { GlassIconButton } from '@/components/ui/GlassIconButton';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { getCachedCourseImage } from '@/features/course/cachedCourseImage';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing } from '@/theme';
 
@@ -29,6 +31,7 @@ export function WriteReviewScreen({ courseId }: WriteReviewScreenProps) {
   const { t } = useTranslation('review');
   const themed = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const myReview = useMyReview(courseId);
 
   let content;
@@ -52,6 +55,20 @@ export function WriteReviewScreen({ courseId }: WriteReviewScreenProps) {
     );
   } else {
     content = <ReviewForm courseId={courseId} initialReview={myReview.data} />;
+  }
+
+  if (isWide) {
+    return (
+      <DialogFrame
+        title={t('write.title')}
+        closeLabel={t('write.close')}
+        onClose={closeModal}
+        width={600}
+        testID="write-review-dialog"
+      >
+        {content}
+      </DialogFrame>
+    );
   }
 
   return (

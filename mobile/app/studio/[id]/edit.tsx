@@ -1,14 +1,17 @@
 import { useLocalSearchParams } from 'expo-router';
 
 import { TeacherOnly } from '@/features/studio/components/TeacherOnly';
-import { CourseEditScreen } from '@/features/studio/screens/CourseEditScreen';
+import { CourseWizardScreen } from '@/features/studio/screens/CourseWizardScreen';
 
-/** `/studio/new/edit` creates a course, `/studio/<id>/edit` edits one. */
+/**
+ * Course wizard: `/studio/new/edit` creates a course, `/studio/<id>/edit` edits one.
+ * `?step=idea|intro|price|lessons|review` opens a given step.
+ */
 export default function StudioCourseEditRoute() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, step } = useLocalSearchParams<{ id: string; step?: string }>();
   return (
     <TeacherOnly>
-      <CourseEditScreen courseId={id} />
+      <CourseWizardScreen courseId={id} step={step} />
     </TeacherOnly>
   );
 }

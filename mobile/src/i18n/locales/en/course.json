@@ -73,5 +73,9 @@
     "outcomes": "What you'll achieve",
     "empty": "There is no summary for this course yet.",
     "retryAfter": "Try again in {{seconds}} s."
+  },
+  "desktop": {
+    "by": "By {{name}}",
+    "preview": "Watch preview"
   }
 }

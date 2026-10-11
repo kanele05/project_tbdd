@@ -6,6 +6,8 @@ import { useTranslation } from '@/i18n';
 import { layout, spacing } from '@/theme';
 import type { CourseDetail } from '@/types/api';
 
+import { pointerStyle } from '../webStyles';
+
 export type TeacherRowProps = {
   teacher: CourseDetail['teacher'];
   onOpenTeacher: () => void;
@@ -67,6 +69,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+    ...pointerStyle,
   },
   texts: { flex: 1 },
 });

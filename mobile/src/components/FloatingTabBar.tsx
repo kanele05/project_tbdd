@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
 import { GlassSurface } from '@/components/ui/GlassSurface';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 
 /**
@@ -25,7 +26,10 @@ export const FLOATING_TAB_BAR_HEIGHT = layout.tabBarHeight;
  */
 export function useTabBarClearance(): number {
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   if (!TAB_BAR_OVERLAYS_CONTENT) return 0;
+  // Wide windows have the top bar instead of the floating bar: only the normal bottom margin.
+  if (isWide) return spacing.xxl;
   return FLOATING_TAB_BAR_HEIGHT + layout.tabBarBottomGap + insets.bottom + spacing.xxl;
 }
 
@@ -55,7 +59,8 @@ export type FloatingTabBarProps = BottomTabBarProps & {
  * Concept B floating tab bar: a frosted pill with 16 dp margins, icons only, and the active tab as
  * a neon pill with its label. Text/icon contrast is guaranteed by the glass fill (`GLASS_ALPHA`),
  * not by the blur, so it also holds on Android where `BlurView` draws no real blur.
- * Hidden while the keyboard is open (it would sit on top of the input).
+ * Hidden while the keyboard is open (it would sit on top of the input) and on wide windows
+ * (>= 768), where the desktop top bar replaces it.
  */
 export function FloatingTabBar({
   state,
@@ -68,8 +73,10 @@ export function FloatingTabBar({
   const styles = useStyles();
   const reportHeight = useContext(BottomTabBarHeightCallbackContext);
   const isKeyboardVisible = useIsKeyboardVisible();
+  const { isWide } = useBreakpoint();
 
-  if (isKeyboardVisible) return null;
+  // Wide windows (web >= 768) navigate with the top bar (`DesktopTopNav`), not this bar.
+  if (isKeyboardVisible || isWide) return null;
   const isDense = (visibleRouteNames?.length ?? state.routes.length) >= 5;
 
   return (

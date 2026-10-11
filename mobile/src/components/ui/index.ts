@@ -26,6 +26,8 @@ export { GlassSurface } from './GlassSurface';
 export type { GlassSurfaceProps } from './GlassSurface';
 export { HeroImage } from './HeroImage';
 export type { HeroImageProps } from './HeroImage';
+export { HoverRail } from './HoverRail';
+export type { HoverRailProps } from './HoverRail';
 export { IconButton } from './IconButton';
 export type { IconButtonProps } from './IconButton';
 export type { FeatherIconName } from './icons';

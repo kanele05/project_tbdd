@@ -14,7 +14,11 @@
     "notifications": "Notifications",
     "settings": "Settings",
     "teacherProfile": "Teacher profile",
-    "teaching": "Teaching"
+    "teaching": "Teaching",
+    "admin": "Administration"
+  },
+  "account": {
+    "title": "Account"
   },
   "stats": {
     "saved": "Save",
@@ -26,6 +30,7 @@
   "edit": {
     "title": "Edit profile",
     "changePhoto": "Change profile photo",
+    "photoHint": "Click the photo to choose a PNG or JPG, up to 5 MB.",
     "headline": "Headline",
     "headlinePlaceholder": "e.g. UX/UI Designer",
     "emailHelper": "Your email can't be changed.",

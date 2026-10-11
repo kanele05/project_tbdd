@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { OtpInput } from './OtpInput';
 
 const onComplete = jest.fn();
+const onSubmit = jest.fn();
 
 function Harness({ disabled = false }: { disabled?: boolean }) {
   const [value, setValue] = useState('');
@@ -12,6 +13,7 @@ function Harness({ disabled = false }: { disabled?: boolean }) {
       value={value}
       onChange={setValue}
       onComplete={onComplete}
+      onSubmit={onSubmit}
       label="6-digit code"
       disabled={disabled}
     />
@@ -63,5 +65,17 @@ describe('OtpInput', () => {
   it('cannot be edited while disabled', async () => {
     await render(<Harness disabled />);
     expect(screen.getByLabelText('6-digit code').props.editable).toBe(false);
+  });
+
+  it('submits the full code on Enter (web keyboard) but not an incomplete one', async () => {
+    await render(<Harness />);
+    const input = screen.getByLabelText('6-digit code');
+    await fireEvent.changeText(input, '123');
+    await fireEvent(input, 'submitEditing');
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    await fireEvent.changeText(input, '123456');
+    await fireEvent(screen.getByLabelText('6-digit code'), 'submitEditing');
+    expect(onSubmit).toHaveBeenCalledWith('123456');
   });
 });

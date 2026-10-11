@@ -1,13 +1,15 @@
 import Feather from '@expo/vector-icons/Feather';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { AiQuizQuestionDto } from '@/types/api';
 
+import { useQuizKeys } from '../quizKeys';
 import { optionLetter } from '../quizSession';
 import { QuizOption, type QuizOptionState } from './QuizOption';
 
@@ -40,9 +42,11 @@ export function QuizQuestionView({
   const { t } = useTranslation('ai');
   const { colors } = useTheme();
   const styles = useStyles();
+  const { isWide } = useBreakpoint();
   const isAnswered = selected !== null;
   const isCorrect = selected === question.correctIndex;
   const isLast = index + 1 >= total;
+  useQuizKeys({ optionCount: question.options.length, isAnswered, onSelect, onNext });
   const percent = ((index + (isAnswered ? 1 : 0)) / total) * 100;
 
   return (
@@ -72,6 +76,11 @@ export function QuizQuestionView({
           );
         })}
       </View>
+      {isWide && Platform.OS === 'web' ? (
+        <AppText variant="caption" testID="quiz-key-hint">
+          {t('quiz.keyHint')}
+        </AppText>
+      ) : null}
       {isAnswered ? (
         <View style={styles.feedback} accessibilityLiveRegion="polite" testID="quiz-feedback">
           <View style={styles.verdict}>

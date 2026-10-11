@@ -1,6 +1,6 @@
 import { FlashList } from '@shopify/flash-list';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { startPendingProgressSync } from '@/features/learning/progressSync';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing } from '@/theme';
 import type { MyCourseItem, MyCoursesStatus } from '@/types/api';
@@ -19,6 +20,7 @@ import { CareerBanner } from '../components/CareerBanner';
 import { ContinueCard } from '../components/ContinueCard';
 import { CourseProgressCard } from '../components/CourseProgressCard';
 import { CourseProgressCardSkeleton } from '../components/CourseProgressCardSkeleton';
+import { MyCoursesDesktopView } from '../components/MyCoursesDesktopView';
 import { useMyCourses } from '../hooks';
 import { MY_COURSES_TAB_KEYS, parseTabParam } from '../tabs';
 
@@ -41,6 +43,7 @@ export function MyCoursesScreen() {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const clearance = useTabBarClearance();
+  const { isWide } = useBreakpoint();
   const params = useLocalSearchParams<{ tab?: string }>();
   const paramTab = parseTabParam(params.tab);
   const [tab, setTab] = useState<MyCoursesStatus>(paramTab ?? 'all');
@@ -173,6 +176,37 @@ export function MyCoursesScreen() {
         message={t(`empty.${tab}.message`)}
         actionLabel={t('explore')}
         onAction={openSearchTab}
+      />
+    );
+  }
+
+  if (isWide) {
+    let message: ReactNode = null;
+    if (isOfflineWithoutData(courses)) {
+      message = <ErrorState error={OFFLINE_QUERY_ERROR} onRetry={handleRetry} />;
+    } else if (courses.isError && !items) {
+      message = <ErrorState error={courses.error} title={t('loadFailed')} onRetry={handleRetry} />;
+    } else if (items && items.length === 0) {
+      message = (
+        <EmptyState
+          icon="book-open"
+          title={t(`empty.${tab}.title`)}
+          message={t(`empty.${tab}.message`)}
+          actionLabel={t('explore')}
+          onAction={openSearchTab}
+        />
+      );
+    }
+    return (
+      <MyCoursesDesktopView
+        tabs={tabs}
+        tab={tab}
+        onChangeTab={handleTabChange}
+        items={items}
+        message={message}
+        isLoading={courses.isPending && !isOfflineWithoutData(courses)}
+        onOpenItem={handleOpenCourse}
+        onExplore={openSearchTab}
       />
     );
   }

@@ -7,27 +7,29 @@ import { useTranslation } from '@/i18n';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { CourseMissingItemDto } from '@/types/api';
 
-import { describeMissing, getMissingTarget } from '../missingItems';
+import { describeMissing, getMissingStep } from '../missingItems';
+import type { WizardStep } from '../wizardSteps';
 
 export type MissingListProps = {
   courseId: string;
   items: readonly CourseMissingItemDto[];
+  /** Called with the step to open (inside the wizard); default: open the wizard at that step. */
+  onSelectStep?: (step: WizardStep) => void;
 };
 
-function openTarget(courseId: string, item: CourseMissingItemDto): void {
-  const pathname =
-    getMissingTarget(item.code) === 'curriculum' ? '/studio/[id]/curriculum' : '/studio/[id]/edit';
-  router.push({ pathname, params: { id: courseId } });
+function openStep(courseId: string, step: WizardStep): void {
+  router.push({ pathname: '/studio/[id]/edit', params: { id: courseId, step } });
 }
 
 /**
  * "What is still missing" checklist (BR-20). Each row is a readable sentence in the current
- * language and opens the screen where it is fixed (course info or curriculum).
+ * language and opens the wizard step where it is fixed.
  */
-export function MissingList({ courseId, items }: MissingListProps) {
+export function MissingList({ courseId, items, onSelectStep }: MissingListProps) {
   const { t } = useTranslation('studio');
   const { colors } = useTheme();
   const styles = useStyles();
+  const select = onSelectStep ?? ((step: WizardStep) => openStep(courseId, step));
   return (
     <View style={styles.list} testID="missing-list">
       {items.map((item, index) => {
@@ -35,7 +37,7 @@ export function MissingList({ courseId, items }: MissingListProps) {
         return (
           <Pressable
             key={`${item.code}-${item.lessonNumber ?? index}`}
-            onPress={() => openTarget(courseId, item)}
+            onPress={() => select(getMissingStep(item.code))}
             accessibilityRole="button"
             accessibilityLabel={t('status.fixMissing', { item: text })}
             style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}

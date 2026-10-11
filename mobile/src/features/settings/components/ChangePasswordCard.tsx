@@ -133,6 +133,6 @@ export function ChangePasswordCard() {
 }
 
 const useStyles = makeStyles(() => ({
-  form: { gap: spacing.lg },
+  form: { gap: spacing.lg, maxWidth: 480 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.md },
 }));

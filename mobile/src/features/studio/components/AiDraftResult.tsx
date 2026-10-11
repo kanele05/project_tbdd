@@ -10,8 +10,14 @@ import type { AiCourseDraftDto } from '@/types/api';
 
 export type DraftPart = 'subtitle' | 'description' | 'benefits' | 'outline';
 
+export const ALL_PARTS: readonly DraftPart[] = ['subtitle', 'description', 'benefits', 'outline'];
+/** Scope "text": only what the Intro step writes. */
+export const TEXT_PARTS: readonly DraftPart[] = ['subtitle', 'description'];
+
 export type AiDraftResultProps = {
   draft: AiCourseDraftDto;
+  /** Which suggestions to show (default: all four; "Help me write" shows the text ones). */
+  parts?: readonly DraftPart[];
   /** Parts already applied (their button turns into a check). */
   applied: ReadonlySet<DraftPart>;
   /** The outline can only be applied to an existing DRAFT / REJECTED course. */
@@ -74,6 +80,7 @@ function PartCard({
 /** The four suggestions of an AI course draft, each with its own "Apply" (BR-29: nothing is saved). */
 export function AiDraftResult({
   draft,
+  parts = ALL_PARTS,
   applied,
   outlineHint,
   isApplyingOutline,
@@ -83,60 +90,68 @@ export function AiDraftResult({
   const styles = useStyles();
   return (
     <View style={styles.list} testID="ai-draft-result">
-      <PartCard
-        title={t('ai.parts.subtitle')}
-        part="subtitle"
-        applied={applied.has('subtitle')}
-        onApply={onApply}
-      >
-        <AppText variant="body">{draft.subtitle}</AppText>
-      </PartCard>
-      <PartCard
-        title={t('ai.parts.description')}
-        part="description"
-        applied={applied.has('description')}
-        onApply={onApply}
-      >
-        <AppText variant="body">{draft.description}</AppText>
-      </PartCard>
-      <PartCard
-        title={t('ai.parts.benefits')}
-        part="benefits"
-        applied={applied.has('benefits')}
-        onApply={onApply}
-      >
-        {draft.benefits.map((benefit, index) => (
-          <AppText key={index} variant="body">
-            • {benefit}
-          </AppText>
-        ))}
-      </PartCard>
-      <PartCard
-        title={t('ai.parts.outline')}
-        part="outline"
-        applied={applied.has('outline')}
-        isDisabled={outlineHint !== null}
-        isLoading={isApplyingOutline}
-        onApply={onApply}
-      >
-        {draft.sections.map((section, index) => (
-          <View key={index} style={styles.outlineSection}>
-            <AppText variant="body" family="bodySemiBold">
-              {index + 1}. {section.title}
+      {parts.includes('subtitle') ? (
+        <PartCard
+          title={t('ai.parts.subtitle')}
+          part="subtitle"
+          applied={applied.has('subtitle')}
+          onApply={onApply}
+        >
+          <AppText variant="body">{draft.subtitle}</AppText>
+        </PartCard>
+      ) : null}
+      {parts.includes('description') ? (
+        <PartCard
+          title={t('ai.parts.description')}
+          part="description"
+          applied={applied.has('description')}
+          onApply={onApply}
+        >
+          <AppText variant="body">{draft.description}</AppText>
+        </PartCard>
+      ) : null}
+      {parts.includes('benefits') ? (
+        <PartCard
+          title={t('ai.parts.benefits')}
+          part="benefits"
+          applied={applied.has('benefits')}
+          onApply={onApply}
+        >
+          {draft.benefits.map((benefit, index) => (
+            <AppText key={index} variant="body">
+              • {benefit}
             </AppText>
-            {section.lessons.map((lesson, lessonIndex) => (
-              <AppText key={lessonIndex} variant="caption">
-                – {lesson.title}
+          ))}
+        </PartCard>
+      ) : null}
+      {parts.includes('outline') ? (
+        <PartCard
+          title={t('ai.parts.outline')}
+          part="outline"
+          applied={applied.has('outline')}
+          isDisabled={outlineHint !== null}
+          isLoading={isApplyingOutline}
+          onApply={onApply}
+        >
+          {draft.sections.map((section, index) => (
+            <View key={index} style={styles.outlineSection}>
+              <AppText variant="body" family="bodySemiBold">
+                {index + 1}. {section.title}
               </AppText>
-            ))}
-          </View>
-        ))}
-        {outlineHint ? (
-          <AppText variant="caption" color="textSecondary">
-            {outlineHint}
-          </AppText>
-        ) : null}
-      </PartCard>
+              {section.lessons.map((lesson, lessonIndex) => (
+                <AppText key={lessonIndex} variant="caption">
+                  – {lesson.title}
+                </AppText>
+              ))}
+            </View>
+          ))}
+          {outlineHint ? (
+            <AppText variant="caption" color="textSecondary">
+              {outlineHint}
+            </AppText>
+          ) : null}
+        </PartCard>
+      ) : null}
     </View>
   );
 }

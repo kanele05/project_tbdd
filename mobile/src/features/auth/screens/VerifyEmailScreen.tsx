@@ -96,6 +96,7 @@ export function VerifyEmailScreen() {
         value={code}
         onChange={setCode}
         onComplete={submit}
+        onSubmit={(value) => void submit(value)}
         label={t('otp.label')}
         autoFocus
         hasError={error !== null && !isCodeDead}

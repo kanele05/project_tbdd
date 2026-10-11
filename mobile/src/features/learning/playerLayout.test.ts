@@ -9,6 +9,11 @@ describe('getPlayerMaxHeight', () => {
     expect(getPlayerMaxHeight(1000)).toBe(350);
   });
 
+  it('lets the video use 70% of the window height on a wide window', () => {
+    expect(getPlayerMaxHeight(1000, true)).toBe(700);
+    expect(getPlayerMaxHeight(900, false)).toBe(315);
+  });
+
   it('leaves a 16:9 frame on a 360 dp wide phone untouched', () => {
     expect(getPlayerMaxHeight(780)).toBeGreaterThan((360 * 9) / 16);
   });

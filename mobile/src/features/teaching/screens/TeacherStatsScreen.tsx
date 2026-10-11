@@ -3,29 +3,30 @@ import { useCallback } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { WorkHeader, WorkShell } from '@/components/layout/work';
 import { AppText } from '@/components/ui/AppText';
 import { Button } from '@/components/ui/Button';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/queryStatus';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
-import { formatFixed, formatNumber } from '@/i18n/format';
 import { layout, makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { TeacherCourseStatsDto } from '@/types/api';
-import { formatPrice } from '@/utils/formatPrice';
 
 import { EnrollmentsChart } from '../components/EnrollmentsChart';
 import { RatingDistribution } from '../components/RatingDistribution';
-import { StatTile } from '../components/StatTile';
+import { StatsBodyWide } from '../components/StatsBodyWide';
+import { StatsKpis } from '../components/StatsKpis';
 import { useCourseStats } from '../hooks';
 
 export type TeacherStatsScreenProps = { courseId: string };
 
-function StatsSkeleton() {
+function StatsSkeleton({ isFlush }: { isFlush: boolean }) {
   const styles = useStyles();
   return (
-    <View style={styles.body} testID="stats-skeleton">
+    <View style={[styles.body, isFlush ? styles.bodyFlush : null]} testID="stats-skeleton">
       <View style={styles.tiles}>
         <Skeleton height={96} borderRadius={radius.card} style={styles.skeletonTile} />
         <Skeleton height={96} borderRadius={radius.card} style={styles.skeletonTile} />
@@ -49,37 +50,7 @@ function StatsBody({ stats, courseId }: { stats: TeacherCourseStatsDto; courseId
   return (
     <View style={styles.body}>
       <View style={styles.tiles}>
-        <StatTile
-          label={t('stats.kpi.students')}
-          value={formatNumber(stats.enrollmentCount)}
-          note={t('stats.kpi.completed', { count: stats.completedCount })}
-          testID="kpi-students"
-        />
-        <StatTile
-          label={t('stats.kpi.revenue')}
-          value={formatPrice(stats.revenueCents)}
-          note={t('stats.kpi.revenueNote')}
-          testID="kpi-revenue"
-        />
-        <StatTile
-          label={t('stats.kpi.avgProgress')}
-          value={`${formatNumber(stats.avgProgressPercent)}%`}
-          testID="kpi-progress"
-        />
-        <StatTile
-          label={t('stats.kpi.rating')}
-          value={
-            stats.ratingCount > 0
-              ? t('stats.kpi.ratingValue', { rating: formatFixed(stats.ratingAvg, 1) })
-              : '-'
-          }
-          note={
-            stats.ratingCount > 0
-              ? t('stats.kpi.reviews', { count: stats.ratingCount })
-              : t('stats.kpi.noRating')
-          }
-          testID="kpi-rating"
-        />
+        <StatsKpis stats={stats} />
       </View>
 
       <View style={styles.section}>
@@ -126,19 +97,33 @@ export function TeacherStatsScreen({ courseId }: TeacherStatsScreenProps) {
   const { colors } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
+  const { isWide } = useBreakpoint();
   const query = useCourseStats(courseId);
   const { refetch } = query;
   const handleRetry = useCallback(() => void refetch(), [refetch]);
 
   let body;
   if (query.data) {
-    body = <StatsBody stats={query.data} courseId={courseId} />;
+    body = isWide ? (
+      <StatsBodyWide stats={query.data} courseId={courseId} />
+    ) : (
+      <StatsBody stats={query.data} courseId={courseId} />
+    );
   } else if (isOfflineWithoutData(query)) {
     body = <ErrorState error={OFFLINE_QUERY_ERROR} onRetry={handleRetry} />;
   } else if (query.isError) {
     body = <ErrorState error={query.error} title={t('stats.loadFailed')} onRetry={handleRetry} />;
   } else {
-    body = <StatsSkeleton />;
+    body = <StatsSkeleton isFlush={isWide} />;
+  }
+
+  if (isWide) {
+    return (
+      <WorkShell testID="teacher-stats-screen">
+        <WorkHeader title={t('stats.title')} hasBack />
+        {body}
+      </WorkShell>
+    );
   }
 
   return (
@@ -165,6 +150,7 @@ export function TeacherStatsScreen({ courseId }: TeacherStatsScreenProps) {
 const useStyles = makeStyles((t) => ({
   screen: { flex: 1, backgroundColor: t.colors.background },
   body: { gap: spacing.xxl, padding: layout.screenPaddingX },
+  bodyFlush: { padding: 0 },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   skeletonTile: { flexGrow: 1, flexBasis: '45%' },
   section: {

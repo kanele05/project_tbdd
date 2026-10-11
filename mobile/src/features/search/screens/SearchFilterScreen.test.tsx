@@ -117,6 +117,7 @@ describe('SearchFilterScreen', () => {
         'Discard changes?',
         expect.any(String),
         expect.any(Array),
+        expect.any(Object),
       ),
     );
     expect(mockBack).toHaveBeenCalledTimes(1);

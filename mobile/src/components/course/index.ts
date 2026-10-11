@@ -7,3 +7,6 @@ export { COURSE_CARD_VERTICAL_WIDTH, CourseCardVertical } from './CourseCardVert
 export type { CourseCardVerticalProps } from './CourseCardVertical';
 export { PriceTag } from './PriceTag';
 export type { PriceTagProps } from './PriceTag';
+export { CourseCardDesktop, CourseCardDesktopSkeleton } from './CourseCardDesktop';
+export type { CourseCardDesktopProps } from './CourseCardDesktop';
+export type { DesktopCardCourse } from './CourseCardDesktop';

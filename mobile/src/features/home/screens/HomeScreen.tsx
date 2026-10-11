@@ -19,6 +19,7 @@ import {
   openTeacher,
   openTopTeachers,
 } from '@/features/search/navigation';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { queryKeys } from '@/lib/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
@@ -37,6 +38,7 @@ import { TeacherRail } from '../components/TeacherRail';
 import { getGivenName } from '../greeting';
 import { buildHeroSlides } from '../heroSlides';
 import { useHome } from '../hooks';
+import { HomeDesktopScreen } from './HomeDesktopScreen';
 
 function isHomeEmpty(home: HomeResponse): boolean {
   return (
@@ -125,8 +127,8 @@ function HomeSections({ home, onToggleBookmark }: HomeSectionsProps) {
   );
 }
 
-/** SC-04 Home: 1 request (`GET /home`) + "continue learning", AI picks, badges from their hooks. */
-export function HomeScreen() {
+/** SC-04 Home on phones: 1 request (`GET /home`) + "continue learning", AI picks, badges. */
+function HomePhoneScreen() {
   const { t } = useTranslation('home');
   const styles = useStyles();
   const insets = useSafeAreaInsets();
@@ -228,6 +230,12 @@ export function HomeScreen() {
       </ScrollView>
     </View>
   );
+}
+
+/** SC-04 Home: the phone layout below 768 dp wide, the Netflix-style web layout from there up. */
+export function HomeScreen() {
+  const { isWide } = useBreakpoint();
+  return isWide ? <HomeDesktopScreen /> : <HomePhoneScreen />;
 }
 
 const useStyles = makeStyles((t) => ({

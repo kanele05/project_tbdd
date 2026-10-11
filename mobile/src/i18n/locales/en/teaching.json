@@ -108,6 +108,13 @@
       "gradeRange": "The grade must be a whole number from 0 to 100",
       "feedbackRequired": "Write some feedback for the student",
       "feedbackMax": "Feedback can have at most {{max}} characters"
+    },
+    "columns": {
+      "student": "Student",
+      "project": "Project",
+      "submitted": "Submitted",
+      "grade": "Grade",
+      "actions": "Actions"
     }
   }
 }

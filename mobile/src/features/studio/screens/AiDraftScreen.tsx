@@ -29,16 +29,17 @@ import {
   type AiDraftFormValues,
 } from '../aiDraftForm';
 import { useAiDraftStore } from '../aiDraftStore';
-import { AiDraftResult, type DraftPart } from '../components/AiDraftResult';
-import { getCurriculumTarget } from '../editMode';
+import { AiDraftResult, ALL_PARTS, TEXT_PARTS, type DraftPart } from '../components/AiDraftResult';
+import { getCurriculumTarget, NEW_COURSE_ID } from '../editMode';
 import { useAiCourseDraft, useCurriculumMutations, useStudioCourse } from '../hooks';
-import { NEW_COURSE_ID } from '../useCourseEditor';
 
 export type AiDraftScreenProps = {
   /** Course being edited, or `new` / empty when the course does not exist yet. */
   courseId: string;
   /** Prefill for the topic (the course title). */
   topic?: string;
+  /** `text` ("Help me write"): only the subtitle and the description are offered. */
+  scope?: 'all' | 'text';
 };
 
 function close(): void {
@@ -53,7 +54,7 @@ function close(): void {
  * the sections of a draft course and queues its lessons as "planned" rows in the curriculum
  * editor, because a lesson still needs a YouTube link and a length. Nothing is saved by the AI.
  */
-export function AiDraftScreen({ courseId, topic = '' }: AiDraftScreenProps) {
+export function AiDraftScreen({ courseId, topic = '', scope = 'all' }: AiDraftScreenProps) {
   const { t } = useTranslation('studio');
   const { language } = useLanguage();
   const { colors } = useTheme();
@@ -112,7 +113,8 @@ export function AiDraftScreen({ courseId, topic = '' }: AiDraftScreenProps) {
       setPlanned({ ...useAiDraftStore.getState().plannedLessons, ...planned });
       markApplied('outline');
       showToast(t('ai.outlineApplied'), { type: 'success' });
-      router.replace({ pathname: '/studio/[id]/curriculum', params: { id: courseId } });
+      // The wizard under this sheet shows the Lessons step as soon as planned lessons appear.
+      close();
     } catch (error) {
       showToast(getErrorMessage(error), { type: 'error' });
     } finally {
@@ -217,6 +219,7 @@ export function AiDraftScreen({ courseId, topic = '' }: AiDraftScreenProps) {
         {draft && !generate.isPending ? (
           <AiDraftResult
             draft={draft}
+            parts={scope === 'text' ? TEXT_PARTS : ALL_PARTS}
             applied={applied}
             outlineHint={outlineHint}
             isApplyingOutline={isApplyingOutline}

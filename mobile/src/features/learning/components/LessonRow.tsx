@@ -2,7 +2,9 @@ import Feather from '@expo/vector-icons/Feather';
 import { memo } from 'react';
 import { Pressable, View } from 'react-native';
 
+import { useHover } from '@/components/layout/useHover';
 import { AppText } from '@/components/ui/AppText';
+import { pointerStyle } from '@/features/course/webStyles';
 import { useTranslation } from '@/i18n';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { CurriculumLesson, LessonStatus } from '@/types/api';
@@ -49,6 +51,7 @@ function StatusIcon({ status, isActive }: { status: LessonStatus; isActive: bool
 function LessonRowBase({ lesson, isActive = false, onPress }: LessonRowProps) {
   const { t } = useTranslation('learning');
   const styles = useStyles();
+  const { isHovered, hoverProps } = useHover();
   const duration = formatLessonDuration(lesson.durationSec);
   const label = [
     t('lessonNumber', { number: lesson.number }),
@@ -67,8 +70,10 @@ function LessonRowBase({ lesson, isActive = false, onPress }: LessonRowProps) {
       accessibilityLabel={label}
       accessibilityState={{ selected: isActive }}
       testID={`lesson-row-${lesson.id}`}
+      {...hoverProps}
       style={({ pressed }) => [
         styles.row,
+        isHovered && !isActive ? styles.hovered : null,
         isActive ? styles.active : null,
         pressed ? styles.pressed : null,
       ]}
@@ -100,7 +105,10 @@ const useStyles = makeStyles((t) => ({
     borderRadius: radius.card,
     borderWidth: 1,
     borderColor: t.colors.transparent,
+    ...pointerStyle,
   },
+  // Web: a mouse over the row lifts it one step (cursor + fill).
+  hovered: { backgroundColor: t.colors.surfaceAlt },
   active: { backgroundColor: t.colors.primarySoft, borderColor: t.colors.primaryText },
   pressed: { opacity: 0.7 },
   number: { minWidth: 24 },
