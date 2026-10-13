@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
@@ -12,14 +11,11 @@ import { FormTextField } from '@/components/ui/FormTextField';
 import { IconButton } from '@/components/ui/IconButton';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SparklesIcon } from '@/components/ui/SparklesIcon';
-import { showToast } from '@/components/ui/Toast';
 import { FormError } from '@/features/auth/components/FormError';
 import { useTranslation } from '@/i18n';
 import { useLanguage } from '@/i18n/useLanguage';
 import { getErrorMessage } from '@/lib/appError';
 import { layout, makeStyles, spacing, useTheme } from '@/theme';
-import type { AiCourseDraftDto } from '@/types/api';
-import { confirmAction } from '@/utils/confirmAction';
 
 import {
   AI_LEVELS,
@@ -28,10 +24,9 @@ import {
   TOPIC_MAX,
   type AiDraftFormValues,
 } from '../aiDraftForm';
-import { useAiDraftStore } from '../aiDraftStore';
-import { AiDraftResult, ALL_PARTS, TEXT_PARTS, type DraftPart } from '../components/AiDraftResult';
-import { getCurriculumTarget, NEW_COURSE_ID } from '../editMode';
-import { useAiCourseDraft, useCurriculumMutations, useStudioCourse } from '../hooks';
+import { AiDraftResult } from '../components/AiDraftResult';
+import { useAiCourseDraft } from '../hooks';
+import { closeAiDraftSheet, useAiDraftSheet } from '../useAiDraftSheet';
 
 export type AiDraftScreenProps = {
   /** Course being edited, or `new` / empty when the course does not exist yet. */
@@ -42,14 +37,9 @@ export type AiDraftScreenProps = {
   scope?: 'all' | 'text';
 };
 
-function close(): void {
-  if (router.canGoBack()) router.back();
-  else router.replace('/(tabs)/studio');
-}
-
 /**
  * SC-27 AI course draft (FR-44, modal). Topic + level + language -> `POST /teacher/ai/course-draft`
- * -> four suggestions (subtitle, description, benefits, outline), each applied on request. Fields
+ * -> five editable suggestions (category, subtitle, description, benefits, outline), each applied on request. Fields
  * go into the open editor through `useAiDraftStore`; the outline (after a confirmation) creates
  * the sections of a draft course and queues its lessons as "planned" rows in the curriculum
  * editor, because a lesson still needs a YouTube link and a length. Nothing is saved by the AI.
@@ -60,78 +50,24 @@ export function AiDraftScreen({ courseId, topic = '', scope = 'all' }: AiDraftSc
   const { colors } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
-  const [draft, setDraft] = useState<AiCourseDraftDto | null>(null);
-  const [applied, setApplied] = useState<ReadonlySet<DraftPart>>(new Set());
-  const [isApplyingOutline, setIsApplyingOutline] = useState(false);
   const [generateError, setGenerateError] = useState<unknown>(null);
   const generate = useAiCourseDraft();
-  const queueFields = useAiDraftStore((state) => state.queueFields);
-  const setPlanned = useAiDraftStore((state) => state.setPlannedLessons);
+  const sheet = useAiDraftSheet(courseId, scope);
+  const { draft } = sheet;
 
-  const hasCourse = courseId !== '' && courseId !== NEW_COURSE_ID;
-  const course = useStudioCourse(courseId, { enabled: hasCourse });
-  const mutations = useCurriculumMutations(hasCourse ? courseId : '');
-  const canApplyOutline = hasCourse && course.data && getCurriculumTarget(course.data) === 'course';
-  const outlineHint = canApplyOutline
-    ? null
-    : hasCourse
-      ? t('ai.outlineNeedsDraft')
-      : t('ai.outlineNeedsCourse');
-
-  const { control, handleSubmit } = useForm<AiDraftFormValues>({
+  const { control, handleSubmit, getValues } = useForm<AiDraftFormValues>({
     resolver: zodResolver(aiDraftSchema),
     defaultValues: { topic: topic.slice(0, TOPIC_MAX), level: 'beginner', lang: language },
   });
 
   const submit = handleSubmit(async (values) => {
-    setApplied(new Set());
     setGenerateError(null);
     try {
-      setDraft(await generate.mutateAsync({ ...values, topic: values.topic.trim() }));
+      sheet.receiveDraft(await generate.mutateAsync({ ...values, topic: values.topic.trim() }));
     } catch (error) {
       setGenerateError(error);
     }
   });
-
-  const markApplied = (part: DraftPart) => setApplied((current) => new Set(current).add(part));
-
-  const applyOutline = async (source: AiCourseDraftDto) => {
-    const isConfirmed = await confirmAction({
-      title: t('ai.outlineConfirm.title'),
-      message: t('ai.outlineConfirm.message', { count: source.sections.length }),
-      confirmLabel: t('ai.outlineConfirm.confirm'),
-      cancelLabel: t('actions.cancel'),
-    });
-    if (!isConfirmed) return;
-    setIsApplyingOutline(true);
-    try {
-      const planned: Record<string, { title: string; summary: string }[]> = {};
-      for (const section of source.sections) {
-        const created = await mutations.addSection.mutateAsync({ title: section.title });
-        planned[created.id] = section.lessons;
-      }
-      setPlanned({ ...useAiDraftStore.getState().plannedLessons, ...planned });
-      markApplied('outline');
-      showToast(t('ai.outlineApplied'), { type: 'success' });
-      // The wizard under this sheet shows the Lessons step as soon as planned lessons appear.
-      close();
-    } catch (error) {
-      showToast(getErrorMessage(error), { type: 'error' });
-    } finally {
-      setIsApplyingOutline(false);
-    }
-  };
-
-  const apply = (part: DraftPart) => {
-    if (!draft) return;
-    if (part === 'outline') {
-      void applyOutline(draft);
-      return;
-    }
-    queueFields({ [part]: draft[part] });
-    markApplied(part);
-    showToast(t('ai.appliedToast'), { type: 'success' });
-  };
 
   return (
     <KeyboardAvoidingView
@@ -141,7 +77,9 @@ export function AiDraftScreen({ courseId, topic = '', scope = 'all' }: AiDraftSc
       <ScreenHeader
         title={t('ai.title')}
         showBack={false}
-        right={<IconButton icon="x" onPress={close} accessibilityLabel={t('ai.close')} />}
+        right={
+          <IconButton icon="x" onPress={closeAiDraftSheet} accessibilityLabel={t('ai.close')} />
+        }
       />
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + spacing.huge }]}
@@ -219,11 +157,23 @@ export function AiDraftScreen({ courseId, topic = '', scope = 'all' }: AiDraftSc
         {draft && !generate.isPending ? (
           <AiDraftResult
             draft={draft}
-            parts={scope === 'text' ? TEXT_PARTS : ALL_PARTS}
-            applied={applied}
-            outlineHint={outlineHint}
-            isApplyingOutline={isApplyingOutline}
-            onApply={apply}
+            parts={sheet.parts}
+            applied={sheet.applied}
+            categoryName={sheet.categoryName}
+            hints={sheet.hints}
+            isApplicable={sheet.isApplicable}
+            isApplyingOutline={sheet.isApplyingOutline}
+            onEdit={sheet.editDraft}
+            onApply={sheet.apply}
+          />
+        ) : null}
+        {draft && !generate.isPending && sheet.isAllApplied ? (
+          <Button
+            title={t('ai.next')}
+            rightIcon="arrow-right"
+            onPress={() => sheet.goToNextStep(getValues('topic'))}
+            fullWidth
+            testID="ai-next"
           />
         ) : null}
       </ScrollView>

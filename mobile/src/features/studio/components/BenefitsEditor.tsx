@@ -13,17 +13,24 @@ export type BenefitsEditorProps = {
   value: string[];
   onChange: (benefits: string[]) => void;
   disabled?: boolean;
+  /** Hide the title (a host card already has one); the counter stays. */
+  hideLabel?: boolean;
 };
 
 /** "What you will learn" list (up to 10 lines): add, edit and remove one line at a time. */
-export function BenefitsEditor({ value, onChange, disabled = false }: BenefitsEditorProps) {
+export function BenefitsEditor({
+  value,
+  onChange,
+  disabled = false,
+  hideLabel = false,
+}: BenefitsEditorProps) {
   const { t } = useTranslation('studio');
   const styles = useStyles();
   const canAdd = !disabled && value.length < STUDIO_LIMITS.maxBenefits;
   return (
     <View style={styles.wrap} testID="benefits-editor">
       <View style={styles.labelRow}>
-        <AppText variant="label">{t('benefits.label')}</AppText>
+        {hideLabel ? <View /> : <AppText variant="label">{t('benefits.label')}</AppText>}
         <AppText variant="caption">
           {t('benefits.count', { count: value.length, max: STUDIO_LIMITS.maxBenefits })}
         </AppText>

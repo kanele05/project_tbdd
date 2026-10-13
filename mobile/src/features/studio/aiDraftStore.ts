@@ -2,9 +2,13 @@ import { create } from 'zustand';
 
 /** Parts of an AI course draft that go straight into the course info form (SC-24). */
 export type AiFieldSuggestion = {
+  /** The AI topic, used as the title only while the course has none. */
+  title?: string;
   subtitle?: string;
   description?: string;
   benefits?: string[];
+  /** Id of an existing category (the major field `categoryId`). */
+  categoryId?: string;
 };
 
 /** A lesson the AI outline proposes; it still needs a YouTube link and a duration. */
@@ -18,11 +22,16 @@ type AiDraftState = {
    * section with an "Add" button that opens the lesson form pre-filled with title and summary.
    */
   plannedLessons: Record<string, PlannedLesson[]>;
+  /** "Next step" was pressed in the AI sheet: the wizard moves on once it is visible again. */
+  isAdvanceRequested: boolean;
   /** Merge more suggestions into the pending ones. */
   queueFields: (fields: AiFieldSuggestion) => void;
   /** Take the pending suggestions (and clear them). */
   takeFields: () => AiFieldSuggestion | null;
   setPlannedLessons: (planned: Record<string, PlannedLesson[]>) => void;
+  requestAdvance: () => void;
+  /** Take the advance request (and clear it): `true` when the wizard should press Next. */
+  takeAdvance: () => boolean;
   /** Drop one planned lesson once it has been created (or dismissed). */
   removePlannedLesson: (sectionKey: string, index: number) => void;
   clear: () => void;
@@ -35,6 +44,7 @@ type AiDraftState = {
 export const useAiDraftStore = create<AiDraftState>()((set, get) => ({
   pendingFields: null,
   plannedLessons: {},
+  isAdvanceRequested: false,
   queueFields: (fields) =>
     set((state) => ({ pendingFields: { ...state.pendingFields, ...fields } })),
   takeFields: () => {
@@ -43,6 +53,12 @@ export const useAiDraftStore = create<AiDraftState>()((set, get) => ({
     return fields;
   },
   setPlannedLessons: (planned) => set({ plannedLessons: planned }),
+  requestAdvance: () => set({ isAdvanceRequested: true }),
+  takeAdvance: () => {
+    const isRequested = get().isAdvanceRequested;
+    if (isRequested) set({ isAdvanceRequested: false });
+    return isRequested;
+  },
   removePlannedLesson: (sectionKey, index) =>
     set((state) => {
       const rest = (state.plannedLessons[sectionKey] ?? []).filter((_, i) => i !== index);
@@ -51,5 +67,5 @@ export const useAiDraftStore = create<AiDraftState>()((set, get) => ({
       else delete next[sectionKey];
       return { plannedLessons: next };
     }),
-  clear: () => set({ pendingFields: null, plannedLessons: {} }),
+  clear: () => set({ pendingFields: null, plannedLessons: {}, isAdvanceRequested: false }),
 }));

@@ -154,6 +154,7 @@ describe('CourseWizardScreen', () => {
       expect(mockSetParams).toHaveBeenCalledWith({ id: 'new-id' });
       expect(await screen.findByText('Introduce your course')).toBeOnTheScreen();
       expect(screen.getByText('Course info')).toBeOnTheScreen();
+      expect(mockSetParams).toHaveBeenCalledWith({ step: 'intro' });
     });
 
     it('puts a 400 on the matching field and stays on the step', async () => {
@@ -288,10 +289,57 @@ describe('CourseWizardScreen', () => {
       expect(screen.queryByLabelText('Learning point 2')).not.toBeOnTheScreen();
     });
 
-    it('Back goes one step back and leaves the wizard from the first step', async () => {
-      await openStep(makeDetail(), 'intro');
+    it('presses Next when the AI sheet asks to move on, keeping an existing title', async () => {
+      await openStep(makeDetail(), 'idea');
+      await waitFor(() => expect(screen.getByLabelText('Title').props.value).not.toBe(''));
+      const title = screen.getByLabelText('Title').props.value as string;
+      await act(async () => {
+        useAiDraftStore.getState().queueFields({ title: 'From the AI topic', subtitle: 'AI sub' });
+        useAiDraftStore.getState().requestAdvance();
+      });
+
+      expect(await screen.findByText('Introduce your course')).toBeOnTheScreen();
+      expect(useAiDraftStore.getState().isAdvanceRequested).toBe(false);
+      expect(mockSetParams).toHaveBeenCalledWith({ step: 'intro' });
       await fireEvent.press(screen.getByTestId('wizard-back'));
       expect(await screen.findByText('What is your course about?')).toBeOnTheScreen();
+      expect(screen.getByLabelText('Title').props.value).toBe(title);
+    });
+
+    it('creates a new course from the AI topic and category, then lands on the Intro step', async () => {
+      const created = makeDetail({ id: 'new-id' });
+      mockCreate.mockImplementation(async () => {
+        setDetail(created);
+        return created;
+      });
+      await renderWithProviders(<CourseWizardScreen courseId="new" />);
+
+      await act(async () => {
+        useAiDraftStore.getState().queueFields({
+          title: 'Complete React Native Bootcamp',
+          categoryId: 'cat-2',
+          subtitle: 'AI sub',
+        });
+        useAiDraftStore.getState().requestAdvance();
+      });
+
+      await waitFor(() => expect(mockCreate).toHaveBeenCalled());
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Complete React Native Bootcamp',
+          categoryId: 'cat-2',
+        }),
+      );
+      expect(await screen.findByText('Introduce your course')).toBeOnTheScreen();
+      expect(screen.queryByText('Pick a category.')).not.toBeOnTheScreen();
+    });
+
+    it('Back goes one step back and leaves the wizard from the first step', async () => {
+      await openStep(makeDetail(), 'intro');
+      expect(mockSetParams).not.toHaveBeenCalled();
+      await fireEvent.press(screen.getByTestId('wizard-back'));
+      expect(await screen.findByText('What is your course about?')).toBeOnTheScreen();
+      expect(mockSetParams).toHaveBeenCalledWith({ step: 'idea' });
       await fireEvent.press(screen.getByTestId('wizard-back'));
       expect(mockBack).toHaveBeenCalled();
     });

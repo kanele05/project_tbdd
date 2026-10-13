@@ -925,6 +925,8 @@ export type AiCourseDraftDto = {
   description: string;
   /** 3-6 items. */
   benefits: string[];
+  /** Id of the existing category that fits the topic best; `null` when none fits. */
+  categoryId: string | null;
   /** 3-6 sections of 2-5 lessons each. */
   sections: { title: string; lessons: { title: string; summary: string }[] }[];
   model: string;

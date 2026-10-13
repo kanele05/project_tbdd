@@ -320,6 +320,7 @@
     "regenerate": "Tạo lại",
     "loading": "AI đang viết bản nháp cho bạn. Có thể mất vài giây.",
     "parts": {
+      "category": "Danh mục",
       "subtitle": "Phụ đề",
       "description": "Mô tả",
       "benefits": "Ý học được",
@@ -329,6 +330,18 @@
     "applyPart": "Áp dụng {{part}}",
     "applied": "Đã áp dụng",
     "appliedToast": "Đã đưa vào biểu mẫu. Hãy xem lại rồi bấm Tiếp.",
+    "next": "Tiếp tục sang bước sau",
+    "categoryNone": "Chưa có danh mục nào phù hợp với chủ đề này. Hãy chọn trong biểu mẫu.",
+    "categoryLocked": "Khóa học đã xuất bản chỉ đổi được danh mục thông qua bản chỉnh sửa.",
+    "editHint": "Bạn có thể sửa từng gợi ý trước khi áp dụng.",
+    "charCount": "{{count}}/{{max}} ký tự",
+    "outline": {
+      "empty": "Đã xóa hết các chương. Hãy tạo lại để có dàn ý mới.",
+      "sectionLabel": "Tên chương {{number}}",
+      "lessonLabel": "Bài {{number}} của chương {{section}}",
+      "removeSection": "Xóa chương {{number}}",
+      "removeLesson": "Xóa bài {{number}} của chương {{section}}"
+    },
     "outlineNeedsDraft": "Chỉ áp dụng được dàn ý cho khóa học nháp hoặc bị từ chối.",
     "outlineNeedsCourse": "Hãy bấm Tiếp ở bước đầu để tạo bản nháp, rồi áp dụng dàn ý ở bước Bài học.",
     "outlineConfirm": {

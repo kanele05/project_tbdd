@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { showToast } from '@/components/ui/Toast';
@@ -83,14 +83,18 @@ export function useCourseEditor(routeCourseId: string) {
   // Pour AI suggestions (SC-27) into the form.
   const pendingFields = useAiDraftStore((state) => state.pendingFields);
   const takeFields = useAiDraftStore((state) => state.takeFields);
-  useEffect(() => {
-    if (!pendingFields) return;
+  const applyAiFields = useCallback(() => {
     const fields = takeFields();
     if (!fields) return;
+    if (fields.title && !form.getValues('title').trim()) form.setValue('title', fields.title);
     if (fields.subtitle !== undefined) form.setValue('subtitle', fields.subtitle);
     if (fields.description !== undefined) form.setValue('description', fields.description);
     if (fields.benefits !== undefined) form.setValue('benefits', fields.benefits);
-  }, [form, pendingFields, takeFields]);
+    if (fields.categoryId) form.setValue('categoryId', fields.categoryId, { shouldValidate: true });
+  }, [form, takeFields]);
+  useEffect(() => {
+    if (pendingFields) applyAiFields();
+  }, [pendingFields, applyAiFields]);
 
   const startRevision = async () => {
     save.setFormError(null);
@@ -105,6 +109,8 @@ export function useCourseEditor(routeCourseId: string) {
   const knownTags = useMemo(() => detail?.tags ?? [], [detail]);
 
   return {
+    /** Pours the queued AI suggestions into the form now (the wizard does it before an AI "Next"). */
+    applyAiFields,
     courseId,
     isCreate,
     detailQuery,

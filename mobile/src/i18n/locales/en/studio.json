@@ -322,6 +322,7 @@
     "regenerate": "Generate again",
     "loading": "The AI is writing your draft. This can take a few seconds.",
     "parts": {
+      "category": "Category",
       "subtitle": "Subtitle",
       "description": "Description",
       "benefits": "Learning points",
@@ -331,6 +332,18 @@
     "applyPart": "Apply {{part}}",
     "applied": "Applied",
     "appliedToast": "Added to the form. Review it, then press Next.",
+    "next": "Continue to the next step",
+    "categoryNone": "No existing category fits this topic. Pick one in the form.",
+    "categoryLocked": "A published course changes its category only through a revision.",
+    "editHint": "You can edit every suggestion before you apply it.",
+    "charCount": "{{count}}/{{max}} characters",
+    "outline": {
+      "empty": "Every section was removed. Generate again to get a new outline.",
+      "sectionLabel": "Section {{number}} title",
+      "lessonLabel": "Lesson {{number}} of section {{section}}",
+      "removeSection": "Remove section {{number}}",
+      "removeLesson": "Remove lesson {{number}} of section {{section}}"
+    },
     "outlineNeedsDraft": "The outline can only be applied to a draft or rejected course.",
     "outlineNeedsCourse": "Press Next on the first step to create the draft, then apply the outline from the Lessons step.",
     "outlineConfirm": {

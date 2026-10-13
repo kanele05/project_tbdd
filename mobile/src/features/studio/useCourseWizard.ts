@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAiDraftStore } from './aiDraftStore';
 import { useCourseEditor } from './useCourseEditor';
@@ -28,6 +28,10 @@ function leaveWizard(): void {
 export function useCourseWizard(routeCourseId: string, initialStep: WizardStep) {
   const editor = useCourseEditor(routeCourseId);
   const [step, setStep] = useState<WizardStep>(initialStep);
+  // Mirror the step in `?step=` so a reload (F5 on the web) reopens it.
+  useEffect(() => {
+    if (step !== initialStep) router.setParams({ step });
+  }, [step, initialStep]);
   const [isMoving, setIsMoving] = useState(false);
   const flushRef = useRef<FlushCurriculum | null>(null);
   const registerFlush = useCallback((flush: FlushCurriculum | null) => {
@@ -73,6 +77,23 @@ export function useCourseWizard(routeCourseId: string, initialStep: WizardStep) 
     if (target) await goTo(target);
     else leaveWizard();
   };
+
+  // "Next step" in the AI sheet: take its fields, then press Next for the teacher (with autosave).
+  const nextRef = useRef(next);
+  const applyAiFieldsRef = useRef(editor.applyAiFields);
+  useEffect(() => {
+    nextRef.current = next;
+    applyAiFieldsRef.current = editor.applyAiFields;
+  });
+  useEffect(
+    () =>
+      useAiDraftStore.subscribe((state) => {
+        if (!state.isAdvanceRequested || !useAiDraftStore.getState().takeAdvance()) return;
+        applyAiFieldsRef.current();
+        void nextRef.current();
+      }),
+    [],
+  );
 
   return {
     ...editor,
