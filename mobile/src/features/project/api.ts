@@ -1,4 +1,5 @@
 import { api } from '@/lib/apiClient';
+import { appendFilePart, type FilePart } from '@/lib/formData';
 import type { CourseProjectDto, ProjectSubmissionDto } from '@/types/api';
 
 import { getUploadMimeType } from './fileUtils';
@@ -16,20 +17,19 @@ export type SubmissionInput = {
 
 /**
  * Builds the multipart body of `POST /courses/:id/submissions`: `title`, `description?`, `file`,
- * `image?`. React Native's FormData accepts `{ uri, name, type }` objects as file parts.
+ * `image?` (file parts through `appendFilePart`, which also works on the web).
  */
-export function buildSubmissionForm(input: SubmissionInput): FormData {
+export async function buildSubmissionForm(input: SubmissionInput): Promise<FormData> {
   const form = new FormData();
   form.append('title', input.title);
   if (input.description) form.append('description', input.description);
-  const toPart = (picked: PickedFile) =>
-    ({
-      uri: picked.uri,
-      name: picked.name,
-      type: getUploadMimeType(picked.name, picked.mimeType),
-    }) as unknown as Blob;
-  form.append('file', toPart(input.file));
-  if (input.image) form.append('image', toPart(input.image));
+  const toPart = (picked: PickedFile): FilePart => ({
+    uri: picked.uri,
+    name: picked.name,
+    type: getUploadMimeType(picked.name, picked.mimeType),
+  });
+  await appendFilePart(form, 'file', toPart(input.file));
+  if (input.image) await appendFilePart(form, 'image', toPart(input.image));
   return form;
 }
 
@@ -43,10 +43,14 @@ export const projectApi = {
     api.getPage<ProjectSubmissionDto>(`/courses/${courseId}/submissions`, { page, limit }),
 
   /** `POST /courses/:id/submissions` (multipart, 201). 413 / 415 / 403 on bad files / not enrolled. */
-  submit: (courseId: string, input: SubmissionInput, onProgress?: (percent: number) => void) =>
+  submit: async (
+    courseId: string,
+    input: SubmissionInput,
+    onProgress?: (percent: number) => void,
+  ) =>
     api.postForm<ProjectSubmissionDto>(
       `/courses/${courseId}/submissions`,
-      buildSubmissionForm(input),
+      await buildSubmissionForm(input),
       onProgress,
     ),
 };

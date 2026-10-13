@@ -1,5 +1,6 @@
 import { AI_REQUEST_TIMEOUT_MS } from '@/constants/config';
 import { api } from '@/lib/apiClient';
+import { appendFilePart } from '@/lib/formData';
 import type {
   AiCourseDraftDto,
   AiCourseDraftRequest,
@@ -74,10 +75,9 @@ export const studioApi = {
   discardRevision: (id: string) => api.delete(`/teacher/courses/${id}/revision`),
 
   /** `POST /teacher/uploads/image` (201) multipart `file` (png/jpg <= 5 MB) -> `{ url }`. */
-  uploadImage: (file: CoverFile, onProgress?: (percent: number) => void) => {
+  uploadImage: async (file: CoverFile, onProgress?: (percent: number) => void) => {
     const form = new FormData();
-    // React Native's FormData accepts `{ uri, name, type }` in place of a Blob.
-    form.append('file', file as unknown as Blob);
+    await appendFilePart(form, 'file', file);
     return api.postForm<UploadImageResponse>('/teacher/uploads/image', form, onProgress);
   },
 

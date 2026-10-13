@@ -47,8 +47,8 @@ describe('buildSubmissionForm', () => {
     appended.length = 0;
   });
 
-  it('sends title, description and the file with a canonical MIME type', () => {
-    buildSubmissionForm({ title: 'My app', description: 'Notes', file: FILE });
+  it('sends title, description and the file with a canonical MIME type', async () => {
+    await buildSubmissionForm({ title: 'My app', description: 'Notes', file: FILE });
     const byName = Object.fromEntries(appended);
 
     expect(byName.title).toBe('My app');
@@ -61,9 +61,9 @@ describe('buildSubmissionForm', () => {
     expect(byName.image).toBeUndefined();
   });
 
-  it('omits an empty description and attaches the cover image when present', () => {
+  it('omits an empty description and attaches the cover image when present', async () => {
     const image: PickedFile = { uri: 'file:///cache/c.png', name: 'c.png', mimeType: 'image/png' };
-    buildSubmissionForm({ title: 'T', file: FILE, image });
+    await buildSubmissionForm({ title: 'T', file: FILE, image });
 
     expect(appended.map(([name]) => name)).toEqual(['title', 'file', 'image']);
     expect(appended[2]?.[1]).toEqual({
@@ -77,9 +77,9 @@ describe('buildSubmissionForm', () => {
 describe('projectApi', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('uploads to /courses/:id/submissions with the progress callback', () => {
+  it('uploads to /courses/:id/submissions with the progress callback', async () => {
     const onProgress = jest.fn();
-    void projectApi.submit('c1', { title: 'T', file: FILE }, onProgress);
+    await projectApi.submit('c1', { title: 'T', file: FILE }, onProgress);
 
     expect(mockPostForm).toHaveBeenCalledWith(
       '/courses/c1/submissions',
