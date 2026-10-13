@@ -34,6 +34,7 @@
     "expo-splash-screen": "~57.0.9",
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
+    "expo-updates": "~57.0.26",
     "expo-video": "~57.0.5",
     "i18next": "^26.4.2",
     "qrcode": "^1.5.4",
@@ -79,7 +80,9 @@
     "format:check": "prettier --check .",
     "test": "jest",
     "test:watch": "jest --watch",
-    "check:contrast": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/contrast-report.mjs"
+    "check:contrast": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/contrast-report.mjs",
+    "update:preview": "node scripts/eas-update.mjs preview",
+    "update:production": "node scripts/eas-update.mjs production"
   },
   "private": true
 }

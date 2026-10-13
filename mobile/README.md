@@ -72,6 +72,13 @@ Khi dùng tunnel, API server vẫn phải truy cập được từ điện tho�
 
 CI chạy `format:check` và `check:contrast` cùng typecheck, lint, test.
 
+### APK & cập nhật OTA (EAS Update)
+
+- Build APK: `npx eas-cli build -p android --profile preview` (biến môi trường lấy từ `env` của profile trong `eas.json`: API production, reCAPTCHA v2).
+- Deploy server/web **không** cập nhật APK đã cài. Thay đổi chỉ ở JS/ảnh thì phát hành OTA:
+  `npm run update:preview -- "Mô tả thay đổi"` (hoặc `update:production`). Script lấy `env` của profile cùng tên, tắt đọc `.env` và xóa cache Metro, nên bản cập nhật gọi đúng API production. App tải bản mới khi mở và áp dụng ở **lần mở sau**.
+- Thêm thư viện native / nâng SDK → phải build APK mới **và** tăng `version` trong `app.json` (runtime version theo `appVersion`, APK cũ sẽ không nhận bản cập nhật không tương thích).
+
 Trước khi tạo PR: chạy `typecheck`, `lint`, `format:check`, `test` và đảm bảo đều xanh.
 
 ## Cấu trúc thư mục

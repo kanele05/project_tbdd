@@ -23,7 +23,10 @@
       },
       "softwareKeyboardLayoutMode": "resize",
       "predictiveBackGestureEnabled": false,
-      "permissions": ["android.permission.RECORD_AUDIO"]
+      "permissions": ["android.permission.RECORD_AUDIO"],
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -70,6 +73,9 @@
         "projectId": "618bce0a-ec57-42c2-a569-a58552bd892a"
       }
     },
-    "owner": "kanele2602"
+    "owner": "kanele2602",
+    "updates": {
+      "url": "https://u.expo.dev/618bce0a-ec57-42c2-a569-a58552bd892a"
+    }
   }
 }
