@@ -15,12 +15,34 @@ export function clip(value: string, max: number): string {
   return `${text.slice(0, max - 1).trimEnd()}…`;
 }
 
-export function normalizeDraft(raw: CourseDraftModelOutput): CourseDraftOutput {
+/** Tìm danh mục theo tên, không phân biệt hoa/thường và khoảng trắng thừa; không thấy/rỗng -> `null`. */
+export function findCategoryByName<T extends { name: string }>(
+  name: string | null | undefined,
+  categories: readonly T[],
+): T | null {
+  const wanted = name?.trim().toLowerCase();
+  if (!wanted) return null;
+  return categories.find((category) => category.name.trim().toLowerCase() === wanted) ?? null;
+}
+
+/**
+ * `categoryNames` = tên các danh mục hiện có: tên model trả được đối chiếu và đổi về đúng chính tả trong DB;
+ * tên lạ (model bịa) -> `null`.
+ */
+export function normalizeDraft(
+  raw: CourseDraftModelOutput,
+  categoryNames: readonly string[] = [],
+): CourseDraftOutput {
   const L = DRAFT_LIMITS;
+  const category = findCategoryByName(
+    raw.category,
+    categoryNames.map((name) => ({ name })),
+  );
   return {
     subtitle: clip(raw.subtitle, L.subtitleMax),
     description: clip(raw.description, L.descriptionMax),
     benefits: raw.benefits.slice(0, L.benefitsMax).map((b) => clip(b, L.benefitMax)),
+    category: category?.name ?? null,
     sections: raw.sections.slice(0, L.sectionsMax).map((section) => ({
       title: clip(section.title, L.sectionTitleMax),
       lessons: section.lessons.slice(0, L.lessonsMax).map((lesson) => ({

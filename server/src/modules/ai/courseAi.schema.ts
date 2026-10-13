@@ -57,6 +57,8 @@ const text = (description: string) => z.string().trim().min(1).describe(descript
 
 const D = DRAFT_LIMITS;
 
+export const CATEGORY_NAME_MAX = 100;
+
 export const courseDraftModelOutput = z.object({
   subtitle: text(`One-line subtitle of the course, at most ${D.subtitleMax} characters`),
   description: z
@@ -71,6 +73,15 @@ export const courseDraftModelOutput = z.object({
     .array(text(`One concrete outcome starting with a verb, at most ${D.benefitMax} characters`))
     .min(D.benefitsMin)
     .max(SLACK.benefits),
+  // Tên (không phải id) của danh mục có sẵn; bỏ trống/null được phép để model bỏ sót không làm hỏng cả bản nháp.
+  category: z
+    .string()
+    .trim()
+    .max(CATEGORY_NAME_MAX)
+    .nullish()
+    .describe(
+      'Exactly one name copied from the available categories list that fits the course best, or null when none fits',
+    ),
   sections: z
     .array(
       z.object({
@@ -93,11 +104,14 @@ export const courseDraftModelOutput = z.object({
 });
 export type CourseDraftModelOutput = z.infer<typeof courseDraftModelOutput>;
 
-/** Output đã chuẩn hóa = phần nội dung của `AiCourseDraftDto` (cache `COURSE_DRAFT` lưu đúng dạng này). */
+/** Output đã chuẩn hóa (cache `COURSE_DRAFT` lưu đúng dạng này). Khác `AiCourseDraftDto` ở chỗ lưu `category` là TÊN;
+ * service đổi sang `categoryId` hiện hành khi trả response. */
 export const courseDraftOutput = z.object({
   subtitle: z.string().min(1).max(D.subtitleMax),
   description: z.string().min(D.descriptionMin).max(D.descriptionMax),
   benefits: z.array(z.string().min(1).max(D.benefitMax)).min(D.benefitsMin).max(D.benefitsMax),
+  /** Tên danh mục đã đối chiếu với danh sách lúc sinh (đúng chính tả như trong DB), hoặc null. Bắt buộc có khóa. */
+  category: z.string().min(1).max(CATEGORY_NAME_MAX).nullable(),
   sections: z
     .array(
       z.object({

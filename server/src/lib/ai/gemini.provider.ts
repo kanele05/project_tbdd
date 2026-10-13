@@ -206,6 +206,7 @@ export class GeminiProvider implements AiProvider {
         run,
         usage,
         isComplete ? 'ok' : (failure?.kind ?? 'cancelled'),
+        failure?.message,
       );
     }
   }
@@ -217,6 +218,7 @@ export class GeminiProvider implements AiProvider {
     const run = startRun(this.options.timeoutMs, request.signal);
     let usage: AiUsage | undefined;
     let outcome = 'ok';
+    let reason: string | undefined;
     try {
       const response = await this.requireClient().models.generateContent(
         this.params(request, run.signal, config),
@@ -229,10 +231,11 @@ export class GeminiProvider implements AiProvider {
     } catch (err) {
       const mapped = mapGeminiError(err, run.state());
       outcome = mapped.kind;
+      reason = mapped.message;
       throw mapped;
     } finally {
       run.cancel();
-      this.log(request.label, 'generate', run, usage, outcome);
+      this.log(request.label, 'generate', run, usage, outcome, reason);
     }
   }
 
@@ -265,13 +268,17 @@ export class GeminiProvider implements AiProvider {
     return this.client;
   }
 
-  /** Log thời gian + token; tuyệt đối không log nội dung prompt/câu trả lời hay API key. */
+  /**
+   * Log thời gian + token; tuyệt đối không log nội dung prompt/câu trả lời hay API key.
+   * `reason` = message của `AiProviderError` (vd "Gemini request failed (HTTP 503)") - không chứa nội dung người dùng.
+   */
   private log(
     label: string,
     op: 'generate' | 'stream',
     run: Run,
     usage: AiUsage | undefined,
     outcome: string,
+    reason?: string,
   ): void {
     const ai = {
       provider: 'gemini',
@@ -285,6 +292,6 @@ export class GeminiProvider implements AiProvider {
       totalTokens: usage?.totalTokens,
     };
     if (outcome === 'ok') logger.info({ ai }, 'AI request');
-    else logger.warn({ ai }, 'AI request did not complete');
+    else logger.warn({ ai: { ...ai, reason } }, 'AI request did not complete');
   }
 }

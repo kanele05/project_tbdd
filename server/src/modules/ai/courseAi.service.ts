@@ -5,13 +5,14 @@
  */
 import { AiProviderError, getAiProvider } from '@/lib/ai';
 import type { AiLang } from '@/lib/ai/types';
+import { listCategories } from '@/modules/category/category.service';
 import type { AiCourseDraftDto, AiCourseReviewDto } from '@/types/teacherAdminDto';
 
 import { getOrCreateAiContent } from './ai.cache';
 import { runAi } from './ai.service';
 import { loadReviewMaterial } from './courseAi.material';
 import { mockCourseDraft, mockCourseReview } from './courseAi.mock';
-import { normalizeDraft, normalizeReview } from './courseAi.normalize';
+import { findCategoryByName, normalizeDraft, normalizeReview } from './courseAi.normalize';
 import {
   buildCourseDraftPrompt,
   buildCourseReviewPrompt,
@@ -35,6 +36,9 @@ export async function createCourseDraft(
   input: Pick<DraftBody, 'topic' | 'level'> & { lang: AiLang },
 ): Promise<AiCourseDraftDto> {
   const { topic, level, lang } = input;
+  // Danh mục hiện có (cache server 60 s): vào prompt để model chọn tên, và đổi tên đã cache -> id hiện hành bên dưới.
+  const categories = await listCategories();
+  const categoryNames = categories.map((category) => category.name);
   const result = await getOrCreateAiContent<CourseDraftOutput>({
     kind: 'COURSE_DRAFT',
     refId: draftCacheRefId(topic, level),
@@ -42,27 +46,33 @@ export async function createCourseDraft(
     schema: courseDraftOutput,
     generate: () =>
       runAi(userId, 'general', async () => {
-        const { system, prompt } = buildCourseDraftPrompt(topic, level, lang);
+        const { system, prompt } = buildCourseDraftPrompt(topic, level, lang, categoryNames);
         const generated = await getAiProvider().generateJson({
           label: 'course_draft',
           system,
           prompt,
           schema: courseDraftModelOutput,
-          mock: () => mockCourseDraft(topic, level, lang),
+          mock: () => mockCourseDraft(topic, level, lang, categoryNames),
         });
         // Cắt về đúng giới hạn DTO; vẫn sai (hiếm) thì coi như model trả sai -> 503, hoàn lượt, không cache.
-        const checked = courseDraftOutput.safeParse(normalizeDraft(generated.data));
+        const checked = courseDraftOutput.safeParse(normalizeDraft(generated.data, categoryNames));
         if (!checked.success) {
           throw new AiProviderError('bad_output', 'Course draft does not fit the DTO limits');
         }
         return { data: checked.data, model: generated.model };
       }),
   });
+  // Bản cache lưu TÊN danh mục; đối chiếu lại với danh sách hiện tại để danh mục đã xóa/đổi tên trả về null.
+  const { category, ...content } = result.data;
   return {
     topic,
     level,
     lang,
-    ...result.data,
+    subtitle: content.subtitle,
+    description: content.description,
+    benefits: content.benefits,
+    categoryId: findCategoryByName(category, categories)?.id ?? null,
+    sections: content.sections,
     model: result.model,
     generatedAt: result.generatedAt.toISOString(),
   };

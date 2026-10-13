@@ -57,9 +57,18 @@ export function normalizeTopic(topic: string): string {
   return topic.normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
-/** `refId` cache `COURSE_DRAFT` = hash(chủ đề chuẩn hóa | level | phiên bản prompt); `lang` nằm ở cột riêng. */
+/**
+ * Phiên bản riêng của cache bản nháp: các hàng `COURSE_DRAFT` cũ chưa có danh mục gợi ý. Đưa hậu tố này vào hash
+ * thì khóa cũ không bao giờ trùng nữa -> lần sau sinh lại (có danh mục) thay vì phục vụ bản thiếu danh mục mãi mãi.
+ * Không dùng `COURSE_AI_PROMPT_VERSION` vì nó cũng làm mất cache của AI kiểm duyệt (không liên quan).
+ */
+export const DRAFT_CACHE_VERSION = 'category-v1';
+
+/** `refId` cache `COURSE_DRAFT` = hash(phiên bản prompt | phiên bản bản nháp | chủ đề chuẩn hóa | level); `lang` ở cột riêng. */
 export function draftCacheRefId(topic: string, level: string): string {
-  return sha256(`${COURSE_AI_PROMPT_VERSION}|${normalizeTopic(topic)}|${level}`);
+  return sha256(
+    `${COURSE_AI_PROMPT_VERSION}|${DRAFT_CACHE_VERSION}|${normalizeTopic(topic)}|${level}`,
+  );
 }
 
 /** Hash nội dung đang duyệt: đổi bất kỳ chữ nào AI nhìn thấy thì hash đổi và bản review được sinh lại. */
@@ -91,8 +100,10 @@ export function buildCourseDraftPrompt(
   topic: string,
   level: keyof typeof LEVEL_TEXT,
   lang: AiLang,
+  categoryNames: readonly string[] = [],
 ): PromptParts {
   const L = DRAFT_LIMITS;
+  const names = categoryNames.map((name) => sanitizeCourseText(name, 100, { oneLine: true }));
   return {
     system: [
       'You are an experienced instructional designer who helps teachers outline new courses for an online learning app.',
@@ -111,6 +122,13 @@ export function buildCourseDraftPrompt(
       `- description: ${L.descriptionMin}-${L.descriptionMax} characters in plain text: who the course is for, what it covers and how it is taught.`,
       `- benefits: ${L.benefitsMin}-${L.benefitsMax} concrete outcomes, each starting with a verb, at most ${L.benefitMax} characters.`,
       `- sections: ${L.sectionsMin}-${L.sectionsMax} sections in a logical learning order, each with ${L.lessonsMin}-${L.lessonsMax} lessons; every lesson has a short title and a one-sentence summary.`,
+      ...(names.length > 0
+        ? [
+            '- category: choose exactly one name from the list below that fits the course best, copied exactly as written (do not translate or invent names), or null when none fits.',
+            'Available categories:',
+            ...names.map((name) => `* ${name}`),
+          ]
+        : []),
       'Plan a realistic amount of content for a short video course. Do not promise jobs, income, certificates or guaranteed results, and do not invent facts about the teacher.',
     ].join('\n'),
   };

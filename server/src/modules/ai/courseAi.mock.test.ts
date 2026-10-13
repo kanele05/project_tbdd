@@ -66,6 +66,18 @@ describe('mockCourseDraft', () => {
     expect(en.sections[0]?.title).toContain('Getting started');
   });
 
+  it('suggests a category from the given list, never one outside it', () => {
+    const names = ['Business', 'Design', 'Code', 'Language'];
+    const category = (topic: string, list: string[] = names) =>
+      mockCourseDraft(topic, 'beginner', 'en', list).category;
+    expect(category('Learn Python')).toBe('Code'); // khớp từ khóa chủ đề
+    expect(category('Advanced Design systems')).toBe('Design'); // tên danh mục nằm trong chủ đề
+    expect(category('Underwater basket weaving')).toBe('Business'); // không khớp -> danh mục đầu tiên
+    expect(category('Learn Python', [])).toBeNull(); // chưa có danh mục nào
+    expect(category('Learn Python', ['Business', 'Language'])).toBe('Business');
+    expect(mockCourseDraft('Python', 'beginner', 'en').category).toBeNull(); // không truyền danh sách
+  });
+
   it('stays within DTO limits even for a 200 character topic', () => {
     const draft = normalizeDraft(mockCourseDraft('T'.repeat(200), 'advanced', 'vi'));
     expect(courseDraftOutput.safeParse(draft).success).toBe(true);

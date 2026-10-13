@@ -1,6 +1,6 @@
 import { toGeminiJsonSchema } from '@/lib/ai/json';
 
-import { clip, normalizeDraft, normalizeReview } from './courseAi.normalize';
+import { clip, findCategoryByName, normalizeDraft, normalizeReview } from './courseAi.normalize';
 import {
   type CourseDraftModelOutput,
   courseDraftModelOutput,
@@ -16,6 +16,26 @@ describe('clip', () => {
     const out = clip('a'.repeat(50), 10);
     expect(out).toHaveLength(10);
     expect(out.endsWith('…')).toBe(true);
+  });
+});
+
+describe('findCategoryByName', () => {
+  const categories = [
+    { id: 'a', name: 'Design' },
+    { id: 'b', name: 'Code' },
+  ];
+
+  it('matches case-insensitively and ignores surrounding spaces', () => {
+    expect(findCategoryByName('  cOdE ', categories)?.id).toBe('b');
+    expect(findCategoryByName('Design', categories)?.id).toBe('a');
+  });
+
+  it('returns null for unknown, empty or missing names', () => {
+    expect(findCategoryByName('Cooking', categories)).toBeNull();
+    expect(findCategoryByName('  ', categories)).toBeNull();
+    expect(findCategoryByName(null, categories)).toBeNull();
+    expect(findCategoryByName(undefined, categories)).toBeNull();
+    expect(findCategoryByName('Code', [])).toBeNull();
   });
 });
 
@@ -35,6 +55,21 @@ describe('normalizeDraft', () => {
     expect(out.sections).toHaveLength(6);
     expect(out.sections.every((s) => s.lessons.length === 5)).toBe(true);
     expect(courseDraftOutput.safeParse(out).success).toBe(true);
+  });
+
+  it('keeps the canonical spelling of a known category and drops an unknown one', () => {
+    const names = ['Business', 'Code'];
+    expect(normalizeDraft({ ...raw, category: ' code ' }, names).category).toBe('Code');
+    expect(normalizeDraft({ ...raw, category: 'Cooking' }, names).category).toBeNull();
+    expect(normalizeDraft({ ...raw, category: null }, names).category).toBeNull();
+    expect(normalizeDraft(raw, names).category).toBeNull(); // model bỏ sót trường
+    expect(normalizeDraft({ ...raw, category: 'Code' }).category).toBeNull(); // không có danh mục nào
+    expect(courseDraftOutput.safeParse(normalizeDraft(raw, names)).success).toBe(true);
+  });
+
+  it('rejects a cached draft that has no category key (old cache shape)', () => {
+    const { category: _category, ...legacy } = normalizeDraft(raw);
+    expect(courseDraftOutput.safeParse(legacy).success).toBe(false);
   });
 });
 
@@ -98,6 +133,14 @@ describe('model output schemas', () => {
     const draft = JSON.stringify(toGeminiJsonSchema(courseDraftModelOutput));
     expect(draft).toContain('"sections"');
     expect(draft).toContain('"minItems":3');
+    // `category` có trong schema gửi Gemini nhưng không bắt buộc (nullable + optional).
+    const parsed = JSON.parse(draft) as {
+      required: string[];
+      properties: { category: { anyOf: { type: string }[] } };
+    };
+    expect(parsed.required).not.toContain('category');
+    expect(parsed.properties.category.anyOf.map((s) => s.type).sort()).toEqual(['null', 'string']);
+    expect(courseDraftModelOutput.shape.category.safeParse(undefined).success).toBe(true);
     expect(draft).not.toContain('minLength');
     const review = JSON.stringify(toGeminiJsonSchema(courseReviewModelOutput));
     expect(review).toContain('"LOOKS_OK"');

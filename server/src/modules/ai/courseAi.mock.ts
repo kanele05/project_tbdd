@@ -338,7 +338,46 @@ const LEVEL_LABEL: Record<Level, { en: string; vi: string }> = {
   advanced: { en: 'experienced learners', vi: 'người đã có kinh nghiệm' },
 };
 
-export function mockCourseDraft(topic: string, level: Level, lang: AiLang): CourseDraftModelOutput {
+/** Từ khóa chủ đề -> từ khóa tên danh mục (khi tên danh mục không xuất hiện trực tiếp trong chủ đề). */
+const CATEGORY_HINTS: readonly (readonly [topic: RegExp, category: RegExp])[] = [
+  [
+    /python|java|react|node|code|coding|program|web|app|sql|data|lập trình|phần mềm/i,
+    /code|program|tech|develop|lập trình/i,
+  ],
+  [/design|ux|ui|figma|photoshop|thiết kế|đồ họa/i, /design|art|thiết kế/i],
+  [
+    /business|marketing|sales|finance|startup|kinh doanh|tài chính/i,
+    /business|market|finance|kinh doanh/i,
+  ],
+  [/writing|essay|novel|copywrit|viết/i, /writ|viết/i],
+  [/english|spanish|french|japanese|korean|language|ngôn ngữ|tiếng/i, /language|ngôn ngữ|tiếng/i],
+  [/movie|film|video|photo|phim|quay/i, /movie|film|video|phim/i],
+];
+
+/**
+ * Danh mục giả: tên danh mục xuất hiện trong chủ đề -> khớp từ khóa chủ đề -> danh mục đầu tiên; danh sách rỗng -> null.
+ * (Chỉ để demo/test; Gemini thật tự chọn theo nội dung.)
+ */
+export function mockCategoryName(topic: string, categoryNames: readonly string[]): string | null {
+  const lowerTopic = topic.toLowerCase();
+  const byName = categoryNames.find(
+    (name) => name.trim() && lowerTopic.includes(name.trim().toLowerCase()),
+  );
+  if (byName) return byName;
+  for (const [topicPattern, categoryPattern] of CATEGORY_HINTS) {
+    if (!topicPattern.test(topic)) continue;
+    const match = categoryNames.find((name) => categoryPattern.test(name));
+    if (match) return match;
+  }
+  return categoryNames[0] ?? null;
+}
+
+export function mockCourseDraft(
+  topic: string,
+  level: Level,
+  lang: AiLang,
+  categoryNames: readonly string[] = [],
+): CourseDraftModelOutput {
   const plans = {
     beginner: beginnerPlan,
     intermediate: intermediatePlan,
@@ -380,6 +419,7 @@ export function mockCourseDraft(topic: string, level: Level, lang: AiLang): Cour
         'Hoàn thành một dự án có thể giới thiệu với người khác',
       ),
     ],
+    category: mockCategoryName(topic, categoryNames),
     sections: plans[level](topic, lang),
   };
 }

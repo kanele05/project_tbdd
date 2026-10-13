@@ -9,7 +9,10 @@ import type { IdParams, LangQuery } from './ai.schema';
 import type { DraftBody } from './courseAi.schema';
 import * as courseAiService from './courseAi.service';
 
-/** `POST /teacher/ai/course-draft` - `lang` trong body, thiếu thì `Accept-Language`, mặc định `en`. */
+/**
+ * `POST /teacher/ai/course-draft` - `lang` trong body, thiếu thì `Accept-Language`, mặc định `en`.
+ * Trả thêm `categoryId` (danh mục có sẵn hợp nhất với chủ đề, hoặc `null`).
+ */
 export async function courseDraft(req: Request, res: Response): Promise<void> {
   const { topic, level, lang } = req.body as DraftBody;
   ok(

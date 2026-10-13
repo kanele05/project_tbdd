@@ -1,11 +1,20 @@
+import { createHash } from 'node:crypto';
+
 import { aiGlobalQuota, aiQuota, aiUserDailyQuota, setAiProviderForTests } from '@/lib/ai';
 import { AiProviderError } from '@/lib/ai/errors';
 import { MockProvider } from '@/lib/ai/mock.provider';
 import type { AiJsonRequest, AiProvider } from '@/lib/ai/types';
+import { cache } from '@/lib/cache';
 import { prisma } from '@/lib/prisma';
+import { COURSE_AI_PROMPT_VERSION, normalizeTopic } from '@/modules/ai/courseAi.prompts';
 
 import { authHeader } from '../helpers/authHelper';
-import { createCourseWithLessons, createTeacher, createUser } from '../helpers/factories';
+import {
+  createCategory,
+  createCourseWithLessons,
+  createTeacher,
+  createUser,
+} from '../helpers/factories';
 import { resetDb } from '../helpers/resetDb';
 import { API, createTestApi } from '../helpers/testApp';
 
@@ -163,6 +172,167 @@ describe('POST /teacher/ai/course-draft', () => {
     expect(await countContent('COURSE_DRAFT')).toBe(1);
     // Server không ghi gì vào khóa học.
     expect(await prisma.course.count()).toBe(0);
+  });
+
+  it('suggests an existing category as categoryId (and never leaks the cached name)', async () => {
+    const { teacher } = await setupUsers();
+    await createCategory({ name: 'Design', order: 1 });
+    const code = await createCategory({ name: 'Code', order: 2 });
+    const { requests } = spyProvider();
+    const res = await api
+      .post(DRAFT_URL)
+      .set(authHeader(teacher))
+      .send({ topic: 'Learn Python', level: 'beginner', lang: 'en' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.categoryId).toBe(code.id);
+    expect(res.body.data).not.toHaveProperty('category');
+    const keys = Object.keys(res.body.data);
+    expect(keys.indexOf('categoryId')).toBe(keys.indexOf('benefits') + 1);
+    // Prompt chứa TÊN danh mục (không phải id); cache lưu tên.
+    expect(requests[0]?.prompt).toContain('* Design');
+    expect(requests[0]?.prompt).toContain('* Code');
+    expect(requests[0]?.prompt).not.toContain(code.id);
+    const row = await prisma.aiContent.findFirstOrThrow({ where: { kind: 'COURSE_DRAFT' } });
+    expect(row.content).toMatchObject({ category: 'Code' });
+  });
+
+  it('returns categoryId null when there are no categories', async () => {
+    const { teacher } = await setupUsers();
+    const res = await api
+      .post(DRAFT_URL)
+      .set(authHeader(teacher))
+      .send({ topic: 'Learn Python', level: 'beginner', lang: 'en' });
+    expect(res.status).toBe(200);
+    expect(res.body.data.categoryId).toBeNull();
+  });
+
+  describe('category returned by the model', () => {
+    const draftWith = (extra: Record<string, unknown>) => ({
+      subtitle: 'Subtitle',
+      description: 'd'.repeat(150),
+      benefits: ['Build apps', 'Learn basics', 'Ship a project'],
+      sections: Array.from({ length: 3 }, (_, i) => ({
+        title: `Section ${i}`,
+        lessons: [
+          { title: 'L1', summary: 'One' },
+          { title: 'L2', summary: 'Two' },
+        ],
+      })),
+      ...extra,
+    });
+    const post = (teacher: { id: string }) =>
+      api
+        .post(DRAFT_URL)
+        .set(authHeader(teacher))
+        .send({ topic: 'Learn Python', level: 'beginner', lang: 'en' });
+    const modelAnswers = (extra: Record<string, unknown>) =>
+      spyProvider({
+        generateJson: <T>() =>
+          Promise.resolve({ model: 'gemini-test', data: draftWith(extra) as T }),
+      });
+
+    it('maps the name to an id case-insensitively', async () => {
+      const { teacher } = await setupUsers();
+      const design = await createCategory({ name: 'Design' });
+      modelAnswers({ category: '  dEsIgN ' });
+      const res = await post(teacher);
+      expect(res.status).toBe(200);
+      expect(res.body.data.categoryId).toBe(design.id);
+    });
+
+    it.each([
+      ['an unknown name', { category: 'Cooking' }],
+      ['an empty name', { category: '' }],
+      ['null', { category: null }],
+      ['no category at all', {}],
+    ])('gives categoryId null for %s', async (_label, extra) => {
+      const { teacher } = await setupUsers();
+      await createCategory({ name: 'Design' });
+      modelAnswers(extra);
+      const res = await post(teacher);
+      expect(res.status).toBe(200);
+      expect(res.body.data.categoryId).toBeNull();
+    });
+  });
+
+  it('returns null from the cache once the suggested category was deleted', async () => {
+    const { teacher } = await setupUsers();
+    await createCategory({ name: 'Design', order: 1 });
+    const code = await createCategory({ name: 'Code', order: 2 });
+    const { requests } = spyProvider();
+    const post = () =>
+      api
+        .post(DRAFT_URL)
+        .set(authHeader(teacher))
+        .send({ topic: 'Learn Python', level: 'beginner', lang: 'en' });
+
+    expect((await post()).body.data.categoryId).toBe(code.id);
+    await prisma.category.delete({ where: { id: code.id } });
+    cache.clear(); // danh sách danh mục được cache 60 s ở server
+
+    const again = await post();
+    expect(again.status).toBe(200);
+    expect(again.body.data.categoryId).toBeNull();
+    expect(requests).toHaveLength(1); // vẫn phục vụ từ cache AI, không gọi lại model
+  });
+
+  it('does not reuse a draft cached before the category suggestion existed', async () => {
+    const { teacher } = await setupUsers();
+    const code = await createCategory({ name: 'Code' });
+    const { requests } = spyProvider();
+    // Hàng cache theo khóa cũ (chưa có danh mục): nếu bị dùng lại thì response thiếu danh mục mãi mãi.
+    const legacyRefId = createHash('sha256')
+      .update(`${COURSE_AI_PROMPT_VERSION}|${normalizeTopic('Learn Python')}|beginner`)
+      .digest('hex');
+    await prisma.aiContent.create({
+      data: {
+        kind: 'COURSE_DRAFT',
+        refId: legacyRefId,
+        lang: 'en',
+        model: 'old-model',
+        content: {
+          subtitle: 'Old subtitle',
+          description: 'o'.repeat(150),
+          benefits: ['a', 'b', 'c'],
+          sections: [],
+        },
+      },
+    });
+
+    const res = await api
+      .post(DRAFT_URL)
+      .set(authHeader(teacher))
+      .send({ topic: 'Learn Python', level: 'beginner', lang: 'en' });
+
+    expect(res.status).toBe(200);
+    expect(requests).toHaveLength(1);
+    expect(res.body.data.subtitle).not.toBe('Old subtitle');
+    expect(res.body.data.categoryId).toBe(code.id);
+    expect(await countContent('COURSE_DRAFT')).toBe(2); // bản cũ nằm yên, bản mới có khóa riêng
+  });
+
+  it('regenerates a row stored under the current key but without the category field', async () => {
+    const { teacher } = await setupUsers();
+    const code = await createCategory({ name: 'Code' });
+    const { requests } = spyProvider();
+    const post = () =>
+      api
+        .post(DRAFT_URL)
+        .set(authHeader(teacher))
+        .send({ topic: 'Learn Python', level: 'beginner', lang: 'en' });
+    expect((await post()).body.data.categoryId).toBe(code.id);
+    const row = await prisma.aiContent.findFirstOrThrow({ where: { kind: 'COURSE_DRAFT' } });
+    const { category: _category, ...legacyContent } = row.content as Record<string, unknown>;
+    await prisma.aiContent.update({
+      where: { id: row.id },
+      data: { content: legacyContent as object },
+    });
+
+    const again = await post();
+    expect(again.status).toBe(200);
+    expect(again.body.data.categoryId).toBe(code.id);
+    expect(requests).toHaveLength(2);
   });
 
   it('answers in Vietnamese and keeps a separate cache entry per language', async () => {
