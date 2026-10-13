@@ -25,6 +25,7 @@ export function createAiProvider(): AiProvider {
     return new GeminiProvider({
       apiKey: env.GEMINI_API_KEY,
       model: env.GEMINI_MODEL,
+      fallbackModel: env.GEMINI_FALLBACK_MODEL,
       timeoutMs: env.AI_TIMEOUT_MS,
     });
   }

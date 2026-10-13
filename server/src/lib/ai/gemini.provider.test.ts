@@ -349,3 +349,116 @@ describe('GeminiProvider.streamText', () => {
     });
   });
 });
+
+describe('GeminiProvider fallback model', () => {
+  function fallbackProvider(client: GeminiClient, timeoutMs = 5_000) {
+    return new GeminiProvider({
+      apiKey: 'test-key-not-real',
+      model: 'primary-model',
+      fallbackModel: 'backup-model',
+      timeoutMs,
+      client,
+    });
+  }
+
+  it('answers with the fallback model when the primary one is overloaded', async () => {
+    const generateContent = jest
+      .fn()
+      .mockRejectedValueOnce(httpError(503))
+      .mockResolvedValueOnce(response('From backup'));
+    const result = await fallbackProvider(makeClient({ generateContent })).generateText({
+      label: 't',
+      prompt: 'p',
+    });
+
+    expect(result).toMatchObject({ text: 'From backup', model: 'backup-model' });
+    expect(generateContent.mock.calls.map(([params]) => params.model)).toEqual([
+      'primary-model',
+      'backup-model',
+    ]);
+  });
+
+  it('gives each model half of the timeout when the primary one hangs', async () => {
+    const generateContent = jest.fn(
+      (params: { model: string; config: { abortSignal: AbortSignal } }) =>
+        params.model === 'primary-model'
+          ? new Promise((_resolve, reject) => {
+              params.config.abortSignal.addEventListener('abort', () =>
+                reject(new Error('aborted')),
+              );
+            })
+          : Promise.resolve(response('Late but fine')),
+    );
+    const startedAt = Date.now();
+    const result = await fallbackProvider(makeClient({ generateContent }), 200).generateText({
+      label: 't',
+      prompt: 'p',
+    });
+
+    expect(result.model).toBe('backup-model');
+    expect(Date.now() - startedAt).toBeLessThan(190);
+  });
+
+  it('keeps the JSON result model in sync with the model that answered', async () => {
+    const generateContent = jest
+      .fn()
+      .mockRejectedValueOnce(httpError(429))
+      .mockResolvedValueOnce(response('{"title":"ok"}'));
+    const result = await fallbackProvider(makeClient({ generateContent })).generateJson({
+      label: 'j',
+      prompt: 'p',
+      schema: z.object({ title: z.string() }),
+      mock: () => ({ title: 'mock' }),
+    });
+    expect(result).toMatchObject({ data: { title: 'ok' }, model: 'backup-model' });
+  });
+
+  it('does not switch models for content problems', async () => {
+    const generateContent = jest
+      .fn()
+      .mockResolvedValue(response(undefined, { promptFeedback: { blockReason: 'SAFETY' } }));
+    await expect(
+      fallbackProvider(makeClient({ generateContent })).generateText({ label: 't', prompt: 'p' }),
+    ).rejects.toMatchObject({ kind: 'blocked' });
+    expect(generateContent).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws the last error when both models fail', async () => {
+    const generateContent = jest.fn().mockRejectedValue(httpError(503));
+    await expect(
+      fallbackProvider(makeClient({ generateContent })).generateText({ label: 't', prompt: 'p' }),
+    ).rejects.toMatchObject({ kind: 'unavailable' });
+    expect(generateContent).toHaveBeenCalledTimes(2);
+  });
+
+  it('streams from the fallback model when the primary one fails before any text', async () => {
+    async function* chunks() {
+      yield response('Backup ');
+      yield response('stream');
+    }
+    const generateContentStream = jest
+      .fn()
+      .mockRejectedValueOnce(httpError(503))
+      .mockResolvedValueOnce(chunks());
+    const provider = fallbackProvider(makeClient({ generateContentStream }));
+
+    expect(await collect(provider.streamText({ label: 's', prompt: 'p' }))).toEqual([
+      'Backup ',
+      'stream',
+    ]);
+    expect(generateContentStream.mock.calls[1]?.[0].model).toBe('backup-model');
+  });
+
+  it('never switches models in the middle of a stream', async () => {
+    async function* chunks() {
+      yield response('partial');
+      throw httpError(503);
+    }
+    const generateContentStream = jest.fn().mockResolvedValue(chunks());
+    const provider = fallbackProvider(makeClient({ generateContentStream }));
+    await expect(collect(provider.streamText({ label: 's', prompt: 'p' }))).rejects.toMatchObject({
+      kind: 'unavailable',
+    });
+    expect(generateContentStream).toHaveBeenCalledTimes(1);
+  });
+});

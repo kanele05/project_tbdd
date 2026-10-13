@@ -36,6 +36,8 @@ const envSchema = z.object({
   // kiểm tra 03/10/2026). Free tier ~500 request/ngày/PROJECT (số do bên thứ ba ghi nhận; Google không công bố, xem trong
   // AI Studio) - nhiều hơn hẳn các model Flash (~20/ngày) nên chọn Flash-Lite. Muốn chất lượng cao hơn: `gemini-3.8-flash`.
   GEMINI_MODEL: z.preprocess(emptyToUndefined, z.string().min(1).default('gemini-3.5-flash-lite')),
+  // Model dự phòng khi model chính quá tải / treo / hết hạn mức. Bỏ trống = không dùng dự phòng.
+  GEMINI_FALLBACK_MODEL: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
   AI_TIMEOUT_MS: z.preprocess(emptyToUndefined, z.coerce.number().int().min(1000).default(45_000)),
   // Rate limit AI theo user (mỗi giờ): chat riêng, các tính năng còn lại dùng chung một bộ đếm.
   AI_CHAT_LIMIT_PER_HOUR: z.preprocess(

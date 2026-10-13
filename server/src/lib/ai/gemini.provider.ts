@@ -28,6 +28,11 @@ export type GeminiProviderOptions = {
   /** Không có key -> mọi lệnh gọi ném `AiProviderError('unavailable')` (503 `AI_UNAVAILABLE`). */
   apiKey?: string;
   model: string;
+  /**
+   * Model dự phòng: model chính quá tải / treo / hết hạn mức (unavailable, timeout, rate_limited) thì thử
+   * model này. Khi có dự phòng, mỗi model được một nửa `timeoutMs` để tổng thời gian chờ không đổi.
+   */
+  fallbackModel?: string;
   /** Tổng thời gian tối đa cho một lệnh gọi (kể cả toàn bộ stream). */
   timeoutMs: number;
   client?: GeminiClient;
@@ -54,6 +59,13 @@ const BLOCKING_FINISH_REASONS = new Set([
 
 /** Số lần thử tối đa khi output JSON sai schema (mỗi lần thử tốn 1 request trong hạn mức free tier). */
 const MAX_JSON_ATTEMPTS = 2;
+
+/** Lỗi phía model (không phải lỗi nội dung hay người dùng hủy) -> đáng thử model dự phòng. */
+const FALLBACK_KINDS = new Set(['unavailable', 'timeout', 'rate_limited']);
+
+export function shouldUseFallback(err: unknown): boolean {
+  return err instanceof AiProviderError && FALLBACK_KINDS.has(err.kind);
+}
 
 /**
  * Ghép lịch sử + câu hỏi hiện tại thành `contents` của Gemini: vai trò assistant -> `model`,
@@ -151,8 +163,8 @@ export class GeminiProvider implements AiProvider {
   }
 
   async generateText(request: AiTextRequest): Promise<AiTextResult> {
-    const { text, usage } = await this.generate(request);
-    return { text, model: this.model, usage };
+    const { text, usage, model } = await this.generate(request);
+    return { text, model, usage };
   }
 
   async generateJson<T>(request: AiJsonRequest<T>): Promise<AiJsonResult<T>> {
@@ -163,8 +175,8 @@ export class GeminiProvider implements AiProvider {
     let lastError: AiProviderError | undefined;
     for (let attempt = 1; attempt <= MAX_JSON_ATTEMPTS; attempt += 1) {
       try {
-        const { text, usage } = await this.generate(request, config);
-        return { data: parseModelJson(text, request.schema), model: this.model, usage };
+        const { text, usage, model } = await this.generate(request, config);
+        return { data: parseModelJson(text, request.schema), model, usage };
       } catch (err) {
         if (!(err instanceof AiProviderError) || err.kind !== 'bad_output') throw err;
         lastError = err;
@@ -174,54 +186,96 @@ export class GeminiProvider implements AiProvider {
     throw lastError ?? new AiProviderError('bad_output', 'Model output is invalid');
   }
 
+  /** Model chính rồi model dự phòng (nếu có), kèm thời gian chờ cho mỗi model. */
+  private attempts(): { models: string[]; timeoutMs: number } {
+    const { fallbackModel, timeoutMs } = this.options;
+    if (!fallbackModel || fallbackModel === this.model) return { models: [this.model], timeoutMs };
+    return { models: [this.model, fallbackModel], timeoutMs: Math.ceil(timeoutMs / 2) };
+  }
+
   async *streamText(request: AiTextRequest): AsyncGenerator<string> {
-    const run = startRun(this.options.timeoutMs, request.signal);
+    const { models, timeoutMs } = this.attempts();
+    for (const [index, model] of models.entries()) {
+      const progress = { emitted: 0 };
+      try {
+        yield* this.streamWith(model, timeoutMs, request, progress);
+        return;
+      } catch (err) {
+        // Đã gửi chữ cho người dùng thì không đổi model giữa chừng.
+        const isLast = index === models.length - 1;
+        if (isLast || progress.emitted > 0 || !shouldUseFallback(err)) throw err;
+      }
+    }
+  }
+
+  private async *streamWith(
+    model: string,
+    timeoutMs: number,
+    request: AiTextRequest,
+    progress: { emitted: number },
+  ): AsyncGenerator<string> {
+    const run = startRun(timeoutMs, request.signal);
     let usage: AiUsage | undefined;
-    let emitted = 0;
     let failure: AiProviderError | undefined;
     let isComplete = false;
     try {
       const stream = await this.requireClient().models.generateContentStream(
-        this.params(request, run.signal),
+        this.params(model, request, run.signal),
       );
       for await (const chunk of stream) {
         assertNotBlocked(chunk);
         usage = readUsage(chunk) ?? usage;
         const text = chunk.text;
         if (text) {
-          emitted += text.length;
+          progress.emitted += text.length;
           yield text;
         }
       }
-      if (emitted === 0) throw new AiProviderError('bad_output', 'Empty response from model');
+      if (progress.emitted === 0)
+        throw new AiProviderError('bad_output', 'Empty response from model');
       isComplete = true;
     } catch (err) {
       failure = mapGeminiError(err, run.state());
       throw failure;
     } finally {
       run.cancel();
-      this.log(
-        request.label,
-        'stream',
-        run,
-        usage,
-        isComplete ? 'ok' : (failure?.kind ?? 'cancelled'),
-        failure?.message,
-      );
+      this.log(model, request.label, 'stream', run, usage, {
+        outcome: isComplete ? 'ok' : (failure?.kind ?? 'cancelled'),
+        reason: failure?.message,
+      });
     }
   }
 
   private async generate(
     request: AiTextRequest | AiJsonRequest<unknown>,
     config: GenerateContentConfig = {},
+  ): Promise<{ text: string; usage?: AiUsage; model: string }> {
+    const { models, timeoutMs } = this.attempts();
+    let lastError: unknown;
+    for (const model of models) {
+      try {
+        return { ...(await this.generateWith(model, timeoutMs, request, config)), model };
+      } catch (err) {
+        if (!shouldUseFallback(err)) throw err;
+        lastError = err;
+      }
+    }
+    throw lastError;
+  }
+
+  private async generateWith(
+    model: string,
+    timeoutMs: number,
+    request: AiTextRequest | AiJsonRequest<unknown>,
+    config: GenerateContentConfig,
   ): Promise<{ text: string; usage?: AiUsage }> {
-    const run = startRun(this.options.timeoutMs, request.signal);
+    const run = startRun(timeoutMs, request.signal);
     let usage: AiUsage | undefined;
     let outcome = 'ok';
     let reason: string | undefined;
     try {
       const response = await this.requireClient().models.generateContent(
-        this.params(request, run.signal, config),
+        this.params(model, request, run.signal, config),
       );
       usage = readUsage(response);
       assertNotBlocked(response);
@@ -235,17 +289,18 @@ export class GeminiProvider implements AiProvider {
       throw mapped;
     } finally {
       run.cancel();
-      this.log(request.label, 'generate', run, usage, outcome, reason);
+      this.log(model, request.label, 'generate', run, usage, { outcome, reason });
     }
   }
 
   private params(
+    model: string,
     request: AiTextRequest | AiJsonRequest<unknown>,
     signal: AbortSignal,
     extra: GenerateContentConfig = {},
   ): GenerateContentParameters {
     return {
-      model: this.model,
+      model,
       contents: buildContents(request.history ?? [], request.prompt),
       config: {
         ...(request.system ? { systemInstruction: request.system } : {}),
@@ -273,16 +328,16 @@ export class GeminiProvider implements AiProvider {
    * `reason` = message của `AiProviderError` (vd "Gemini request failed (HTTP 503)") - không chứa nội dung người dùng.
    */
   private log(
+    model: string,
     label: string,
     op: 'generate' | 'stream',
     run: Run,
     usage: AiUsage | undefined,
-    outcome: string,
-    reason?: string,
+    { outcome, reason }: { outcome: string; reason?: string },
   ): void {
     const ai = {
       provider: 'gemini',
-      model: this.model,
+      model,
       label,
       op,
       outcome,
