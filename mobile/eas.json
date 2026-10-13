@@ -23,7 +23,9 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.eliuh.site/api/v1",
-        "EXPO_PUBLIC_TURNSTILE_BASE_URL": "https://app.eliuh.site"
+        "EXPO_PUBLIC_CAPTCHA_PROVIDER": "recaptcha_v2",
+        "EXPO_PUBLIC_RECAPTCHA_SITE_KEY": "6LeOgeUtAAAAAI0rBQtZ-MXl6II_Ah34OpWt5C5w",
+        "EXPO_PUBLIC_RECAPTCHA_BASE_URL": "https://app.eliuh.site"
       }
     },
     "production": {
@@ -34,7 +36,9 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.eliuh.site/api/v1",
-        "EXPO_PUBLIC_TURNSTILE_BASE_URL": "https://app.eliuh.site"
+        "EXPO_PUBLIC_CAPTCHA_PROVIDER": "recaptcha_v2",
+        "EXPO_PUBLIC_RECAPTCHA_SITE_KEY": "6LeOgeUtAAAAAI0rBQtZ-MXl6II_Ah34OpWt5C5w",
+        "EXPO_PUBLIC_RECAPTCHA_BASE_URL": "https://app.eliuh.site"
       }
     }
   },
