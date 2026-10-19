@@ -33,8 +33,10 @@ const WORDMARK_SIZE = 30;
 /**
  * Netflix-style top bar for wide windows (>= 768), signed-in users only. Fixed over the content:
  * transparent with a top-to-bottom dark fade while a page with a hero asks for it
- * (`useDesktopNavStore.isTransparent`), otherwise solid with a hairline. Left: wordmark + links
- * (Home, My courses, Teaching / Admin by role). Right: search, cart, notifications, account menu.
+ * (`useDesktopNavStore.isTransparent`), otherwise solid with a hairline. Three columns on a desktop
+ * window: wordmark on the left, the links (Home, My courses, Teaching / Admin by role) centered on
+ * the bar, and search, cart, notifications and the account menu on the right. On a tablet the links
+ * follow the wordmark (not enough room to center them).
  */
 export function DesktopTopNav() {
   const isVisible = useIsDesktopNavVisible();
@@ -140,7 +142,7 @@ function TopNavBar({ fullName, avatarUrl, role }: TopNavBarProps) {
         />
       ) : null}
       <PageContainer style={styles.bar}>
-        <View style={styles.side} role="navigation" aria-label={t('nav.main')}>
+        <View style={isDesktop ? styles.start : styles.startCompact}>
           <Pressable
             onPress={() => router.navigate('/')}
             accessibilityRole="link"
@@ -150,6 +152,13 @@ function TopNavBar({ fullName, avatarUrl, role }: TopNavBarProps) {
           >
             <Wordmark size={WORDMARK_SIZE} textColor={isTransparent ? 'white' : 'text'} />
           </Pressable>
+        </View>
+        <View
+          style={[styles.links, isDesktop ? styles.linksDesktop : null]}
+          role="navigation"
+          aria-label={t('nav.main')}
+          testID="nav-links"
+        >
           {links.map((link) => (
             <NavLink
               key={link.key}
@@ -161,7 +170,7 @@ function TopNavBar({ fullName, avatarUrl, role }: TopNavBarProps) {
             />
           ))}
         </View>
-        <View style={styles.side}>
+        <View style={styles.end}>
           <NavSearch tone={tone} onOpenChange={handleSearchOpenChange} />
           <NavIconButton
             icon="shopping-cart"
@@ -229,6 +238,18 @@ const useStyles = makeStyles((t) => ({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  side: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-  brand: { marginRight: spacing.xl, justifyContent: 'center', cursor: 'pointer' },
+  // The two outer columns share the free space equally, so the links sit at the exact center.
+  start: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  // Tablet: the icons on the right are wider than the wordmark, so the links follow the wordmark.
+  startCompact: { flexDirection: 'row', alignItems: 'center', marginRight: spacing.xl },
+  end: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: spacing.xs,
+  },
+  links: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  linksDesktop: { gap: spacing.xxl },
+  brand: { justifyContent: 'center', cursor: 'pointer' },
 }));
