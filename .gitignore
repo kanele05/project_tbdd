@@ -65,3 +65,6 @@ AGENTS.md
 deploy/AWS_CLOUD.md
 deploy/GOOGLE_CLOUD.md
 deploy/ORACLE_CLOUD.md
+
+# Ảnh minh chứng kiểm thử (~120 MB): chỉ lưu trên máy, chèn vào báo cáo Word; commit results.md / bugs.md
+docs/04-testing/evidence/**/*.png
