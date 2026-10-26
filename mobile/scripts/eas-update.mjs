@@ -27,7 +27,18 @@ if (!profile || profile.channel !== channel || !message) {
 const isWindows = process.platform === 'win32';
 const quote = (value) => (isWindows ? `"${value.replace(/"/g, '\\"')}"` : value);
 // --clear-cache: Metro's transform cache can keep EXPO_PUBLIC_* values from an earlier bundle.
-const args = ['eas-cli', 'update', '--channel', channel, '--platform', 'android', '--clear-cache'];
+// --environment: required by eas-cli in non-interactive runs; same EAS environment as the build.
+const args = [
+  'eas-cli',
+  'update',
+  '--channel',
+  channel,
+  '--environment',
+  profile.environment ?? channel,
+  '--platform',
+  'android',
+  '--clear-cache',
+];
 const result = spawnSync('npx', [...args, '--message', quote(message)], {
   stdio: 'inherit',
   shell: isWindows,
