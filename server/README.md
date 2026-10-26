@@ -156,6 +156,22 @@ docker compose exec api /opt/tools/node_modules/.bin/tsx scripts/backfillNotific
 
 Quy tắc: luôn dry-run và backup trước; script nằm trong image (`Dockerfile` + `.dockerignore`) nên cần build + deploy image mới (API đã ghi `data.key` cho thông báo mới) trước khi chạy lần đầu. Thông báo mới tạo từ giờ đã có `key` nên không cần chạy lại.
 
+### 5.4 Thay video seed đã chết (`lessons:replace-dead-video`)
+
+Clip seed `download.blender.org/durian/trailer/sintel_trailer-480p.mp4` trả **HTTP 403** từ 10/2026 (45 bài ở production). Script thay mọi bài còn trỏ tới URL đó bằng clip Big Buck Bunny 720p 10 s của test-videos.co.uk (CC-BY): cập nhật `videoUrl` + `durationSec = 10`, tính lại `lessonCount`/`totalDurationSec` của khóa, kéo `positionSec` của tiến độ học về tối đa 10 s. Mặc định **dry-run**, thêm `--apply` mới ghi; **idempotent** (chạy lại: `lessonCount: 0`). Seed (`prisma/seed-data/media.ts`) đã dùng clip mới nên DB seed lại không cần chạy.
+
+**Dev** (từ `server/`): `npm run lessons:replace-dead-video` (dry-run) · `npm run lessons:replace-dead-video -- --apply`.
+
+**Production** (trên VPS, sau khi deploy image có script):
+
+```bash
+# 1) Backup DB trước (deploy/README.md), rồi dry-run:
+docker compose exec api /opt/tools/node_modules/.bin/tsx scripts/replaceLessonVideo.ts
+# 2) Đúng mong đợi (lessonCount, courseCount, progressClamped) thì ghi:
+docker compose exec api /opt/tools/node_modules/.bin/tsx scripts/replaceLessonVideo.ts --apply
+# 3) Chạy lại dry-run: phải báo lessonCount = 0.
+```
+
 ## 6. Cấu trúc
 
 ```

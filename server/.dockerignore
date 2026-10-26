@@ -18,6 +18,7 @@ scripts/*
 !scripts/updateCoursePreviews.ts
 !scripts/setUserRole.ts
 !scripts/backfillNotificationKeys.ts
+!scripts/replaceLessonVideo.ts
 Dockerfile
 .dockerignore
 README.md

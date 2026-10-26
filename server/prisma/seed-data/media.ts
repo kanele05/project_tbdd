@@ -66,7 +66,7 @@ export type Video = { url: string; durationSec: number; name: string };
  * Clip MP4 mẫu công khai (kiểm tra HTTP 200; thời lượng đọc từ atom `mvhd` trong header MP4).
  * `durationSec` = thời lượng thật để logic hoàn thành 90 % (BR-03) đúng.
  * Nguồn: test-videos.co.uk (Big Buck Bunny / Jellyfish / Sintel, Blender Foundation, CC-BY),
- * MDN interactive-examples (CC0), download.blender.org (Sintel trailer, CC-BY).
+ * MDN interactive-examples (CC0).
  */
 export const VIDEOS: readonly Video[] = [
   {
@@ -90,9 +90,10 @@ export const VIDEOS: readonly Video[] = [
     durationSec: 5,
   },
   {
-    name: 'Sintel trailer',
-    url: 'https://download.blender.org/durian/trailer/sintel_trailer-480p.mp4',
-    durationSec: 52,
+    // Thay cho trailer Sintel của download.blender.org (HTTP 403 từ 10/2026).
+    name: 'Big Buck Bunny 720p',
+    url: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4',
+    durationSec: 10,
   },
 ];
 

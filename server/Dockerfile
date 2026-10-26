@@ -69,6 +69,7 @@ COPY --chown=node:node static ./static
 COPY --chown=node:node scripts/updateCoursePreviews.ts ./scripts/updateCoursePreviews.ts
 COPY --chown=node:node scripts/setUserRole.ts ./scripts/setUserRole.ts
 COPY --chown=node:node scripts/backfillNotificationKeys.ts ./scripts/backfillNotificationKeys.ts
+COPY --chown=node:node scripts/replaceLessonVideo.ts ./scripts/replaceLessonVideo.ts
 COPY --chown=node:node --chmod=0755 docker-entrypoint.sh ./docker-entrypoint.sh
 
 USER node
