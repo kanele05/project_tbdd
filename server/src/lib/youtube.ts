@@ -8,10 +8,15 @@ const SHORT_HOST = 'youtu.be';
 const VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
 const MAX_CLIP_SECONDS = 24 * 60 * 60;
 
+// Số giây: `90`, `90s` hoặc dạng link chia sẻ YouTube `1h2m3s` / `1m30s`.
+const DURATION_PATTERN = /^(?:(\d{1,2})h)?(?:(\d{1,4})m)?(?:(\d{1,6})s?)?$/;
+
 function parseSeconds(value: string | null): number | null | undefined {
   if (value === null) return undefined; // không có tham số
-  if (!/^\d{1,6}$/.test(value)) return null; // sai định dạng
-  const seconds = Number(value);
+  const match = DURATION_PATTERN.exec(value);
+  if (!value || !match) return null; // sai định dạng
+  const [, hours = '0', minutes = '0', secs = '0'] = match;
+  const seconds = Number(hours) * 3600 + Number(minutes) * 60 + Number(secs);
   return seconds <= MAX_CLIP_SECONDS ? seconds : null;
 }
 

@@ -17,6 +17,15 @@ describe('normalizeYouTubeUrl', () => {
     );
   });
 
+  it('reads the t= forms of YouTube share links (30s, 1m30s, 1h2m3s)', () => {
+    const base = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+    expect(normalizeYouTubeUrl(`${base}&t=30s`)).toBe(`${base}&start=30`);
+    expect(normalizeYouTubeUrl('https://youtu.be/dQw4w9WgXcQ?t=1m30s')).toBe(`${base}&start=90`);
+    expect(normalizeYouTubeUrl(`${base}&t=1h2m3s`)).toBe(`${base}&start=3723`);
+    expect(normalizeYouTubeUrl(`${base}&t=`)).toBeNull();
+    expect(normalizeYouTubeUrl(`${base}&t=1x`)).toBeNull();
+  });
+
   it('rejects other hosts, bad ids, credentials and end <= start', () => {
     expect(normalizeYouTubeUrl('https://vimeo.com/123')).toBeNull();
     expect(normalizeYouTubeUrl('https://www.youtube.com/watch?v=short')).toBeNull();

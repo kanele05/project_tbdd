@@ -3,11 +3,16 @@ const SHORT_HOST = 'youtu.be';
 const VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
 const MAX_CLIP_SECONDS = 24 * 60 * 60;
 
+/** Seconds as `90`, `90s` or the YouTube share form `1h2m3s` / `1m30s`. */
+const DURATION_PATTERN = /^(?:(\d{1,2})h)?(?:(\d{1,4})m)?(?:(\d{1,6})s?)?$/;
+
 /** `undefined` = parameter absent, `null` = malformed, number = seconds. */
 function parseSeconds(value: string | null): number | null | undefined {
   if (value === null) return undefined;
-  if (!/^\d{1,6}$/.test(value)) return null;
-  const seconds = Number(value);
+  const match = DURATION_PATTERN.exec(value);
+  if (!value || !match) return null;
+  const [, hours = '0', minutes = '0', secs = '0'] = match;
+  const seconds = Number(hours) * 3600 + Number(minutes) * 60 + Number(secs);
   return seconds <= MAX_CLIP_SECONDS ? seconds : null;
 }
 

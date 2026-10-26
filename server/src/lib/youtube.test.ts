@@ -24,6 +24,14 @@ describe('normalizeYouTubeUrl', () => {
     expect(normalizeYouTubeUrl(`${CANONICAL}&start=0`)).toBe(CANONICAL);
   });
 
+  it('reads the t= forms of YouTube share links (30s, 1m30s, 1h2m3s)', () => {
+    expect(normalizeYouTubeUrl(`${CANONICAL}&t=30s`)).toBe(`${CANONICAL}&start=30`);
+    expect(normalizeYouTubeUrl(`https://youtu.be/${ID}?t=1m30s`)).toBe(`${CANONICAL}&start=90`);
+    expect(normalizeYouTubeUrl(`${CANONICAL}&t=1h2m3s`)).toBe(`${CANONICAL}&start=3723`);
+    expect(normalizeYouTubeUrl(`${CANONICAL}&t=`)).toBeNull();
+    expect(normalizeYouTubeUrl(`${CANONICAL}&t=1x`)).toBeNull();
+  });
+
   it('rejects other hosts, bad ids and invalid ranges', () => {
     expect(normalizeYouTubeUrl('https://vimeo.com/123456')).toBeNull();
     expect(normalizeYouTubeUrl('https://evil.com/watch?v=' + ID)).toBeNull();
