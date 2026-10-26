@@ -80,6 +80,16 @@ describe('SubmitProjectScreen', () => {
     expect(screen.getByRole('button', { name: 'Chọn tệp dự án' })).toBeOnTheScreen();
   });
 
+  it('shows the title and the missing-file errors together on an empty form', async () => {
+    await renderScreen();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Submit' }));
+
+    expect(await screen.findByText('Title is required')).toBeOnTheScreen();
+    expect(screen.getByText('Choose a file to upload')).toBeOnTheScreen();
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
   it('requires a project file', async () => {
     await renderScreen();
     await fireEvent.changeText(screen.getByLabelText('Title'), 'My project');

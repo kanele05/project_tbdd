@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { useTranslation } from '@/i18n';
 import { makeStyles, spacing } from '@/theme';
 import type { AdminUserDto, Role } from '@/types/api';
-import { formatRelativeTime } from '@/utils/formatRelativeTime';
+import { formatRelativeTimeInline } from '@/utils/formatRelativeTime';
 
 const ROLE_TONE: Record<Role, BadgeTone> = {
   STUDENT: 'primary',
@@ -56,7 +56,7 @@ function UserTableRowBase({
     user.role === 'TEACHER'
       ? t('users.courseCount', { count: user.courseCount })
       : t('users.enrollmentCount', { count: user.enrollmentCount });
-  const joined = t('users.joined', { when: formatRelativeTime(user.createdAt) });
+  const joined = t('users.joined', { when: formatRelativeTimeInline(user.createdAt) });
   return (
     <TableRow isLast={isLast} testID={`user-row-${user.id}`}>
       <TableCell column={columns.user}>

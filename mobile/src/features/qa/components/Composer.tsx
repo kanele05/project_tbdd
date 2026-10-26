@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
 import { Avatar } from '@/components/ui/Avatar';
+import { noWebFocusOutline } from '@/components/ui/inputStyles';
 import { useTranslation } from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
 import { fontFamily, layout, makeStyles, radius, spacing, typography, useTheme } from '@/theme';
@@ -149,6 +150,8 @@ const useStyles = makeStyles((t) => ({
     fontFamily: fontFamily.body,
     fontSize: typography.body.fontSize,
     lineHeight: typography.body.lineHeight,
+    // Web: the pill border (`inputFocused`) is the focus state, not the browser's rectangle.
+    ...noWebFocusOutline,
   },
   send: {
     width: SEND_SIZE,

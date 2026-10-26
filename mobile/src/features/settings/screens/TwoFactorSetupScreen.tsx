@@ -1,5 +1,4 @@
 import * as Clipboard from 'expo-clipboard';
-import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,11 +11,16 @@ import { getAuthErrorMessage } from '@/features/auth/authErrors';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, radius, spacing } from '@/theme';
+import { goBackOr } from '@/utils/navigation';
 
 import { TwoFactorSetupDesktop } from '../components/desktop/TwoFactorSetupDesktop';
 import { RecoveryCodesView } from '../components/RecoveryCodesView';
 import { ConfirmStep, QR_SIZE, ScanStep } from '../components/TwoFactorSetupSteps';
 import { useEnableTwoFactor, useSetupTwoFactor } from '../hooks';
+
+function leaveSetup(): void {
+  goBackOr('/settings/security');
+}
 
 /**
  * AUTH-09 two-step verification setup: ask the server for a secret, show it as a QR code (and as
@@ -93,7 +97,7 @@ export function TwoFactorSetupScreen() {
         scanStep={scanStep}
         confirmStep={confirmStep}
         recoveryCodes={recoveryCodes}
-        onSaved={() => router.back()}
+        onSaved={leaveSetup}
       />
     );
   }
@@ -103,7 +107,7 @@ export function TwoFactorSetupScreen() {
       <View style={styles.screen}>
         <CinematicHeader title={t('security.recovery.title')} posterIndex={4} showBack={false} />
         <ScrollView contentContainerStyle={contentStyle} showsVerticalScrollIndicator={false}>
-          <RecoveryCodesView codes={recoveryCodes} onSaved={() => router.back()} />
+          <RecoveryCodesView codes={recoveryCodes} onSaved={leaveSetup} />
         </ScrollView>
       </View>
     );

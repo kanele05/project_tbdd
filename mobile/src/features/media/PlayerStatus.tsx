@@ -47,13 +47,16 @@ export function PlayerStatus({ kind, label, retryLabel, onRetry, testID }: Playe
         {label}
       </AppText>
       {onRetry && retryLabel ? (
-        <Button
-          title={retryLabel}
-          variant="primary"
-          size="sm"
-          leftIcon="refresh-cw"
-          onPress={onRetry}
-        />
+        // `Button` aligns itself to the start; this wrapper centers it under the message.
+        <View style={styles.action} testID={testID ? `${testID}-action` : undefined}>
+          <Button
+            title={retryLabel}
+            variant="primary"
+            size="sm"
+            leftIcon="refresh-cw"
+            onPress={onRetry}
+          />
+        </View>
       ) : null}
     </ScrollView>
   );
@@ -68,4 +71,5 @@ const useStyles = makeStyles(() => ({
     gap: spacing.sm,
     padding: spacing.md,
   },
+  action: { alignSelf: 'center', alignItems: 'center' },
 }));

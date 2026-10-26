@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { useWindowDimensions } from 'react-native';
+import { FlatList, useWindowDimensions } from 'react-native';
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { AppError } from '@/lib/appError';
@@ -302,10 +302,45 @@ describe('QuestionDetailScreen', () => {
     await renderScreen();
 
     await fireEvent.press(screen.getByTestId('pin-a2'));
-    expect(mockPinAnswer).toHaveBeenLastCalledWith({ answerId: 'a2', isPinned: false });
+    expect(mockPinAnswer).toHaveBeenLastCalledWith(
+      { answerId: 'a2', isPinned: false },
+      expect.anything(),
+    );
 
     await fireEvent.press(screen.getByTestId('pin-a1'));
-    expect(mockPinAnswer).toHaveBeenLastCalledWith({ answerId: 'a1', isPinned: true });
+    expect(mockPinAnswer).toHaveBeenLastCalledWith(
+      { answerId: 'a1', isPinned: true },
+      expect.anything(),
+    );
+  });
+
+  it('scrolls to the top once the pinned reply is first, but not after unpinning', async () => {
+    const scrollToOffset = jest.spyOn(FlatList.prototype, 'scrollToOffset');
+    mockIsOwner = true;
+    mockAnswers = listState([{ ...makeAnswer('a1'), isPinned: true }, makeAnswer('a2')]);
+    const view = await renderScreen();
+    const rerender = () =>
+      view.rerender(
+        <ToastProvider>
+          <QuestionDetailScreen questionId="q1" courseId="course-1" />
+        </ToastProvider>,
+      );
+
+    await fireEvent.press(screen.getByTestId('pin-a2'));
+    const pinOptions = mockPinAnswer.mock.calls[0][1] as { onSuccess: () => void };
+    pinOptions.onSuccess();
+    // The refetch has not reordered the list yet: scrolling now would stop half-way.
+    expect(scrollToOffset).not.toHaveBeenCalled();
+    mockAnswers = listState([{ ...makeAnswer('a2'), isPinned: true }, makeAnswer('a1')]);
+    await rerender();
+    expect(scrollToOffset).toHaveBeenCalledWith({ offset: 0, animated: true });
+
+    scrollToOffset.mockClear();
+    await fireEvent.press(screen.getByTestId('pin-a1'));
+    const unpinOptions = mockPinAnswer.mock.calls[1][1] as { onSuccess: () => void };
+    unpinOptions.onSuccess();
+    expect(scrollToOffset).not.toHaveBeenCalled();
+    scrollToOffset.mockRestore();
   });
 
   it('centers the question in a readable 800 dp column on a PC window', async () => {

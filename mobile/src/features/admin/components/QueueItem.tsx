@@ -8,7 +8,7 @@ import { useTranslation } from '@/i18n';
 import { layout, makeStyles, radius, spacing } from '@/theme';
 import type { AdminCourseQueueItemDto } from '@/types/api';
 import { formatPriceOrFree } from '@/utils/formatPrice';
-import { formatRelativeTime } from '@/utils/formatRelativeTime';
+import { formatRelativeTimeInline } from '@/utils/formatRelativeTime';
 
 import { isRevisionItem } from '../adminMeta';
 import { CourseStatusBadge } from './CourseStatusBadge';
@@ -24,7 +24,7 @@ function QueueItemBase({ item, onPress }: QueueItemProps) {
   const styles = useStyles();
   const isRevision = isRevisionItem(item);
   const when = item.submittedAt
-    ? t('queue.submitted', { when: formatRelativeTime(item.submittedAt) })
+    ? t('queue.submitted', { when: formatRelativeTimeInline(item.submittedAt) })
     : t('queue.notSubmitted');
   const typeLabel = isRevision ? t('queue.typeBadge.REVISION') : t('queue.typeBadge.COURSE');
   const statusLabel = item.revisionStatus

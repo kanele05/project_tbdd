@@ -36,7 +36,7 @@ function openWriteReview(courseId: string): void {
 }
 
 /**
- * SC-09 "Reviews" tab: "★ 4.5/5 (1,233+ reviews)" + View all, star filter chips, the first
+ * SC-09 "Reviews" tab: "★ 4.5/5 (1,233 reviews)" + View all, star filter chips, the first
  * reviews, and "Write a review" for enrolled users (FR-10, FR-11).
  */
 export function CourseReviewsTab({ courseId, canWriteReview }: CourseReviewsTabProps) {

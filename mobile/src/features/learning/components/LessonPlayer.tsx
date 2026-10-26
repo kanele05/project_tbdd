@@ -1,7 +1,7 @@
 import { useEventListener } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { PlayerStage } from '@/features/media/PlayerStage';
 import { PlayerStatus } from '@/features/media/PlayerStatus';
@@ -128,7 +128,7 @@ function Mp4LessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
     <PlayerStage maxHeight={maxHeight}>
       <VideoView
         player={player}
-        style={StyleSheet.absoluteFill}
+        style={getVideoViewStyle(hasError)}
         nativeControls
         fullscreenOptions={{ enable: true }}
         contentFit="contain"
@@ -149,6 +149,20 @@ function Mp4LessonPlayer({ lesson, courseId, onEnded }: LessonPlayerProps) {
       ) : null}
     </PlayerStage>
   );
+}
+
+/**
+ * Frame-filling style of the `VideoView`. On the web the `<video>` element is a replaced element:
+ * `absoluteFill` alone leaves it at its intrinsic size (640x360 for a 360p file, 300x150 without a
+ * source), so the width and height are explicit. While the load failed the broken element is hidden
+ * (and inert) so its native controls do not show through the error overlay.
+ */
+export function getVideoViewStyle(hasError: boolean): StyleProp<ViewStyle> {
+  return [
+    StyleSheet.absoluteFill,
+    { width: '100%', height: '100%' },
+    hasError ? { opacity: 0, pointerEvents: 'none' } : null,
+  ];
 }
 
 /** The YouTube slot is the 16:9 frame (loading/error inside it) plus the attribution row. */

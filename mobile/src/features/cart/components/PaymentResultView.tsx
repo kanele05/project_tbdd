@@ -10,13 +10,21 @@ export type PaymentSuccessViewProps = {
   courseCount: number;
   onStartLearning: () => void;
   onGoToMyCourses: () => void;
-  /** Overrides the full-screen centring (the PC page puts the view inside a card). */
+  /**
+   * `true` when the view sits inside a card (PC page): it sizes to its content instead of filling
+   * the screen. `flex: 1` inside an auto-height parent collapses to 0 on the web and the content
+   * then overflows the card (BUG-DISC-03).
+   */
+  isEmbedded?: boolean;
+  /** Extra style, e.g. the card's own padding. */
   style?: StyleProp<ViewStyle>;
 };
 
 export type PaymentFailedViewProps = {
   onTryAgain: () => void;
   onBackToCart: () => void;
+  /** See `PaymentSuccessViewProps.isEmbedded`. */
+  isEmbedded?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -25,13 +33,17 @@ export function PaymentSuccessView({
   courseCount,
   onStartLearning,
   onGoToMyCourses,
+  isEmbedded = false,
   style,
 }: PaymentSuccessViewProps) {
   const { t } = useTranslation('cart');
   const { colors } = useTheme();
   const themed = useStyles();
   return (
-    <View style={[styles.container, style]} testID="payment-success">
+    <View
+      style={[styles.container, !isEmbedded && styles.fullScreen, style]}
+      testID="payment-success"
+    >
       <View style={[styles.iconWrap, themed.successBg]}>
         <Feather name="check" size={40} color={colors.primaryText} />
       </View>
@@ -57,12 +69,21 @@ export function PaymentSuccessView({
 }
 
 /** Result screen of a failed payment (402 `PAYMENT_FAILED`): the cart is untouched. */
-export function PaymentFailedView({ onTryAgain, onBackToCart, style }: PaymentFailedViewProps) {
+export function PaymentFailedView({
+  onTryAgain,
+  onBackToCart,
+  isEmbedded = false,
+  style,
+}: PaymentFailedViewProps) {
   const { t } = useTranslation('cart');
   const { colors } = useTheme();
   const themed = useStyles();
   return (
-    <View style={[styles.container, style]} testID="payment-failed" accessibilityRole="alert">
+    <View
+      style={[styles.container, !isEmbedded && styles.fullScreen, style]}
+      testID="payment-failed"
+      accessibilityRole="alert"
+    >
       <View style={[styles.iconWrap, themed.failedBg]}>
         <Feather name="x" size={40} color={colors.dangerText} />
       </View>
@@ -87,12 +108,12 @@ const useStyles = makeStyles((t) => ({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.md,
     paddingHorizontal: layout.screenPaddingX,
   },
+  fullScreen: { flex: 1 },
   iconWrap: {
     width: 96,
     height: 96,

@@ -1,5 +1,6 @@
 import { useNavigation } from 'expo-router';
 import { useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 
 import { i18n } from '@/i18n';
 import { confirmAction } from '@/utils/confirmAction';
@@ -13,13 +14,27 @@ let discardedAction: object | null = null;
 
 /**
  * Asks "Discard changes?" before the screen is left (Back button, gesture, header arrow) while
- * `isDirty` is true. Call `allowLeave()` right before navigating away on purpose (after a save).
+ * `isDirty` is true. On the web it also asks the browser to warn before the tab is closed or
+ * reloaded (F5), which never goes through the router. Call `allowLeave()` right before navigating away on purpose (after a save).
  */
 export function useUnsavedChangesGuard(isDirty: boolean): { allowLeave: () => void } {
   const navigation = useNavigation();
   const isDirtyRef = useRef(isDirty);
   useEffect(() => {
     isDirtyRef.current = isDirty;
+  }, [isDirty]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !isDirty || typeof window === 'undefined') return undefined;
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!isDirtyRef.current) return;
+      event.preventDefault();
+      // Chrome still needs a (empty) returnValue to show its generic "Leave site?" dialog.
+      event.returnValue = '';
+    };
+    const target = window;
+    target.addEventListener('beforeunload', handleBeforeUnload);
+    return () => target.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
 
   useEffect(() => {

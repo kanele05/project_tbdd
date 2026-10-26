@@ -8,12 +8,12 @@ import { ReviewSummary } from './ReviewSummary';
 const SUMMARY = { avg: 4.5, count: 1233, distribution: { 5: 800, 4: 300, 3: 100, 2: 20, 1: 13 } };
 
 describe('ReviewsHeadline', () => {
-  it('shows "4.5/5 (1233+ reviews)" and opens View all', async () => {
+  it('shows "4.5/5 (1233 reviews)" and opens View all', async () => {
     const onViewAll = jest.fn();
     await render(<ReviewsHeadline summary={SUMMARY} onViewAll={onViewAll} />);
 
     expect(screen.getByText('4.5/5')).toBeOnTheScreen();
-    expect(screen.getByText('(1233+ reviews)')).toBeOnTheScreen();
+    expect(screen.getByText('(1233 reviews)')).toBeOnTheScreen();
     expect(screen.getByLabelText('Rated 4.5 out of 5, 1233 reviews')).toBeOnTheScreen();
 
     await fireEvent.press(screen.getByRole('link', { name: 'View all reviews' }));
@@ -26,12 +26,26 @@ describe('ReviewsHeadline', () => {
     expect(screen.getByText('(1 review)')).toBeOnTheScreen();
   });
 
+  it('shows the exact total without a "+" (6 reviews, BUG-DISC-05)', async () => {
+    await render(<ReviewsHeadline summary={{ ...SUMMARY, count: 6 }} onViewAll={jest.fn()} />);
+
+    expect(screen.getByText('(6 reviews)')).toBeOnTheScreen();
+    expect(screen.queryByText(/\+/)).not.toBeOnTheScreen();
+  });
+
+  it('shows the exact total in Vietnamese too', async () => {
+    await i18n.changeLanguage('vi');
+    await render(<ReviewsHeadline summary={{ ...SUMMARY, count: 6 }} onViewAll={jest.fn()} />);
+
+    expect(screen.getByText('(6 đánh giá)')).toBeOnTheScreen();
+  });
+
   it('is written in Vietnamese with a decimal comma', async () => {
     await i18n.changeLanguage('vi');
     await render(<ReviewsHeadline summary={SUMMARY} onViewAll={jest.fn()} />);
 
     expect(screen.getByText('4,5/5')).toBeOnTheScreen();
-    expect(screen.getByText('(1233+ đánh giá)')).toBeOnTheScreen();
+    expect(screen.getByText('(1233 đánh giá)')).toBeOnTheScreen();
     expect(screen.getByText('Xem tất cả')).toBeOnTheScreen();
   });
 });

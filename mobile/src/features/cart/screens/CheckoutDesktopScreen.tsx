@@ -46,12 +46,14 @@ function ResultCard({ flow }: { flow: CheckoutFlow }) {
           courseCount={phase.result.enrolledCourseIds.length || phase.result.order.items.length}
           onStartLearning={flow.handleStartLearning}
           onGoToMyCourses={flow.handleGoToMyCourses}
+          isEmbedded
           style={styles.resultView}
         />
       ) : (
         <PaymentFailedView
           onTryAgain={flow.handleTryAgain}
           onBackToCart={flow.handleBackToCart}
+          isEmbedded
           style={styles.resultView}
         />
       )}
@@ -143,6 +145,6 @@ const useStyles = makeStyles((t) => ({
 const styles = StyleSheet.create({
   skeleton: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.xxl },
   skeletonMain: { flex: 1, gap: spacing.xl },
-  // Cancels the full-screen centring of the phone result view: the card sizes to its content.
-  resultView: { flex: 0, paddingVertical: spacing.xxl },
+  // The embedded result view sizes to its content (no flex), so it never overflows the card.
+  resultView: { paddingVertical: spacing.xxl },
 });

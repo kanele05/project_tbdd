@@ -16,6 +16,8 @@ export type CourseTabContentProps = {
   onPlayPreview: (lessonId: string) => void;
   /** The PC body shows similar courses in its own full-width block. Default true. */
   showSimilar?: boolean;
+  /** The PC purchase card lists "This course includes", so its Overview tab hides it. Default true. */
+  showBenefits?: boolean;
 };
 
 /** The body of the active tab of SC-09: Overview, Lessons or Reviews. */
@@ -28,6 +30,7 @@ export function CourseTabContent({
   onAiLayout,
   onPlayPreview,
   showSimilar = true,
+  showBenefits = true,
 }: CourseTabContentProps) {
   if (tab === 'lessons') {
     return <CourseLessonsTab courseId={course.id} onPlayPreview={onPlayPreview} />;
@@ -43,6 +46,7 @@ export function CourseTabContent({
       onRequestAi={onRequestAi}
       onAiLayout={onAiLayout}
       showSimilar={showSimilar}
+      showBenefits={showBenefits}
     />
   );
 }

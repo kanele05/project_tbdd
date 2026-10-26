@@ -3,6 +3,8 @@ import type { FlatList, NativeScrollEvent, NativeSyntheticEvent } from 'react-na
 
 /** How close to the bottom (dp) still counts as "reading the latest message". */
 const STICK_THRESHOLD = 120;
+/** Time for freshly added rows to be laid out and measured before the second scroll. */
+const SETTLE_MS = 250;
 
 /**
  * Chat scrolling: keep the newest message in view while it grows (streaming) or arrives, unless the
@@ -22,11 +24,28 @@ export function useStickToBottom<T>() {
     if (isStuckRef.current) listRef.current?.scrollToEnd({ animated: false });
   }, []);
 
-  /** Jump to the bottom and follow again (the user just sent a message). */
-  const stickAndScroll = useCallback(() => {
+  /**
+   * Jump to the bottom and follow again (the user just sent a message). `animated: false` for
+   * content that is about to grow (an error note): an animated scroll reports intermediate
+   * positions far from the bottom, which would unstick the list before the new rows lay out.
+   */
+  const stickAndScroll = useCallback(({ animated = true }: { animated?: boolean } = {}) => {
     isStuckRef.current = true;
-    listRef.current?.scrollToEnd({ animated: true });
+    listRef.current?.scrollToEnd({ animated });
   }, []);
 
-  return { listRef, onScroll, onContentSizeChange, stickAndScroll };
+  /**
+   * Bring rows that were just added into view: scroll now, then once more after they have been
+   * measured (`scrollToEnd` uses the list's measured length, which lags one layout pass behind on
+   * the web). Returns a cleanup for effects.
+   */
+  const scrollToNewRows = useCallback(() => {
+    stickAndScroll({ animated: false });
+    const timer = setTimeout(() => {
+      if (isStuckRef.current) listRef.current?.scrollToEnd({ animated: true });
+    }, SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [stickAndScroll]);
+
+  return { listRef, onScroll, onContentSizeChange, stickAndScroll, scrollToNewRows };
 }

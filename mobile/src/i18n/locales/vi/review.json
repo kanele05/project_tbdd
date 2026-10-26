@@ -7,7 +7,7 @@
   "filterAll": "Tất cả",
   "headline": {
     "rated": "{{rating}}/5",
-    "count_other": "{{count}}+ đánh giá",
+    "count_other": "{{count}} đánh giá",
     "a11y_other": "Được đánh giá {{rating}} trên 5, {{count}} đánh giá"
   },
   "summary": {
@@ -25,6 +25,7 @@
   "loadMineFailed": "Không tải được đánh giá của bạn",
   "write": {
     "title": "Viết đánh giá",
+    "editTitle": "Sửa đánh giá",
     "yourRating": "Đánh giá của bạn",
     "yourReview": "Nhận xét của bạn",
     "placeholder": "Chia sẻ trải nghiệm của bạn với khóa học này",

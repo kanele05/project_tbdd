@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { useTranslation } from '@/i18n';
 import { makeStyles, radius, spacing } from '@/theme';
 import type { ProjectSubmissionDto } from '@/types/api';
-import { formatRelativeTime } from '@/utils/formatRelativeTime';
+import { formatRelativeTimeInline } from '@/utils/formatRelativeTime';
 
 export type MySubmissionCardProps = { submission: ProjectSubmissionDto };
 
@@ -48,7 +48,7 @@ function MySubmissionCardBase({ submission }: MySubmissionCardProps) {
           </AppText>
           {gradedAt ? (
             <AppText variant="caption">
-              {t('mine.gradedAt', { time: formatRelativeTime(gradedAt) })}
+              {t('mine.gradedAt', { time: formatRelativeTimeInline(gradedAt) })}
             </AppText>
           ) : null}
         </View>

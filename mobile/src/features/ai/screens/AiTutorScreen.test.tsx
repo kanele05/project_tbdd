@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { FlatList } from 'react-native';
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { AppError } from '@/lib/appError';
@@ -207,6 +208,45 @@ describe('AiTutorScreen', () => {
 
     await fireEvent.press(screen.getByTestId('tutor-resend'));
     expect(mockRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it('scrolls to the end when the request fails so the error note and "Send again" are visible', async () => {
+    const scrollToEnd = jest.spyOn(FlatList.prototype, 'scrollToEnd').mockImplementation(() => {});
+    const failedTurn = turn({
+      answer: '',
+      status: 'error',
+      error: {
+        message: 'The AI assistant is unavailable right now.',
+        retryAfterSec: null,
+        isNotEnrolled: false,
+        isCanceled: false,
+        isUnauthorized: false,
+        isTemporary: true,
+      },
+    });
+    setChat({ turn: turn({ status: 'streaming' }) });
+    const view = await renderScreen();
+    scrollToEnd.mockClear();
+
+    setChat({ turn: failedTurn });
+    await view.rerender(
+      <ToastProvider>
+        <AiTutorScreen courseId="course-1" />
+      </ToastProvider>,
+    );
+
+    // Not animated: an animated scroll would unstick the list before the error note lays out.
+    expect(scrollToEnd).toHaveBeenCalledWith({ animated: false });
+    scrollToEnd.mockRestore();
+  });
+
+  it('does not scroll on its own while an answer is only streaming', async () => {
+    const scrollToEnd = jest.spyOn(FlatList.prototype, 'scrollToEnd').mockImplementation(() => {});
+    setChat({ turn: turn({ answer: 'Partial', status: 'streaming' }) });
+    await renderScreen();
+
+    expect(scrollToEnd).not.toHaveBeenCalled();
+    scrollToEnd.mockRestore();
   });
 
   it('disables "Send again" and the composer during a rate limit countdown', async () => {

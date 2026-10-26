@@ -75,11 +75,11 @@ describe('CourseReviewsTab', () => {
     setReviews(makeReviews(8));
   });
 
-  it('shows the headline "4.5/5 (1233+ reviews)"', async () => {
+  it('shows the headline "4.5/5 (1233 reviews)"', async () => {
     await render(<CourseReviewsTab courseId="course-1" canWriteReview={false} />);
 
     expect(screen.getByText('4.5/5')).toBeOnTheScreen();
-    expect(screen.getByText('(1233+ reviews)')).toBeOnTheScreen();
+    expect(screen.getByText('(1233 reviews)')).toBeOnTheScreen();
   });
 
   it('shows at most five reviews', async () => {

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { KeyboardAvoidingView, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
@@ -58,7 +58,7 @@ export function AiTutorScreen({ courseId }: AiTutorScreenProps) {
   const history = useAiChatHistory(courseId);
   const clearHistory = useClearAiChat(courseId);
   const chat = useAiTutorChat(courseId);
-  const { listRef, onScroll, onContentSizeChange, stickAndScroll } =
+  const { listRef, onScroll, onContentSizeChange, stickAndScroll, scrollToNewRows } =
     useStickToBottom<AiChatMessageDto>();
   useCourseAccessGuard(courseId, [history.error]);
 
@@ -69,6 +69,14 @@ export function AiTutorScreen({ courseId }: AiTutorScreenProps) {
     turn?.messageId != null && messages.some((message) => message.id === turn.messageId);
   const shownTurn = turn && !isTurnSaved ? turn : null;
   const { hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = history;
+
+  // A failed request adds the error note and "Send again" below the (possibly long) history: scroll
+  // to them, like when a new message arrives, so the user does not miss that the request failed.
+  const turnStatus = turn?.status;
+  useEffect(() => {
+    if (turnStatus === 'error') return scrollToNewRows();
+    return undefined;
+  }, [turnStatus, scrollToNewRows]);
 
   const handleSend = useCallback(
     async (text: string) => {

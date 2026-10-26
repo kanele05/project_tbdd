@@ -22,6 +22,8 @@ export type CourseOverviewTabProps = {
   onAiLayout?: (y: number) => void;
   /** Show the "Similar courses" rail at the bottom (the PC layout renders it elsewhere). Default true. */
   showSimilar?: boolean;
+  /** Show the "This course includes" checklist (the PC purchase card already lists it). Default true. */
+  showBenefits?: boolean;
 };
 
 /**
@@ -35,6 +37,7 @@ export function CourseOverviewTab({
   onRequestAi,
   onAiLayout,
   showSimilar = true,
+  showBenefits = true,
 }: CourseOverviewTabProps) {
   const { t } = useTranslation('course');
   const benefits = useMemo(
@@ -47,7 +50,7 @@ export function CourseOverviewTab({
       <View style={styles.padded}>
         <ExpandableText text={course.description} />
       </View>
-      {benefits.length > 0 ? (
+      {showBenefits && benefits.length > 0 ? (
         <View style={[styles.padded, styles.section]}>
           <AppText variant="h2" accessibilityRole="header">
             {t('overview.includes')}

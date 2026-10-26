@@ -13,7 +13,7 @@ export type ReviewsHeadlineProps = {
   onViewAll: () => void;
 };
 
-/** SC-09 Review tab headline: gold star, serif "4.5/5", "(1,233+ reviews)" and "View all". */
+/** SC-09 Review tab headline: gold star, serif "4.5/5", "(1,233 reviews)" and "View all". */
 function ReviewsHeadlineBase({ summary, onViewAll }: ReviewsHeadlineProps) {
   const { t } = useTranslation('review');
   const { colors } = useTheme();

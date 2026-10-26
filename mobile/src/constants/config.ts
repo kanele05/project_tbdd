@@ -109,6 +109,8 @@ export const STORAGE_KEYS = {
   themeMode: 'elearning.pref.theme-mode',
   /** `system | vi | en` (AsyncStorage). */
   language: 'elearning.pref.language',
+  /** Outline lessons proposed by the AI and not created yet (AsyncStorage, survives a reload). */
+  aiDraftPlanned: 'elearning.ai-draft.planned',
 } as const;
 
 /** Content column is capped on wide screens (web / desktop / tablet) and centered. */

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, radius, spacing } from '@/theme';
 import type { AdminUserDto, Role } from '@/types/api';
-import { formatRelativeTime } from '@/utils/formatRelativeTime';
+import { formatRelativeTimeInline } from '@/utils/formatRelativeTime';
 
 const ROLE_TONE: Record<Role, BadgeTone> = {
   STUDENT: 'primary',
@@ -56,7 +56,7 @@ function UserRowBase({ user, isBusy, onDisable, onEnable }: UserRowProps) {
         ) : null}
       </View>
       <AppText variant="caption" color="textSecondary">
-        {usage} · {t('users.joined', { when: formatRelativeTime(user.createdAt) })}
+        {usage} · {t('users.joined', { when: formatRelativeTimeInline(user.createdAt) })}
       </AppText>
       {isDisabled && user.disabledReason ? (
         <AppText variant="caption" color="dangerText">

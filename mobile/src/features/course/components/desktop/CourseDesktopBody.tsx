@@ -131,6 +131,7 @@ export function CourseDesktopBody({ course, onPlayPreview }: CourseDesktopBodyPr
                   onAiLayout={handleAiLayout}
                   onPlayPreview={onPlayPreview}
                   showSimilar={false}
+                  showBenefits={false}
                 />
               </View>
             </View>

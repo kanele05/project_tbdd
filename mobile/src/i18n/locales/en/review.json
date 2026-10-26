@@ -8,7 +8,7 @@
   "headline": {
     "rated": "{{rating}}/5",
     "count_one": "{{count}} review",
-    "count_other": "{{count}}+ reviews",
+    "count_other": "{{count}} reviews",
     "a11y_one": "Rated {{rating}} out of 5, {{count}} review",
     "a11y_other": "Rated {{rating}} out of 5, {{count}} reviews"
   },
@@ -29,6 +29,7 @@
   "loadMineFailed": "Couldn't load your review",
   "write": {
     "title": "Write a review",
+    "editTitle": "Edit review",
     "yourRating": "Your rating",
     "yourReview": "Your review",
     "placeholder": "Share your experience with this course",

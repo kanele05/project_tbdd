@@ -10,7 +10,7 @@ import { useTranslation } from '@/i18n';
 import { useLanguage } from '@/i18n/useLanguage';
 import { makeStyles, radius, spacing } from '@/theme';
 import type { AiCourseReviewDto } from '@/types/api';
-import { formatRelativeTime } from '@/utils/formatRelativeTime';
+import { formatRelativeTimeInline } from '@/utils/formatRelativeTime';
 
 import { SEVERITY_TONE } from '../adminMeta';
 import { useAdminAiReview } from '../hooks';
@@ -59,7 +59,10 @@ function ReviewResult({ review }: { review: AiCourseReviewDto }) {
         </View>
       )}
       <AppText variant="caption" color="textMuted">
-        {t('ai.generatedAt', { when: formatRelativeTime(review.generatedAt), model: review.model })}
+        {t('ai.generatedAt', {
+          when: formatRelativeTimeInline(review.generatedAt),
+          model: review.model,
+        })}
       </AppText>
     </View>
   );

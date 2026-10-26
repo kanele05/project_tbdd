@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import { PlayerStage } from './PlayerStage';
 import { PlayerStatus } from './PlayerStatus';
@@ -26,6 +27,25 @@ describe('PlayerStatus', () => {
     expect(screen.getByText('Video unavailable')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: 'Retry' }));
     expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it('centers the Retry button under the message instead of at the start', async () => {
+    await render(
+      <PlayerStage>
+        <PlayerStatus
+          kind="error"
+          label="Video unavailable"
+          retryLabel="Retry"
+          onRetry={jest.fn()}
+          testID="status"
+        />
+      </PlayerStage>,
+    );
+
+    expect(StyleSheet.flatten(screen.getByTestId('status-action').props.style)).toMatchObject({
+      alignSelf: 'center',
+      alignItems: 'center',
+    });
   });
 
   it('omits Retry when there is no handler', async () => {

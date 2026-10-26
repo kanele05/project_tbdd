@@ -6,7 +6,7 @@ import { AppText } from '@/components/ui/AppText';
 import { useTranslation } from '@/i18n';
 import { makeStyles, radius, spacing, useTheme } from '@/theme';
 import type { CourseModerationDto } from '@/types/api';
-import { formatRelativeTime } from '@/utils/formatRelativeTime';
+import { formatRelativeTime, formatRelativeTimeInline } from '@/utils/formatRelativeTime';
 
 import { MODERATION_ICON } from '../adminMeta';
 
@@ -35,7 +35,7 @@ function ModerationHistoryBase({ entries }: ModerationHistoryProps) {
             actor: entry.actor.fullName,
             action: t(`history.action.${entry.action}`),
             target: t(`history.target.${entry.target}`),
-            when: formatRelativeTime(entry.createdAt),
+            when: formatRelativeTimeInline(entry.createdAt),
           })}
         >
           <Feather name={MODERATION_ICON[entry.action]} size={20} color={colors.primaryText} />

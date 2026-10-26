@@ -50,28 +50,34 @@ export function SubmitProjectScreen({ courseId }: SubmitProjectScreenProps) {
   });
 
   const { file, cover, setFileError } = files;
-  const onSubmit = handleSubmit(async (values) => {
-    setFormError(null);
-    if (!file) {
-      setFileError(t('project:submit.fileRequired'));
-      return;
-    }
-    try {
-      await submit({
-        title: values.title,
-        description: values.description || undefined,
-        file,
-        image: cover,
-      });
-      toast.success(t('project:submit.success'));
-      router.back();
-    } catch (error) {
-      const fieldErrors = getFieldErrors(error);
-      if (fieldErrors.title) setError('title', { message: fieldErrors.title });
-      if (fieldErrors.description) setError('description', { message: fieldErrors.description });
-      setFormError(getSubmitErrorMessage(error));
-    }
-  });
+  const onSubmit = handleSubmit(
+    async (values) => {
+      setFormError(null);
+      if (!file) {
+        setFileError(t('project:submit.fileRequired'));
+        return;
+      }
+      try {
+        await submit({
+          title: values.title,
+          description: values.description || undefined,
+          file,
+          image: cover,
+        });
+        toast.success(t('project:submit.success'));
+        router.back();
+      } catch (error) {
+        const fieldErrors = getFieldErrors(error);
+        if (fieldErrors.title) setError('title', { message: fieldErrors.title });
+        if (fieldErrors.description) setError('description', { message: fieldErrors.description });
+        setFormError(getSubmitErrorMessage(error));
+      }
+    },
+    // Invalid fields: also flag the missing file now, not on the next press.
+    () => {
+      if (!file) setFileError(t('project:submit.fileRequired'));
+    },
+  );
 
   const handleClose = useCallback(() => router.back(), []);
 

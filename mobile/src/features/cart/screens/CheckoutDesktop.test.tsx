@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { useWindowDimensions } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 
 import { makeCourse } from '@/components/course/courseFixtures';
+import { DESKTOP_NAV_HEIGHT } from '@/components/layout/desktopLayout';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AppError } from '@/lib/appError';
 import { useAuthStore } from '@/stores/authStore';
@@ -143,6 +144,20 @@ describe('CheckoutScreen on a wide window', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Start learning' }));
     expect(mockDismissTo).toHaveBeenCalledWith('/my-courses');
     expect(mockPush).toHaveBeenCalledWith('/learn/a');
+  });
+
+  it('keeps the success card below the top bar and sizes it to its content (BUG-DISC-03)', async () => {
+    mockPay.mockResolvedValue(SUCCESS);
+    await renderScreen();
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Pay $84' }));
+    await screen.findByText('Payment successful');
+
+    const page = StyleSheet.flatten(screen.getByTestId('checkout-desktop').props.style);
+    expect(page.paddingTop).toBe(DESKTOP_NAV_HEIGHT);
+    // flex: 1 would collapse to 0 height inside the auto-height card on the web and overflow it.
+    const view = StyleSheet.flatten(screen.getByTestId('payment-success').props.style);
+    expect(view.flex).toBeUndefined();
   });
 
   it('shows the failure card on 402 and lets the user try again', async () => {

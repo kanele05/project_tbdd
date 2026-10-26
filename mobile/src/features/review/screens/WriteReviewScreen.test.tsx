@@ -7,6 +7,8 @@ import type { ReviewDto } from '@/types/api';
 import { WriteReviewScreen } from './WriteReviewScreen';
 
 const mockBack = jest.fn();
+const mockReplace = jest.fn();
+let mockCanGoBack = true;
 const mockMutateAsync = jest.fn();
 const mockRefetch = jest.fn();
 let mockMyReview: Record<string, unknown> = {};
@@ -14,8 +16,8 @@ let mockMyReview: Record<string, unknown> = {};
 jest.mock('expo-router', () => ({
   router: {
     back: () => mockBack(),
-    replace: jest.fn(),
-    canGoBack: () => true,
+    replace: (href: unknown) => mockReplace(href),
+    canGoBack: () => mockCanGoBack,
   },
 }));
 
@@ -57,6 +59,7 @@ async function renderScreen() {
 describe('WriteReviewScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCanGoBack = true;
     setMyReview({});
   });
 
@@ -109,6 +112,39 @@ describe('WriteReviewScreen', () => {
     );
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
     expect(await screen.findByText('Thanks! Your review was saved.')).toBeOnTheScreen();
+  });
+
+  it('titles the form "Write a review" for a new review', async () => {
+    await renderScreen();
+
+    expect(screen.getByText('Write a review')).toBeOnTheScreen();
+    expect(screen.queryByText('Edit review')).not.toBeOnTheScreen();
+  });
+
+  it('titles the form "Edit review" when the user already reviewed the course', async () => {
+    setMyReview({ data: EXISTING });
+    await renderScreen();
+
+    expect(screen.getByText('Edit review')).toBeOnTheScreen();
+    expect(screen.queryByText('Write a review')).not.toBeOnTheScreen();
+  });
+
+  it('goes to the course page after saving when there is no history (URL / F5 on the web)', async () => {
+    mockCanGoBack = false;
+    mockMutateAsync.mockResolvedValue(EXISTING);
+    await renderScreen();
+
+    await fireEvent.press(screen.getByRole('radio', { name: '5 stars' }));
+    await fireEvent.changeText(screen.getByLabelText('Your review'), 'Clear and practical.');
+    await fireEvent.press(screen.getByRole('button', { name: 'Submit' }));
+
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith({
+        pathname: '/course/[id]',
+        params: { id: 'course-1' },
+      }),
+    );
+    expect(mockBack).not.toHaveBeenCalled();
   });
 
   it('opens pre-filled when the user already reviewed the course', async () => {

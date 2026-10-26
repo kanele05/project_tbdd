@@ -50,6 +50,15 @@ export function getColumnCount(
   return Math.max(1, Math.min(maxColumns, fit));
 }
 
+/**
+ * Bề rộng một ô (thuần, để test): làm tròn xuống và chừa 1 px. Bề rộng đo được (onLayout) có thể bị
+ * làm tròn LÊN so với bề rộng thật (vd. lề 4 % = 57,6 px), khi đó ô chia vừa khít sẽ tràn một chút
+ * và ô cuối rớt xuống dòng → lưới chỉ còn 4 cột lệch trái dù đủ chỗ cho 5 (BUG-DISC-01).
+ */
+export function getItemWidth(width: number, columns: number, gap: number): number {
+  return Math.max(1, Math.floor((width - 1 - gap * (columns - 1)) / columns));
+}
+
 /** Lưới tự chia cột theo bề rộng thật của khung (danh sách khóa học dạng poster trên PC). */
 export function ResponsiveGrid({
   children,
@@ -62,7 +71,7 @@ export function ResponsiveGrid({
 }: ResponsiveGridProps) {
   const [width, setWidth] = useState(0);
   const columns = getColumnCount(width, minItemWidth, gap, maxColumns);
-  const itemWidth = width > 0 ? (width - gap * (columns - 1)) / columns : undefined;
+  const itemWidth = width > 0 ? getItemWidth(width, columns, gap) : undefined;
   const onLayout = (event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width);
 
   return (

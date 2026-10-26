@@ -6,6 +6,8 @@
   },
   "loading": "Loading course",
   "shareMessage": "Check out \"{{title}}\" by {{teacher}} on {{app}}",
+  "linkCopied": "Course link copied",
+  "linkCopyFailed": "Could not copy the course link",
   "hero": {
     "share": "Share course",
     "like": "Like this course",

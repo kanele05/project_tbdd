@@ -10,7 +10,7 @@ import { IconButton } from '@/components/ui/IconButton';
 import { useTranslation } from '@/i18n';
 import { makeStyles, spacing } from '@/theme';
 import type { TeacherSubmissionDto } from '@/types/api';
-import { formatRelativeTime } from '@/utils/formatRelativeTime';
+import { formatRelativeTimeInline } from '@/utils/formatRelativeTime';
 
 /** Columns of the submissions table; `submitted` is dropped on tablets. */
 export type SubmissionColumns = {
@@ -48,7 +48,7 @@ function SubmissionTableRowBase({
   const isGraded = submission.grade !== null;
   const name = submission.user.fullName;
   const submittedAt = t('submissions.submittedAt', {
-    time: formatRelativeTime(submission.createdAt),
+    time: formatRelativeTimeInline(submission.createdAt),
   });
   return (
     <TableRow isLast={isLast} testID={`submission-${submission.id}`}>

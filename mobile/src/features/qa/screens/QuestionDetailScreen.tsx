@@ -1,6 +1,6 @@
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { router } from 'expo-router';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, View } from 'react-native';
 
 import { DESKTOP_NAV_HEIGHT } from '@/components/layout/desktopLayout';
@@ -66,8 +66,25 @@ export function QuestionDetailScreen({ questionId, courseId }: QuestionDetailScr
   const { refetch: refetchQuestion } = question;
   const { refetch: refetchAnswers } = answers;
 
+  // A pinned reply moves to the top once the answers are refetched (the optimistic update only flips
+  // the flag): wait until it really is first, then scroll there so the user sees the result.
+  const pendingPinRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (pendingPinRef.current === null || items[0]?.id !== pendingPinRef.current) return;
+    pendingPinRef.current = null;
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, [items]);
+
   const handleTogglePin = useCallback(
-    (answer: AnswerDto) => pinAnswer({ answerId: answer.id, isPinned: answer.isPinned }),
+    (answer: AnswerDto) =>
+      pinAnswer(
+        { answerId: answer.id, isPinned: answer.isPinned },
+        {
+          onSuccess: () => {
+            if (!answer.isPinned) pendingPinRef.current = answer.id;
+          },
+        },
+      ),
     [pinAnswer],
   );
   const renderAnswer = useCallback(

@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,16 +11,12 @@ import { isOfflineWithoutData, OFFLINE_QUERY_ERROR } from '@/features/learning/q
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTranslation } from '@/i18n';
 import { layout, makeStyles, spacing } from '@/theme';
+import { goBackOr } from '@/utils/navigation';
 
 import { ReviewForm } from '../components/ReviewForm';
 import { useMyReview } from '../hooks';
 
 export type WriteReviewScreenProps = { courseId: string };
-
-function closeModal(): void {
-  if (router.canGoBack()) router.back();
-  else router.replace('/');
-}
 
 /**
  * SC-11 Write review (modal). Loads the user's existing review first, so the form opens
@@ -33,6 +28,8 @@ export function WriteReviewScreen({ courseId }: WriteReviewScreenProps) {
   const insets = useSafeAreaInsets();
   const { isWide } = useBreakpoint();
   const myReview = useMyReview(courseId);
+  const closeModal = () => goBackOr({ pathname: '/course/[id]', params: { id: courseId } });
+  const title = myReview.data ? t('write.editTitle') : t('write.title');
 
   let content;
   if (isOfflineWithoutData(myReview)) {
@@ -60,7 +57,7 @@ export function WriteReviewScreen({ courseId }: WriteReviewScreenProps) {
   if (isWide) {
     return (
       <DialogFrame
-        title={t('write.title')}
+        title={title}
         closeLabel={t('write.close')}
         onClose={closeModal}
         width={600}
@@ -74,7 +71,7 @@ export function WriteReviewScreen({ courseId }: WriteReviewScreenProps) {
   return (
     <KeyboardAvoidingView style={themed.screen} behavior="padding">
       <CinematicHeader
-        title={t('write.title')}
+        title={title}
         uri={getCachedCourseImage(courseId)}
         posterIndex={3}
         showBack={false}

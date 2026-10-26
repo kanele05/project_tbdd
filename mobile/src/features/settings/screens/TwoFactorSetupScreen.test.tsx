@@ -9,9 +9,16 @@ import { securityApi } from '../api';
 import { TwoFactorSetupScreen } from './TwoFactorSetupScreen';
 
 const mockBack = jest.fn();
+const mockReplace = jest.fn();
+let mockCanGoBack = true;
 
 jest.mock('expo-router', () => ({
-  router: { back: () => mockBack(), push: jest.fn(), canGoBack: () => true },
+  router: {
+    back: () => mockBack(),
+    replace: (href: unknown) => mockReplace(href),
+    push: jest.fn(),
+    canGoBack: () => mockCanGoBack,
+  },
 }));
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }));
 jest.mock('../api', () => ({
@@ -38,6 +45,7 @@ async function renderScreen() {
 describe('TwoFactorSetupScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCanGoBack = true;
     api.setupTwoFactor.mockResolvedValue(SETUP);
   });
 
@@ -75,6 +83,20 @@ describe('TwoFactorSetupScreen', () => {
     await fireEvent.press(await screen.findByTestId('recovery-saved'));
 
     expect(mockBack).toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('opens Security when there is no history after saving the codes (URL / F5 on the web)', async () => {
+    mockCanGoBack = false;
+    api.enableTwoFactor.mockResolvedValue({ recoveryCodes: CODES });
+    await renderScreen();
+    await screen.findByTestId('qr-code');
+    await fireEvent.changeText(screen.getByLabelText('Authentication code'), '123456');
+
+    await fireEvent.press(await screen.findByTestId('recovery-saved'));
+
+    expect(mockReplace).toHaveBeenCalledWith('/settings/security');
+    expect(mockBack).not.toHaveBeenCalled();
   });
 
   it('shows the error and clears the boxes when the code is wrong', async () => {

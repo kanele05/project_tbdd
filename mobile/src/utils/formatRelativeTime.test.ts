@@ -1,4 +1,6 @@
-import { formatRelativeTime } from './formatRelativeTime';
+import { applyLanguage } from '@/i18n';
+
+import { formatRelativeTime, formatRelativeTimeInline } from './formatRelativeTime';
 
 const NOW = new Date('2026-10-20T12:00:00.000Z');
 
@@ -18,5 +20,14 @@ describe('formatRelativeTime', () => {
 
   it('returns an empty string for an invalid date', () => {
     expect(formatRelativeTime('not-a-date', NOW)).toBe('');
+  });
+
+  it('keeps the first letter lowercase for text after a prefix (inline)', async () => {
+    expect(formatRelativeTimeInline('2026-10-19T09:00:00.000Z', NOW)).toBe('a day ago');
+    expect(formatRelativeTimeInline('not-a-date', NOW)).toBe('');
+    await applyLanguage('vi');
+    expect(formatRelativeTimeInline('2026-10-19T09:00:00.000Z', NOW)).toBe('một ngày trước');
+    expect(formatRelativeTime('2026-10-19T09:00:00.000Z', NOW)).toBe('Một ngày trước');
+    await applyLanguage('en');
   });
 });

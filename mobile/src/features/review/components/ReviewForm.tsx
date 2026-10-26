@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
@@ -16,6 +15,7 @@ import { useTranslation } from '@/i18n';
 import { getErrorMessage } from '@/lib/appError';
 import { spacing } from '@/theme';
 import type { ReviewDto } from '@/types/api';
+import { goBackOr } from '@/utils/navigation';
 
 import { useSaveReview } from '../hooks';
 import { REVIEW_MAX_LENGTH, reviewSchema, type ReviewFormValues } from '../schema';
@@ -33,6 +33,7 @@ export function ReviewForm({ courseId, initialReview }: ReviewFormProps) {
   const { t } = useTranslation('review');
   const toast = useToast();
   const saveReview = useSaveReview(courseId);
+  const closeReviewForm = () => goBackOr({ pathname: '/course/[id]', params: { id: courseId } });
   // Errors are shown inline: a toast can be hidden behind a native modal (iOS).
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -52,11 +53,11 @@ export function ReviewForm({ courseId, initialReview }: ReviewFormProps) {
     try {
       await saveReview.mutateAsync({ rating: values.rating, content: values.content.trim() });
       // Close the modal first, then toast on the screen underneath.
-      router.back();
+      closeReviewForm();
       toast.success(t('write.saved'));
     } catch (error) {
       if (isNotEnrolledError(error)) {
-        router.back();
+        closeReviewForm();
         toast.error(getErrorMessage(error));
         return;
       }

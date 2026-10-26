@@ -1,4 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
+import { Platform } from 'react-native';
 
 import { confirmAction } from '@/utils/confirmAction';
 
@@ -87,5 +88,80 @@ describe('useUnsavedChangesGuard', () => {
     await waitFor(() => expect(confirm).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(leave()).toHaveBeenCalled());
     expect(mockDispatch).not.toHaveBeenCalled();
+  });
+
+  describe('on the web (closing or reloading the tab)', () => {
+    type UnloadEvent = { preventDefault: jest.Mock; returnValue?: string };
+    type UnloadHandler = (event: UnloadEvent) => void;
+    const globals = globalThis as unknown as { window: unknown };
+    const originalWindow = globals.window;
+    let listeners: UnloadHandler[];
+
+    beforeEach(() => {
+      listeners = [];
+      jest.replaceProperty(Platform, 'OS', 'web');
+      globals.window = {
+        addEventListener: (type: string, handler: UnloadHandler) => {
+          if (type === 'beforeunload') listeners.push(handler);
+        },
+        removeEventListener: (type: string, handler: UnloadHandler) => {
+          if (type === 'beforeunload') listeners = listeners.filter((item) => item !== handler);
+        },
+      };
+    });
+
+    afterEach(() => {
+      globals.window = originalWindow;
+      jest.restoreAllMocks();
+    });
+
+    function unload(): UnloadEvent {
+      const event: UnloadEvent = { preventDefault: jest.fn() };
+      listeners.forEach((handler) => handler(event));
+      return event;
+    }
+
+    it('asks the browser for a confirmation while there are unsaved changes', async () => {
+      await renderHook(() => useUnsavedChangesGuard(true));
+
+      expect(listeners).toHaveLength(1);
+      const event = unload();
+      expect(event.preventDefault).toHaveBeenCalled();
+      expect(event.returnValue).toBe('');
+    });
+
+    it('does not listen while nothing is dirty', async () => {
+      await renderHook(() => useUnsavedChangesGuard(false));
+      expect(listeners).toHaveLength(0);
+    });
+
+    it('removes the listener when the changes are saved or the screen unmounts', async () => {
+      const { rerender, unmount } = await renderHook(
+        (props: { isDirty: boolean }) => useUnsavedChangesGuard(props.isDirty),
+        { initialProps: { isDirty: true } },
+      );
+      expect(listeners).toHaveLength(1);
+
+      await rerender({ isDirty: false });
+      expect(listeners).toHaveLength(0);
+
+      await rerender({ isDirty: true });
+      expect(listeners).toHaveLength(1);
+      await unmount();
+      expect(listeners).toHaveLength(0);
+    });
+
+    it('stops warning after allowLeave()', async () => {
+      const { result } = await renderHook(() => useUnsavedChangesGuard(true));
+      result.current.allowLeave();
+
+      expect(unload().preventDefault).not.toHaveBeenCalled();
+    });
+
+    it('never touches window on native', async () => {
+      jest.replaceProperty(Platform, 'OS', 'android');
+      await renderHook(() => useUnsavedChangesGuard(true));
+      expect(listeners).toHaveLength(0);
+    });
   });
 });

@@ -9,7 +9,7 @@ import { useTranslation } from '@/i18n';
 import { makeStyles, radius, spacing } from '@/theme';
 import type { AdminCourseQueueItemDto } from '@/types/api';
 import { formatPriceOrFree } from '@/utils/formatPrice';
-import { formatRelativeTime } from '@/utils/formatRelativeTime';
+import { formatRelativeTimeInline } from '@/utils/formatRelativeTime';
 
 import { isRevisionItem } from '../../adminMeta';
 import { CourseStatusBadge } from '../CourseStatusBadge';
@@ -46,7 +46,7 @@ function QueueTableRowBase({ item, columns, isLast, onPress }: QueueTableRowProp
     ? t(`revisionStatus.${item.revisionStatus}`)
     : t(`status.${item.status}`);
   const submitted = item.submittedAt
-    ? t('queue.submitted', { when: formatRelativeTime(item.submittedAt) })
+    ? t('queue.submitted', { when: formatRelativeTimeInline(item.submittedAt) })
     : t('queue.notSubmitted');
   const caption = columns.teacher
     ? item.category.name

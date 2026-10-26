@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider, onlineManager } from '@tanstack/react-query';
-import { act, render } from '@testing-library/react-native';
+import { act, render, screen, fireEvent } from '@testing-library/react-native';
 import type { ReactElement } from 'react';
-import { AppState } from 'react-native';
+import { AppState, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { useAuthStore } from '@/stores/authStore';
 import type { LessonDetail, UserDto } from '@/types/api';
@@ -37,7 +37,11 @@ jest.mock('expo-video', () => ({
     });
     return player;
   },
-  VideoView: () => null,
+  VideoView: (props: { style: StyleProp<ViewStyle> }) => {
+    const { createElement } = jest.requireActual('react') as typeof import('react');
+    const { View } = jest.requireActual('react-native') as typeof import('react-native');
+    return createElement(View, { testID: 'video-view', style: props.style });
+  },
 }));
 
 jest.mock('@/features/media/YouTubePlayer', () => ({
@@ -128,6 +132,35 @@ describe('LessonPlayer', () => {
     expect(mockPlayer.currentTime).toBe(40);
     expect(mockPlayer.timeUpdateEventInterval).toBe(1);
     expect(mockPlayer.play).toHaveBeenCalled();
+  });
+
+  it('fills the 16:9 frame so a 360p video is not left at its intrinsic size', async () => {
+    await renderPlayer(<LessonPlayer lesson={LESSON} courseId="course-1" />);
+
+    const style = StyleSheet.flatten(screen.getByTestId('video-view').props.style);
+    expect(style).toMatchObject({ position: 'absolute', width: '100%', height: '100%' });
+    expect(style.opacity).toBeUndefined();
+  });
+
+  it('hides the broken video behind a centered error overlay and brings it back on Retry', async () => {
+    mockPlayer.replaceAsync.mockResolvedValue(undefined);
+    await renderPlayer(<LessonPlayer lesson={LESSON} courseId="course-1" />);
+
+    await act(async () => emit('statusChange', { status: 'error' }));
+
+    expect(screen.getByText("Couldn't load this video")).toBeOnTheScreen();
+    expect(StyleSheet.flatten(screen.getByTestId('video-view').props.style)).toMatchObject({
+      opacity: 0,
+      pointerEvents: 'none',
+    });
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Retry' }));
+
+    expect(mockPlayer.replaceAsync).toHaveBeenCalledWith({ uri: LESSON.videoUrl });
+    expect(screen.queryByText("Couldn't load this video")).not.toBeOnTheScreen();
+    expect(
+      StyleSheet.flatten(screen.getByTestId('video-view').props.style).opacity,
+    ).toBeUndefined();
   });
 
   it('routes YouTube lessons outside expo-video and saves clip-relative pause progress', async () => {

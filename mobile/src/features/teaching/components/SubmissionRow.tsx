@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useTranslation } from '@/i18n';
 import { makeStyles, radius, spacing } from '@/theme';
 import type { TeacherSubmissionDto } from '@/types/api';
-import { formatRelativeTime } from '@/utils/formatRelativeTime';
+import { formatRelativeTimeInline } from '@/utils/formatRelativeTime';
 
 export type SubmissionRowProps = {
   submission: TeacherSubmissionDto;
@@ -36,7 +36,7 @@ function SubmissionRowBase({ submission, onGrade, onOpenFile }: SubmissionRowPro
             {name}
           </AppText>
           <AppText variant="caption">
-            {t('submissions.submittedAt', { time: formatRelativeTime(submission.createdAt) })}
+            {t('submissions.submittedAt', { time: formatRelativeTimeInline(submission.createdAt) })}
           </AppText>
         </View>
         <Badge

@@ -1,4 +1,8 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+
+import { STORAGE_KEYS } from '@/constants/config';
 
 /** Parts of an AI course draft that go straight into the course info form (SC-24). */
 export type AiFieldSuggestion = {
@@ -40,32 +44,43 @@ type AiDraftState = {
 /**
  * Small hand-over store between the AI draft modal (SC-27) and the editors under it. The draft is
  * a suggestion only (BR-29): nothing here is saved to the server until the teacher saves.
+ * Only `plannedLessons` is persisted: the chapters it points to already exist on the server, so a
+ * reload (F5 on the web) must not leave them empty without their "AI suggested" lessons.
  */
-export const useAiDraftStore = create<AiDraftState>()((set, get) => ({
-  pendingFields: null,
-  plannedLessons: {},
-  isAdvanceRequested: false,
-  queueFields: (fields) =>
-    set((state) => ({ pendingFields: { ...state.pendingFields, ...fields } })),
-  takeFields: () => {
-    const fields = get().pendingFields;
-    if (fields) set({ pendingFields: null });
-    return fields;
-  },
-  setPlannedLessons: (planned) => set({ plannedLessons: planned }),
-  requestAdvance: () => set({ isAdvanceRequested: true }),
-  takeAdvance: () => {
-    const isRequested = get().isAdvanceRequested;
-    if (isRequested) set({ isAdvanceRequested: false });
-    return isRequested;
-  },
-  removePlannedLesson: (sectionKey, index) =>
-    set((state) => {
-      const rest = (state.plannedLessons[sectionKey] ?? []).filter((_, i) => i !== index);
-      const next = { ...state.plannedLessons };
-      if (rest.length > 0) next[sectionKey] = rest;
-      else delete next[sectionKey];
-      return { plannedLessons: next };
+export const useAiDraftStore = create<AiDraftState>()(
+  persist(
+    (set, get) => ({
+      pendingFields: null,
+      plannedLessons: {},
+      isAdvanceRequested: false,
+      queueFields: (fields) =>
+        set((state) => ({ pendingFields: { ...state.pendingFields, ...fields } })),
+      takeFields: () => {
+        const fields = get().pendingFields;
+        if (fields) set({ pendingFields: null });
+        return fields;
+      },
+      setPlannedLessons: (planned) => set({ plannedLessons: planned }),
+      requestAdvance: () => set({ isAdvanceRequested: true }),
+      takeAdvance: () => {
+        const isRequested = get().isAdvanceRequested;
+        if (isRequested) set({ isAdvanceRequested: false });
+        return isRequested;
+      },
+      removePlannedLesson: (sectionKey, index) =>
+        set((state) => {
+          const rest = (state.plannedLessons[sectionKey] ?? []).filter((_, i) => i !== index);
+          const next = { ...state.plannedLessons };
+          if (rest.length > 0) next[sectionKey] = rest;
+          else delete next[sectionKey];
+          return { plannedLessons: next };
+        }),
+      clear: () => set({ pendingFields: null, plannedLessons: {}, isAdvanceRequested: false }),
     }),
-  clear: () => set({ pendingFields: null, plannedLessons: {}, isAdvanceRequested: false }),
-}));
+    {
+      name: STORAGE_KEYS.aiDraftPlanned,
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({ plannedLessons: state.plannedLessons }),
+    },
+  ),
+);

@@ -240,6 +240,14 @@ describe('CourseDetailScreen on a PC window', () => {
     expect(screen.queryByTestId('course-purchase-card')).not.toBeOnTheScreen();
   });
 
+  it('lists "This course includes" once, in the purchase card (BUG-DISC-06)', async () => {
+    loaded(makeDetail());
+    await renderScreen();
+
+    expect(screen.getAllByText('This course includes')).toHaveLength(1);
+    expect(screen.getAllByText('Native teacher')).toHaveLength(1);
+  });
+
   it('hides the similar-courses row when there are none', async () => {
     loaded(makeDetail());
     await renderScreen();
@@ -265,5 +273,12 @@ describe('CourseDetailScreen on a phone window', () => {
     expect(screen.queryByTestId('course-purchase-card')).not.toBeOnTheScreen();
     expect(screen.queryByTestId('course-columns')).not.toBeOnTheScreen();
     expect(useDesktopNavStore.getState().isTransparent).toBe(false);
+  });
+
+  it('still lists "This course includes" once in the Overview tab on a phone', async () => {
+    loaded(makeDetail());
+    await renderScreen();
+
+    expect(screen.getAllByText('This course includes')).toHaveLength(1);
   });
 });

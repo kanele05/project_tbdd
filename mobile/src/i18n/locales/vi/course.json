@@ -6,6 +6,8 @@
   },
   "loading": "Đang tải khóa học",
   "shareMessage": "Xem khóa học \"{{title}}\" của {{teacher}} trên {{app}}",
+  "linkCopied": "Đã sao chép liên kết khóa học",
+  "linkCopyFailed": "Không thể sao chép liên kết khóa học",
   "hero": {
     "share": "Chia sẻ khóa học",
     "like": "Thích khóa học này",
