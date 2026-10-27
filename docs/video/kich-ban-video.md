@@ -7,7 +7,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Thời lượng | khoảng 2:32 (153 giây) |
+| Thời lượng | khoảng 2:31 (152 giây) |
 | Định dạng | MP4, 1920×1080 (16:9), 30 fps, H.264 + AAC |
 | Ngôn ngữ | Tiếng Việt (lời dẫn + phụ đề cứng) |
 | Màu chủ đạo | Xanh navy đậm `#070B1A` + cyan `#2EF2FF` (giống màn hình đăng nhập của app); phụ: tím `#9B7BFF`, vàng `#FFC857`, xanh lá `#3DDC97` |
@@ -25,7 +25,7 @@
 4. **Trải nghiệm học (0:50–1:16)** — video tự tiếp tục, hỏi đáp, dự án, AI Tutor.
 5. **Điểm đặc biệt kỹ thuật (1:16–1:38)** — cache nhiều tầng + offline, tiến độ video không mất, số liệu hiệu năng đã đo.
 6. **Hệ sinh thái nhiều vai trò (1:38–2:13)** — Studio giảng viên (AI gợi ý soạn khóa) → quản trị viên duyệt (AI kiểm duyệt sơ bộ) → thông báo → học viên học và nộp bài → chấm điểm.
-7. **Kêu gọi & credit (2:13–2:32)** — đa nền tảng (web kiểu Netflix), công nghệ, cảm ơn, thông tin nhóm.
+7. **Kêu gọi & credit (2:13–2:31)** — đa nền tảng (web kiểu Netflix), công nghệ, cảm ơn, thông tin nhóm.
 
 ## 3. Bảng kịch bản chi tiết
 
@@ -47,7 +47,7 @@
 | 1:51–2:04 | Quản trị viên: hàng chờ & AI kiểm duyệt | Tài khoản admin: dashboard → Hàng chờ duyệt → mở khóa chờ duyệt → “Chạy kiểm tra AI” → kết quả “Có vẻ ổn” → thanh Từ chối/Duyệt cố định phía dưới. | 08 · QUẢN TRỊ VIÊN — “Duyệt khóa học có AI hỗ trợ” | **[1:52]** Quản trị viên xem hàng chờ duyệt, **[1:58]** tham khảo AI kiểm duyệt sơ bộ rồi duyệt hoặc từ chối. | — |
 | 2:03–2:13 | Luồng demo xuyên 3 vai trò | Sơ đồ 8 bước, màu theo vai trò (giảng viên tím, quản trị vàng, AI cyan, học viên xanh lá): Soạn khóa (AI gợi ý) → Gửi duyệt → AI kiểm duyệt sơ bộ → Admin duyệt → Người theo dõi nhận thông báo → Học viên mua, học, nộp project → Giảng viên chấm điểm → Học viên nhận thông báo điểm. | “Một ứng dụng — ba vai trò” | **[2:05]** Khóa học xuất bản — người theo dõi giảng viên nhận thông báo. **[2:08]** Học viên mua, học, nộp project; giảng viên chấm, học viên nhận điểm. | Nhạc đang ở đoạn cao trào nhẹ. |
 | 2:13–2:22 | Đa nền tảng: web kiểu Netflix | Cửa sổ trình duyệt 1440×900 trượt lên: Trang chủ banner tràn viền, hàng thẻ cuộn ngang, thẻ phóng to khi rê chuột → trang học bài 2 cột. Nhãn Android · iOS · Web PC; chữ “Giao diện kiểu Netflix”. | Android · iOS · Web PC — “Giao diện kiểu Netflix” | **[2:14]** Một mã nguồn: Android, iOS và web kiểu Netflix. | — |
-| 2:21–2:32 | Tổng kết công nghệ + credit + kêu gọi | Logo elearn lớn, “Learn anything. Anytime.”; thẻ 3 thành viên kèm MSSV; môn học, trường; hàng chip công nghệ; câu chốt “Cảm ơn các bạn đã theo dõi!” rồi mờ dần ra đen. | Thông tin nhóm + React Native · Expo · TypeScript · Node.js · Express · Prisma · PostgreSQL | **[2:22]** React Native · Expo · TypeScript · Node.js · Express · Prisma · PostgreSQL. **[2:30]** Cảm ơn các bạn đã theo dõi! | Nhạc kéo dài hợp âm cuối, fade-out ~5 giây. |
+| 2:21–2:31 | Tổng kết công nghệ + credit + kêu gọi | Logo elearn lớn, “Learn anything. Anytime.”; thẻ 3 thành viên kèm MSSV; môn học, trường; hàng chip công nghệ; câu chốt “Cảm ơn các bạn đã theo dõi!” rồi mờ dần ra đen. | Thông tin nhóm + React Native · Expo · TypeScript · Node.js · Express · Prisma · PostgreSQL | **[2:22]** React Native · Expo · TypeScript · Node.js · Express · Prisma · PostgreSQL. **[2:29]** Cảm ơn các bạn đã theo dõi! | Nhạc kéo dài hợp âm cuối, fade-out ~5 giây. |
 
 ## 4. Lời dẫn đọc liền (dùng khi thu giọng thật)
 
@@ -68,20 +68,20 @@
 - **0:58** (2,4 s) — Vào lại, video tự tiếp tục đúng giây đã dừng.
 - **1:01** (2,8 s) — Xem đủ chín mươi phần trăm, bài học tự động hoàn thành.
 - **1:04** (3,1 s) — Mỗi khóa còn có phần hỏi đáp, và bài tập dự án để nộp.
-- **1:12** (2,4 s) — Cùng AI Tutor luôn sẵn sàng giải đáp thắc mắc.
+- **1:12** (2,5 s) — Cùng AI Tutor luôn sẵn sàng giải đáp thắc mắc.
 - **1:18** (3,0 s) — Mất mạng thì sao? Bạn vẫn xem được dữ liệu đã lưu.
 - **1:21** (2,8 s) — Nhờ cache nhiều tầng, còn thao tác ghi thì bị chặn an toàn.
 - **1:24** (3,5 s) — Tiến độ xem video được giữ lại, và tự đồng bộ khi có mạng trở lại.
 - **1:29** (8,5 s) — Trang chủ nhanh hơn bảy mươi hai phần trăm nhờ cache. Danh sách nhẹ hơn tám mươi mốt phẩy năm phần trăm nhờ nén gzip. Số lần lưu tiến độ giảm chín mươi phần trăm.
-- **1:39** (2,4 s) — Giảng viên có Studio riêng để soạn khóa học.
+- **1:39** (2,0 s) — Giảng viên có Studio riêng để soạn khóa học.
 - **1:43** (5,3 s) — Trợ lý AI gợi ý phụ đề, mô tả và dàn ý. Giảng viên áp dụng từng phần, rồi gửi duyệt.
 - **1:52** (1,7 s) — Quản trị viên xem hàng chờ duyệt,
 - **1:58** (3,9 s) — tham khảo nhận định sơ bộ của AI kiểm duyệt, rồi quyết định duyệt hoặc từ chối.
 - **2:05** (3,3 s) — Khi khóa học được xuất bản, người theo dõi giảng viên nhận thông báo ngay.
-- **2:08** (4,7 s) — Học viên mua, học và nộp project. Giảng viên chấm điểm, học viên nhận thông báo điểm.
-- **2:14** (5,2 s) — Cùng một mã nguồn, elearn chạy trên Android, iOS, và cả trình duyệt với giao diện kiểu Netflix.
-- **2:22** (8,0 s) — Ứng dụng được xây dựng bằng React Native, Expo và TypeScript, máy chủ Node.js, Express, Prisma và PostgreSQL.
-- **2:30** (1,5 s) — Cảm ơn các bạn đã theo dõi!
+- **2:08** (4,5 s) — Học viên mua, học và nộp project. Giảng viên chấm điểm, học viên nhận thông báo điểm.
+- **2:14** (4,9 s) — Cùng một mã nguồn, elearn chạy trên Android, iOS, và cả trình duyệt với giao diện kiểu Netflix.
+- **2:22** (6,7 s) — Ứng dụng được xây dựng bằng React Native, Expo và TypeScript, máy chủ Node.js, Express, Prisma và PostgreSQL.
+- **2:29** (1,5 s) — Cảm ơn các bạn đã theo dõi!
 
 Ghi chú phát âm: tên ứng dụng đọc là “i-lơn” (e-learn); số đọc thành chữ (ví dụ “bảy mươi hai phần trăm”).
 
@@ -124,28 +124,28 @@ Các số trên đo trong môi trường phát triển (server và CSDL cùng m�
 
 ## 10. Từ điển phát âm cho giọng đọc tổng hợp
 
-Piper đọc sai từ tiếng Anh và từ viết tắt (ví dụ “AI” bị đọc thành từ “ai”). Vì vậy, **chỉ ở văn bản đưa vào bộ tổng hợp giọng**, các từ dưới đây được thay bằng cách viết phiên âm tiếng Việt (tách từng âm tiết bằng dấu cách, vì dấu gạch nối làm Piper nuốt âm tiết). Phụ đề trên màn hình và bảng kịch bản vẫn giữ chính tả gốc. Thay thế theo từ nguyên vẹn, ưu tiên cụm dài trước (“AI Tutor” trước “AI”). Từ điển nằm trong `pron.py` (thư mục làm việc), áp dụng trước khi tổng hợp.
+Piper đọc sai từ tiếng Anh và từ viết tắt (ví dụ “AI” bị đọc thành từ “ai”). Vì vậy, **chỉ ở văn bản đưa vào bộ tổng hợp giọng**, các từ dưới đây được thay bằng cách viết phiên âm tiếng Việt (tách từng âm tiết bằng dấu cách, vì dấu gạch nối làm Piper nuốt âm tiết; **không dùng âm tiết phụ âm trần** như “pờ, xờ, cờ, gờ, đờ”, vì giọng Piper nuốt mất chúng). Phụ đề trên màn hình và bảng kịch bản vẫn giữ chính tả gốc. Thay thế theo từ nguyên vẹn, ưu tiên cụm dài trước (“AI Tutor” trước “AI”). Từ điển nằm trong `pron.py` (thư mục làm việc), áp dụng trước khi tổng hợp.
 
 | Từ gốc | Phiên âm đưa vào giọng đọc |
 |---|---|
 | AI | ây ai |
-| AI Tutor / Tutor | ây ai tiu tơ / tiu tơ |
+| AI Tutor / Tutor | ây ai tiu tờ / tiu tờ |
 | video | vi đê ô |
-| Studio | xờ tiu đi ô |
+| Studio | tu đi ô |
 | cache | két |
 | banner | ban nơ |
 | gzip | di díp |
-| project | pờ rô dếch |
+| project | rô dếch |
 | React Native | ri ác nây tịp |
 | Expo | ếch pô |
-| TypeScript | tai pờ xờ cờ ríp |
-| Node.js | nốt giây ét |
-| Express | ích xờ pờ rết |
-| Prisma | pờ rít ma |
-| PostgreSQL | pốt gờ rét ét kiu eo |
-| Android | en đờ roi |
+| TypeScript | tai ríp |
+| Node.js | nót trây ét |
+| Express | ẹt rét |
+| Prisma | rít ma |
+| PostgreSQL | bọc rì ét qui eo |
+| Android | en roi |
 | iOS | ai ô ét |
-| Netflix | nét phờ líc |
+| Netflix | nét líc |
 | elearn | i lơn |
 | web | oép |
 | app | áp |
