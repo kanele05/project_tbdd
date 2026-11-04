@@ -68,3 +68,6 @@ deploy/ORACLE_CLOUD.md
 
 # Ảnh minh chứng kiểm thử (~120 MB): chỉ lưu trên máy, chèn vào báo cáo Word; commit results.md / bugs.md
 docs/04-testing/evidence/**/*.png
+
+# Report, slides, video and the plan stay on the team machines only
+docs/
