@@ -69,6 +69,7 @@ export function isDeadCodeError(error: unknown): boolean {
  * Show a server error on the form (PLAN.md §7.3 SC-02/03):
  * - 409 `EMAIL_TAKEN` -> error under the email field;
  * - 400 `VALIDATION_ERROR` with per-field details -> errors under those fields;
+ * - 400 `VALIDATION_ERROR` on `captchaToken` only -> the CAPTCHA failed message;
  * - anything else (401 `INVALID_CREDENTIALS`, 400 `INVALID_CODE`, network...) -> returned as a
  *   form-level message.
  *
@@ -97,6 +98,8 @@ export function applyAuthError<T extends FieldValues>(
       }
     }
     if (placed) return null;
+    // The CAPTCHA token is not a visible field: tell the user to verify again.
+    if (fieldErrors.captchaToken) return i18n.t('errors:codes.CAPTCHA_FAILED');
   }
 
   return getAuthErrorMessage(appError);

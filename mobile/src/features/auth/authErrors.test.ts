@@ -1,3 +1,4 @@
+import { i18n } from '@/i18n';
 import { AppError } from '@/lib/appError';
 
 import {
@@ -39,6 +40,36 @@ describe('applyAuthError', () => {
 
     expect(applyAuthError<Values>(error, setError, FIELDS)).toEqual(expect.any(String));
     expect(setError).not.toHaveBeenCalled();
+  });
+
+  it('returns the CAPTCHA message when only captchaToken is rejected', () => {
+    const setError = jest.fn();
+    const error = new AppError({
+      status: 400,
+      code: 'VALIDATION_ERROR',
+      message: 'Invalid',
+      details: [{ source: 'body', field: 'captchaToken', message: 'CAPTCHA token is too long' }],
+    });
+
+    const message = applyAuthError<Values>(error, setError, FIELDS);
+
+    expect(message).toBe(i18n.t('errors:codes.CAPTCHA_FAILED'));
+    expect(message).not.toBe(i18n.t('errors:codes.VALIDATION_ERROR'));
+    expect(setError).not.toHaveBeenCalled();
+  });
+
+  it('keeps the generic message for validation errors on unknown fields', () => {
+    const setError = jest.fn();
+    const error = new AppError({
+      status: 400,
+      code: 'VALIDATION_ERROR',
+      message: 'Invalid',
+      details: [{ source: 'body', field: 'role', message: 'Invalid role' }],
+    });
+
+    expect(applyAuthError<Values>(error, setError, FIELDS)).toBe(
+      i18n.t('errors:codes.VALIDATION_ERROR'),
+    );
   });
 });
 
