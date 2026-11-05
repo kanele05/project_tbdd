@@ -150,6 +150,27 @@ describe('POST /auth/register', () => {
     expect(await prisma.user.count()).toBe(0);
   });
 
+  it('does not reject a long (~3000 chars) CAPTCHA token as a validation error', async () => {
+    const res = await api
+      .post(`${API}/auth/register`)
+      .send({ ...validRegister, captchaToken: 'a'.repeat(3000) });
+    // Passes validation and reaches CAPTCHA verification, which rejects the unknown token.
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('CAPTCHA_FAILED');
+  });
+
+  it('rejects a CAPTCHA token longer than 8192 chars with VALIDATION_ERROR on captchaToken', async () => {
+    const res = await api
+      .post(`${API}/auth/register`)
+      .send({ ...validRegister, captchaToken: 'a'.repeat(8193) });
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect(res.body.error.details).toEqual(
+      expect.arrayContaining([expect.objectContaining({ field: 'captchaToken' })]),
+    );
+    expect(await prisma.user.count()).toBe(0);
+  });
+
   it('fails safe with 503 CAPTCHA_UNAVAILABLE when Cloudflare cannot be reached', async () => {
     mockTurnstile().mockRejectedValue(new TypeError('fetch failed'));
     const res = await api.post(`${API}/auth/register`).send(validRegister);

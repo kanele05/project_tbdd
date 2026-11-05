@@ -21,12 +21,12 @@ export const existingPassword = z
   .min(1, 'Password is required')
   .max(72, 'Password must be at most 72 characters');
 
-/** Token Cloudflare Turnstile do widget phía client trả về (tối đa 2048 ký tự). */
+/** Token CAPTCHA do widget phía client trả về (Turnstile hoặc reCAPTCHA v2; token reCAPTCHA có thể dài hơn 2048 ký tự). */
 const captchaToken = z
   .string({ error: 'CAPTCHA token must be a string' })
   .trim()
   .min(1, 'CAPTCHA token must not be empty')
-  .max(2048, 'CAPTCHA token is too long')
+  .max(8192, 'CAPTCHA token is too long')
   .optional();
 
 /** Ngôn ngữ email (`vi`/`en`); giá trị khác bị bỏ qua và dùng `Accept-Language`. */
